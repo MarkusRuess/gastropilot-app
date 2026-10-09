@@ -7,103 +7,422 @@
 <meta name="theme-color" content="#14243a">
 <title>GastroPilot · Das Friedrich</title>
 <style>
-:root{font-family:system-ui,-apple-system,Segoe UI,sans-serif;color:#14243a;background:#f4f7fa}
+:root{
+  font-family:system-ui,-apple-system,Segoe UI,sans-serif;
+  color:#14243a;
+  background:#f4f7fa
+}
 *{box-sizing:border-box}
 body{margin:0}
-header{background:#14243a;color:white;padding:22px}
+header{
+  background:#14243a;
+  color:white;
+  padding:22px 18px
+}
+.header-inner{
+  max-width:1050px;
+  margin:auto
+}
 header b{font-size:27px}
-header small{display:block;color:#c2d0dd}
-main{max-width:850px;margin:16px auto;padding:0 13px}
-.card{background:white;border:1px solid #e0e7ee;border-radius:15px;padding:18px;margin:14px 0;box-shadow:0 3px 14px #14243a0a}
-h2{font-size:20px;margin:0 0 13px}
-h3{font-size:16px;margin:16px 0 8px}
-label{display:block;font-weight:650;margin:10px 0 5px}
-input,select,textarea{width:100%;border:1px solid #c8d2de;border-radius:9px;padding:10px;font:inherit;background:white;color:#14243a}
-button{background:#167a61;color:white;border:0;border-radius:10px;padding:11px 14px;font:inherit;font-weight:700;cursor:pointer;margin:8px 0}
-button.secondary{background:#e8eef4;color:#24384b}
-button.danger{background:#fff0ef;color:#a72f25;border:1px solid #edc7c3}
-button:disabled{opacity:.55;cursor:wait}
+header small{
+  display:block;
+  color:#c2d0dd;
+  margin-top:4px
+}
+main{
+  max-width:1050px;
+  margin:16px auto;
+  padding:0 13px
+}
+.card{
+  background:white;
+  border:1px solid #e0e7ee;
+  border-radius:15px;
+  padding:18px;
+  margin:14px 0;
+  box-shadow:0 3px 14px #14243a0a
+}
+h2{
+  font-size:21px;
+  margin:0 0 13px
+}
+h3{
+  font-size:17px;
+  margin:18px 0 9px
+}
+label{
+  display:block;
+  font-weight:650;
+  margin:10px 0 5px
+}
+input,select,textarea{
+  width:100%;
+  border:1px solid #c8d2de;
+  border-radius:9px;
+  padding:10px;
+  font:inherit;
+  background:white;
+  color:#14243a
+}
+button{
+  background:#167a61;
+  color:white;
+  border:0;
+  border-radius:10px;
+  padding:11px 14px;
+  font:inherit;
+  font-weight:700;
+  cursor:pointer;
+  margin:8px 0
+}
+button.secondary{
+  background:#e8eef4;
+  color:#24384b
+}
+button.danger{
+  background:#fff0ef;
+  color:#a72f25;
+  border:1px solid #edc7c3
+}
+button:disabled{
+  opacity:.55;
+  cursor:wait
+}
 .hidden{display:none!important}
-.muted{color:#657588;font-size:13px;line-height:1.5}
-.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
-.metric{background:#f1f5f9;border-radius:12px;padding:13px;min-width:0}
-.metric small{display:block;color:#64748b}
-.metric strong{font-size:22px;overflow-wrap:anywhere}
-.status{padding:11px;background:#edf7f2;border-radius:9px;margin:10px 0;white-space:pre-wrap}
-.error{background:#fff0ef;color:#a72f25}
-.entry{border-top:1px solid #e1e7ee;padding:12px 0}
-.entry small{display:block;color:#64748b}
-.thumbs{display:grid;grid-template-columns:repeat(auto-fill,minmax(105px,1fr));gap:9px}
-.thumb{border:1px solid #dbe4ed;border-radius:9px;padding:6px}
-.thumb img{width:100%;height:100px;object-fit:contain}
-.thumb small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.thumb button{font-size:12px;padding:5px}
-.result{border:1px solid #dbe4ed;border-radius:12px;padding:13px;margin:12px 0}
-details{background:#f5f8fb;border-radius:9px;padding:12px;margin:10px 0}
-summary{cursor:pointer;font-weight:700}
-table{width:100%;border-collapse:collapse;font-size:13px}
-td,th{padding:7px 4px;border-bottom:1px solid #dce4ec;text-align:left}
+.muted{
+  color:#657588;
+  font-size:13px;
+  line-height:1.5
+}
+.grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:10px
+}
+.metric{
+  background:#f1f5f9;
+  border-radius:12px;
+  padding:13px;
+  min-width:0
+}
+.metric small{
+  display:block;
+  color:#64748b
+}
+.metric strong{
+  font-size:22px;
+  overflow-wrap:anywhere
+}
+.status{
+  padding:11px;
+  background:#edf7f2;
+  border-radius:9px;
+  margin:10px 0;
+  white-space:pre-wrap
+}
+.error{
+  background:#fff0ef;
+  color:#a72f25
+}
+.entry{
+  border-top:1px solid #e1e7ee;
+  padding:12px 0
+}
+.entry small{
+  display:block;
+  color:#64748b
+}
+.thumbs{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(105px,1fr));
+  gap:9px
+}
+.thumb{
+  border:1px solid #dbe4ed;
+  border-radius:9px;
+  padding:6px
+}
+.thumb img{
+  width:100%;
+  height:100px;
+  object-fit:contain
+}
+.thumb small{
+  display:block;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap
+}
+.thumb button{
+  font-size:12px;
+  padding:5px
+}
+.result{
+  border:1px solid #dbe4ed;
+  border-radius:12px;
+  padding:13px;
+  margin:12px 0
+}
+details{
+  background:#f5f8fb;
+  border-radius:9px;
+  padding:12px;
+  margin:10px 0
+}
+summary{
+  cursor:pointer;
+  font-weight:700
+}
+table{
+  width:100%;
+  border-collapse:collapse;
+  font-size:13px
+}
+td,th{
+  padding:9px 5px;
+  border-bottom:1px solid #dce4ec;
+  text-align:left
+}
 td:last-child,th:last-child{text-align:right}
-.section{font-size:21px;font-weight:800;margin:25px 2px 8px}
-.row{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
-footer{text-align:center;color:#718096;padding:20px;font-size:12px}
-@media(max-width:430px){.metric strong{font-size:19px}}
+.row{
+  display:flex;
+  gap:10px;
+  align-items:center;
+  justify-content:space-between;
+  flex-wrap:wrap
+}
+footer{
+  text-align:center;
+  color:#718096;
+  padding:20px;
+  font-size:12px
+}
+.navigation{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:9px;
+  margin:16px 0
+}
+.nav-button{
+  margin:0;
+  background:white;
+  color:#24384b;
+  border:1px solid #dce4ec;
+  min-height:65px;
+  padding:12px 7px;
+  font-size:14px
+}
+.nav-button.active{
+  background:#167a61;
+  color:white;
+  border-color:#167a61
+}
+.page{display:none}
+.page.active{display:block}
+.page-title{
+  font-size:24px;
+  font-weight:800;
+  margin:20px 2px 8px
+}
+.filter-grid{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:10px;
+  align-items:end
+}
+.table-scroll{
+  overflow-x:auto;
+  width:100%
+}
+.table-scroll table{min-width:440px}
+.notice{
+  background:#fff7e3;
+  border-radius:10px;
+  padding:12px;
+  font-size:13px;
+  line-height:1.5
+}
+.section-note{
+  color:#64748b;
+  font-size:13px;
+  margin:8px 0 16px
+}
+.bar-track{
+  height:9px;
+  background:#e5edf3;
+  border-radius:9px;
+  overflow:hidden;
+  margin-top:5px
+}
+.bar-fill{
+  height:100%;
+  background:#167a61;
+  border-radius:9px
+}
+.trend-row{
+  display:grid;
+  grid-template-columns:100px 1fr 115px;
+  gap:10px;
+  align-items:center;
+  padding:9px 0;
+  border-bottom:1px solid #e5edf3;
+  font-size:13px
+}
+.right{text-align:right}
+@media(max-width:650px){
+  .navigation{
+    grid-template-columns:repeat(2,minmax(0,1fr))
+  }
+  .filter-grid{
+    grid-template-columns:1fr
+  }
+  .trend-row{
+    grid-template-columns:80px 1fr 95px
+  }
+}
+@media(max-width:430px){
+  .metric strong{font-size:19px}
+  .card{padding:14px}
+  header b{font-size:25px}
+}
 </style>
 </head>
 <body>
+
 <header>
+<div class="header-inner">
 <b>GastroPilot</b>
-<small>Das Friedrich · Betriebsübersicht</small>
+<small>Das Friedrich · Brot & Wasser RA GmbH</small>
+</div>
 </header>
 
 <main>
+
 <section id="login" class="card">
 <h2>Anmelden</h2>
 <form id="loginForm">
-<label>E-Mail
-<input id="email" type="email" value="office@markusruess.at" required>
+<label>
+E-Mail
+<input id="email" type="email"
+value="office@markusruess.at" required>
 </label>
-<label>Passwort
+<label>
+Passwort
 <input id="password" type="password" required>
 </label>
-<button>Anmelden</button>
+<button type="submit">Anmelden</button>
 </form>
 <div id="loginStatus" class="status hidden"></div>
 </section>
 
 <div id="app" class="hidden">
+
 <section class="card">
 <div class="row">
 <div>
 <h2>Willkommen!</h2>
 <div id="business" class="muted"></div>
 </div>
-<button id="logout" class="secondary">Abmelden</button>
+<button id="logout" class="secondary">
+Abmelden
+</button>
 </div>
 </section>
+
+<nav class="navigation" aria-label="Hauptnavigation">
+<button class="nav-button active"
+data-page="dashboard">
+Dashboard
+</button>
+<button class="nav-button"
+data-page="cash">
+Tagesabrechnungen
+</button>
+<button class="nav-button"
+data-page="invoice">
+Lieferantenrechnungen
+</button>
+<button class="nav-button"
+data-page="analysis">
+Auswertungen
+</button>
+</nav>
+
+<!-- DASHBOARD -->
+<section id="page-dashboard" class="page active">
+
+<div class="page-title">Dashboard</div>
 
 <section class="card">
 <div class="row">
 <h2>Monatsübersicht</h2>
-<input id="month" type="month" style="max-width:175px">
+<input id="month" type="month"
+style="max-width:175px">
 </div>
+
 <div class="grid">
-<div class="metric"><small>Umsatz brutto</small><strong id="gross">–</strong></div>
-<div class="metric"><small>Umsatz netto</small><strong id="net">–</strong></div>
-<div class="metric"><small>Umsatzsteuer</small><strong id="vat">–</strong></div>
-<div class="metric"><small>Erfasste Umsatztage</small><strong id="days">–</strong></div>
-<div class="metric"><small>Ø Tagesumsatz brutto</small><strong id="average">–</strong></div>
-<div class="metric"><small>Erfasste Lieferantenrechnungen</small><strong id="invoices">–</strong></div>
-<div class="metric"><small>Barumsatz</small><strong id="cashTotal">–</strong></div>
-<div class="metric"><small>Kartenumsatz</small><strong id="cardTotal">–</strong></div>
-<div class="metric"><small>Sonstige Zahlungsarten</small><strong id="otherTotal">–</strong></div>
-<div class="metric"><small>Zahlungsabgleich</small><strong id="paymentCheck">–</strong></div>
-<div class="metric"><small>Anzahl Kassenbons</small><strong id="receiptCount">–</strong></div>
-<div class="metric"><small>Ø Bonwert brutto</small><strong id="averageReceipt">–</strong></div>
-<div class="metric"><small>Ø Bons je Umsatztag</small><strong id="receiptsPerDay">–</strong></div>
-<div class="metric"><small>Ausgaben netto (Rechnungen)</small><strong id="expenses">–</strong></div>
-<div class="metric"><small>Einnahmen – Ausgaben (netto)</small><strong id="balance">–</strong></div>
+<div class="metric">
+<small>Umsatz brutto</small>
+<strong id="gross">–</strong>
 </div>
+<div class="metric">
+<small>Umsatz netto</small>
+<strong id="net">–</strong>
+</div>
+<div class="metric">
+<small>Umsatzsteuer</small>
+<strong id="vat">–</strong>
+</div>
+<div class="metric">
+<small>Erfasste Umsatztage</small>
+<strong id="days">–</strong>
+</div>
+<div class="metric">
+<small>Ø Tagesumsatz brutto</small>
+<strong id="average">–</strong>
+</div>
+<div class="metric">
+<small>Lieferantenrechnungen</small>
+<strong id="invoices">–</strong>
+</div>
+<div class="metric">
+<small>Barumsatz</small>
+<strong id="cashTotal">–</strong>
+</div>
+<div class="metric">
+<small>Kartenumsatz</small>
+<strong id="cardTotal">–</strong>
+</div>
+<div class="metric">
+<small>Sonstige Zahlungsarten</small>
+<strong id="otherTotal">–</strong>
+</div>
+<div class="metric">
+<small>Zahlungsabgleich</small>
+<strong id="paymentCheck">–</strong>
+</div>
+<div class="metric">
+<small>Anzahl Kassenbons</small>
+<strong id="receiptCount">–</strong>
+</div>
+<div class="metric">
+<small>Ø Bonwert brutto</small>
+<strong id="averageReceipt">–</strong>
+</div>
+<div class="metric">
+<small>Ø Bons je Umsatztag</small>
+<strong id="receiptsPerDay">–</strong>
+</div>
+<div class="metric">
+<small>Ausgaben netto (Rechnungen)</small>
+<strong id="expenses">–</strong>
+</div>
+<div class="metric">
+<small>Einnahmen – Ausgaben netto</small>
+<strong id="balance">–</strong>
+</div>
+</div>
+
 <p id="dashboardNote" class="muted"></p>
 
 <h3>Artikelgruppenstatistik – Monatsumsätze</h3>
@@ -111,62 +430,250 @@ footer{text-align:center;color:#718096;padding:20px;font-size:12px}
 
 <h3>Top 3 verkaufte Artikel</h3>
 <ol id="top"></ol>
+
 <p id="last" class="muted"></p>
+
+<div class="row">
+<button class="secondary" id="goCash">
+Tagesabrechnungen öffnen
+</button>
+<button class="secondary" id="goAnalysis">
+Weitere Auswertungen
+</button>
+</div>
+</section>
 </section>
 
-<div class="section">Tagesabrechnungen</div>
+<!-- TAGESABRECHNUNGEN -->
+<section id="page-cash" class="page">
+
+<div class="page-title">Tagesabrechnungen</div>
+
 <section class="card">
-<h2>Tagesabrechnung erfassen</h2>
-<p class="muted">Mehrere Fotos einer Tagesabrechnung gemeinsam auswählen. Maximal 12 Bilder.</p>
-<label>Fotos auswählen
-<input id="cashFiles" type="file" accept="image/jpeg,image/png,image/webp" multiple>
+<h2>Neue Tagesabrechnung erfassen</h2>
+<p class="muted">
+Mehrere Fotos derselben Tagesabrechnung gemeinsam
+auswählen. Unterschiedliche Abrechnungstage
+bitte einzeln auswerten.
+Maximal 12 Bilder.
+</p>
+
+<label>
+Fotos auswählen
+<input id="cashFiles" type="file"
+accept="image/jpeg,image/png,image/webp"
+multiple>
 </label>
-<button id="cashCamera" class="secondary">Foto aufnehmen</button>
-<input id="cashCameraInput" type="file" accept="image/*" capture="environment" class="hidden">
+
+<button id="cashCamera" class="secondary">
+Foto aufnehmen
+</button>
+
+<input id="cashCameraInput"
+type="file"
+accept="image/*"
+capture="environment"
+class="hidden">
+
 <div id="cashPhotos" class="thumbs"></div>
-<p id="cashCount" class="muted">Keine Fotos ausgewählt.</p>
-<button id="cashScan">Auswertung starten</button>
+<p id="cashCount" class="muted">
+Keine Fotos ausgewählt.
+</p>
+
+<button id="cashScan">
+Auswertung starten
+</button>
+
 <div id="cashStatus" class="status hidden"></div>
 <div id="cashResults"></div>
 </section>
 
 <section class="card">
 <div class="row">
-<h2>Archiv Tagesabrechnungen</h2>
-<button id="cashRefresh" class="secondary">Aktualisieren</button>
+<h2>Tagesarchiv</h2>
+<button id="cashRefresh" class="secondary">
+Aktualisieren
+</button>
 </div>
+
+<p class="muted">
+Das Archiv ist standardmäßig geschlossen.
+Öffne es, um Abrechnungen zu suchen.
+</p>
+
+<details id="cashArchivePanel">
+<summary>Archiv durchsuchen</summary>
+
+<div class="filter-grid">
+<label>
+Monat
+<input id="cashArchiveMonth" type="month">
+</label>
+<label>
+Datum suchen
+<input id="cashArchiveDate" type="date">
+</label>
+<label>
+Anzeige
+<select id="cashArchiveLimit">
+<option value="10">10 Einträge</option>
+<option value="25">25 Einträge</option>
+<option value="50">50 Einträge</option>
+<option value="all">Alle im Monat</option>
+</select>
+</label>
+</div>
+
+<p id="cashArchiveInfo" class="muted"></p>
 <div id="cashArchive"></div>
+
+</details>
+</section>
 </section>
 
-<div class="section">Lieferantenrechnungen</div>
+<!-- LIEFERANTENRECHNUNGEN -->
+<section id="page-invoice" class="page">
+
+<div class="page-title">Lieferantenrechnungen</div>
+
 <section class="card">
-<h2>Rechnung erfassen</h2>
-<p class="muted">Fotos oder PDF-Dateien auswählen. Maximal 12 Seiten oder Bilder pro Auswertung.</p>
-<label>Fotos oder PDF-Dateien
-<input id="invoiceFiles" type="file" accept="image/jpeg,image/png,image/webp,application/pdf" multiple>
+<h2>Neue Rechnung erfassen</h2>
+
+<p class="muted">
+Fotos oder PDF-Dateien auswählen.
+PDF-Seiten werden in Bilder umgewandelt.
+Maximal 12 Seiten oder Bilder je Auswertung.
+</p>
+
+<label>
+Fotos oder PDF-Dateien
+<input id="invoiceFiles" type="file"
+accept="image/jpeg,image/png,image/webp,application/pdf"
+multiple>
 </label>
-<button id="invoiceCamera" class="secondary">Rechnung fotografieren</button>
-<input id="invoiceCameraInput" type="file" accept="image/*" capture="environment" class="hidden">
+
+<button id="invoiceCamera" class="secondary">
+Rechnung fotografieren
+</button>
+
+<input id="invoiceCameraInput"
+type="file"
+accept="image/*"
+capture="environment"
+class="hidden">
+
 <div id="invoicePhotos" class="thumbs"></div>
-<p id="invoiceCount" class="muted">Keine Dateien ausgewählt.</p>
-<button id="invoiceScan">Auswertung starten</button>
+
+<p id="invoiceCount" class="muted">
+Keine Dateien ausgewählt.
+</p>
+
+<button id="invoiceScan">
+Auswertung starten
+</button>
+
 <div id="invoiceStatus" class="status hidden"></div>
 <div id="invoiceResults"></div>
 </section>
 
 <section class="card">
 <div class="row">
-<h2>Archiv Lieferantenrechnungen</h2>
-<button id="invoiceRefresh" class="secondary">Aktualisieren</button>
+<h2>Rechnungsarchiv</h2>
+<button id="invoiceRefresh" class="secondary">
+Aktualisieren
+</button>
 </div>
+
+<details id="invoiceArchivePanel">
+<summary>Rechnungsarchiv durchsuchen</summary>
+
+<div class="filter-grid">
+<label>
+Monat
+<input id="invoiceArchiveMonth" type="month">
+</label>
+<label>
+Lieferant oder Rechnungsnummer
+<input id="invoiceSearch"
+type="search"
+placeholder="Suchen …">
+</label>
+<label>
+Anzeige
+<select id="invoiceArchiveLimit">
+<option value="10">10 Einträge</option>
+<option value="25">25 Einträge</option>
+<option value="50">50 Einträge</option>
+<option value="all">Alle im Monat</option>
+</select>
+</label>
+</div>
+
+<p id="invoiceArchiveInfo" class="muted"></p>
 <div id="invoiceArchive"></div>
+
+</details>
 </section>
+</section>
+
+<!-- AUSWERTUNGEN -->
+<section id="page-analysis" class="page">
+
+<div class="page-title">Auswertungen</div>
+
+<section class="card">
+<div class="row">
+<h2>Monatsanalyse</h2>
+<input id="analysisMonth" type="month"
+style="max-width:175px">
+</div>
+
+<div class="grid">
+<div class="metric">
+<small>Umsatzstärkste Artikelgruppe</small>
+<strong id="bestCategory">–</strong>
+</div>
+<div class="metric">
+<small>Umsatz dieser Artikelgruppe</small>
+<strong id="bestCategoryGross">–</strong>
+</div>
+<div class="metric">
+<small>Umsatzstärkster Tag</small>
+<strong id="bestDay">–</strong>
+</div>
+<div class="metric">
+<small>Umsatz am stärksten Tag</small>
+<strong id="bestDayGross">–</strong>
+</div>
+</div>
+
+<h3>Artikelgruppen nach Umsatz</h3>
+<div id="analysisCategories"></div>
+
+<h3>Tagesumsätze im Vergleich</h3>
+<div id="dailyTrend"></div>
+
+<h3>Verkaufte Artikel nach Menge</h3>
+<div id="analysisItems"></div>
+
+<p class="muted">
+Alle Auswertungen basieren ausschließlich auf
+gespeicherten Abrechnungen. Es werden keine
+fehlenden Tage geschätzt.
+</p>
+</section>
+</section>
+
 </div>
 </main>
-<footer>GastroPilot · Das Friedrich</footer>
+
+<footer>
+GastroPilot · Das Friedrich · Brot & Wasser RA GmbH
+</footer>
 
 <script type="module">
-import {createClient} from 'https://esm.sh/@supabase/supabase-js@2';
+import {createClient}
+from 'https://esm.sh/@supabase/supabase-js@2';
 
 const db=createClient(
 'https://sjnwfwcpgwsavygewwzb.supabase.co',
@@ -174,7 +681,14 @@ const db=createClient(
 );
 
 const $=id=>document.getElementById(id);
-let businessId=null,user=null,role=null,locked=false;
+
+let businessId=null;
+let user=null;
+let role=null;
+let locked=false;
+
+let monthlyCash=[];
+let monthlyInvoices=[];
 
 const state={
 cash_report:{files:[],results:[]},
@@ -182,29 +696,49 @@ invoice:{files:[],results:[]}
 };
 
 const euro=x=>
-x===null||x===undefined||x===''||!Number.isFinite(Number(x))
+x===null||
+x===undefined||
+x===''||
+!Number.isFinite(Number(x))
 ?'–'
-:new Intl.NumberFormat('de-AT',{style:'currency',currency:'EUR'}).format(Number(x));
+:new Intl.NumberFormat('de-AT',{
+style:'currency',
+currency:'EUR'
+}).format(Number(x));
 
 const validNumber=x=>
-x!==null&&x!==undefined&&x!==''&&Number.isFinite(Number(x));
+x!==null&&
+x!==undefined&&
+x!==''&&
+Number.isFinite(Number(x));
+
+const kindId=kind=>
+kind==='cash_report'?'cash':'invoice';
 
 function dateLabel(x){
 if(!x)return '–';
 const d=new Date(String(x).slice(0,10)+'T12:00:00Z');
 return Number.isNaN(d.getTime())?'–':
 new Intl.DateTimeFormat('de-AT',{
-weekday:'long',day:'2-digit',month:'2-digit',
-year:'numeric',timeZone:'UTC'
+weekday:'long',
+day:'2-digit',
+month:'2-digit',
+year:'numeric',
+timeZone:'UTC'
 }).format(d);
 }
 
 function stamp(x){
-return x?new Intl.DateTimeFormat('de-AT',{
+return x?
+new Intl.DateTimeFormat('de-AT',{
 timeZone:'Europe/Vienna',
-day:'2-digit',month:'2-digit',year:'numeric',
-hour:'2-digit',minute:'2-digit'
-}).format(new Date(x)):'–';
+day:'2-digit',
+month:'2-digit',
+year:'numeric',
+hour:'2-digit',
+minute:'2-digit'
+}).format(new Date(x))
+:'–';
 }
 
 function message(id,text,error=false){
@@ -213,23 +747,48 @@ e.textContent=text;
 e.className='status'+(error?' error':'');
 }
 
-const kindId=kind=>kind==='cash_report'?'cash':'invoice';
+function switchPage(page){
+document.querySelectorAll('.page').forEach(x=>{
+x.classList.toggle('active',x.id==='page-'+page);
+});
+
+document.querySelectorAll('.nav-button').forEach(x=>{
+x.classList.toggle(
+'active',
+x.dataset.page===page
+);
+});
+
+window.scrollTo({top:0,behavior:'smooth'});
+}
+
+document.querySelectorAll('.nav-button').forEach(b=>{
+b.onclick=()=>switchPage(b.dataset.page);
+});
+
+$('goCash').onclick=()=>switchPage('cash');
+$('goAnalysis').onclick=()=>switchPage('analysis');
 
 function aggregateItems(docs){
 const map=new Map();
+
 for(const doc of docs){
 for(const item of doc.extracted_data?.sales_items||[]){
 const name=String(item.name||'').trim();
 const n=Number(item.quantity);
+
 if(!name||!Number.isFinite(n)||n<=0)continue;
+
 const key=name.toLocaleLowerCase('de-AT');
 const old=map.get(key);
+
 map.set(key,{
 name:old?.name||name,
 quantity:(old?.quantity||0)+n
 });
 }
 }
+
 return [...map.values()].sort(
 (a,b)=>b.quantity-a.quantity||
 a.name.localeCompare(b.name,'de-AT')
@@ -248,18 +807,115 @@ return a.filter(x=>x&&typeof x==='object')
 .map(x=>{
 const raw=x.gross??x.gross_total??x.amount;
 return {
-name:String(x.name||x.category||x.sparte||'').trim(),
-gross:raw===null||raw===undefined||raw===''?null:Number(raw),
+name:String(
+x.name||x.category||x.sparte||''
+).trim(),
+gross:validNumber(raw)?Number(raw):null,
 net:validNumber(x.net)?Number(x.net):null,
 vat:validNumber(x.vat)?Number(x.vat):null,
-quantity:validNumber(x.quantity)?Number(x.quantity):null
+quantity:validNumber(x.quantity)?
+Number(x.quantity):null
 };
 }).filter(x=>x.name);
 }
 
+function categorySummary(docs){
+const map=new Map();
+let reported=0;
+
+for(const d of docs){
+const c=categories(d.extracted_data||d);
+
+if(c.some(x=>validNumber(x.gross)))reported++;
+
+for(const x of c){
+if(!validNumber(x.gross))continue;
+
+const key=x.name.toLocaleLowerCase('de-AT');
+const old=map.get(key);
+
+map.set(key,{
+name:old?.name||x.name,
+gross:(old?.gross||0)+x.gross
+});
+}
+}
+
+const rows=[...map.values()].sort(
+(a,b)=>b.gross-a.gross
+);
+
+const total=rows.reduce((s,x)=>s+x.gross,0);
+
+return {rows,total,reported};
+}
+
+function categoryTable(docs,monthly=false){
+const data=categorySummary(docs);
+const box=document.createElement('div');
+
+if(!data.rows.length){
+box.textContent=
+'Noch keine Artikelgruppenumsätze gespeichert.';
+return box;
+}
+
+const scroll=document.createElement('div');
+scroll.className='table-scroll';
+
+const table=document.createElement('table');
+const head=document.createElement('tr');
+
+for(const value of [
+'Rang / Artikelgruppe','Brutto','Anteil'
+]){
+const th=document.createElement('th');
+th.textContent=value;
+head.append(th);
+}
+table.append(head);
+
+data.rows.forEach((x,i)=>{
+const tr=document.createElement('tr');
+
+const share=data.total>0?
+(x.gross/data.total*100).toLocaleString(
+'de-AT',{maximumFractionDigits:1}
+)+' %'
+:'–';
+
+for(const value of [
+(i+1)+'. '+x.name,
+euro(x.gross),
+share
+]){
+const td=document.createElement('td');
+td.textContent=value;
+tr.append(td);
+}
+table.append(tr);
+});
+
+scroll.append(table);
+box.append(scroll);
+
+const note=document.createElement('p');
+note.className='muted';
+
+note.textContent=
+'Prozentanteile beziehen sich auf die Summe der erfassten Artikelgruppen. '+
+(monthly?
+'Artikelgruppen vorhanden für '+
+data.reported+' von '+docs.length+' Umsatztagen.'
+:'');
+
+box.append(note);
+
+return box;
+}
+
 function categoryEditor(box,doc){
 const wrap=document.createElement('div');
-wrap.className='category-editor';
 
 const h=document.createElement('h3');
 h.textContent='Artikelgruppenstatistik laut Kassenbeleg';
@@ -267,34 +923,36 @@ wrap.append(h);
 
 const help=document.createElement('p');
 help.className='muted';
-help.textContent='Bitte erkannte Artikelgruppen und Beträge kontrollieren. Fehlende Werte nur anhand des Originalbelegs ergänzen.';
+help.textContent=
+'Erkannte Artikelgruppen kontrollieren. Fehlende Werte nur anhand des Originalbelegs ergänzen.';
 wrap.append(help);
 
 const lines=document.createElement('div');
 wrap.append(lines);
 
-const add=(name='',gross='',net='',vat='',quantity='')=>{
+const add=(name='',gross='',net='',vat='',qty='')=>{
 const line=document.createElement('div');
 line.className='category-line result';
 
 const fields=[
 ['Artikelgruppe','cat-name',name,'text'],
 ['Brutto (€)','cat-gross',gross,'number'],
-['Netto (€), falls ausgewiesen','cat-net',net,'number'],
-['USt (€), falls ausgewiesen','cat-vat',vat,'number'],
-['Menge, falls ausgewiesen','cat-quantity',quantity,'number']
+['Netto (€)','cat-net',net,'number'],
+['USt (€)','cat-vat',vat,'number'],
+['Menge','cat-quantity',qty,'number']
 ];
 
 for(const [label,cls,value,type] of fields){
 const field=document.createElement('label');
 field.textContent=label;
+
 const input=document.createElement('input');
 input.className=cls;
 input.type=type;
 input.value=value??'';
-if(type==='number'){
-input.step='0.01';
-}
+
+if(type==='number')input.step='0.01';
+
 field.append(input);
 line.append(field);
 }
@@ -303,6 +961,7 @@ const remove=document.createElement('button');
 remove.className='secondary';
 remove.textContent='Artikelgruppe entfernen';
 remove.onclick=()=>line.remove();
+
 line.append(remove);
 lines.append(line);
 };
@@ -321,13 +980,14 @@ const button=document.createElement('button');
 button.className='secondary';
 button.textContent='+ Artikelgruppe hinzufügen';
 button.onclick=()=>add();
-wrap.append(button);
 
+wrap.append(button);
 box.append(wrap);
 }
 
 function readCategories(box){
 const out=[];
+
 for(const line of box.querySelectorAll('.category-line')){
 const name=line.querySelector('.cat-name').value.trim();
 const raw=line.querySelector('.cat-gross').value.trim();
@@ -341,7 +1001,7 @@ if(!name)throw Error('Artikelgruppe ohne Bezeichnung');
 const parse=(value,label)=>{
 if(value==='')return null;
 const n=Number(value);
-if(!Number.isFinite(n))throw Error('Ungültiger Wert: '+label);
+if(!Number.isFinite(n))throw Error('Ungültig: '+label);
 return Math.round(n*100)/100;
 };
 
@@ -353,80 +1013,8 @@ vat:parse(vatRaw,'USt'),
 quantity:parse(qtyRaw,'Menge')
 });
 }
+
 return out;
-}
-
-function categoryTable(docs,monthly=false){
-const map=new Map();
-let reported=0;
-
-for(const d of docs){
-const c=categories(d.extracted_data||d);
-if(c.length)reported++;
-
-for(const x of c){
-if(!validNumber(x.gross))continue;
-const key=x.name.toLocaleLowerCase('de-AT');
-const old=map.get(key);
-map.set(key,{
-name:old?.name||x.name,
-gross:(old?.gross||0)+x.gross
-});
-}
-}
-
-const box=document.createElement('div');
-
-if(!map.size){
-box.textContent='Noch keine Artikelgruppenumsätze gespeichert.';
-return box;
-}
-
-const table=document.createElement('table');
-const head=document.createElement('tr');
-
-for(const text of ['Rang / Artikelgruppe','Brutto','Anteil']){
-const th=document.createElement('th');
-th.textContent=text;
-head.append(th);
-}
-table.append(head);
-
-const total=[...map.values()].reduce((s,x)=>s+x.gross,0);
-const sorted=[...map.values()].sort((a,b)=>b.gross-a.gross);
-
-sorted.forEach((x,i)=>{
-const tr=document.createElement('tr');
-const share=total>0
-?(x.gross/total*100).toLocaleString('de-AT',{
-maximumFractionDigits:1
-})+' %'
-:'–';
-
-for(const value of [
-(i+1)+'. '+x.name,
-euro(x.gross),
-share
-]){
-const td=document.createElement('td');
-td.textContent=value;
-tr.append(td);
-}
-table.append(tr);
-});
-
-box.append(table);
-
-const note=document.createElement('p');
-note.className='muted';
-note.textContent=
-'Prozentanteile beziehen sich auf die Summe der erfassten Artikelgruppen. '+
-(monthly
-?'Artikelgruppen vorhanden für '+reported+' von '+docs.length+' Umsatztagen.'
-:'');
-box.append(note);
-
-return box;
 }
 
 function addFiles(kind,list){
@@ -436,7 +1024,9 @@ for(const f of [...list]){
 if(s.files.length>=12)break;
 
 const allowed=[
-'image/jpeg','image/png','image/webp',
+'image/jpeg',
+'image/png',
+'image/webp',
 ...(kind==='invoice'?['application/pdf']:[])
 ];
 
@@ -452,7 +1042,8 @@ if(already)continue;
 
 s.files.push({
 file:f,
-url:f.type==='application/pdf'?null:URL.createObjectURL(f)
+url:f.type==='application/pdf'?
+null:URL.createObjectURL(f)
 });
 }
 
@@ -463,13 +1054,17 @@ renderFiles(kind);
 
 function clearFiles(kind){
 const s=state[kind];
+
 s.files.forEach(f=>{
 if(f.url)URL.revokeObjectURL(f.url);
 });
+
 s.files=[];
 s.results=[];
+
 $(kindId(kind)+'Files').value='';
 $(kindId(kind)+'CameraInput').value='';
+
 renderFiles(kind);
 }
 
@@ -477,6 +1072,7 @@ function renderFiles(kind){
 const id=kindId(kind);
 const s=state[kind];
 const box=$(id+'Photos');
+
 box.replaceChildren();
 
 s.files.forEach((entry,i)=>{
@@ -500,6 +1096,7 @@ const btn=document.createElement('button');
 btn.className='danger';
 btn.textContent='Entfernen';
 btn.disabled=locked;
+
 btn.onclick=()=>{
 if(entry.url)URL.revokeObjectURL(entry.url);
 s.files.splice(i,1);
@@ -512,8 +1109,8 @@ tile.append(name,btn);
 box.append(tile);
 });
 
-$(id+'Count').textContent=s.files.length
-?s.files.length+' Datei(en) ausgewählt'
+$(id+'Count').textContent=s.files.length?
+s.files.length+' Datei(en) ausgewählt'
 :'Keine Dateien ausgewählt.';
 
 $(id+'Scan').disabled=locked||!s.files.length;
@@ -527,7 +1124,8 @@ addFiles(kind,e.target.files);
 e.target.value='';
 };
 
-$(id+'Camera').onclick=()=>$(id+'CameraInput').click();
+$(id+'Camera').onclick=()=>
+$(id+'CameraInput').click();
 
 $(id+'CameraInput').onchange=e=>{
 addFiles(kind,e.target.files);
@@ -544,14 +1142,22 @@ const url=URL.createObjectURL(file);
 const img=new Image();
 
 img.onload=()=>{
-const factor=Math.min(1,1700/Math.max(img.width,img.height));
+const factor=Math.min(
+1,1700/Math.max(img.width,img.height)
+);
+
 const c=document.createElement('canvas');
 c.width=Math.max(1,Math.round(img.width*factor));
 c.height=Math.max(1,Math.round(img.height*factor));
-c.getContext('2d').drawImage(img,0,0,c.width,c.height);
+
+c.getContext('2d').drawImage(
+img,0,0,c.width,c.height
+);
+
 c.toBlob(blob=>{
 URL.revokeObjectURL(url);
-blob?resolve(blob):reject(Error('Bildkonvertierung fehlgeschlagen'));
+blob?resolve(blob):
+reject(Error('Bildkonvertierung fehlgeschlagen'));
 },'image/jpeg',.8);
 };
 
@@ -577,7 +1183,9 @@ data:new Uint8Array(await file.arrayBuffer())
 }).promise;
 
 if(pdf.numPages>12){
-throw Error('PDF hat mehr als 12 Seiten. Bitte aufteilen.');
+throw Error(
+'PDF hat mehr als 12 Seiten. Bitte aufteilen.'
+);
 }
 
 const out=[];
@@ -585,8 +1193,11 @@ const out=[];
 for(let n=1;n<=pdf.numPages;n++){
 const page=await pdf.getPage(n);
 const base=page.getViewport({scale:1});
+
 const v=page.getViewport({
-scale:Math.min(2,1700/Math.max(base.width,base.height))
+scale:Math.min(
+2,1700/Math.max(base.width,base.height)
+)
 });
 
 const canvas=document.createElement('canvas');
@@ -612,8 +1223,13 @@ return out;
 async function base64(blob){
 return new Promise((resolve,reject)=>{
 const r=new FileReader();
-r.onload=()=>resolve(String(r.result).split(',')[1]);
-r.onerror=()=>reject(Error('Datei nicht lesbar'));
+
+r.onload=()=>
+resolve(String(r.result).split(',')[1]);
+
+r.onerror=()=>
+reject(Error('Datei nicht lesbar'));
+
 r.readAsDataURL(blob);
 });
 }
@@ -633,18 +1249,21 @@ try{
 const blobs=[];
 
 for(const entry of state[kind].files){
-const b=entry.file.type==='application/pdf'
-?await pdfImages(entry.file)
-:[await imageBlob(entry.file)];
+const b=entry.file.type==='application/pdf'?
+await pdfImages(entry.file):
+[await imageBlob(entry.file)];
 
 blobs.push(...b);
 
 if(blobs.length>12){
-throw Error('Mehr als 12 Seiten/Bilder. Bitte weniger Dateien auswählen.');
+throw Error(
+'Mehr als 12 Seiten/Bilder. Bitte weniger Dateien auswählen.'
+);
 }
 }
 
 const images=[];
+
 for(const blob of blobs){
 images.push({
 image_base64:await base64(blob),
@@ -654,13 +1273,15 @@ mime_type:'image/jpeg'
 
 message(id+'Status','Auswertung läuft …');
 
-const {data,error}=await db.functions.invoke('analyze-receipt',{
+const {data,error}=await db.functions.invoke(
+'analyze-receipt',{
 body:{
 business_id:businessId,
 mode:kind,
 images
 }
-});
+}
+);
 
 if(error)throw error;
 
@@ -673,7 +1294,8 @@ renderResults(kind);
 
 message(
 id+'Status',
-data.documents.length+' Beleg(e) erkannt. Bitte alle Werte kontrollieren.'
+data.documents.length+
+' Beleg(e) erkannt. Bitte alle Werte kontrollieren.'
 );
 
 }catch(e){
@@ -714,7 +1336,9 @@ box.className='result';
 
 const heading=document.createElement('h3');
 heading.textContent=
-(kind==='cash_report'?'Tagesabrechnung':'Rechnung')+' '+(i+1);
+(kind==='cash_report'?'Tagesabrechnung':'Rechnung')+
+' '+(i+1);
+
 box.append(heading);
 
 const grid=document.createElement('div');
@@ -744,7 +1368,9 @@ fields.push(
 }
 
 for(const [label,key,type] of fields){
-grid.append(makeField(label,key,doc[key],type));
+grid.append(makeField(
+label,key,doc[key],type
+));
 }
 
 if(kind==='invoice'){
@@ -782,7 +1408,9 @@ sum.textContent='Erkannte Artikel und Steuergruppen';
 details.append(sum);
 
 const pre=document.createElement('pre');
-pre.style.cssText='white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px';
+pre.style.cssText=
+'white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px';
+
 pre.textContent=JSON.stringify({
 tax_breakdown:doc.tax_breakdown||[],
 sales_items:doc.sales_items||[]
@@ -797,7 +1425,9 @@ save.textContent='Beleg speichern';
 const msg=document.createElement('div');
 msg.className='status hidden';
 
-save.onclick=()=>saveResult(kind,doc,box,save,msg);
+save.onclick=()=>
+saveResult(kind,doc,box,save,msg);
+
 box.append(save,msg);
 target.append(box);
 });
@@ -805,17 +1435,22 @@ target.append(box);
 
 function numeric(raw,key){
 if(raw==='')return null;
+
 const n=Number(raw);
 
 if(!Number.isFinite(n)||n<0){
 throw Error('Ungültiger Betrag bei '+key);
 }
 
-if(key==='receipt_count'&&!Number.isInteger(n)){
+if(
+key==='receipt_count'&&
+!Number.isInteger(n)
+){
 throw Error('Bonanzahl muss ganzzahlig sein');
 }
 
-return key==='receipt_count'?n:Math.round(n*100)/100;
+return key==='receipt_count'?
+n:Math.round(n*100)/100;
 }
 
 async function saveResult(kind,doc,box,button,msg){
@@ -847,7 +1482,12 @@ reviewed_at:new Date().toISOString()
 };
 
 for(const [key,val] of Object.entries(values)){
-if(['date','supplier','invoice_number','payment_status'].includes(key)){
+if([
+'date',
+'supplier',
+'invoice_number',
+'payment_status'
+].includes(key)){
 reviewed[key]=val||null;
 }else{
 reviewed[key]=numeric(val,key);
@@ -858,11 +1498,18 @@ if(reviewed.gross_total===null){
 throw Error('Bruttobetrag fehlt');
 }
 
-if(reviewed.net_total!==null&&reviewed.vat_total!==null&&
+if(
+reviewed.net_total!==null&&
+reviewed.vat_total!==null&&
 Math.abs(
-reviewed.net_total+reviewed.vat_total-reviewed.gross_total
-)>.03){
-throw Error('Netto + Steuer stimmt nicht mit Brutto überein');
+reviewed.net_total+
+reviewed.vat_total-
+reviewed.gross_total
+)>.03
+){
+throw Error(
+'Netto + Steuer stimmt nicht mit Brutto überein'
+);
 }
 
 if(kind==='cash_report'){
@@ -880,11 +1527,14 @@ if(data?.length){
 throw Error(
 'Für '+dateLabel(reviewed.date)+
 ' ist bereits eine Tagesabrechnung gespeichert. '+
-'Bitte zuerst den vorhandenen Beleg im Archiv prüfen.'
+'Bitte den vorhandenen Beleg im Archiv prüfen.'
 );
 }
 
-}else if(reviewed.invoice_number&&reviewed.supplier){
+}else if(
+reviewed.invoice_number&&
+reviewed.supplier
+){
 const {data,error}=await db.from('documents')
 .select('id')
 .eq('business_id',businessId)
@@ -895,7 +1545,9 @@ const {data,error}=await db.from('documents')
 if(error)throw error;
 
 if(data?.length){
-throw Error('Rechnung bereits vorhanden. Bitte Archiv prüfen.');
+throw Error(
+'Rechnung bereits vorhanden. Bitte Archiv prüfen.'
+);
 }
 }
 
@@ -905,7 +1557,8 @@ uploaded_by:user.id,
 document_type:kind,
 document_date:reviewed.date,
 supplier:kind==='invoice'?reviewed.supplier:null,
-invoice_number:kind==='invoice'?reviewed.invoice_number:null,
+invoice_number:kind==='invoice'?
+reviewed.invoice_number:null,
 status:'reviewed',
 extracted_data:reviewed
 });
@@ -913,7 +1566,7 @@ extracted_data:reviewed
 if(error)throw error;
 
 saved=true;
-msg.textContent='Gespeichert. Dateiauswahl geleert.';
+msg.textContent='Gespeichert.';
 button.textContent='Gespeichert';
 
 clearFiles(kind);
@@ -935,7 +1588,9 @@ const out=[];
 
 for(let offset=0;;offset+=500){
 const {data,error}=await db.from('documents')
-.select('id,document_date,document_type,created_at,extracted_data,supplier,invoice_number')
+.select(
+'id,document_date,document_type,created_at,extracted_data,supplier,invoice_number'
+)
 .eq('business_id',businessId)
 .eq('document_type',kind)
 .gte('document_date',start)
@@ -946,27 +1601,118 @@ const {data,error}=await db.from('documents')
 if(error)throw error;
 
 out.push(...data);
+
 if(data.length<500)break;
 }
 
 return out;
 }
 
-function renderArchive(kind,docs){
-const target=$(kindId(kind)+'Archive');
-target.replaceChildren();
+function uniqueDays(cash){
+const byDay=new Map();
+let duplicates=0;
 
-if(!docs.length){
-target.textContent='Noch keine Belege in diesem Monat.';
-return;
+for(const d of cash){
+const old=byDay.get(d.document_date);
+
+if(old){
+duplicates++;
+if(d.created_at>old.created_at){
+byDay.set(d.document_date,d);
+}
+}else{
+byDay.set(d.document_date,d);
+}
 }
 
-docs.sort((a,b)=>
+return {
+docs:[...byDay.values()],
+duplicates
+};
+}
+
+function sumField(docs,key){
+const known=docs.filter(d=>
+validNumber(d.extracted_data?.[key])
+);
+
+return {
+value:known.reduce(
+(s,d)=>s+Number(d.extracted_data[key]),0
+),
+complete:known.length===docs.length
+};
+}
+
+function monthBounds(month){
+const [y,m]=month.split('-').map(Number);
+
+return {
+start:month+'-01',
+end:
+`${m===12?y+1:y}-${String(m===12?1:m+1).padStart(2,'0')}-01`
+};
+}
+
+function archiveFilter(kind,docs){
+let result=[...docs];
+
+if(kind==='cash_report'){
+const date=$('cashArchiveDate').value;
+if(date){
+result=result.filter(x=>x.document_date===date);
+}
+}else{
+const q=$('invoiceSearch').value
+.trim().toLocaleLowerCase('de-AT');
+
+if(q){
+result=result.filter(x=>
+String(x.supplier||'')
+.toLocaleLowerCase('de-AT').includes(q)||
+String(x.invoice_number||'')
+.toLocaleLowerCase('de-AT').includes(q)
+);
+}
+}
+
+result.sort((a,b)=>
 b.document_date.localeCompare(a.document_date)||
 b.created_at.localeCompare(a.created_at)
 );
 
-for(const entry of docs){
+const limit=$(
+kindId(kind)+'ArchiveLimit'
+).value;
+
+const total=result.length;
+
+if(limit!=='all'){
+result=result.slice(0,Number(limit));
+}
+
+return {result,total};
+}
+
+function renderArchive(kind,docs){
+const id=kindId(kind);
+const target=$(id+'Archive');
+
+target.replaceChildren();
+
+const {result,total}=archiveFilter(kind,docs);
+
+$(id+'ArchiveInfo').textContent=
+total+' Beleg(e) gefunden. '+
+result.length+' angezeigt.';
+
+if(!result.length){
+target.textContent=
+'Keine passenden Belege gefunden.';
+return;
+}
+
+for(const entry of result){
 const d=entry.extracted_data||{};
 const row=document.createElement('div');
 row.className='entry';
@@ -978,11 +1724,13 @@ dateLabel(entry.document_date);
 
 const sub=document.createElement('small');
 sub.textContent=
-(kind==='invoice'?(entry.supplier||'Lieferant unbekannt')+' · ':'')+
+(kind==='invoice'?
+(entry.supplier||'Lieferant unbekannt')+' · ':'')+
 euro(d.gross_total);
 
 const uploaded=document.createElement('small');
-uploaded.textContent='Hochgeladen am '+stamp(entry.created_at);
+uploaded.textContent=
+'Hochgeladen am '+stamp(entry.created_at);
 
 row.append(title,sub,uploaded);
 
@@ -998,16 +1746,20 @@ p.textContent=
 'Brutto: '+euro(d.gross_total)+
 ' · Netto: '+euro(d.net_total)+
 ' · USt: '+euro(d.vat_total)+
-(kind==='cash_report'
-?' · Bar: '+euro(d.cash_total)+
+(kind==='cash_report'?
+' · Bar: '+euro(d.cash_total)+
 ' · Karte: '+euro(d.card_total)+
 ' · Bons: '+(d.receipt_count??'–')
-:' · Rechnungsnummer: '+(entry.invoice_number||'–')+
-' · Status: '+({
+:
+' · Rechnungsnummer: '+
+(entry.invoice_number||'–')+
+' · Status: '+
+({
 paid:'Bezahlt',
 open:'Offen',
 unknown:'Nicht angegeben'
-}[d.payment_status]||'Nicht angegeben'));
+}[d.payment_status]||'Nicht angegeben')
+);
 
 detail.append(p);
 
@@ -1016,10 +1768,16 @@ const bons=document.createElement('p');
 bons.className='muted';
 
 bons.textContent='Ø Bonwert: '+
-(validNumber(d.receipt_count)&&Number(d.receipt_count)>0&&
+(
+validNumber(d.receipt_count)&&
+Number(d.receipt_count)>0&&
 validNumber(d.gross_total)
-?euro(Number(d.gross_total)/Number(d.receipt_count))
-:'–');
+?euro(
+Number(d.gross_total)/
+Number(d.receipt_count)
+)
+:'–'
+);
 
 detail.append(bons);
 
@@ -1030,8 +1788,11 @@ detail.append(spart,categoryTable([entry]));
 const top=document.createElement('p');
 top.className='muted';
 top.textContent='Top 3: '+
-(aggregateItems([entry]).slice(0,3)
-.map(x=>x.name+' ('+x.quantity+')').join(' · ')||'–');
+(
+aggregateItems([entry]).slice(0,3)
+.map(x=>x.name+' ('+x.quantity+')')
+.join(' · ')||'–'
+);
 
 detail.append(top);
 }
@@ -1042,13 +1803,17 @@ tax.className='muted';
 
 tax.textContent='Steuergruppen: '+
 d.tax_breakdown.map(t=>
-(t.rate??'?')+'%: Netto '+euro(t.net)+', USt '+euro(t.vat)
+(t.rate??'?')+'%: Netto '+
+euro(t.net)+', USt '+euro(t.vat)
 ).join(' | ');
 
 detail.append(tax);
 }
 
 if(d.sales_items?.length){
+const scroll=document.createElement('div');
+scroll.className='table-scroll';
+
 const table=document.createElement('table');
 const head=document.createElement('tr');
 
@@ -1067,9 +1832,12 @@ const td=document.createElement('td');
 td.textContent=value??'–';
 tr.append(td);
 }
+
 table.append(tr);
 }
-detail.append(table);
+
+scroll.append(table);
+detail.append(scroll);
 }
 
 row.append(detail);
@@ -1095,8 +1863,10 @@ const {data,error}=await db.from('documents')
 .select('id');
 
 if(error||!data?.length){
-alert('Löschen fehlgeschlagen: '+
-(error?.message||'Keine Berechtigung'));
+alert(
+'Löschen fehlgeschlagen: '+
+(error?.message||'Keine Berechtigung')
+);
 del.disabled=false;
 return;
 }
@@ -1111,53 +1881,7 @@ target.append(row);
 }
 }
 
-function sumField(docs,key){
-const known=docs.filter(d=>validNumber(d.extracted_data?.[key]));
-
-return {
-value:known.reduce((s,d)=>s+Number(d.extracted_data[key]),0),
-complete:known.length===docs.length
-};
-}
-
-async function loadAll(){
-if(!businessId)return;
-
-const month=$('month').value;
-if(!/^\d{4}-\d{2}$/.test(month))return;
-
-const [y,m]=month.split('-').map(Number);
-const start=month+'-01';
-const end=
-`${m===12?y+1:y}-${String(m===12?1:m+1).padStart(2,'0')}-01`;
-
-try{
-const [cash,invoices]=await Promise.all([
-allDocs('cash_report',start,end),
-allDocs('invoice',start,end)
-]);
-
-renderArchive('cash_report',cash);
-renderArchive('invoice',invoices);
-
-const byDay=new Map();
-let duplicates=0;
-
-for(const d of cash){
-const old=byDay.get(d.document_date);
-
-if(old){
-duplicates++;
-if(d.created_at>old.created_at){
-byDay.set(d.document_date,d);
-}
-}else{
-byDay.set(d.document_date,d);
-}
-}
-
-const unique=[...byDay.values()];
-
+function updateDashboard(unique,invoices,duplicates){
 const gross=sumField(unique,'gross_total');
 const net=sumField(unique,'net_total');
 const vat=sumField(unique,'vat_total');
@@ -1168,58 +1892,79 @@ const bons=sumField(unique,'receipt_count');
 const expense=sumField(invoices,'net_total');
 
 $('gross').textContent=
-unique.length&&gross.complete?euro(gross.value):'–';
+unique.length&&gross.complete?
+euro(gross.value):'–';
 
 $('net').textContent=
-unique.length&&net.complete?euro(net.value):'–';
+unique.length&&net.complete?
+euro(net.value):'–';
 
 $('vat').textContent=
-unique.length&&vat.complete?euro(vat.value):'–';
+unique.length&&vat.complete?
+euro(vat.value):'–';
 
 $('days').textContent=String(unique.length);
 
 $('average').textContent=
-unique.length&&gross.complete
-?euro(gross.value/unique.length):'–';
+unique.length&&gross.complete?
+euro(gross.value/unique.length):'–';
 
-$('invoices').textContent=String(invoices.length);
+$('invoices').textContent=
+String(invoices.length);
 
 $('cashTotal').textContent=
-unique.length&&bar.complete?euro(bar.value):'–';
+unique.length&&bar.complete?
+euro(bar.value):'–';
 
 $('cardTotal').textContent=
-unique.length&&card.complete?euro(card.value):'–';
+unique.length&&card.complete?
+euro(card.value):'–';
 
 $('otherTotal').textContent=
-unique.length&&other.complete?euro(other.value):'–';
+unique.length&&other.complete?
+euro(other.value):'–';
 
 $('receiptCount').textContent=
-unique.length&&bons.complete
-?new Intl.NumberFormat('de-AT').format(bons.value):'–';
+unique.length&&bons.complete?
+new Intl.NumberFormat('de-AT').format(bons.value)
+:'–';
 
 $('averageReceipt').textContent=
-unique.length&&gross.complete&&bons.complete&&bons.value>0
-?euro(gross.value/bons.value):'–';
+unique.length&&gross.complete&&
+bons.complete&&bons.value>0
+?euro(gross.value/bons.value)
+:'–';
 
 $('receiptsPerDay').textContent=
-unique.length&&bons.complete
-?new Intl.NumberFormat('de-AT',{
+unique.length&&bons.complete?
+new Intl.NumberFormat('de-AT',{
 maximumFractionDigits:1
 }).format(bons.value/unique.length)
 :'–';
 
 const paymentComplete=
-unique.length&&gross.complete&&bar.complete&&
-card.complete&&other.complete;
+unique.length&&gross.complete&&
+bar.complete&&card.complete&&other.complete;
 
 if(paymentComplete){
-const difference=
-Math.round(
+const diff=Math.round(
 (bar.value+card.value+other.value-gross.value)*100
 )/100;
 
 $('paymentCheck').textContent=
-Math.abs(difference)<=.05?'✓ Stimmt':euro(difference);
+Math.abs(diff)<=.05?'✓ Stimmt':euro(diff);
+}else if(
+unique.length&&gross.complete&&
+bar.complete&&card.complete
+){
+const difference=Math.round(
+(gross.value-bar.value-card.value)*100
+)/100;
+
+$('paymentCheck').textContent=
+Math.abs(difference)<=.05?
+'Bar + Karte stimmt*':
+'Rest: '+euro(difference);
 }else{
 $('paymentCheck').textContent='–';
 }
@@ -1229,12 +1974,14 @@ categoryTable(unique,true)
 );
 
 $('expenses').textContent=
-invoices.length&&expense.complete
-?euro(expense.value):'–';
+invoices.length&&expense.complete?
+euro(expense.value):'–';
 
 $('balance').textContent=
-unique.length&&net.complete&&invoices.length&&expense.complete
-?euro(net.value-expense.value):'–';
+unique.length&&net.complete&&
+invoices.length&&expense.complete
+?euro(net.value-expense.value)
+:'–';
 
 const notes=[
 'Nur gespeicherte Belege des ausgewählten Monats.',
@@ -1244,7 +1991,8 @@ const notes=[
 if(duplicates){
 notes.push(
 'Achtung: '+duplicates+
-' doppelte Tagesabrechnung(en) im Archiv. Im Cockpit zählt je Datum nur die zuletzt hochgeladene.'
+' doppelte Tagesabrechnung(en) vorhanden. '+
+'Im Dashboard zählt je Datum nur die zuletzt hochgeladene.'
 );
 }
 
@@ -1253,17 +2001,28 @@ notes.push(
 'Noch keine Rechnungen erfasst: Ausgaben und Saldo nicht berechenbar.'
 );
 }else if(!expense.complete){
-notes.push('Rechnungs-Nettoangaben unvollständig.');
+notes.push(
+'Rechnungs-Nettoangaben unvollständig.'
+);
 }
 
 if(unique.length&&!bons.complete){
 notes.push(
-'Bonanzahl ist noch nicht für alle erfassten Tage vorhanden.'
+'Bonanzahl nicht für alle Tage vorhanden.'
+);
+}
+
+if(!paymentComplete&&unique.length&&
+gross.complete&&bar.complete&&card.complete){
+notes.push(
+'*Sonstige Zahlungsarten sind nicht vollständig ausgewiesen. '+
+'Der Vergleich Bar + Karte ist daher kein vollständiger Zahlungsabgleich.'
 );
 }
 
 notes.push(
-'Der Saldo ist kein Gewinn und keine Liquiditätsrechnung; Fixkosten und Zahlungen können fehlen.'
+'Der Saldo ist kein Gewinn und keine Liquiditätsrechnung; '+
+'Fixkosten und Zahlungen können fehlen.'
 );
 
 $('dashboardNote').textContent=notes.join(' ');
@@ -1273,7 +2032,8 @@ top.replaceChildren();
 
 for(const item of aggregateItems(unique).slice(0,3)){
 const li=document.createElement('li');
-li.textContent=item.name+' · '+item.quantity+' Stück';
+li.textContent=
+item.name+' · '+item.quantity+' Stück';
 top.append(li);
 }
 
@@ -1281,12 +2041,156 @@ if(!top.children.length){
 top.textContent='Noch keine Artikel erfasst.';
 }
 
-$('last').textContent=cash.length
-?'Zuletzt hochgeladen: '+
-stamp([...cash].sort(
+$('last').textContent=unique.length?
+'Zuletzt hochgeladen: '+
+stamp([...unique].sort(
 (a,b)=>b.created_at.localeCompare(a.created_at)
 )[0].created_at)
 :'Noch keine Tagesabrechnung in diesem Monat.';
+}
+
+function renderAnalysis(unique){
+const summary=categorySummary(unique);
+const best=summary.rows[0];
+
+$('bestCategory').textContent=
+best?.name||'–';
+
+$('bestCategoryGross').textContent=
+best?euro(best.gross):'–';
+
+const daily=unique.filter(x=>
+validNumber(x.extracted_data?.gross_total)
+).sort((a,b)=>
+Number(b.extracted_data.gross_total)-
+Number(a.extracted_data.gross_total)
+);
+
+const strongest=daily[0];
+
+$('bestDay').textContent=
+strongest?dateLabel(strongest.document_date):'–';
+
+$('bestDayGross').textContent=
+strongest?
+euro(strongest.extracted_data.gross_total):'–';
+
+$('analysisCategories').replaceChildren(
+categoryTable(unique,true)
+);
+
+const trend=$('dailyTrend');
+trend.replaceChildren();
+
+if(!daily.length){
+trend.textContent='Noch keine Tagesumsätze vorhanden.';
+}else{
+const max=Math.max(
+...daily.map(x=>Number(x.extracted_data.gross_total))
+);
+
+for(const doc of [...daily].sort(
+(a,b)=>a.document_date.localeCompare(b.document_date)
+)){
+const value=Number(doc.extracted_data.gross_total);
+
+const row=document.createElement('div');
+row.className='trend-row';
+
+const date=document.createElement('span');
+date.textContent=doc.document_date.slice(8,10)+'.'+
+doc.document_date.slice(5,7)+'.';
+
+const track=document.createElement('div');
+track.className='bar-track';
+
+const fill=document.createElement('div');
+fill.className='bar-fill';
+fill.style.width=
+(max>0?value/max*100:0)+'%';
+
+track.append(fill);
+
+const amount=document.createElement('span');
+amount.className='right';
+amount.textContent=euro(value);
+
+row.append(date,track,amount);
+trend.append(row);
+}
+}
+
+const items=$('analysisItems');
+items.replaceChildren();
+
+const all=aggregateItems(unique);
+
+if(!all.length){
+items.textContent='Noch keine Artikelmengen vorhanden.';
+}else{
+const scroll=document.createElement('div');
+scroll.className='table-scroll';
+
+const table=document.createElement('table');
+const head=document.createElement('tr');
+
+for(const value of ['Artikel','Stück']){
+const th=document.createElement('th');
+th.textContent=value;
+head.append(th);
+}
+table.append(head);
+
+for(const item of all.slice(0,20)){
+const tr=document.createElement('tr');
+
+for(const value of [item.name,item.quantity]){
+const td=document.createElement('td');
+td.textContent=value;
+tr.append(td);
+}
+
+table.append(tr);
+}
+
+scroll.append(table);
+items.append(scroll);
+}
+}
+
+async function loadAll(){
+if(!businessId)return;
+
+const month=$('month').value;
+if(!/^\d{4}-\d{2}$/.test(month))return;
+
+const {start,end}=monthBounds(month);
+
+try{
+const [cash,invoices]=await Promise.all([
+allDocs('cash_report',start,end),
+allDocs('invoice',start,end)
+]);
+
+monthlyCash=cash;
+monthlyInvoices=invoices;
+
+const {docs:unique,duplicates}=uniqueDays(cash);
+
+updateDashboard(unique,invoices,duplicates);
+
+$('analysisMonth').value=month;
+renderAnalysis(unique);
+
+if(!$('cashArchiveMonth').value){
+$('cashArchiveMonth').value=month;
+}
+
+if(!$('invoiceArchiveMonth').value){
+$('invoiceArchiveMonth').value=month;
+}
+
+await refreshArchives();
 
 }catch(e){
 $('dashboardNote').textContent=
@@ -1294,10 +2198,59 @@ $('dashboardNote').textContent=
 }
 }
 
+async function refreshArchives(){
+if(!businessId)return;
+
+try{
+const cashMonth=$('cashArchiveMonth').value;
+const invoiceMonth=$('invoiceArchiveMonth').value;
+
+let cash=monthlyCash;
+let invoices=monthlyInvoices;
+
+if(cashMonth&&cashMonth!==$('month').value){
+const b=monthBounds(cashMonth);
+cash=await allDocs('cash_report',b.start,b.end);
+}
+
+if(invoiceMonth&&invoiceMonth!==$('month').value){
+const b=monthBounds(invoiceMonth);
+invoices=await allDocs('invoice',b.start,b.end);
+}
+
+renderArchive('cash_report',cash);
+renderArchive('invoice',invoices);
+
+}catch(e){
+$('cashArchiveInfo').textContent=
+'Archivfehler: '+e.message;
+}
+}
+
 $('month').onchange=loadAll;
 
+$('analysisMonth').onchange=()=>{
+$('month').value=$('analysisMonth').value;
+loadAll();
+};
+
+$('cashArchiveMonth').onchange=()=>{
+$('cashArchiveDate').value='';
+refreshArchives();
+};
+
+$('invoiceArchiveMonth').onchange=refreshArchives;
+
+$('cashArchiveDate').onchange=refreshArchives;
+$('cashArchiveLimit').onchange=refreshArchives;
+
+$('invoiceSearch').oninput=refreshArchives;
+$('invoiceArchiveLimit').onchange=refreshArchives;
+
 async function enter(){
-const {data:{user:u},error}=await db.auth.getUser();
+const {data:{user:u},error}=
+await db.auth.getUser();
+
 if(error||!u)return;
 
 const r=await db.from('business_members')
@@ -1305,19 +2258,23 @@ const r=await db.from('business_members')
 .eq('user_id',u.id);
 
 if(r.error||!r.data?.length){
-throw Error(r.error?.message||'Kein Betrieb zugeordnet');
+throw Error(
+r.error?.message||'Kein Betrieb zugeordnet'
+);
 }
 
 const member=
-r.data.find(x=>x.businesses?.name?.includes('Friedrich'))||
-r.data[0];
+r.data.find(x=>
+x.businesses?.name?.includes('Friedrich')
+)||r.data[0];
 
 user=u;
 businessId=member.business_id;
 role=member.role;
 
 $('business').textContent=
-(member.businesses?.name||'Das Friedrich')+' · '+role;
+(member.businesses?.name||'Das Friedrich')+
+' · '+role;
 
 $('login').classList.add('hidden');
 $('app').classList.remove('hidden');
@@ -1328,15 +2285,21 @@ year:'numeric',
 month:'2-digit'
 }).formatToParts(new Date());
 
-$('month').value=
+const month=
 parts.find(p=>p.type==='year').value+'-'+
 parts.find(p=>p.type==='month').value;
+
+$('month').value=month;
+$('analysisMonth').value=month;
+$('cashArchiveMonth').value=month;
+$('invoiceArchiveMonth').value=month;
 
 await loadAll();
 }
 
 $('loginForm').onsubmit=async e=>{
 e.preventDefault();
+
 message('loginStatus','Anmeldung läuft …');
 
 const {error}=await db.auth.signInWithPassword({
@@ -1358,9 +2321,11 @@ message('loginStatus',e.message,true);
 
 $('logout').onclick=async()=>{
 await db.auth.signOut();
+
 user=null;
 businessId=null;
 role=null;
+
 $('app').classList.add('hidden');
 $('login').classList.remove('hidden');
 };
