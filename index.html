@@ -45,7 +45,6 @@ table{width:100%;border-collapse:collapse;font-size:13px}
 td,th{padding:7px 4px;border-bottom:1px solid #dce4ec;text-align:left}
 td:last-child,th:last-child{text-align:right}
 .section{font-size:21px;font-weight:800;margin:25px 2px 8px}
-.warning{background:#fff7e3;border-radius:8px;padding:10px;font-size:13px}
 .row{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
 footer{text-align:center;color:#718096;padding:20px;font-size:12px}
 @media(max-width:430px){.metric strong{font-size:19px}}
@@ -56,12 +55,17 @@ footer{text-align:center;color:#718096;padding:20px;font-size:12px}
 <b>GastroPilot</b>
 <small>Das Friedrich · Betriebsübersicht</small>
 </header>
+
 <main>
 <section id="login" class="card">
 <h2>Anmelden</h2>
 <form id="loginForm">
-<label>E-Mail<input id="email" type="email" value="office@markusruess.at" required></label>
-<label>Passwort<input id="password" type="password" required></label>
+<label>E-Mail
+<input id="email" type="email" value="office@markusruess.at" required>
+</label>
+<label>Passwort
+<input id="password" type="password" required>
+</label>
 <button>Anmelden</button>
 </form>
 <div id="loginStatus" class="status hidden"></div>
@@ -101,8 +105,10 @@ footer{text-align:center;color:#718096;padding:20px;font-size:12px}
 <div class="metric"><small>Einnahmen – Ausgaben (netto)</small><strong id="balance">–</strong></div>
 </div>
 <p id="dashboardNote" class="muted"></p>
-<h3>Spartenumsätze im Monat</h3>
+
+<h3>Artikelgruppenstatistik – Monatsumsätze</h3>
 <div id="categoryTotals"></div>
+
 <h3>Top 3 verkaufte Artikel</h3>
 <ol id="top"></ol>
 <p id="last" class="muted"></p>
@@ -111,7 +117,7 @@ footer{text-align:center;color:#718096;padding:20px;font-size:12px}
 <div class="section">Tagesabrechnungen</div>
 <section class="card">
 <h2>Tagesabrechnung erfassen</h2>
-<p class="muted">Mehrere Fotos einer Abrechnung gemeinsam auswählen. Maximal 12 Bilder.</p>
+<p class="muted">Mehrere Fotos einer Tagesabrechnung gemeinsam auswählen. Maximal 12 Bilder.</p>
 <label>Fotos auswählen
 <input id="cashFiles" type="file" accept="image/jpeg,image/png,image/webp" multiple>
 </label>
@@ -218,65 +224,105 @@ const n=Number(item.quantity);
 if(!name||!Number.isFinite(n)||n<=0)continue;
 const key=name.toLocaleLowerCase('de-AT');
 const old=map.get(key);
-map.set(key,{name:old?.name||name,quantity:(old?.quantity||0)+n});
+map.set(key,{
+name:old?.name||name,
+quantity:(old?.quantity||0)+n
+});
 }
 }
 return [...map.values()].sort(
-(a,b)=>b.quantity-a.quantity||a.name.localeCompare(b.name,'de-AT')
+(a,b)=>b.quantity-a.quantity||
+a.name.localeCompare(b.name,'de-AT')
 );
 }
 
 function categories(doc){
-const a=doc?.category_sales||doc?.department_sales||doc?.spartenumsaetze||[];
+const a=
+doc?.category_sales||
+doc?.department_sales||
+doc?.spartenumsaetze||[];
+
 if(!Array.isArray(a))return [];
-return a.filter(x=>x&&typeof x==='object').map(x=>({
+
+return a.filter(x=>x&&typeof x==='object')
+.map(x=>{
+const raw=x.gross??x.gross_total??x.amount;
+return {
 name:String(x.name||x.category||x.sparte||'').trim(),
-gross:Number(x.gross??x.gross_total??x.amount)
-})).filter(x=>x.name&&Number.isFinite(x.gross));
+gross:raw===null||raw===undefined||raw===''?null:Number(raw),
+net:validNumber(x.net)?Number(x.net):null,
+vat:validNumber(x.vat)?Number(x.vat):null,
+quantity:validNumber(x.quantity)?Number(x.quantity):null
+};
+}).filter(x=>x.name);
 }
 
 function categoryEditor(box,doc){
 const wrap=document.createElement('div');
 wrap.className='category-editor';
+
 const h=document.createElement('h3');
-h.textContent='Spartenumsätze laut Kassenbeleg';
+h.textContent='Artikelgruppenstatistik laut Kassenbeleg';
 wrap.append(h);
+
 const help=document.createElement('p');
 help.className='muted';
-help.textContent='Nur Beträge vom Originalbeleg eintragen. Fehlende Sparten können ergänzt werden.';
+help.textContent='Bitte erkannte Artikelgruppen und Beträge kontrollieren. Fehlende Werte nur anhand des Originalbelegs ergänzen.';
 wrap.append(help);
+
 const lines=document.createElement('div');
 wrap.append(lines);
 
-const add=(name='',gross='')=>{
+const add=(name='',gross='',net='',vat='',quantity='')=>{
 const line=document.createElement('div');
-line.className='grid category-line';
-const n=document.createElement('input');
-n.placeholder='Sparte (Originalbezeichnung)';
-n.className='cat-name';
-n.value=name;
-const g=document.createElement('input');
-g.type='number';
-g.min='0';
-g.step='0.01';
-g.placeholder='Brutto €';
-g.className='cat-gross';
-g.value=gross;
+line.className='category-line result';
+
+const fields=[
+['Artikelgruppe','cat-name',name,'text'],
+['Brutto (€)','cat-gross',gross,'number'],
+['Netto (€), falls ausgewiesen','cat-net',net,'number'],
+['USt (€), falls ausgewiesen','cat-vat',vat,'number'],
+['Menge, falls ausgewiesen','cat-quantity',quantity,'number']
+];
+
+for(const [label,cls,value,type] of fields){
+const field=document.createElement('label');
+field.textContent=label;
+const input=document.createElement('input');
+input.className=cls;
+input.type=type;
+input.value=value??'';
+if(type==='number'){
+input.step='0.01';
+}
+field.append(input);
+line.append(field);
+}
+
 const remove=document.createElement('button');
 remove.className='secondary';
-remove.textContent='Entfernen';
+remove.textContent='Artikelgruppe entfernen';
 remove.onclick=()=>line.remove();
-line.append(n,g,remove);
+line.append(remove);
 lines.append(line);
 };
 
-for(const x of categories(doc))add(x.name,x.gross);
+for(const x of categories(doc)){
+add(
+x.name,
+x.gross??'',
+x.net??'',
+x.vat??'',
+x.quantity??''
+);
+}
 
 const button=document.createElement('button');
 button.className='secondary';
-button.textContent='+ Sparte hinzufügen';
+button.textContent='+ Artikelgruppe hinzufügen';
 button.onclick=()=>add();
 wrap.append(button);
+
 box.append(wrap);
 }
 
@@ -285,11 +331,27 @@ const out=[];
 for(const line of box.querySelectorAll('.category-line')){
 const name=line.querySelector('.cat-name').value.trim();
 const raw=line.querySelector('.cat-gross').value.trim();
-if(!name&&!raw)continue;
-if(!name||raw===''||!Number.isFinite(Number(raw))||Number(raw)<0){
-throw Error('Sparte: Name und gültigen Bruttobetrag eingeben');
-}
-out.push({name,gross:Math.round(Number(raw)*100)/100});
+const netRaw=line.querySelector('.cat-net').value.trim();
+const vatRaw=line.querySelector('.cat-vat').value.trim();
+const qtyRaw=line.querySelector('.cat-quantity').value.trim();
+
+if(!name&&!raw&&!netRaw&&!vatRaw&&!qtyRaw)continue;
+if(!name)throw Error('Artikelgruppe ohne Bezeichnung');
+
+const parse=(value,label)=>{
+if(value==='')return null;
+const n=Number(value);
+if(!Number.isFinite(n))throw Error('Ungültiger Wert: '+label);
+return Math.round(n*100)/100;
+};
+
+out.push({
+name,
+gross:parse(raw,'Brutto'),
+net:parse(netRaw,'Netto'),
+vat:parse(vatRaw,'USt'),
+quantity:parse(qtyRaw,'Menge')
+});
 }
 return out;
 }
@@ -301,7 +363,9 @@ let reported=0;
 for(const d of docs){
 const c=categories(d.extracted_data||d);
 if(c.length)reported++;
+
 for(const x of c){
+if(!validNumber(x.gross))continue;
 const key=x.name.toLocaleLowerCase('de-AT');
 const old=map.get(key);
 map.set(key,{
@@ -314,14 +378,14 @@ gross:(old?.gross||0)+x.gross
 const box=document.createElement('div');
 
 if(!map.size){
-box.textContent='Noch keine Spartenbeträge gespeichert.';
+box.textContent='Noch keine Artikelgruppenumsätze gespeichert.';
 return box;
 }
 
 const table=document.createElement('table');
 const head=document.createElement('tr');
 
-for(const text of ['Sparte','Brutto','Anteil']){
+for(const text of ['Rang / Artikelgruppe','Brutto','Anteil']){
 const th=document.createElement('th');
 th.textContent=text;
 head.append(th);
@@ -329,29 +393,39 @@ head.append(th);
 table.append(head);
 
 const total=[...map.values()].reduce((s,x)=>s+x.gross,0);
+const sorted=[...map.values()].sort((a,b)=>b.gross-a.gross);
 
-for(const x of [...map.values()].sort((a,b)=>b.gross-a.gross)){
+sorted.forEach((x,i)=>{
 const tr=document.createElement('tr');
 const share=total>0
-?(x.gross/total*100).toLocaleString('de-AT',{maximumFractionDigits:1})+' %'
+?(x.gross/total*100).toLocaleString('de-AT',{
+maximumFractionDigits:1
+})+' %'
 :'–';
 
-for(const value of [x.name,euro(x.gross),share]){
+for(const value of [
+(i+1)+'. '+x.name,
+euro(x.gross),
+share
+]){
 const td=document.createElement('td');
 td.textContent=value;
 tr.append(td);
 }
 table.append(tr);
-}
+});
 
 box.append(table);
 
 const note=document.createElement('p');
 note.className='muted';
 note.textContent=
-'Anteile beziehen sich auf die Summe der erfassten Sparten. '+
-(monthly?'Spartenangaben vorhanden für '+reported+' von '+docs.length+' Umsatztagen.':'');
+'Prozentanteile beziehen sich auf die Summe der erfassten Artikelgruppen. '+
+(monthly
+?'Artikelgruppen vorhanden für '+reported+' von '+docs.length+' Umsatztagen.'
+:'');
 box.append(note);
+
 return box;
 }
 
@@ -360,10 +434,12 @@ const s=state[kind];
 
 for(const f of [...list]){
 if(s.files.length>=12)break;
+
 const allowed=[
 'image/jpeg','image/png','image/webp',
 ...(kind==='invoice'?['application/pdf']:[])
 ];
+
 if(!allowed.includes(f.type))continue;
 
 const already=s.files.some(x=>
@@ -371,6 +447,7 @@ x.file.name===f.name&&
 x.file.size===f.size&&
 x.file.lastModified===f.lastModified
 );
+
 if(already)continue;
 
 s.files.push({
@@ -378,6 +455,7 @@ file:f,
 url:f.type==='application/pdf'?null:URL.createObjectURL(f)
 });
 }
+
 s.results=[];
 $(kindId(kind)+'Results').replaceChildren();
 renderFiles(kind);
@@ -385,7 +463,9 @@ renderFiles(kind);
 
 function clearFiles(kind){
 const s=state[kind];
-s.files.forEach(f=>{if(f.url)URL.revokeObjectURL(f.url)});
+s.files.forEach(f=>{
+if(f.url)URL.revokeObjectURL(f.url);
+});
 s.files=[];
 s.results=[];
 $(kindId(kind)+'Files').value='';
@@ -435,6 +515,7 @@ box.append(tile);
 $(id+'Count').textContent=s.files.length
 ?s.files.length+' Datei(en) ausgewählt'
 :'Keine Dateien ausgewählt.';
+
 $(id+'Scan').disabled=locked||!s.files.length;
 }
 
@@ -445,11 +526,14 @@ $(id+'Files').onchange=e=>{
 addFiles(kind,e.target.files);
 e.target.value='';
 };
+
 $(id+'Camera').onclick=()=>$(id+'CameraInput').click();
+
 $(id+'CameraInput').onchange=e=>{
 addFiles(kind,e.target.files);
 e.target.value='';
 };
+
 $(id+'Scan').onclick=()=>scan(kind);
 $(id+'Refresh').onclick=()=>loadAll();
 }
@@ -475,6 +559,7 @@ img.onerror=()=>{
 URL.revokeObjectURL(url);
 reject(Error('Bild nicht lesbar'));
 };
+
 img.src=url;
 });
 }
@@ -483,6 +568,7 @@ async function pdfImages(file){
 const pdfjs=await import(
 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.min.mjs'
 );
+
 pdfjs.GlobalWorkerOptions.workerSrc=
 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.worker.min.mjs';
 
@@ -490,28 +576,36 @@ const pdf=await pdfjs.getDocument({
 data:new Uint8Array(await file.arrayBuffer())
 }).promise;
 
-if(pdf.numPages>12)throw Error('PDF hat mehr als 12 Seiten. Bitte aufteilen.');
+if(pdf.numPages>12){
+throw Error('PDF hat mehr als 12 Seiten. Bitte aufteilen.');
+}
 
 const out=[];
+
 for(let n=1;n<=pdf.numPages;n++){
 const page=await pdf.getPage(n);
 const base=page.getViewport({scale:1});
 const v=page.getViewport({
 scale:Math.min(2,1700/Math.max(base.width,base.height))
 });
+
 const canvas=document.createElement('canvas');
 canvas.width=Math.round(v.width);
 canvas.height=Math.round(v.height);
+
 await page.render({
 canvasContext:canvas.getContext('2d'),
 viewport:v
 }).promise;
+
 const blob=await new Promise(resolve=>
 canvas.toBlob(resolve,'image/jpeg',.8)
 );
+
 if(!blob)throw Error('PDF-Seite nicht lesbar');
 out.push(blob);
 }
+
 return out;
 }
 
@@ -537,11 +631,14 @@ $(id+'Results').replaceChildren();
 
 try{
 const blobs=[];
+
 for(const entry of state[kind].files){
 const b=entry.file.type==='application/pdf'
 ?await pdfImages(entry.file)
 :[await imageBlob(entry.file)];
+
 blobs.push(...b);
+
 if(blobs.length>12){
 throw Error('Mehr als 12 Seiten/Bilder. Bitte weniger Dateien auswählen.');
 }
@@ -558,19 +655,27 @@ mime_type:'image/jpeg'
 message(id+'Status','Auswertung läuft …');
 
 const {data,error}=await db.functions.invoke('analyze-receipt',{
-body:{business_id:businessId,mode:kind,images}
+body:{
+business_id:businessId,
+mode:kind,
+images
+}
 });
 
 if(error)throw error;
+
 if(!data?.success||!data.documents?.length){
 throw Error(data?.error||'Keine Belege erkannt');
 }
 
 state[kind].results=data.documents;
 renderResults(kind);
-message(id+'Status',
-data.documents.length+' Beleg(e) erkannt. Bitte prüfen und speichern.'
+
+message(
+id+'Status',
+data.documents.length+' Beleg(e) erkannt. Bitte alle Werte kontrollieren.'
 );
+
 }catch(e){
 message(id+'Status','Fehler: '+e.message,true);
 }finally{
@@ -583,6 +688,7 @@ renderFiles('invoice');
 function makeField(label,key,value,type='text'){
 const wrap=document.createElement('label');
 wrap.textContent=label;
+
 const input=document.createElement('input');
 input.dataset.key=key;
 input.type=type;
@@ -644,6 +750,7 @@ grid.append(makeField(label,key,doc[key],type));
 if(kind==='invoice'){
 const label=document.createElement('label');
 label.textContent='Zahlungsstatus';
+
 const select=document.createElement('select');
 select.dataset.key='payment_status';
 
@@ -657,6 +764,7 @@ opt.value=value;
 opt.textContent=text;
 select.append(opt);
 }
+
 select.value=doc.payment_status||'unknown';
 label.append(select);
 grid.append(label);
@@ -664,7 +772,9 @@ grid.append(label);
 
 box.append(grid);
 
-if(kind==='cash_report')categoryEditor(box,doc);
+if(kind==='cash_report'){
+categoryEditor(box,doc);
+}
 
 const details=document.createElement('details');
 const sum=document.createElement('summary');
@@ -677,6 +787,7 @@ pre.textContent=JSON.stringify({
 tax_breakdown:doc.tax_breakdown||[],
 sales_items:doc.sales_items||[]
 },null,2);
+
 details.append(pre);
 box.append(details);
 
@@ -695,12 +806,15 @@ target.append(box);
 function numeric(raw,key){
 if(raw==='')return null;
 const n=Number(raw);
+
 if(!Number.isFinite(n)||n<0){
 throw Error('Ungültiger Betrag bei '+key);
 }
+
 if(key==='receipt_count'&&!Number.isInteger(n)){
 throw Error('Bonanzahl muss ganzzahlig sein');
 }
+
 return key==='receipt_count'?n:Math.round(n*100)/100;
 }
 
@@ -711,10 +825,12 @@ locked=true;
 button.disabled=true;
 msg.className='status';
 msg.textContent='Prüfe Beleg …';
+
 let saved=false;
 
 try{
 const values={};
+
 box.querySelectorAll('[data-key]').forEach(el=>{
 values[el.dataset.key]=el.value.trim();
 });
@@ -753,7 +869,7 @@ if(kind==='cash_report'){
 reviewed.category_sales=readCategories(box);
 
 const {data,error}=await db.from('documents')
-.select('id,created_at,extracted_data')
+.select('id,created_at')
 .eq('business_id',businessId)
 .eq('document_type','cash_report')
 .eq('document_date',reviewed.date);
@@ -764,7 +880,7 @@ if(data?.length){
 throw Error(
 'Für '+dateLabel(reviewed.date)+
 ' ist bereits eine Tagesabrechnung gespeichert. '+
-'Bitte den vorhandenen Beleg im Archiv prüfen oder vor einer Korrektur löschen.'
+'Bitte zuerst den vorhandenen Beleg im Archiv prüfen.'
 );
 }
 
@@ -777,6 +893,7 @@ const {data,error}=await db.from('documents')
 .eq('supplier',reviewed.supplier);
 
 if(error)throw error;
+
 if(data?.length){
 throw Error('Rechnung bereits vorhanden. Bitte Archiv prüfen.');
 }
@@ -798,6 +915,7 @@ if(error)throw error;
 saved=true;
 msg.textContent='Gespeichert. Dateiauswahl geleert.';
 button.textContent='Gespeichert';
+
 clearFiles(kind);
 await loadAll();
 
@@ -826,9 +944,11 @@ const {data,error}=await db.from('documents')
 .range(offset,offset+499);
 
 if(error)throw error;
+
 out.push(...data);
 if(data.length<500)break;
 }
+
 return out;
 }
 
@@ -863,6 +983,7 @@ euro(d.gross_total);
 
 const uploaded=document.createElement('small');
 uploaded.textContent='Hochgeladen am '+stamp(entry.created_at);
+
 row.append(title,sub,uploaded);
 
 const detail=document.createElement('details');
@@ -872,6 +993,7 @@ detail.append(summary);
 
 const p=document.createElement('p');
 p.className='muted';
+
 p.textContent=
 'Brutto: '+euro(d.gross_total)+
 ' · Netto: '+euro(d.net_total)+
@@ -892,15 +1014,17 @@ detail.append(p);
 if(kind==='cash_report'){
 const bons=document.createElement('p');
 bons.className='muted';
+
 bons.textContent='Ø Bonwert: '+
 (validNumber(d.receipt_count)&&Number(d.receipt_count)>0&&
 validNumber(d.gross_total)
 ?euro(Number(d.gross_total)/Number(d.receipt_count))
 :'–');
+
 detail.append(bons);
 
 const spart=document.createElement('h3');
-spart.textContent='Spartenumsätze';
+spart.textContent='Artikelgruppenstatistik';
 detail.append(spart,categoryTable([entry]));
 
 const top=document.createElement('p');
@@ -908,16 +1032,19 @@ top.className='muted';
 top.textContent='Top 3: '+
 (aggregateItems([entry]).slice(0,3)
 .map(x=>x.name+' ('+x.quantity+')').join(' · ')||'–');
+
 detail.append(top);
 }
 
 if(d.tax_breakdown?.length){
 const tax=document.createElement('p');
 tax.className='muted';
+
 tax.textContent='Steuergruppen: '+
 d.tax_breakdown.map(t=>
 (t.rate??'?')+'%: Netto '+euro(t.net)+', USt '+euro(t.vat)
 ).join(' | ');
+
 detail.append(tax);
 }
 
@@ -934,6 +1061,7 @@ table.append(head);
 
 for(const item of d.sales_items){
 const tr=document.createElement('tr');
+
 for(const value of [item.name,item.quantity]){
 const td=document.createElement('td');
 td.textContent=value??'–';
@@ -972,17 +1100,20 @@ alert('Löschen fehlgeschlagen: '+
 del.disabled=false;
 return;
 }
+
 await loadAll();
 };
 
 row.append(del);
 }
+
 target.append(row);
 }
 }
 
 function sumField(docs,key){
 const known=docs.filter(d=>validNumber(d.extracted_data?.[key]));
+
 return {
 value:known.reduce((s,d)=>s+Number(d.extracted_data[key]),0),
 complete:known.length===docs.length
@@ -1014,6 +1145,7 @@ let duplicates=0;
 
 for(const d of cash){
 const old=byDay.get(d.document_date);
+
 if(old){
 duplicates++;
 if(d.created_at>old.created_at){
@@ -1071,8 +1203,9 @@ unique.length&&gross.complete&&bons.complete&&bons.value>0
 
 $('receiptsPerDay').textContent=
 unique.length&&bons.complete
-?new Intl.NumberFormat('de-AT',{maximumFractionDigits:1})
-.format(bons.value/unique.length)
+?new Intl.NumberFormat('de-AT',{
+maximumFractionDigits:1
+}).format(bons.value/unique.length)
 :'–';
 
 const paymentComplete=
@@ -1081,7 +1214,9 @@ card.complete&&other.complete;
 
 if(paymentComplete){
 const difference=
-Math.round((bar.value+card.value+other.value-gross.value)*100)/100;
+Math.round(
+(bar.value+card.value+other.value-gross.value)*100
+)/100;
 
 $('paymentCheck').textContent=
 Math.abs(difference)<=.05?'✓ Stimmt':euro(difference);
@@ -1089,10 +1224,13 @@ Math.abs(difference)<=.05?'✓ Stimmt':euro(difference);
 $('paymentCheck').textContent='–';
 }
 
-$('categoryTotals').replaceChildren(categoryTable(unique,true));
+$('categoryTotals').replaceChildren(
+categoryTable(unique,true)
+);
 
 $('expenses').textContent=
-invoices.length&&expense.complete?euro(expense.value):'–';
+invoices.length&&expense.complete
+?euro(expense.value):'–';
 
 $('balance').textContent=
 unique.length&&net.complete&&invoices.length&&expense.complete
@@ -1111,13 +1249,17 @@ notes.push(
 }
 
 if(!invoices.length){
-notes.push('Noch keine Rechnungen erfasst: Ausgaben und Saldo nicht berechenbar.');
+notes.push(
+'Noch keine Rechnungen erfasst: Ausgaben und Saldo nicht berechenbar.'
+);
 }else if(!expense.complete){
 notes.push('Rechnungs-Nettoangaben unvollständig.');
 }
 
 if(unique.length&&!bons.complete){
-notes.push('Bonanzahl ist noch nicht für alle erfassten Tage vorhanden.');
+notes.push(
+'Bonanzahl ist noch nicht für alle erfassten Tage vorhanden.'
+);
 }
 
 notes.push(
@@ -1147,7 +1289,8 @@ stamp([...cash].sort(
 :'Noch keine Tagesabrechnung in diesem Monat.';
 
 }catch(e){
-$('dashboardNote').textContent='Fehler beim Laden: '+e.message;
+$('dashboardNote').textContent=
+'Fehler beim Laden: '+e.message;
 }
 }
 
