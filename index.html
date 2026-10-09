@@ -2,172 +2,157 @@
 <!doctype html>
 <html lang="de">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="theme-color" content="#14243a">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <title>GastoPilot · Das Friedrich</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#14243a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>GastoPilot · Das Friedrich</title>
 
-  <style>
-    :root {
-      font-family: system-ui,-apple-system,"Segoe UI",sans-serif;
-      color: #14243a;
-      background: #f4f7fa;
-    }
-
-    * { box-sizing: border-box; }
-    body { margin: 0; }
-
-    header {
-      background: #14243a;
-      color: white;
-      padding: 22px 18px;
-    }
-
-    header strong {
-      font-size: 26px;
-      letter-spacing: -.6px;
-    }
-
-    header small {
-      display: block;
-      color: #b8c7d6;
-      margin-top: 4px;
-    }
-
-    main {
-      max-width: 650px;
-      margin: 18px auto;
-      padding: 0 14px;
-    }
-
-    .card {
-      background: white;
-      border: 1px solid #e1e7ee;
-      border-radius: 16px;
-      padding: 20px;
-      margin: 14px 0;
-      box-shadow: 0 4px 18px #14243a0b;
-    }
-
-    h2 { margin: 0 0 15px; font-size: 19px; }
-    h3 { font-size: 16px; margin-top: 22px; }
-
-    label {
-      display: block;
-      font-weight: 650;
-      margin: 14px 0 6px;
-    }
-
-    input, select, textarea {
-      width: 100%;
-      padding: 12px;
-      border: 1px solid #c5d0db;
-      border-radius: 10px;
-      font-size: 16px;
-      background: white;
-      color: #14243a;
-    }
-
-    textarea { min-height: 80px; }
-
-    button {
-      background: #167a61;
-      color: white;
-      border: 0;
-      border-radius: 11px;
-      padding: 13px 17px;
-      font-size: 16px;
-      font-weight: 700;
-      cursor: pointer;
-      width: 100%;
-      margin-top: 14px;
-    }
-
-    button.secondary {
-      background: #e7edf3;
-      color: #26394b;
-    }
-
-    button:disabled {
-      opacity: .55;
-      cursor: wait;
-    }
-
-    .hidden { display: none !important; }
-
-    .muted {
-      color: #617285;
-      font-size: 14px;
-      line-height: 1.5;
-    }
-
-    .status {
-      padding: 11px 12px;
-      border-radius: 9px;
-      background: #eef3f8;
-      margin-top: 12px;
-      white-space: pre-wrap;
-      overflow-wrap: anywhere;
-    }
-
-    .error {
-      background: #fff0ef;
-      color: #a72f25;
-    }
-
-    .ok {
-      background: #e9f8f0;
-      color: #186344;
-    }
-
-    img {
-      max-width: 100%;
-      max-height: 340px;
-      object-fit: contain;
-      border-radius: 10px;
-      margin-top: 12px;
-    }
-
-    pre {
-      white-space: pre-wrap;
-      overflow-wrap: anywhere;
-      background: #f1f5f8;
-      padding: 14px;
-      border-radius: 10px;
-      font-size: 13px;
-    }
-
-    .grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-    }
-
-    .grid label { margin-top: 10px; }
-    .full { grid-column: 1 / -1; }
-
-    .entry {
-      border-bottom: 1px solid #e1e7ee;
-      padding: 12px 0;
-    }
-
-    .entry:last-child { border-bottom: 0; }
-    .entry strong { display: block; }
-
-    .entry small {
-      display: block;
-      color: #657587;
-      margin-top: 5px;
-    }
-
-    footer {
-      text-align: center;
-      color: #778595;
-      font-size: 12px;
-      padding: 22px;
-    }
-  </style>
+<style>
+:root {
+  font-family: system-ui,-apple-system,"Segoe UI",sans-serif;
+  color:#14243a;
+  background:#f4f7fa;
+}
+* { box-sizing:border-box; }
+body { margin:0; }
+header {
+  background:#14243a;
+  color:white;
+  padding:22px 18px;
+}
+header strong {
+  font-size:26px;
+  letter-spacing:-.6px;
+}
+header small {
+  display:block;
+  color:#b8c7d6;
+  margin-top:4px;
+}
+main {
+  max-width:650px;
+  margin:18px auto;
+  padding:0 14px;
+}
+.card {
+  background:white;
+  border:1px solid #e1e7ee;
+  border-radius:16px;
+  padding:20px;
+  margin:14px 0;
+  box-shadow:0 4px 18px #14243a0b;
+}
+h2 { margin:0 0 15px; font-size:19px; }
+h3 { font-size:16px; margin-top:22px; }
+label {
+  display:block;
+  font-weight:650;
+  margin:14px 0 6px;
+}
+input,select,textarea {
+  width:100%;
+  padding:12px;
+  border:1px solid #c5d0db;
+  border-radius:10px;
+  font-size:16px;
+  background:white;
+  color:#14243a;
+}
+textarea { min-height:80px; }
+button {
+  background:#167a61;
+  color:white;
+  border:0;
+  border-radius:11px;
+  padding:13px 17px;
+  font-size:16px;
+  font-weight:700;
+  cursor:pointer;
+  width:100%;
+  margin-top:14px;
+}
+button.secondary {
+  background:#e7edf3;
+  color:#26394b;
+}
+button.danger {
+  background:#fff0ef;
+  color:#a72f25;
+  border:1px solid #efc7c3;
+}
+button.small {
+  width:auto;
+  font-size:13px;
+  padding:9px 13px;
+  margin-top:10px;
+}
+button:disabled {
+  opacity:.55;
+  cursor:wait;
+}
+.hidden { display:none!important; }
+.muted {
+  color:#617285;
+  font-size:14px;
+  line-height:1.5;
+}
+.status {
+  padding:11px 12px;
+  border-radius:9px;
+  background:#eef3f8;
+  margin-top:12px;
+  white-space:pre-wrap;
+  overflow-wrap:anywhere;
+}
+.error {
+  background:#fff0ef;
+  color:#a72f25;
+}
+.ok {
+  background:#e9f8f0;
+  color:#186344;
+}
+img {
+  max-width:100%;
+  max-height:340px;
+  object-fit:contain;
+  border-radius:10px;
+  margin-top:12px;
+}
+pre {
+  white-space:pre-wrap;
+  overflow-wrap:anywhere;
+  background:#f1f5f8;
+  padding:14px;
+  border-radius:10px;
+  font-size:13px;
+}
+.grid {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+}
+.grid label { margin-top:10px; }
+.full { grid-column:1/-1; }
+.entry {
+  border-bottom:1px solid #e1e7ee;
+  padding:12px 0;
+}
+.entry:last-child { border-bottom:0; }
+.entry strong { display:block; }
+.entry small {
+  display:block;
+  color:#657587;
+  margin-top:5px;
+}
+footer {
+  text-align:center;
+  color:#778595;
+  font-size:12px;
+  padding:22px;
+}
+</style>
 </head>
 
 <body>
@@ -179,239 +164,168 @@
 
 <main>
 
-  <section id="login" class="card">
-    <h2>Anmelden</h2>
+<section id="login" class="card">
+  <h2>Anmelden</h2>
+  <p class="muted">
+    Melde dich mit deinem GastoPilot-Benutzerkonto an.
+  </p>
+  <form id="loginForm">
+    <label for="email">E-Mail</label>
+    <input
+      id="email"
+      type="email"
+      autocomplete="username"
+      value="office@markusruess.at"
+      required
+    >
+    <label for="password">Passwort</label>
+    <input
+      id="password"
+      type="password"
+      autocomplete="current-password"
+      required
+    >
+    <button id="loginBtn" type="submit">Anmelden</button>
+  </form>
+  <div id="loginStatus" class="status hidden" role="status"></div>
+</section>
 
+<section id="workspace" class="hidden">
+
+  <section class="card">
+    <div style="display:flex;justify-content:space-between;gap:12px;align-items:center">
+      <div>
+        <h2 style="margin-bottom:3px">Willkommen!</h2>
+        <div id="business" class="muted">
+          Betrieb wird geladen …
+        </div>
+      </div>
+      <button
+        class="secondary"
+        id="logout"
+        style="width:auto;margin:0"
+      >Abmelden</button>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Beleg fotografieren</h2>
     <p class="muted">
-      Melde dich mit deinem GastoPilot-Benutzerkonto an.
+      Fotografiere einen Kassenbericht oder eine
+      Lieferantenrechnung. Verwende vorerst Testbelege
+      ohne personenbezogene Daten.
+    </p>
+    <label for="photo">
+      Foto auswählen oder Kamera öffnen
+    </label>
+    <input
+      id="photo"
+      type="file"
+      accept="image/jpeg,image/png,image/webp"
+      capture="environment"
+    >
+    <img id="preview" class="hidden" alt="Vorschau des Belegs">
+    <button id="scan" disabled>Mit KI auslesen</button>
+    <div id="scanStatus" class="status hidden" role="status"></div>
+  </section>
+
+  <section id="result" class="card hidden">
+    <h2>Erkannte Daten prüfen</h2>
+    <p class="muted">
+      Kontrolliere alle Angaben anhand des Originalbelegs.
+      Erst danach kannst du den Beleg speichern.
     </p>
 
-    <form id="loginForm">
-      <label for="email">E-Mail</label>
-      <input
-        id="email"
-        type="email"
-        autocomplete="username"
-        value="office@markusruess.at"
-        required
-      >
+    <div class="grid">
+      <div class="full">
+        <label for="documentType">Belegart</label>
+        <select id="documentType">
+          <option value="cash_report">Kassenbericht</option>
+          <option value="invoice">Lieferantenrechnung</option>
+          <option value="other">Sonstiger Beleg</option>
+        </select>
+      </div>
 
-      <label for="password">Passwort</label>
-      <input
-        id="password"
-        type="password"
-        autocomplete="current-password"
-        required
-      >
+      <div>
+        <label for="documentDate">Belegdatum</label>
+        <input id="documentDate" type="date">
+      </div>
 
-      <button id="loginBtn" type="submit">
-        Anmelden
-      </button>
-    </form>
-
-    <div
-      id="loginStatus"
-      class="status hidden"
-      role="status"
-    ></div>
-  </section>
-
-  <section id="workspace" class="hidden">
-
-    <section class="card">
-      <div style="display:flex;justify-content:space-between;gap:12px;align-items:center">
-        <div>
-          <h2 style="margin-bottom:3px">Willkommen!</h2>
-          <div id="business" class="muted">
-            Betrieb wird geladen …
-          </div>
-        </div>
-
-        <button
-          class="secondary"
-          id="logout"
-          style="width:auto;margin:0"
+      <div>
+        <label for="grossTotal">Bruttobetrag (€)</label>
+        <input
+          id="grossTotal"
+          type="number"
+          min="0"
+          step="0.01"
+          inputmode="decimal"
         >
-          Abmelden
-        </button>
-      </div>
-    </section>
-
-    <section class="card">
-      <h2>Beleg fotografieren</h2>
-
-      <p class="muted">
-        Fotografiere einen Kassenbericht oder eine
-        Lieferantenrechnung. Verwende vorerst Testbelege
-        ohne personenbezogene Daten.
-      </p>
-
-      <label for="photo">
-        Foto auswählen oder Kamera öffnen
-      </label>
-
-      <input
-        id="photo"
-        type="file"
-        accept="image/jpeg,image/png,image/webp"
-        capture="environment"
-      >
-
-      <img
-        id="preview"
-        class="hidden"
-        alt="Vorschau des Belegs"
-      >
-
-      <button id="scan" disabled>
-        Mit KI auslesen
-      </button>
-
-      <div
-        id="scanStatus"
-        class="status hidden"
-        role="status"
-      ></div>
-    </section>
-
-    <section id="result" class="card hidden">
-      <h2>Erkannte Daten prüfen</h2>
-
-      <p class="muted">
-        Kontrolliere alle Angaben anhand des Originalbelegs.
-        Erst danach kannst du den Beleg speichern.
-      </p>
-
-      <div class="grid">
-
-        <div class="full">
-          <label for="documentType">Belegart</label>
-          <select id="documentType">
-            <option value="cash_report">Kassenbericht</option>
-            <option value="invoice">Lieferantenrechnung</option>
-            <option value="other">Sonstiger Beleg</option>
-          </select>
-        </div>
-
-        <div>
-          <label for="documentDate">Belegdatum</label>
-          <input id="documentDate" type="date">
-        </div>
-
-        <div>
-          <label for="grossTotal">Bruttobetrag (€)</label>
-          <input
-            id="grossTotal"
-            type="number"
-            min="0"
-            step="0.01"
-            inputmode="decimal"
-          >
-        </div>
-
-        <div class="full">
-          <label for="supplier">Lieferant</label>
-          <input id="supplier" type="text">
-        </div>
-
-        <div class="full">
-          <label for="invoiceNumber">Rechnungsnummer</label>
-          <input id="invoiceNumber" type="text">
-        </div>
-
-        <div>
-          <label for="foodGross">Speisen (€)</label>
-          <input
-            id="foodGross"
-            type="number"
-            min="0"
-            step="0.01"
-          >
-        </div>
-
-        <div>
-          <label for="drinksGross">Getränke (€)</label>
-          <input
-            id="drinksGross"
-            type="number"
-            min="0"
-            step="0.01"
-          >
-        </div>
-
-        <div>
-          <label for="nonfoodGross">Non-Food (€)</label>
-          <input
-            id="nonfoodGross"
-            type="number"
-            min="0"
-            step="0.01"
-          >
-        </div>
-
-        <div>
-          <label for="otherGross">Sonstiges (€)</label>
-          <input
-            id="otherGross"
-            type="number"
-            min="0"
-            step="0.01"
-          >
-        </div>
-
-        <div class="full">
-          <label for="notes">Anmerkungen</label>
-          <textarea id="notes"></textarea>
-        </div>
-
       </div>
 
-      <h3>Erkannte Artikel</h3>
-      <div id="items" class="muted"></div>
+      <div class="full">
+        <label for="supplier">Lieferant</label>
+        <input id="supplier" type="text">
+      </div>
 
-      <button id="save">
-        Geprüften Beleg speichern
-      </button>
+      <div class="full">
+        <label for="invoiceNumber">Rechnungsnummer</label>
+        <input id="invoiceNumber" type="text">
+      </div>
 
-      <div
-        id="saveStatus"
-        class="status hidden"
-        role="status"
-      ></div>
+      <div>
+        <label for="foodGross">Speisen (€)</label>
+        <input id="foodGross" type="number" min="0" step="0.01">
+      </div>
 
-      <details style="margin-top:18px">
-        <summary>Technische KI-Rohdaten</summary>
-        <pre id="raw"></pre>
-      </details>
-    </section>
+      <div>
+        <label for="drinksGross">Getränke (€)</label>
+        <input id="drinksGross" type="number" min="0" step="0.01">
+      </div>
 
-    <section class="card">
-      <h2>Gespeicherte Belege</h2>
+      <div>
+        <label for="nonfoodGross">Non-Food (€)</label>
+        <input id="nonfoodGross" type="number" min="0" step="0.01">
+      </div>
 
-      <p class="muted">
-        Die letzten 20 geprüften Dokumente aus Supabase.
-      </p>
+      <div>
+        <label for="otherGross">Sonstiges (€)</label>
+        <input id="otherGross" type="number" min="0" step="0.01">
+      </div>
 
-      <button id="refresh" class="secondary">
-        Belegliste aktualisieren
-      </button>
+      <div class="full">
+        <label for="notes">Anmerkungen</label>
+        <textarea id="notes"></textarea>
+      </div>
+    </div>
 
-      <div
-        id="listStatus"
-        class="status hidden"
-        role="status"
-      ></div>
+    <h3>Erkannte Artikel</h3>
+    <div id="items" class="muted"></div>
 
-      <div id="documentList"></div>
-    </section>
+    <button id="save">Geprüften Beleg speichern</button>
+    <div id="saveStatus" class="status hidden" role="status"></div>
 
+    <details style="margin-top:18px">
+      <summary>Technische KI-Rohdaten</summary>
+      <pre id="raw"></pre>
+    </details>
   </section>
 
+  <section class="card">
+    <h2>Gespeicherte Belege</h2>
+    <p class="muted">
+      Die letzten 20 geprüften Dokumente aus Supabase.
+    </p>
+    <button id="refresh" class="secondary">
+      Belegliste aktualisieren
+    </button>
+    <div id="listStatus" class="status hidden" role="status"></div>
+    <div id="documentList"></div>
+  </section>
+
+</section>
 </main>
 
-<footer>
-  GastoPilot · Pilotbetrieb Das Friedrich
-</footer>
+<footer>GastoPilot · Pilotbetrieb Das Friedrich</footer>
 
 <script type="module">
 
@@ -436,56 +350,42 @@ const supabase = createClient(
   }
 );
 
-const $ = id =>
-  window.document.getElementById(id);
+const $ = id => window.document.getElementById(id);
 
 let businessId = null;
 let selectedFile = null;
 let extractedData = null;
 let currentUser = null;
+let currentRole = null;
 let previewUrl = null;
 let saveInProgress = false;
 
 function status(id, message, error = false) {
   const element = $(id);
-
   element.textContent = message;
-
-  element.className =
-    'status ' + (error ? 'error' : 'ok');
+  element.className = 'status ' + (error ? 'error' : 'ok');
 }
 
 function setValue(id, value) {
-  $(id).value =
-    value == null ? '' : String(value);
+  $(id).value = value == null ? '' : String(value);
 }
 
 function optionalNumber(id) {
   const value = $(id).value.trim();
-
   if (value === '') return null;
 
   const number = Number(value);
-
   if (!Number.isFinite(number) || number < 0) {
-    throw new Error(
-      'Ungültiger Betrag im Feld: ' + id
-    );
+    throw new Error('Ungültiger Betrag: ' + id);
   }
 
   return Math.round(number * 100) / 100;
 }
 
 function euro(value) {
-  if (value == null || value === '') {
-    return '–';
-  }
-
+  if (value == null || value === '') return '–';
   const number = Number(value);
-
-  if (!Number.isFinite(number)) {
-    return '–';
-  }
+  if (!Number.isFinite(number)) return '–';
 
   return new Intl.NumberFormat('de-AT', {
     style: 'currency',
@@ -504,16 +404,12 @@ async function initialize() {
   const { data: { session } } =
     await supabase.auth.getSession();
 
-  if (session) {
-    await enter();
-  }
+  if (session) await enter();
 }
 
 async function enter() {
-  const {
-    data: { user },
-    error: userError
-  } = await supabase.auth.getUser();
+  const { data: { user }, error: userError } =
+    await supabase.auth.getUser();
 
   if (userError || !user) {
     $('login').classList.remove('hidden');
@@ -529,11 +425,10 @@ async function enter() {
   if (error || !data?.length) {
     status(
       'loginStatus',
-      'Benutzer angemeldet, aber kein Betrieb zugeordnet: ' +
+      'Kein Betrieb zugeordnet: ' +
       (error?.message || 'Keine Mitgliedschaft'),
       true
     );
-
     await supabase.auth.signOut();
     return;
   }
@@ -545,11 +440,11 @@ async function enter() {
 
   businessId = membership.business_id;
   currentUser = user;
+  currentRole = membership.role;
 
   $('business').textContent =
     (membership.businesses?.name || 'Betrieb') +
-    ' · ' +
-    membership.role;
+    ' · ' + membership.role;
 
   $('login').classList.add('hidden');
   $('workspace').classList.remove('hidden');
@@ -566,65 +461,48 @@ async function enter() {
   }
 }
 
-$('loginForm').addEventListener(
-  'submit',
-  async event => {
-    event.preventDefault();
+$('loginForm').addEventListener('submit', async event => {
+  event.preventDefault();
+  $('loginBtn').disabled = true;
+  status('loginStatus', 'Anmeldung läuft …');
 
-    $('loginBtn').disabled = true;
+  try {
+    const { error } = await supabase.auth.signInWithPassword({
+      email: $('email').value.trim(),
+      password: $('password').value
+    });
+
+    $('password').value = '';
+    if (error) throw error;
+
+    await enter();
+  } catch (error) {
     status(
       'loginStatus',
-      'Anmeldung läuft …'
+      'Anmeldung fehlgeschlagen: ' + error.message,
+      true
     );
-
-    try {
-      const { error } =
-        await supabase.auth.signInWithPassword({
-          email: $('email').value.trim(),
-          password: $('password').value
-        });
-
-      $('password').value = '';
-
-      if (error) throw error;
-
-      await enter();
-
-    } catch (error) {
-      status(
-        'loginStatus',
-        'Anmeldung fehlgeschlagen: ' +
-        error.message,
-        true
-      );
-    } finally {
-      $('loginBtn').disabled = false;
-    }
+  } finally {
+    $('loginBtn').disabled = false;
   }
-);
+});
 
-$('logout').addEventListener(
-  'click',
-  async () => {
-    await supabase.auth.signOut();
+$('logout').addEventListener('click', async () => {
+  await supabase.auth.signOut();
+  businessId = null;
+  currentUser = null;
+  currentRole = null;
+  extractedData = null;
+  selectedFile = null;
 
-    businessId = null;
-    currentUser = null;
-    extractedData = null;
-    selectedFile = null;
-
-    $('workspace').classList.add('hidden');
-    $('login').classList.remove('hidden');
-    $('result').classList.add('hidden');
-  }
-);
+  $('workspace').classList.add('hidden');
+  $('login').classList.remove('hidden');
+  $('result').classList.add('hidden');
+});
 
 $('photo').addEventListener('change', () => {
-  selectedFile =
-    $('photo').files?.[0] || null;
-
+  selectedFile = $('photo').files?.[0] || null;
   extractedData = null;
-
   $('result').classList.add('hidden');
   $('scan').disabled = !selectedFile;
 
@@ -645,14 +523,11 @@ $('photo').addEventListener('change', () => {
       'Bitte JPG, PNG oder WebP auswählen.',
       true
     );
-
     $('scan').disabled = true;
     return;
   }
 
-  previewUrl =
-    URL.createObjectURL(selectedFile);
-
+  previewUrl = URL.createObjectURL(selectedFile);
   $('preview').src = previewUrl;
   $('preview').classList.remove('hidden');
 });
@@ -662,9 +537,7 @@ function imageToBase64(file) {
     const reader = new FileReader();
 
     reader.onerror = () => reject(
-      new Error(
-        'Foto konnte nicht gelesen werden'
-      )
+      new Error('Foto konnte nicht gelesen werden')
     );
 
     reader.onload = () => resolve(
@@ -678,33 +551,22 @@ function imageToBase64(file) {
 function compress(file) {
   return new Promise((resolve, reject) => {
     const img = new Image();
-    const objectUrl =
-      URL.createObjectURL(file);
+    const objectUrl = URL.createObjectURL(file);
 
     img.onload = () => {
       const scale = Math.min(
         1,
-        1800 / Math.max(
-          img.width,
-          img.height
-        )
+        1800 / Math.max(img.width, img.height)
       );
 
       const canvas =
         window.document.createElement('canvas');
 
-      canvas.width =
-        Math.round(img.width * scale);
-
-      canvas.height =
-        Math.round(img.height * scale);
+      canvas.width = Math.round(img.width * scale);
+      canvas.height = Math.round(img.height * scale);
 
       canvas.getContext('2d').drawImage(
-        img,
-        0,
-        0,
-        canvas.width,
-        canvas.height
+        img, 0, 0, canvas.width, canvas.height
       );
 
       URL.revokeObjectURL(objectUrl);
@@ -712,11 +574,7 @@ function compress(file) {
       canvas.toBlob(
         blob => blob
           ? resolve(blob)
-          : reject(
-              new Error(
-                'Foto konnte nicht verarbeitet werden'
-              )
-            ),
+          : reject(new Error('Foto konnte nicht verarbeitet werden')),
         'image/jpeg',
         0.82
       );
@@ -724,312 +582,276 @@ function compress(file) {
 
     img.onerror = () => {
       URL.revokeObjectURL(objectUrl);
-
-      reject(
-        new Error(
-          'Bild konnte nicht geöffnet werden'
-        )
-      );
+      reject(new Error('Bild konnte nicht geöffnet werden'));
     };
 
     img.src = objectUrl;
   });
 }
 
-$('scan').addEventListener(
-  'click',
-  async () => {
-    if (!businessId || !selectedFile) {
-      return;
+$('scan').addEventListener('click', async () => {
+  if (!businessId || !selectedFile) return;
+
+  $('scan').disabled = true;
+  status(
+    'scanStatus',
+    'Foto wird vorbereitet und mit KI ausgewertet …'
+  );
+
+  try {
+    const compressed = await compress(selectedFile);
+    const base64 = await imageToBase64(compressed);
+
+    const { data, error } = await supabase.functions.invoke(
+      'analyze-receipt',
+      {
+        body: {
+          business_id: businessId,
+          image_base64: base64,
+          mime_type: 'image/jpeg'
+        }
+      }
+    );
+
+    if (error) {
+      let message = error.message;
+
+      try {
+        if (error.context?.json) {
+          const response = await error.context.json();
+          message = response.error || message;
+        }
+      } catch (_) {}
+
+      throw new Error(message);
     }
 
-    $('scan').disabled = true;
+    if (!data?.success) {
+      throw new Error(data?.error || 'Unbekannte KI-Antwort');
+    }
+
+    extractedData = data.data || {};
+    const result = extractedData;
+
+    setValue(
+      'documentType',
+      ['cash_report', 'invoice'].includes(result.document_type)
+        ? result.document_type
+        : 'other'
+    );
+
+    setValue('documentDate', safeDate(result.date));
+    setValue('grossTotal', result.gross_total);
+    setValue('supplier', result.supplier);
+    setValue('invoiceNumber', result.invoice_number);
+    setValue('foodGross', result.food_gross);
+    setValue('drinksGross', result.drinks_gross);
+    setValue('nonfoodGross', result.nonfood_gross);
+    setValue('otherGross', result.other_gross);
+    setValue('notes', result.notes);
+
+    const items = Array.isArray(result.sales_items)
+      ? result.sales_items
+      : [];
+
+    $('items').textContent = items.length
+      ? items.map(item =>
+          `${item.name || 'Artikel'}: ${item.quantity ?? '?'} Stück`
+        ).join(' · ')
+      : 'Keine Artikel erkannt';
+
+    $('raw').textContent = JSON.stringify(result, null, 2);
+    $('saveStatus').className = 'status hidden';
+    $('save').disabled = false;
+    $('result').classList.remove('hidden');
 
     status(
       'scanStatus',
-      'Foto wird vorbereitet und mit KI ausgewertet …'
+      'KI-Auswertung fertig. Bitte Daten prüfen.'
     );
 
-    try {
-      const compressed =
-        await compress(selectedFile);
+    $('result').scrollIntoView({
+      behavior: 'smooth',
+      block: 'start'
+    });
 
-      const base64 =
-        await imageToBase64(compressed);
-
-      const { data, error } =
-        await supabase.functions.invoke(
-          'analyze-receipt',
-          {
-            body: {
-              business_id: businessId,
-              image_base64: base64,
-              mime_type: 'image/jpeg'
-            }
-          }
-        );
-
-      if (error) {
-        let message = error.message;
-
-        try {
-          if (error.context?.json) {
-            const response =
-              await error.context.json();
-
-            message =
-              response.error || message;
-          }
-        } catch (_) {}
-
-        throw new Error(message);
-      }
-
-      if (!data?.success) {
-        throw new Error(
-          data?.error ||
-          'Unbekannte KI-Antwort'
-        );
-      }
-
-      extractedData = data.data || {};
-
-      const result = extractedData;
-
-      setValue(
-        'documentType',
-        ['cash_report', 'invoice'].includes(
-          result.document_type
-        )
-          ? result.document_type
-          : 'other'
-      );
-
-      setValue(
-        'documentDate',
-        safeDate(result.date)
-      );
-
-      setValue(
-        'grossTotal',
-        result.gross_total
-      );
-
-      setValue(
-        'supplier',
-        result.supplier
-      );
-
-      setValue(
-        'invoiceNumber',
-        result.invoice_number
-      );
-
-      setValue(
-        'foodGross',
-        result.food_gross
-      );
-
-      setValue(
-        'drinksGross',
-        result.drinks_gross
-      );
-
-      setValue(
-        'nonfoodGross',
-        result.nonfood_gross
-      );
-
-      setValue(
-        'otherGross',
-        result.other_gross
-      );
-
-      setValue(
-        'notes',
-        result.notes
-      );
-
-      const items =
-        Array.isArray(result.sales_items)
-          ? result.sales_items
-          : [];
-
-      $('items').textContent =
-        items.length
-          ? items.map(item =>
-              `${item.name || 'Artikel'}: ` +
-              `${item.quantity ?? '?'} Stück`
-            ).join(' · ')
-          : 'Keine Artikel erkannt';
-
-      $('raw').textContent =
-        JSON.stringify(result, null, 2);
-
-      $('saveStatus').className =
-        'status hidden';
-
-      $('save').disabled = false;
-
-      $('result').classList.remove(
-        'hidden'
-      );
-
-      status(
-        'scanStatus',
-        'KI-Auswertung fertig. Bitte Daten prüfen.'
-      );
-
-      $('result').scrollIntoView({
-        behavior: 'smooth',
-        block: 'start'
-      });
-
-    } catch (error) {
-      status(
-        'scanStatus',
-        'Fehler: ' + error.message,
-        true
-      );
-
-    } finally {
-      $('scan').disabled = false;
-    }
+  } catch (error) {
+    status('scanStatus', 'Fehler: ' + error.message, true);
+  } finally {
+    $('scan').disabled = false;
   }
-);
+});
 
-$('save').addEventListener(
-  'click',
-  async () => {
-    if (saveInProgress) return;
+$('save').addEventListener('click', async () => {
+  if (saveInProgress) return;
 
-    if (
-      !businessId ||
-      !currentUser ||
-      !extractedData
-    ) {
-      status(
-        'saveStatus',
-        'Bitte zuerst einen Beleg auslesen.',
-        true
-      );
-      return;
+  if (!businessId || !currentUser || !extractedData) {
+    status(
+      'saveStatus',
+      'Bitte zuerst einen Beleg auslesen.',
+      true
+    );
+    return;
+  }
+
+  const documentType = $('documentType').value;
+  const documentDate = $('documentDate').value || null;
+
+  if (!documentDate) {
+    status(
+      'saveStatus',
+      'Bitte ein Belegdatum eintragen.',
+      true
+    );
+    return;
+  }
+
+  saveInProgress = true;
+  $('save').disabled = true;
+
+  status(
+    'saveStatus',
+    'Geprüfter Beleg wird gespeichert …'
+  );
+
+  let successfullySaved = false;
+
+  try {
+    const grossTotal = optionalNumber('grossTotal');
+
+    if (grossTotal === null) {
+      throw new Error('Bitte den Bruttobetrag eintragen.');
     }
 
-    const documentType =
-      $('documentType').value;
+    const reviewedData = {
+      ...extractedData,
+      document_type: documentType,
+      date: documentDate,
+      supplier: $('supplier').value.trim() || null,
+      invoice_number: $('invoiceNumber').value.trim() || null,
+      gross_total: grossTotal,
+      food_gross: optionalNumber('foodGross'),
+      drinks_gross: optionalNumber('drinksGross'),
+      nonfood_gross: optionalNumber('nonfoodGross'),
+      other_gross: optionalNumber('otherGross'),
+      notes: $('notes').value.trim() || null,
+      reviewed_at: new Date().toISOString()
+    };
 
-    const documentDate =
-      $('documentDate').value || null;
+    const payload = {
+      business_id: businessId,
+      uploaded_by: currentUser.id,
+      document_type: documentType,
+      document_date: documentDate,
+      supplier: reviewedData.supplier,
+      invoice_number: reviewedData.invoice_number,
+      status: 'reviewed',
+      extracted_data: reviewedData
+    };
 
-    if (!documentDate) {
-      status(
-        'saveStatus',
-        'Bitte ein Belegdatum eintragen.',
-        true
-      );
-      return;
-    }
+    const { error } = await supabase
+      .from('documents')
+      .insert(payload);
 
-    saveInProgress = true;
-    $('save').disabled = true;
+    if (error) throw error;
+
+    successfullySaved = true;
+    extractedData = null;
 
     status(
       'saveStatus',
-      'Geprüfter Beleg wird gespeichert …'
+      'Beleg erfolgreich in Supabase gespeichert!'
     );
 
-    let successfullySaved = false;
+  } catch (error) {
+    status(
+      'saveStatus',
+      'Speichern fehlgeschlagen: ' + error.message,
+      true
+    );
+  } finally {
+    saveInProgress = false;
+    $('save').disabled = successfullySaved;
+  }
 
+  if (successfullySaved) {
     try {
-      const grossTotal =
-        optionalNumber('grossTotal');
-
-      if (grossTotal === null) {
-        throw new Error(
-          'Bitte den Bruttobetrag eintragen.'
-        );
-      }
-
-      const reviewedData = {
-        ...extractedData,
-        document_type: documentType,
-        date: documentDate,
-        supplier:
-          $('supplier').value.trim() || null,
-        invoice_number:
-          $('invoiceNumber').value.trim() || null,
-        gross_total: grossTotal,
-        food_gross:
-          optionalNumber('foodGross'),
-        drinks_gross:
-          optionalNumber('drinksGross'),
-        nonfood_gross:
-          optionalNumber('nonfoodGross'),
-        other_gross:
-          optionalNumber('otherGross'),
-        notes:
-          $('notes').value.trim() || null,
-        reviewed_at:
-          new Date().toISOString()
-      };
-
-      const payload = {
-        business_id: businessId,
-        uploaded_by: currentUser.id,
-        document_type: documentType,
-        document_date: documentDate,
-        supplier: reviewedData.supplier,
-        invoice_number:
-          reviewedData.invoice_number,
-        status: 'reviewed',
-        extracted_data: reviewedData
-      };
-
-      const { error } = await supabase
-        .from('documents')
-        .insert(payload);
-
-      if (error) throw error;
-
-      successfullySaved = true;
-      extractedData = null;
-
-      status(
-        'saveStatus',
-        'Beleg erfolgreich in Supabase gespeichert!'
-      );
-
+      await loadDocuments();
     } catch (error) {
       status(
-        'saveStatus',
-        'Speichern fehlgeschlagen: ' +
+        'listStatus',
+        'Beleg gespeichert, aber Liste konnte nicht aktualisiert werden: ' +
         error.message,
         true
       );
-
-    } finally {
-      saveInProgress = false;
-
-      $('save').disabled =
-        successfullySaved;
-    }
-
-    if (successfullySaved) {
-      try {
-        await loadDocuments();
-
-      } catch (error) {
-        status(
-          'listStatus',
-          'Beleg wurde gespeichert, aber die Liste konnte nicht aktualisiert werden: ' +
-          error.message,
-          true
-        );
-      }
     }
   }
-);
+});
+
+async function deleteDocument(savedDocument, button) {
+  if (currentRole !== 'owner' || !businessId) {
+    status(
+      'listStatus',
+      'Nur der Betriebsinhaber darf Belege löschen.',
+      true
+    );
+    return;
+  }
+
+  const label =
+    savedDocument.document_type === 'cash_report'
+      ? 'Kassenbericht'
+      : savedDocument.document_type === 'invoice'
+        ? 'Rechnung'
+        : 'Beleg';
+
+  const description =
+    `${label} vom ${savedDocument.document_date || 'unbekannten Datum'}` +
+    ` (${euro(savedDocument.extracted_data?.gross_total)})`;
+
+  const confirmed = window.confirm(
+    `Diesen Beleg wirklich endgültig löschen?\n\n` +
+    `${description}\n\n` +
+    `Dieser Vorgang kann nicht rückgängig gemacht werden.`
+  );
+
+  if (!confirmed) return;
+
+  button.disabled = true;
+  status('listStatus', 'Beleg wird gelöscht …');
+
+  try {
+    const { data, error } = await supabase
+      .from('documents')
+      .delete()
+      .eq('id', savedDocument.id)
+      .eq('business_id', businessId)
+      .select('id');
+
+    if (error) throw error;
+
+    if (!data || data.length === 0) {
+      throw new Error(
+        'Der Beleg wurde nicht gelöscht. Bitte Löschberechtigung in Supabase prüfen.'
+      );
+    }
+
+    await loadDocuments();
+
+    status(
+      'listStatus',
+      'Beleg erfolgreich gelöscht.'
+    );
+
+  } catch (error) {
+    status(
+      'listStatus',
+      'Löschen fehlgeschlagen: ' + error.message,
+      true
+    );
+    button.disabled = false;
+  }
+}
 
 async function loadDocuments() {
   if (!businessId) return;
@@ -1045,124 +867,102 @@ async function loadDocuments() {
       'id,document_type,document_date,supplier,status,extracted_data,created_at'
     )
     .eq('business_id', businessId)
-    .order('created_at', {
-      ascending: false
-    })
+    .order('created_at', { ascending: false })
     .limit(20);
 
   const list = $('documentList');
-
   list.replaceChildren();
 
   if (error) {
     status(
       'listStatus',
-      'Belegliste konnte nicht geladen werden: ' +
-      error.message,
+      'Belegliste konnte nicht geladen werden: ' + error.message,
       true
     );
     return;
   }
 
   if (!data || data.length === 0) {
-    status(
-      'listStatus',
-      'Noch keine Belege gespeichert.'
-    );
+    status('listStatus', 'Noch keine Belege gespeichert.');
     return;
   }
 
-  $('listStatus').className =
-    'status hidden';
-
-  // Wichtig: Die Variable heißt savedDocument,
-  // damit das Browser-Objekt document
-  // nicht überschrieben wird.
+  $('listStatus').className = 'status hidden';
 
   for (const savedDocument of data) {
-    const row =
-      window.document.createElement('div');
-
+    const row = window.document.createElement('div');
     row.className = 'entry';
 
-    const title =
-      window.document.createElement('strong');
+    const title = window.document.createElement('strong');
 
     const typeLabel =
-      savedDocument.document_type ===
-      'cash_report'
+      savedDocument.document_type === 'cash_report'
         ? 'Kassenbericht'
-        : savedDocument.document_type ===
-          'invoice'
+        : savedDocument.document_type === 'invoice'
           ? 'Rechnung'
           : 'Sonstiger Beleg';
 
     title.textContent =
-      typeLabel +
-      ' · ' +
-      (
-        savedDocument.document_date ||
-        'Ohne Datum'
-      );
+      typeLabel + ' · ' +
+      (savedDocument.document_date || 'Ohne Datum');
 
-    const details =
-      window.document.createElement('small');
+    const details = window.document.createElement('small');
 
     details.textContent =
-      (
-        savedDocument.supplier ||
-        'Das Friedrich'
-      ) +
+      (savedDocument.supplier || 'Das Friedrich') +
       ' · ' +
-      euro(
-        savedDocument.extracted_data
-          ?.gross_total
-      );
+      euro(savedDocument.extracted_data?.gross_total);
 
-    const state =
-      window.document.createElement('small');
+    const state = window.document.createElement('small');
 
     state.textContent =
       savedDocument.status === 'reviewed'
         ? 'Geprüft und gespeichert'
-        : 'Status: ' +
-          savedDocument.status;
+        : 'Status: ' + savedDocument.status;
 
     row.appendChild(title);
     row.appendChild(details);
     row.appendChild(state);
 
+    if (currentRole === 'owner') {
+      const deleteButton =
+        window.document.createElement('button');
+
+      deleteButton.type = 'button';
+      deleteButton.className = 'danger small';
+      deleteButton.textContent = 'Beleg löschen';
+
+      deleteButton.addEventListener('click', () => {
+        deleteDocument(savedDocument, deleteButton);
+      });
+
+      row.appendChild(deleteButton);
+    }
+
     list.appendChild(row);
   }
 }
 
-$('refresh').addEventListener(
-  'click',
-  async () => {
-    try {
-      await loadDocuments();
-
-    } catch (error) {
-      status(
-        'listStatus',
-        'Fehler beim Aktualisieren: ' +
-        error.message,
-        true
-      );
-    }
+$('refresh').addEventListener('click', async () => {
+  try {
+    await loadDocuments();
+  } catch (error) {
+    status(
+      'listStatus',
+      'Fehler: ' + error.message,
+      true
+    );
   }
-);
+});
 
 initialize().catch(error => {
   status(
     'loginStatus',
-    'Initialisierung fehlgeschlagen: ' +
-    error.message,
+    'Initialisierung fehlgeschlagen: ' + error.message,
     true
   );
 });
 
 </script>
-
 </body>
 </html>
