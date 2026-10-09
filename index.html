@@ -1,24 +1,611 @@
-<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>GastoPilot · KI-Belegscan</title><style>:root{font-family:system-ui,-apple-system,Segoe UI,sans-serif;color:#14243a;background:#f4f7fa}*{box-sizing:border-box}body{margin:0}header{background:#14243a;color:white;padding:22px 18px}header strong{font-size:26px;letter-spacing:-.6px}header small{display:block;color:#b8c7d6;margin-top:4px}main{max-width:650px;margin:18px auto;padding:0 14px}.card{background:white;border:1px solid #e1e7ee;border-radius:16px;padding:20px;margin:14px 0;box-shadow:0 4px 18px #14243a0b}h2{margin:0 0 15px;font-size:19px}label{display:block;font-weight:650;margin:14px 0 6px}input{width:100%;padding:13px;border:1px solid #c5d0db;border-radius:10px;font-size:16px}button{background:#167a61;color:white;border:0;border-radius:11px;padding:13px 17px;font-size:16px;font-weight:700;cursor:pointer;width:100%;margin-top:14px}button.secondary{background:#e7edf3;color:#26394b}button:disabled{opacity:.55;cursor:wait}.hidden{display:none}.muted{color:#617285;font-size:14px;line-height:1.5}.status{padding:11px 12px;border-radius:9px;background:#eef3f8;margin-top:12px;white-space:pre-wrap;overflow-wrap:anywhere}.error{background:#fff0ef;color:#a72f25}.ok{background:#e9f8f0;color:#186344}img{max-width:100%;max-height:340px;object-fit:contain;border-radius:10px;margin-top:12px}pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#f1f5f8;padding:14px;border-radius:10px;font-size:13px}dl{display:grid;grid-template-columns:1fr 1fr;gap:10px}dt{color:#657587;font-size:13px}dd{margin:2px 0 0;font-weight:650}footer{text-align:center;color:#778595;font-size:12px;padding:22px}</style></head><body><header><strong>GastoPilot</strong><small>Das Friedrich · KI-Belegscan · Testversion</small></header><main><section id="login" class="card"><h2>Anmelden</h2><p class="muted">Melde dich mit deinem GastoPilot-Benutzer aus Supabase an. Das Passwort wird nicht in dieser Datei gespeichert.</p><form id="loginForm"><label for="email">E-Mail</label><input id="email" type="email" autocomplete="username" value="office@markusruess.at" required><label for="password">Passwort</label><input id="password" type="password" autocomplete="current-password" required><button id="loginBtn" type="submit">Anmelden</button></form><div id="loginStatus" class="status hidden" role="status"></div></section><section id="workspace" class="hidden"><div class="card"><div style="display:flex;justify-content:space-between;gap:12px;align-items:center"><div><h2 style="margin-bottom:3px">Willkommen!</h2><div id="business" class="muted">Betrieb wird geladen …</div></div><button class="secondary" id="logout" style="width:auto;margin:0">Abmelden</button></div></div><section class="card"><h2>Beleg fotografieren</h2><p class="muted">Fotografiere einen Kassenbericht oder eine Einkaufsrechnung. Bitte nur Testbelege ohne personenbezogene Daten verwenden, bis die Datenschutz- und Kostenkontrollen vollständig geprüft sind.</p><label for="photo">Foto auswählen oder Kamera öffnen</label><input id="photo" type="file" accept="image/jpeg,image/png,image/webp" capture="environment"><img id="preview" class="hidden" alt="Vorschau des Belegs"><button id="scan" disabled>Mit KI auslesen</button><div id="scanStatus" class="status hidden" role="status"></div></section><section id="result" class="card hidden"><h2>Erkannte Daten · bitte prüfen</h2><dl id="fields"></dl><h3>Verkaufte Artikel</h3><div id="items"></div><details><summary>Technische Rohdaten</summary><pre id="raw"></pre></details><p class="muted">Die Daten werden in dieser Testversion noch nicht automatisch in der Datenbank gespeichert. Prüfe die Werte mit dem Originalbeleg.</p></section></section></main><footer>GastoPilot · geschützter Pilotbetrieb Das Friedrich</footer><script type="module">
+
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#14243a">
+<title>GastoPilot · Das Friedrich</title>
+<style>
+:root{font-family:system-ui,-apple-system,Segoe UI,sans-serif;color:#14243a;background:#f4f7fa}
+*{box-sizing:border-box}
+body{margin:0}
+header{background:#14243a;color:white;padding:22px 18px}
+header strong{font-size:26px;letter-spacing:-.6px}
+header small{display:block;color:#b8c7d6;margin-top:4px}
+main{max-width:650px;margin:18px auto;padding:0 14px}
+.card{background:white;border:1px solid #e1e7ee;border-radius:16px;padding:20px;margin:14px 0;box-shadow:0 4px 18px #14243a0b}
+h2{margin:0 0 15px;font-size:19px}
+h3{font-size:16px;margin-top:22px}
+label{display:block;font-weight:650;margin:14px 0 6px}
+input,select,textarea{width:100%;padding:12px;border:1px solid #c5d0db;border-radius:10px;font-size:16px;background:white;color:#14243a}
+textarea{min-height:80px}
+button{background:#167a61;color:white;border:0;border-radius:11px;padding:13px 17px;font-size:16px;font-weight:700;cursor:pointer;width:100%;margin-top:14px}
+button.secondary{background:#e7edf3;color:#26394b}
+button:disabled{opacity:.55;cursor:wait}
+.hidden{display:none!important}
+.muted{color:#617285;font-size:14px;line-height:1.5}
+.status{padding:11px 12px;border-radius:9px;background:#eef3f8;margin-top:12px;white-space:pre-wrap;overflow-wrap:anywhere}
+.error{background:#fff0ef;color:#a72f25}
+.ok{background:#e9f8f0;color:#186344}
+img{max-width:100%;max-height:340px;object-fit:contain;border-radius:10px;margin-top:12px}
+pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#f1f5f8;padding:14px;border-radius:10px;font-size:13px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.grid label{margin-top:10px}
+.full{grid-column:1/-1}
+.entry{border-bottom:1px solid #e1e7ee;padding:12px 0}
+.entry:last-child{border-bottom:0}
+.entry strong{display:block}
+.entry small{display:block;color:#657587;margin-top:5px}
+.pill{display:inline-block;background:#e9f8f0;color:#186344;border-radius:30px;padding:4px 9px;font-size:12px;font-weight:700}
+footer{text-align:center;color:#778595;font-size:12px;padding:22px}
+</style>
+</head>
+<body>
+
+<header>
+<strong>GastoPilot</strong>
+<small>Das Friedrich · KI-Belegscan und Belegarchiv</small>
+</header>
+
+<main>
+
+<section id="login" class="card">
+<h2>Anmelden</h2>
+<p class="muted">Melde dich mit deinem GastoPilot-Benutzerkonto an.</p>
+<form id="loginForm">
+<label for="email">E-Mail</label>
+<input id="email" type="email" autocomplete="username" value="office@markusruess.at" required>
+<label for="password">Passwort</label>
+<input id="password" type="password" autocomplete="current-password" required>
+<button id="loginBtn" type="submit">Anmelden</button>
+</form>
+<div id="loginStatus" class="status hidden" role="status"></div>
+</section>
+
+<section id="workspace" class="hidden">
+
+<div class="card">
+<div style="display:flex;justify-content:space-between;gap:12px;align-items:center">
+<div>
+<h2 style="margin-bottom:3px">Willkommen!</h2>
+<div id="business" class="muted">Betrieb wird geladen …</div>
+</div>
+<button class="secondary" id="logout" style="width:auto;margin:0">Abmelden</button>
+</div>
+</div>
+
+<section class="card">
+<h2>Beleg fotografieren</h2>
+<p class="muted">Fotografiere einen Kassenbericht oder eine Lieferantenrechnung. Verwende vorerst Testbelege ohne personenbezogene Daten.</p>
+<label for="photo">Foto auswählen oder Kamera öffnen</label>
+<input id="photo" type="file" accept="image/jpeg,image/png,image/webp" capture="environment">
+<img id="preview" class="hidden" alt="Vorschau des Belegs">
+<button id="scan" disabled>Mit KI auslesen</button>
+<div id="scanStatus" class="status hidden" role="status"></div>
+</section>
+
+<section id="result" class="card hidden">
+<h2>Erkannte Daten prüfen</h2>
+<p class="muted">Bitte kontrolliere die Werte anhand des Originalbelegs. Erst mit „Geprüften Beleg speichern“ werden sie in Supabase übernommen.</p>
+
+<div class="grid">
+<div class="full">
+<label for="documentType">Belegart</label>
+<select id="documentType">
+<option value="cash_report">Kassenbericht</option>
+<option value="invoice">Lieferantenrechnung</option>
+<option value="other">Sonstiger Beleg</option>
+</select>
+</div>
+
+<div>
+<label for="documentDate">Belegdatum</label>
+<input id="documentDate" type="date">
+</div>
+
+<div>
+<label for="grossTotal">Bruttobetrag (€)</label>
+<input id="grossTotal" type="number" min="0" step="0.01" inputmode="decimal">
+</div>
+
+<div class="full">
+<label for="supplier">Lieferant</label>
+<input id="supplier" type="text">
+</div>
+
+<div class="full">
+<label for="invoiceNumber">Rechnungsnummer</label>
+<input id="invoiceNumber" type="text">
+</div>
+
+<div>
+<label for="foodGross">Speisen (€)</label>
+<input id="foodGross" type="number" min="0" step="0.01" inputmode="decimal">
+</div>
+
+<div>
+<label for="drinksGross">Getränke (€)</label>
+<input id="drinksGross" type="number" min="0" step="0.01" inputmode="decimal">
+</div>
+
+<div>
+<label for="nonfoodGross">Non-Food (€)</label>
+<input id="nonfoodGross" type="number" min="0" step="0.01" inputmode="decimal">
+</div>
+
+<div>
+<label for="otherGross">Sonstiges (€)</label>
+<input id="otherGross" type="number" min="0" step="0.01" inputmode="decimal">
+</div>
+
+<div class="full">
+<label for="notes">Anmerkungen</label>
+<textarea id="notes"></textarea>
+</div>
+</div>
+
+<h3>Erkannte Artikel</h3>
+<div id="items" class="muted"></div>
+
+<button id="save">Geprüften Beleg speichern</button>
+<div id="saveStatus" class="status hidden" role="status"></div>
+
+<details style="margin-top:18px">
+<summary>Technische KI-Rohdaten</summary>
+<pre id="raw"></pre>
+</details>
+</section>
+
+<section class="card">
+<h2>Gespeicherte Belege</h2>
+<p class="muted">Die letzten 20 geprüften Dokumente aus Supabase.</p>
+<button id="refresh" class="secondary">Belegliste aktualisieren</button>
+<div id="listStatus" class="status hidden" role="status"></div>
+<div id="documentList"></div>
+</section>
+
+</section>
+</main>
+
+<footer>GastoPilot · Pilotbetrieb Das Friedrich</footer>
+
+<script type="module">
 import {createClient} from 'https://esm.sh/@supabase/supabase-js@2';
-const URL='https://sjnwfwcpgwsavygewwzb.supabase.co';
-const KEY='sb_publishable__tucXG-IQGUhibMqMSUzCw_5RnH_sbQ';
-const supabase=createClient(URL,KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:false}});
+
+const SUPABASE_URL='https://sjnwfwcpgwsavygewwzb.supabase.co';
+const SUPABASE_KEY='sb_publishable__tucXG-IQGUhibMqMSUzCw_5RnH_sbQ';
+
+const supabase=createClient(SUPABASE_URL,SUPABASE_KEY,{
+  auth:{
+    persistSession:true,
+    autoRefreshToken:true,
+    detectSessionInUrl:false
+  }
+});
+
 const $=id=>document.getElementById(id);
-let businessId=null, selectedFile=null;
-function status(id,msg,error=false){const el=$(id);el.textContent=msg;el.className='status '+(error?'error':'ok');}
-function text(el,value){el.textContent=value==null?'Nicht erkannt':String(value);}
-async function initialize(){const {data:{session}}=await supabase.auth.getSession();if(session){await enter();}}
-async function enter(){const {data:{user},error:ue}=await supabase.auth.getUser();if(ue||!user){$('login').classList.remove('hidden');$('workspace').classList.add('hidden');return;}
-const {data, error}=await supabase.from('business_members').select('business_id,role,businesses(name)').eq('user_id',user.id);
-if(error||!data?.length){status('loginStatus','Benutzer angemeldet, aber kein Betrieb zugeordnet: '+(error?.message||'Keine Mitgliedschaft'),true);await supabase.auth.signOut();return;}
-const item=data.find(x=>x.businesses?.name?.includes('Friedrich'))||data[0];businessId=item.business_id;
-text($('business'),(item.businesses?.name||'Betrieb')+' · '+item.role);
-$('login').classList.add('hidden');$('workspace').classList.remove('hidden');}
-$('loginForm').addEventListener('submit',async e=>{e.preventDefault();$('loginBtn').disabled=true;status('loginStatus','Anmeldung läuft …');try{const {error}=await supabase.auth.signInWithPassword({email:$('email').value.trim(),password:$('password').value});$('password').value='';if(error)throw error;await enter();}catch(err){status('loginStatus','Anmeldung fehlgeschlagen: '+err.message,true);}finally{$('loginBtn').disabled=false;}});
-$('logout').addEventListener('click',async()=>{await supabase.auth.signOut();businessId=null;$('workspace').classList.add('hidden');$('login').classList.remove('hidden');$('result').classList.add('hidden');});
-$('photo').addEventListener('change',()=>{selectedFile=$('photo').files?.[0]||null;$('scan').disabled=!selectedFile;if(!selectedFile)return;if(!['image/jpeg','image/png','image/webp'].includes(selectedFile.type)){status('scanStatus','Bitte JPG, PNG oder WebP auswählen. PDFs folgen später.',true);$('scan').disabled=true;return;}$('preview').src=URL.createObjectURL(selectedFile);$('preview').classList.remove('hidden');$('result').classList.add('hidden');});
-function imageToBase64(file){return new Promise((resolve,reject)=>{const r=new FileReader();r.onerror=()=>reject(new Error('Foto konnte nicht gelesen werden'));r.onload=()=>resolve(String(r.result).split(',')[1]);r.readAsDataURL(file);});}
-function compress(file){return new Promise((resolve,reject)=>{const img=new Image();const blobUrl=window.URL.createObjectURL(file);img.onload=()=>{const scale=Math.min(1,1800/Math.max(img.width,img.height));const c=document.createElement('canvas');c.width=Math.round(img.width*scale);c.height=Math.round(img.height*scale);c.getContext('2d').drawImage(img,0,0,c.width,c.height);window.URL.revokeObjectURL(blobUrl);c.toBlob(b=>b?resolve(b):reject(new Error('Foto konnte nicht verarbeitet werden')),'image/jpeg',.82);};img.onerror=()=>reject(new Error('Bildformat konnte nicht geöffnet werden'));img.src=blobUrl;});}
-$('scan').addEventListener('click',async()=>{if(!businessId||!selectedFile)return;$('scan').disabled=true;status('scanStatus','Foto wird vorbereitet und sicher ausgewertet …');try{const compressed=await compress(selectedFile);const base64=await imageToBase64(compressed);const {data,error}=await supabase.functions.invoke('analyze-receipt',{body:{business_id:businessId,image_base64:base64,mime_type:'image/jpeg'}});if(error){let message=error.message;try{const ctx=error.context;if(ctx?.json){const body=await ctx.json();message=body.error||message;}}catch{}throw new Error(message);}if(!data?.success)throw new Error(data?.error||'Unbekannte Antwort');const d=data.data||{};$('fields').replaceChildren();const fields=[['Belegart',d.document_type],['Datum',d.date],['Lieferant',d.supplier],['Rechnungsnummer',d.invoice_number],['Brutto gesamt',d.gross_total],['Speisen brutto',d.food_gross],['Getränke brutto',d.drinks_gross],['Non-Food brutto',d.nonfood_gross],['Sonstiges brutto',d.other_gross],['Anmerkung',d.notes]];for(const [k,v] of fields){const wrap=document.createElement('div');const dt=document.createElement('dt');dt.textContent=k;const dd=document.createElement('dd');text(dd,v);wrap.append(dt,dd);$('fields').append(wrap);}const items=Array.isArray(d.sales_items)?d.sales_items:[];$('items').textContent=items.length?items.map(x=>`${x.name||'Artikel'}: ${x.quantity??'?'} Stück`).join(' · '):'Keine Artikel erkannt';$('raw').textContent=JSON.stringify(d,null,2);$('result').classList.remove('hidden');status('scanStatus','Auswertung erhalten. Bitte Werte kontrollieren.');}catch(err){status('scanStatus','Fehler: '+err.message,true);}finally{$('scan').disabled=false;}});
-initialize().catch(err=>status('loginStatus','Initialisierung fehlgeschlagen: '+err.message,true));
-</script></body></html>
+
+let businessId=null;
+let selectedFile=null;
+let extractedData=null;
+let currentUser=null;
+let previewUrl=null;
+
+function status(id,message,error=false){
+  const el=$(id);
+  el.textContent=message;
+  el.className='status '+(error?'error':'ok');
+}
+
+function setValue(id,value){
+  $(id).value=value==null?'':String(value);
+}
+
+function optionalNumber(id){
+  const value=$(id).value.trim();
+  if(value==='')return null;
+  const number=Number(value);
+  if(!Number.isFinite(number)||number<0){
+    throw new Error('Ungültiger Betrag im Feld: '+id);
+  }
+  return Math.round(number*100)/100;
+}
+
+function euro(value){
+  if(value==null)return '–';
+  return new Intl.NumberFormat('de-AT',{
+    style:'currency',
+    currency:'EUR'
+  }).format(Number(value));
+}
+
+function safeDate(value){
+  return typeof value==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(value)
+    ?value:null;
+}
+
+async function initialize(){
+  const {data:{session}}=await supabase.auth.getSession();
+  if(session)await enter();
+}
+
+async function enter(){
+  const {data:{user},error:userError}=await supabase.auth.getUser();
+
+  if(userError||!user){
+    $('login').classList.remove('hidden');
+    $('workspace').classList.add('hidden');
+    return;
+  }
+
+  const {data,error}=await supabase
+    .from('business_members')
+    .select('business_id,role,businesses(name)')
+    .eq('user_id',user.id);
+
+  if(error||!data?.length){
+    status(
+      'loginStatus',
+      'Benutzer angemeldet, aber kein Betrieb zugeordnet: '+
+      (error?.message||'Keine Mitgliedschaft'),
+      true
+    );
+    await supabase.auth.signOut();
+    return;
+  }
+
+  const membership=
+    data.find(x=>x.businesses?.name?.includes('Friedrich'))||data[0];
+
+  businessId=membership.business_id;
+  currentUser=user;
+
+  $('business').textContent=
+    (membership.businesses?.name||'Betrieb')+' · '+membership.role;
+
+  $('login').classList.add('hidden');
+  $('workspace').classList.remove('hidden');
+
+  await loadDocuments();
+}
+
+$('loginForm').addEventListener('submit',async event=>{
+  event.preventDefault();
+  $('loginBtn').disabled=true;
+  status('loginStatus','Anmeldung läuft …');
+
+  try{
+    const {error}=await supabase.auth.signInWithPassword({
+      email:$('email').value.trim(),
+      password:$('password').value
+    });
+
+    $('password').value='';
+
+    if(error)throw error;
+    await enter();
+  }catch(error){
+    status('loginStatus','Anmeldung fehlgeschlagen: '+error.message,true);
+  }finally{
+    $('loginBtn').disabled=false;
+  }
+});
+
+$('logout').addEventListener('click',async()=>{
+  await supabase.auth.signOut();
+  businessId=null;
+  currentUser=null;
+  extractedData=null;
+  selectedFile=null;
+
+  $('workspace').classList.add('hidden');
+  $('login').classList.remove('hidden');
+  $('result').classList.add('hidden');
+});
+
+$('photo').addEventListener('change',()=>{
+  selectedFile=$('photo').files?.[0]||null;
+  extractedData=null;
+  $('result').classList.add('hidden');
+  $('scan').disabled=!selectedFile;
+
+  if(previewUrl){
+    URL.revokeObjectURL(previewUrl);
+    previewUrl=null;
+  }
+
+  if(!selectedFile)return;
+
+  if(!['image/jpeg','image/png','image/webp'].includes(selectedFile.type)){
+    status('scanStatus','Bitte JPG, PNG oder WebP auswählen.',true);
+    $('scan').disabled=true;
+    return;
+  }
+
+  previewUrl=URL.createObjectURL(selectedFile);
+  $('preview').src=previewUrl;
+  $('preview').classList.remove('hidden');
+});
+
+function imageToBase64(file){
+  return new Promise((resolve,reject)=>{
+    const reader=new FileReader();
+
+    reader.onerror=()=>reject(
+      new Error('Foto konnte nicht gelesen werden')
+    );
+
+    reader.onload=()=>resolve(
+      String(reader.result).split(',')[1]
+    );
+
+    reader.readAsDataURL(file);
+  });
+}
+
+function compress(file){
+  return new Promise((resolve,reject)=>{
+    const img=new Image();
+    const objectUrl=URL.createObjectURL(file);
+
+    img.onload=()=>{
+      const scale=Math.min(1,1800/Math.max(img.width,img.height));
+      const canvas=document.createElement('canvas');
+
+      canvas.width=Math.round(img.width*scale);
+      canvas.height=Math.round(img.height*scale);
+
+      canvas.getContext('2d').drawImage(
+        img,0,0,canvas.width,canvas.height
+      );
+
+      URL.revokeObjectURL(objectUrl);
+
+      canvas.toBlob(
+        blob=>blob?resolve(blob):reject(
+          new Error('Foto konnte nicht verarbeitet werden')
+        ),
+        'image/jpeg',
+        0.82
+      );
+    };
+
+    img.onerror=()=>{
+      URL.revokeObjectURL(objectUrl);
+      reject(new Error('Bild konnte nicht geöffnet werden'));
+    };
+
+    img.src=objectUrl;
+  });
+}
+
+$('scan').addEventListener('click',async()=>{
+  if(!businessId||!selectedFile)return;
+
+  $('scan').disabled=true;
+  status('scanStatus','Foto wird vorbereitet und mit KI ausgewertet …');
+
+  try{
+    const compressed=await compress(selectedFile);
+    const base64=await imageToBase64(compressed);
+
+    const {data,error}=await supabase.functions.invoke(
+      'analyze-receipt',
+      {
+        body:{
+          business_id:businessId,
+          image_base64:base64,
+          mime_type:'image/jpeg'
+        }
+      }
+    );
+
+    if(error){
+      let message=error.message;
+
+      try{
+        if(error.context?.json){
+          const response=await error.context.json();
+          message=response.error||message;
+        }
+      }catch{}
+
+      throw new Error(message);
+    }
+
+    if(!data?.success){
+      throw new Error(data?.error||'Unbekannte KI-Antwort');
+    }
+
+    extractedData=data.data||{};
+    const d=extractedData;
+
+    setValue(
+      'documentType',
+      ['cash_report','invoice'].includes(d.document_type)
+        ?d.document_type:'other'
+    );
+
+    setValue('documentDate',safeDate(d.date));
+    setValue('grossTotal',d.gross_total);
+    setValue('supplier',d.supplier);
+    setValue('invoiceNumber',d.invoice_number);
+    setValue('foodGross',d.food_gross);
+    setValue('drinksGross',d.drinks_gross);
+    setValue('nonfoodGross',d.nonfood_gross);
+    setValue('otherGross',d.other_gross);
+    setValue('notes',d.notes);
+
+    const items=Array.isArray(d.sales_items)?d.sales_items:[];
+
+    $('items').textContent=items.length
+      ?items.map(x=>
+          `${x.name||'Artikel'}: ${x.quantity??'?'} Stück`
+        ).join(' · ')
+      :'Keine Artikel erkannt';
+
+    $('raw').textContent=JSON.stringify(d,null,2);
+    $('saveStatus').className='status hidden';
+    $('result').classList.remove('hidden');
+
+    status('scanStatus','KI-Auswertung fertig. Bitte Daten prüfen.');
+
+    $('result').scrollIntoView({
+      behavior:'smooth',
+      block:'start'
+    });
+
+  }catch(error){
+    status('scanStatus','Fehler: '+error.message,true);
+  }finally{
+    $('scan').disabled=false;
+  }
+});
+
+$('save').addEventListener('click',async()=>{
+  if(!businessId||!currentUser||!extractedData){
+    status('saveStatus','Bitte zuerst einen Beleg auslesen.',true);
+    return;
+  }
+
+  const documentType=$('documentType').value;
+  const documentDate=$('documentDate').value||null;
+
+  if(!documentDate){
+    status('saveStatus','Bitte ein Belegdatum eintragen.',true);
+    return;
+  }
+
+  $('save').disabled=true;
+  status('saveStatus','Geprüfter Beleg wird gespeichert …');
+
+  try{
+    const grossTotal=optionalNumber('grossTotal');
+
+    if(grossTotal===null){
+      throw new Error('Bitte den Bruttobetrag eintragen.');
+    }
+
+    const reviewedData={
+      ...extractedData,
+      document_type:documentType,
+      date:documentDate,
+      supplier:$('supplier').value.trim()||null,
+      invoice_number:$('invoiceNumber').value.trim()||null,
+      gross_total:grossTotal,
+      food_gross:optionalNumber('foodGross'),
+      drinks_gross:optionalNumber('drinksGross'),
+      nonfood_gross:optionalNumber('nonfoodGross'),
+      other_gross:optionalNumber('otherGross'),
+      notes:$('notes').value.trim()||null,
+      reviewed_at:new Date().toISOString()
+    };
+
+    const payload={
+      business_id:businessId,
+      uploaded_by:currentUser.id,
+      document_type:documentType,
+      document_date:documentDate,
+      supplier:reviewedData.supplier,
+      invoice_number:reviewedData.invoice_number,
+      status:'reviewed',
+      extracted_data:reviewedData
+    };
+
+    const {error}=await supabase
+      .from('documents')
+      .insert(payload);
+
+    if(error)throw error;
+
+    status(
+      'saveStatus',
+      'Beleg erfolgreich gespeichert! Die geprüften Daten sind jetzt in Supabase.'
+    );
+
+    extractedData=null;
+    $('save').disabled=true;
+
+    await loadDocuments();
+
+  }catch(error){
+    status(
+      'saveStatus',
+      'Speichern fehlgeschlagen: '+error.message,
+      true
+    );
+  }finally{
+    if(extractedData)$('save').disabled=false;
+  }
+});
+
+async function loadDocuments(){
+  if(!businessId)return;
+
+  status('listStatus','Gespeicherte Belege werden geladen …');
+
+  const {data,error}=await supabase
+    .from('documents')
+    .select('id,document_type,document_date,supplier,status,extracted_data,created_at')
+    .eq('business_id',businessId)
+    .order('created_at',{ascending:false})
+    .limit(20);
+
+  const list=$('documentList');
+  list.replaceChildren();
+
+  if(error){
+    status('listStatus','Belegliste konnte nicht geladen werden: '+error.message,true);
+    return;
+  }
+
+  if(!data?.length){
+    status('listStatus','Noch keine Belege gespeichert.');
+    return;
+  }
+
+  $('listStatus').className='status hidden';
+
+  for(const document of data){
+    const row=document.createElement('div');
+    row.className='entry';
+
+    const title=document.createElement('strong');
+    title.textContent=
+      (document.document_type==='cash_report'
+        ?'Kassenbericht'
+        :document.document_type==='invoice'
+          ?'Rechnung'
+          :'Sonstiger Beleg')+
+      ' · '+(document.document_date||'Ohne Datum');
+
+    const details=document.createElement('small');
+    details.textContent=
+      (document.supplier||'Das Friedrich')+
+      ' · '+euro(document.extracted_data?.gross_total);
+
+    const state=document.createElement('small');
+    state.textContent=
+      document.status==='reviewed'
+        ?'Geprüft und gespeichert'
+        :'Status: '+document.status;
+
+    row.append(title,details,state);
+    list.append(row);
+  }
+}
+
+$('refresh').addEventListener('click',loadDocuments);
+
+initialize().catch(error=>{
+  status(
+    'loginStatus',
+    'Initialisierung fehlgeschlagen: '+error.message,
+    true
+  );
+});
+</script>
+
+</body>
+</html>
