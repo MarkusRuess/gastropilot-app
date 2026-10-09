@@ -71,7 +71,6 @@ footer{text-align:center;color:#778595;font-size:12px;padding:22px}
 <strong>GastoPilot</strong>
 <small>Das Friedrich · Abrechnungen und Rechnungen</small>
 </header>
-
 <main>
 <section id="login" class="card">
 <h2>Anmelden</h2>
@@ -99,36 +98,21 @@ footer{text-align:center;color:#778595;font-size:12px;padding:22px}
 <section class="card" aria-label="Monatsübersicht">
 <h2 id="monthTitle">Monatsübersicht</h2>
 <div class="dashboard">
-<div class="metric">
-<span>Umsatz bisher (brutto)</span>
-<strong id="monthRevenue">–</strong>
-</div>
-<div class="metric">
-<span>Nettoumsatz (erfasst)</span>
-<strong id="monthNet">–</strong>
-</div>
-<div class="metric">
-<span>Umsatzsteuer (erfasst)</span>
-<strong id="monthVat">–</strong>
-</div>
-<div class="metric">
-<span>Erfasste Abrechnungen</span>
-<strong id="monthCount">–</strong>
-</div>
+<div class="metric"><span>Umsatz bisher (brutto)</span><strong id="monthRevenue">–</strong></div>
+<div class="metric"><span>Nettoumsatz (erfasst)</span><strong id="monthNet">–</strong></div>
+<div class="metric"><span>Umsatzsteuer (erfasst)</span><strong id="monthVat">–</strong></div>
+<div class="metric"><span>Erfasste Abrechnungen</span><strong id="monthCount">–</strong></div>
 </div>
 <div class="lastreport">
 <strong>Letzte Abrechnung</strong>
 <div id="lastReport">Wird geladen …</div>
 </div>
 <h3>Top 3 Artikel im Monat</h3>
-<ol id="monthTop" class="toplist">
-<li>Noch keine Daten</li>
-</ol>
+<ol id="monthTop" class="toplist"><li>Noch keine Daten</li></ol>
 <p class="muted" id="monthHint">Nur gespeicherte Tagesabrechnungen.</p>
 </section>
 
 <div class="sectiontag">Block 1 · Tagesabrechnungen</div>
-
 <section class="card">
 <h2 id="captureTitle">Tagesabrechnung erfassen</h2>
 <div class="modebuttons">
@@ -149,14 +133,14 @@ footer{text-align:center;color:#778595;font-size:12px;padding:22px}
 
 <section id="results" class="card hidden">
 <h2>Ergebnisse prüfen</h2>
-<p class="muted" id="resultsHint">Prüfe alle erkannten Werte. Fehlende Angaben bleiben leer. Erst nach deiner Bestätigung wird gespeichert.</p>
+<p class="muted" id="resultsHint">Prüfe alle erkannten Werte. Erst nach deiner Bestätigung wird gespeichert.</p>
 <div id="resultsList"></div>
 <div id="saveStatus" class="status hidden" role="status"></div>
 </section>
 
 <section class="card">
 <h2>Gespeicherte Tagesabrechnungen</h2>
-<p class="muted">Die letzten 20 Tagesabrechnungen mit Detailansicht.</p>
+<p class="muted">Die letzten 20 Tagesabrechnungen mit Detailansicht und Hochladedatum.</p>
 <button id="refresh" class="secondary">Belegliste aktualisieren</button>
 <div id="listStatus" class="status hidden" role="status"></div>
 <div id="documentList"></div>
@@ -165,12 +149,11 @@ footer{text-align:center;color:#778595;font-size:12px;padding:22px}
 <div class="sectiontag">Block 2 · Rechnungen</div>
 <section class="card">
 <h2>Lieferantenrechnungen</h2>
-<p class="muted">Diesen Bereich entwickeln wir als Nächstes. Die bisherige Rechnungserfassung bleibt über die Auswahl „Rechnungen“ oben erreichbar.</p>
+<p class="muted">Diesen Bereich entwickeln wir als Nächstes. Die Rechnungserfassung bleibt über die Auswahl „Rechnungen“ oben erreichbar.</p>
 <div id="invoiceList"></div>
 </section>
 </section>
 </main>
-
 <footer>GastoPilot · Pilotbetrieb Das Friedrich</footer>
 
 <script type="module">
@@ -195,7 +178,6 @@ let mode='cash_report';
 let photos=[];
 let results=[];
 let busy=false;
-
 const MAX_PHOTOS=12;
 
 function status(id,msg,error=false){
@@ -209,8 +191,7 @@ function money(value){
   const n=Number(value);
   return Number.isFinite(n)
     ?new Intl.NumberFormat('de-AT',{
-      style:'currency',
-      currency:'EUR'
+      style:'currency',currency:'EUR'
     }).format(n)
     :'–';
 }
@@ -218,34 +199,30 @@ function money(value){
 function viennaToday(){
   const parts=new Intl.DateTimeFormat('en-CA',{
     timeZone:'Europe/Vienna',
-    year:'numeric',
-    month:'2-digit',
-    day:'2-digit'
+    year:'numeric',month:'2-digit',day:'2-digit'
   }).formatToParts(new Date());
-
   const get=type=>parts.find(p=>p.type===type)?.value;
   return `${get('year')}-${get('month')}-${get('day')}`;
-}
-
-function austrianDate(value){
-  if(!value)return '–';
-  const parts=String(value).slice(0,10).split('-');
-  return parts.length===3
-    ?`${parts[2]}.${parts[1]}.${parts[0]}`
-    :value;
 }
 
 function dayDate(value){
   if(!value)return '–';
   const d=new Date(String(value).slice(0,10)+'T12:00:00Z');
-  return Number.isNaN(d.getTime())
-    ?'–'
-    :new Intl.DateTimeFormat('de-AT',{
-      weekday:'long',
-      day:'2-digit',
-      month:'2-digit',
-      year:'numeric',
-      timeZone:'UTC'
+  return Number.isNaN(d.getTime())?'–':
+    new Intl.DateTimeFormat('de-AT',{
+      weekday:'long',day:'2-digit',month:'2-digit',
+      year:'numeric',timeZone:'UTC'
+    }).format(d);
+}
+
+function viennaTimestamp(value){
+  if(!value)return '–';
+  const d=new Date(value);
+  return Number.isNaN(d.getTime())?'–':
+    new Intl.DateTimeFormat('de-AT',{
+      timeZone:'Europe/Vienna',
+      day:'2-digit',month:'2-digit',year:'numeric',
+      hour:'2-digit',minute:'2-digit'
     }).format(d);
 }
 
@@ -271,21 +248,6 @@ function topItems(docs){
   );
 }
 
-function viennaTimestamp(value){
-  if(!value)return '–';
-  const d=new Date(value);
-  return Number.isNaN(d.getTime())
-    ?'–'
-    :new Intl.DateTimeFormat('de-AT',{
-      timeZone:'Europe/Vienna',
-      day:'2-digit',
-      month:'2-digit',
-      year:'numeric',
-      hour:'2-digit',
-      minute:'2-digit'
-    }).format(d);
-}
-
 async function loadDashboard(){
   if(!businessId)return;
 
@@ -298,9 +260,7 @@ async function loadDashboard(){
 
   $('monthTitle').textContent=new Intl.DateTimeFormat(
     'de-AT',{
-      month:'long',
-      year:'numeric',
-      timeZone:'Europe/Vienna'
+      month:'long',year:'numeric',timeZone:'Europe/Vienna'
     }
   ).format(new Date(`${start}T12:00:00Z`));
 
@@ -311,8 +271,7 @@ async function loadDashboard(){
   $('lastReport').textContent='Wird geladen …';
 
   try{
-    let count=0;
-    let total=0,net=0,vat=0;
+    let count=0,total=0,net=0,vat=0;
     let netMissing=0,vatMissing=0;
     const allDocs=[];
     let offset=0;
@@ -336,26 +295,30 @@ async function loadDashboard(){
       allDocs.push(...batch);
 
       for(const doc of batch){
-        const gross=doc.extracted_data?.gross_total;
-        if(gross!==null&&gross!==undefined&&gross!==''){
-          const n=Number(gross);
+        const values=doc.extracted_data||{};
+        if(values.gross_total!==null&&
+           values.gross_total!==undefined&&
+           values.gross_total!==''){
+          const n=Number(values.gross_total);
           if(Number.isFinite(n))total+=n;
         }
 
-        const n=doc.extracted_data?.net_total;
-        if(n===null||n===undefined||n===''||
-           !Number.isFinite(Number(n))){
+        if(values.net_total===null||
+           values.net_total===undefined||
+           values.net_total===''||
+           !Number.isFinite(Number(values.net_total))){
           netMissing++;
         }else{
-          net+=Number(n);
+          net+=Number(values.net_total);
         }
 
-        const v=doc.extracted_data?.vat_total;
-        if(v===null||v===undefined||v===''||
-           !Number.isFinite(Number(v))){
+        if(values.vat_total===null||
+           values.vat_total===undefined||
+           values.vat_total===''||
+           !Number.isFinite(Number(values.vat_total))){
           vatMissing++;
         }else{
-          vat+=Number(v);
+          vat+=Number(values.vat_total);
         }
       }
 
@@ -398,7 +361,7 @@ async function loadDashboard(){
       :'Noch keine Abrechnung gespeichert';
 
     $('monthHint').textContent=
-      'Nur erfasste Tagesabrechnungen. Fehlende Tage sind nicht enthalten; Rechnungen zählen nicht zum Umsatz.'+
+      'Nur gespeicherte Tagesabrechnungen. Fehlende Tage sind nicht enthalten; Rechnungen zählen nicht zum Umsatz.'+
       ((netMissing||vatMissing)
         ?' * Netto und Steuer sind unvollständig, wenn einzelne Tage keine Werte enthalten.'
         :'');
@@ -409,7 +372,7 @@ async function loadDashboard(){
     $('monthVat').textContent='–';
     $('monthCount').textContent='–';
     $('lastReport').textContent='Monatsdaten konnten nicht geladen werden.';
-    $('monthHint').textContent='Fehler beim Laden: '+error.message;
+    $('monthHint').textContent='Fehler: '+error.message;
   }
 }
 
@@ -480,7 +443,7 @@ function setMode(next){
 
   $('resultsHint').textContent=mode==='cash_report'
     ?'Prüfe Brutto, Netto, Steuer, Zahlungsarten, Bons und Artikel vor dem Speichern.'
-    :'Prüfe die Lieferanten, Rechnungsnummern und Beträge vor dem Speichern.';
+    :'Prüfe Lieferant, Rechnungsnummer und Beträge vor dem Speichern.';
 
   results=[];
   $('results').classList.add('hidden');
@@ -529,6 +492,14 @@ function renderPhotos(){
   );
 
   $('scan').disabled=busy||photos.length===0;
+}
+
+function clearPhotoSelection(){
+  photos.forEach(p=>URL.revokeObjectURL(p.url));
+  photos=[];
+  $('photos').value='';
+  $('cameraInput').value='';
+  renderPhotos();
 }
 
 function addPhotos(fileList){
@@ -583,9 +554,7 @@ $('cameraInput').onchange=e=>{
 };
 
 $('clearPhotos').onclick=()=>{
-  photos.forEach(p=>URL.revokeObjectURL(p.url));
-  photos=[];
-  renderPhotos();
+  clearPhotoSelection();
   results=[];
   $('results').classList.add('hidden');
 };
@@ -758,7 +727,6 @@ function renderResults(){
     pages.className='muted';
     pages.textContent='Zugeordnete Fotos: '+
       (indices.length?indices.join(', '):'nicht eindeutig erkannt');
-
     card.append(pages);
 
     if(!indices.length){
@@ -825,7 +793,6 @@ function renderResults(){
     const note=window.document.createElement('textarea');
     note.dataset.key='notes';
     note.value=doc.notes??'';
-
     card.append(noteLabel,note);
 
     const itemTitle=window.document.createElement('h3');
@@ -833,7 +800,6 @@ function renderResults(){
 
     const items=window.document.createElement('div');
     items.className='muted';
-
     items.textContent=
       Array.isArray(doc.sales_items)&&doc.sales_items.length
         ?doc.sales_items.map(
@@ -890,7 +856,9 @@ async function saveDocument(card,doc,button){
 
   busy=true;
   button.disabled=true;
-  show('Beleg wird gespeichert …');
+  show('Beleg wird geprüft …');
+
+  let saved=false;
 
   try{
     const optionalNumber=key=>
@@ -923,27 +891,62 @@ async function saveDocument(card,doc,button){
       throw Error('Bitte den Bruttobetrag eintragen.');
     }
 
-    if(
-      reviewed.receipt_count!==null&&
-      (!Number.isInteger(reviewed.receipt_count)||
-       reviewed.receipt_count<0)
-    ){
+    if(reviewed.receipt_count!==null&&
+       (!Number.isInteger(reviewed.receipt_count)||
+        reviewed.receipt_count<0)){
       throw Error('Bonanzahl muss eine ganze Zahl sein.');
     }
 
-    if(
-      reviewed.net_total!==null&&
-      reviewed.vat_total!==null&&
-      Math.abs(
-        reviewed.net_total+
-        reviewed.vat_total-
-        reviewed.gross_total
-      )>0.03
-    ){
+    if(reviewed.net_total!==null&&
+       reviewed.vat_total!==null&&
+       Math.abs(
+         reviewed.net_total+
+         reviewed.vat_total-
+         reviewed.gross_total
+       )>0.03){
       throw Error(
         'Netto + Umsatzsteuer stimmt nicht mit Brutto überein. Bitte prüfen.'
       );
     }
+
+    // Duplikatprüfung vor dem Speichern.
+    if(mode==='cash_report'){
+      const {data:existing,error:checkError}=await supabase
+        .from('documents')
+        .select('id,created_at,extracted_data')
+        .eq('business_id',businessId)
+        .eq('document_type','cash_report')
+        .eq('document_date',reviewed.date)
+        .limit(10);
+
+      if(checkError){
+        throw Error('Duplikatprüfung fehlgeschlagen: '+checkError.message);
+      }
+
+      if(existing?.length){
+        const details=existing.map(x=>
+          '• Hochgeladen '+viennaTimestamp(x.created_at)+
+          ' · '+money(x.extracted_data?.gross_total)
+        ).join('\n');
+
+        const proceed=window.confirm(
+          'ACHTUNG: Für '+dayDate(reviewed.date)+
+          ' gibt es bereits '+existing.length+
+          ' gespeicherte Abrechnung(en):\n\n'+details+
+          '\n\nNochmals speichern? Das würde den Monatsumsatz doppelt zählen, bis du den alten Beleg löschst.'
+        );
+
+        if(!proceed){
+          show(
+            'Speichern abgebrochen. Der vorhandene Beleg bleibt unverändert.',
+            true
+          );
+          return;
+        }
+      }
+    }
+
+    show('Beleg wird gespeichert …');
 
     const {error}=await supabase
       .from('documents')
@@ -960,19 +963,32 @@ async function saveDocument(card,doc,button){
 
     if(error)throw error;
 
+    saved=true;
     button.textContent='Gespeichert';
-    show('Beleg erfolgreich gespeichert.');
+    show('Beleg erfolgreich gespeichert. Die Fotoauswahl wurde geleert.');
 
-    await Promise.all([
-      loadDocuments(),
-      loadDashboard()
-    ]);
+    // Nach erfolgreichem Speichern Fotos entfernen.
+    clearPhotoSelection();
+
+    try{
+      await Promise.all([
+        loadDocuments(),
+        loadDashboard()
+      ]);
+    }catch(err){
+      status(
+        'listStatus',
+        'Beleg gespeichert, Liste konnte nicht aktualisiert werden: '+err.message,
+        true
+      );
+    }
 
   }catch(err){
     show('Speichern fehlgeschlagen: '+err.message,true);
-    button.disabled=false;
   }finally{
     busy=false;
+    button.disabled=saved;
+    renderPhotos();
   }
 }
 
@@ -1029,7 +1045,12 @@ async function loadDocuments(){
       (savedDocument.supplier||'Das Friedrich')+
       ' · '+money(savedDocument.extracted_data?.gross_total);
 
-    row.append(title,detail);
+    // Neues Hochladedatum mit Uhrzeit.
+    const uploaded=window.document.createElement('small');
+    uploaded.textContent=
+      'Hochgeladen am '+viennaTimestamp(savedDocument.created_at);
+
+    row.append(title,detail,uploaded);
 
     if(isCash){
       const data=savedDocument.extracted_data||{};
@@ -1086,6 +1107,7 @@ async function loadDocuments(){
 
       for(const item of items){
         const tr=window.document.createElement('tr');
+
         const name=window.document.createElement('td');
         name.textContent=item.name||'–';
 
@@ -1110,6 +1132,7 @@ async function loadDocuments(){
         if(!window.confirm(
           'Diesen Beleg wirklich endgültig löschen?\n\n'+
           title.textContent+
+          '\nHochgeladen am '+viennaTimestamp(savedDocument.created_at)+
           '\n\nDieser Vorgang kann nicht rückgängig gemacht werden.'
         ))return;
 
