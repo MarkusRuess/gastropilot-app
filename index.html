@@ -6,1072 +6,1847 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#14243a">
 <title>GastroPilot · Das Friedrich</title>
+
 <style>
-:root{font-family:system-ui,-apple-system,Segoe UI,sans-serif;color:#14243a;background:#f4f7fa}
+:root{
+  font-family:system-ui,-apple-system,Segoe UI,sans-serif;
+  color:#14243a;
+  background:#f4f7fa
+}
 *{box-sizing:border-box}
 body{margin:0}
 header{background:#14243a;color:white;padding:22px}
 header b{font-size:27px}
-header small{display:block;color:#c2d0dd}
+header small{display:block;color:#c2d0dd;margin-top:4px}
 main{max-width:850px;margin:16px auto;padding:0 13px}
-.card{background:white;border:1px solid #e0e7ee;border-radius:15px;padding:18px;margin:14px 0;box-shadow:0 3px 14px #14243a0a}
+.card{
+  background:white;
+  border:1px solid #e0e7ee;
+  border-radius:15px;
+  padding:18px;
+  margin:14px 0;
+  box-shadow:0 3px 14px #14243a0a
+}
 h2{font-size:20px;margin:0 0 13px}
 h3{font-size:16px;margin:16px 0 8px}
 label{display:block;font-weight:650;margin:10px 0 5px}
-input,select,textarea{width:100%;border:1px solid #c8d2de;border-radius:9px;padding:10px;font:inherit;background:white;color:#14243a}
-button{background:#167a61;color:white;border:0;border-radius:10px;padding:11px 14px;font:inherit;font-weight:700;cursor:pointer;margin:8px 0}
+input,select,textarea{
+  width:100%;
+  border:1px solid #c8d2de;
+  border-radius:9px;
+  padding:10px;
+  font:inherit;
+  background:white;
+  color:#14243a
+}
+button{
+  background:#167a61;
+  color:white;
+  border:0;
+  border-radius:10px;
+  padding:11px 14px;
+  font:inherit;
+  font-weight:700;
+  cursor:pointer;
+  margin:8px 0
+}
 button.secondary{background:#e8eef4;color:#24384b}
-button.danger{background:#fff0ef;color:#a72f25;border:1px solid #edc7c3}
-button:disabled{opacity:.55;cursor:wait}
+button.danger{
+  background:#fff0ef;
+  color:#a72f25;
+  border:1px solid #edc7c3
+}
+button:disabled{opacity:.55;cursor:not-allowed}
 .hidden{display:none!important}
 .muted{color:#657588;font-size:13px;line-height:1.5}
-.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
-.metric{background:#f1f5f9;border-radius:12px;padding:13px;min-width:0}
+.grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:10px
+}
+.metric{
+  background:#f1f5f9;
+  border-radius:12px;
+  padding:13px;
+  min-width:0
+}
 .metric small{display:block;color:#64748b}
 .metric strong{font-size:22px;overflow-wrap:anywhere}
+.metric.important{background:#e8f5ef}
+.metric.warning{background:#fff3df}
 .full{grid-column:1/-1}
-.status{padding:11px;background:#edf7f2;border-radius:9px;margin:10px 0;white-space:pre-wrap}
+.status{
+  padding:11px;
+  background:#edf7f2;
+  border-radius:9px;
+  margin:10px 0;
+  white-space:pre-wrap
+}
 .error{background:#fff0ef;color:#a72f25}
 .entry{border-top:1px solid #e1e7ee;padding:12px 0}
 .entry small{display:block;color:#64748b}
-.thumbs{display:grid;grid-template-columns:repeat(auto-fill,minmax(105px,1fr));gap:9px}
-.thumb{border:1px solid #dbe4ed;border-radius:9px;padding:6px}
+.thumbs{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(105px,1fr));
+  gap:9px
+}
+.thumb{
+  border:1px solid #dbe4ed;
+  border-radius:9px;
+  padding:6px
+}
 .thumb img{width:100%;height:100px;object-fit:contain}
-.thumb small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.thumb small{
+  display:block;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap
+}
 .thumb button{font-size:12px;padding:5px}
-.result{border:1px solid #dbe4ed;border-radius:12px;padding:13px;margin:12px 0}
-details{background:#f5f8fb;border-radius:9px;padding:12px;margin:10px 0}
+.result{
+  border:1px solid #dbe4ed;
+  border-radius:12px;
+  padding:13px;
+  margin:12px 0
+}
+details{
+  background:#f5f8fb;
+  border-radius:9px;
+  padding:12px;
+  margin:10px 0
+}
 summary{cursor:pointer;font-weight:700}
 table{width:100%;border-collapse:collapse;font-size:13px}
-td,th{padding:7px 4px;border-bottom:1px solid #dce4ec;text-align:left}
+td,th{
+  padding:7px 4px;
+  border-bottom:1px solid #dce4ec;
+  text-align:left
+}
 td:last-child,th:last-child{text-align:right}
-.section{font-size:21px;font-weight:800;margin:25px 2px 8px}
-.pill{background:#e9f4ee;border-radius:7px;padding:3px 7px;font-size:12px}
-.warning{background:#fff7e3;border-radius:8px;padding:10px;font-size:13px}
-.row{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
-footer{text-align:center;color:#718096;padding:20px;font-size:12px}
-@media(max-width:430px){.metric strong{font-size:19px}}
+.section{
+  font-size:21px;
+  font-weight:800;
+  margin:25px 2px 8px
+}
+.row{
+  display:flex;
+  gap:10px;
+  align-items:center;
+  justify-content:space-between;
+  flex-wrap:wrap
+}
+.notice{
+  background:#fff7e3;
+  border-radius:9px;
+  padding:12px;
+  font-size:13px;
+  line-height:1.5
+}
+footer{
+  text-align:center;
+  color:#718096;
+  padding:20px;
+  font-size:12px
+}
+@media(max-width:430px){
+  .metric strong{font-size:19px}
+}
 </style>
 </head>
+
 <body>
+
 <header>
-<b>GastroPilot</b>
-<small>Das Friedrich · Betriebsübersicht</small>
+  <b>GastroPilot</b>
+  <small>Das Friedrich · Betriebsübersicht</small>
 </header>
+
 <main>
+
 <section id="login" class="card">
-<h2>Anmelden</h2>
-<form id="loginForm">
-<label>E-Mail<input id="email" type="email" value="office@markusruess.at" required></label>
-<label>Passwort<input id="password" type="password" required></label>
-<button>Anmelden</button>
-</form>
-<div id="loginStatus" class="status hidden"></div>
+  <h2>Anmelden</h2>
+  <form id="loginForm">
+    <label>
+      E-Mail
+      <input id="email" type="email"
+        value="office@markusruess.at" required>
+    </label>
+    <label>
+      Passwort
+      <input id="password" type="password" required>
+    </label>
+    <button>Anmelden</button>
+  </form>
+  <div id="loginStatus" class="status hidden"></div>
 </section>
 
 <div id="app" class="hidden">
+
 <section class="card">
-<div class="row">
-<div><h2>Willkommen!</h2><div id="business" class="muted"></div></div>
-<button id="logout" class="secondary">Abmelden</button>
-</div>
+  <div class="row">
+    <div>
+      <h2>Willkommen!</h2>
+      <div id="business" class="muted"></div>
+    </div>
+    <button id="logout" class="secondary">Abmelden</button>
+  </div>
 </section>
 
 <section class="card">
-<div class="row">
-<h2>Monatsübersicht</h2>
-<input id="month" type="month" style="max-width:175px">
-</div>
-<div class="grid">
-<div class="metric"><small>Umsatz brutto</small><strong id="gross">–</strong></div>
-<div class="metric"><small>Umsatz netto</small><strong id="net">–</strong></div>
-<div class="metric"><small>Umsatzsteuer</small><strong id="vat">–</strong></div>
-<div class="metric"><small>Erfasste Umsatztage</small><strong id="days">–</strong></div>
-<div class="metric"><small>Ø Tagesumsatz brutto</small><strong id="average">–</strong></div>
-<div class="metric"><small>Erfasste Rechnungen</small><strong id="invoices">–</strong></div>
-<div class="metric"><small>Ausgaben netto (Rechnungen)</small><strong id="expenses">–</strong></div>
-<div class="metric"><small>Einnahmen – Ausgaben (netto)</small><strong id="balance">–</strong></div>
-</div>
-<p id="dashboardNote" class="muted">Nur hochgeladene und gespeicherte Belege. Keine geschätzten Öffnungstage.</p>
-<h3>Top 3 verkaufte Artikel</h3>
-<ol id="top"></ol>
-<p class="muted" id="last"></p>
+
+  <div class="row">
+    <h2>Monatsübersicht</h2>
+    <input id="month" type="month"
+      style="max-width:175px">
+  </div>
+
+  <div class="grid">
+
+    <div class="metric">
+      <small>Umsatz brutto</small>
+      <strong id="gross">–</strong>
+    </div>
+
+    <div class="metric">
+      <small>Umsatz netto</small>
+      <strong id="net">–</strong>
+    </div>
+
+    <div class="metric">
+      <small>Umsatzsteuer</small>
+      <strong id="vat">–</strong>
+    </div>
+
+    <div class="metric">
+      <small>Erfasste Umsatztage</small>
+      <strong id="days">–</strong>
+    </div>
+
+    <div class="metric">
+      <small>Ø Tagesumsatz brutto</small>
+      <strong id="average">–</strong>
+    </div>
+
+    <div class="metric">
+      <small>Erfasste Rechnungen</small>
+      <strong id="invoices">–</strong>
+    </div>
+
+    <div class="metric important">
+      <small>Barumsatz</small>
+      <strong id="cashTotal">–</strong>
+    </div>
+
+    <div class="metric important">
+      <small>Kartenumsatz</small>
+      <strong id="cardTotal">–</strong>
+    </div>
+
+    <div class="metric">
+      <small>Sonstige Zahlungsarten</small>
+      <strong id="otherTotal">–</strong>
+    </div>
+
+    <div class="metric">
+      <small>Zahlungsabgleich</small>
+      <strong id="paymentCheck">–</strong>
+    </div>
+
+    <div class="metric">
+      <small>Ausgaben netto (Rechnungen)</small>
+      <strong id="expenses">–</strong>
+    </div>
+
+    <div class="metric">
+      <small>Einnahmen – Ausgaben (netto)</small>
+      <strong id="balance">–</strong>
+    </div>
+
+  </div>
+
+  <p id="dashboardNote" class="muted">
+    Es werden ausschließlich gespeicherte Belege ausgewertet.
+  </p>
+
+  <h3>Top 3 verkaufte Artikel</h3>
+  <ol id="top"></ol>
+
+  <p id="last" class="muted"></p>
+
 </section>
 
 <div class="section">Tagesabrechnungen</div>
+
 <section class="card">
-<h2>Tagesabrechnung erfassen</h2>
-<p class="muted">Mehrere Fotos einer Abrechnung gemeinsam auswählen. Maximal 12 Bilder.</p>
-<label>Fotos auswählen
-<input id="cashFiles" type="file" accept="image/jpeg,image/png,image/webp" multiple>
-</label>
-<button id="cashCamera" class="secondary">Foto aufnehmen</button>
-<input id="cashCameraInput" type="file" accept="image/*" capture="environment" class="hidden">
-<div id="cashPhotos" class="thumbs"></div>
-<p id="cashCount" class="muted">Keine Fotos ausgewählt.</p>
-<button id="cashScan">Auswertung starten</button>
-<div id="cashStatus" class="status hidden"></div>
-<div id="cashResults"></div>
+  <h2>Tagesabrechnung erfassen</h2>
+
+  <p class="muted">
+    Mehrere Fotos einer Tagesabrechnung gemeinsam auswählen.
+    Maximal 12 Bilder.
+  </p>
+
+  <label>
+    Fotos auswählen
+    <input id="cashFiles" type="file"
+      accept="image/jpeg,image/png,image/webp"
+      multiple>
+  </label>
+
+  <button id="cashCamera" class="secondary">
+    Foto aufnehmen
+  </button>
+
+  <input id="cashCameraInput"
+    type="file"
+    accept="image/*"
+    capture="environment"
+    class="hidden">
+
+  <div id="cashPhotos" class="thumbs"></div>
+  <p id="cashCount" class="muted">
+    Keine Fotos ausgewählt.
+  </p>
+
+  <button id="cashScan">Auswertung starten</button>
+
+  <div id="cashStatus" class="status hidden"></div>
+  <div id="cashResults"></div>
 </section>
 
 <section class="card">
-<div class="row">
-<h2>Archiv Tagesabrechnungen</h2>
-<button id="cashRefresh" class="secondary">Aktualisieren</button>
-</div>
-<div id="cashArchive"></div>
+  <div class="row">
+    <h2>Archiv Tagesabrechnungen</h2>
+    <button id="cashRefresh" class="secondary">
+      Aktualisieren
+    </button>
+  </div>
+
+  <div id="cashArchive"></div>
 </section>
 
 <div class="section">Lieferantenrechnungen</div>
+
 <section class="card">
-<h2>Rechnung erfassen</h2>
-<p class="muted">Fotos oder PDF-Dateien auswählen. PDF-Seiten werden vor der Auswertung in Bilder umgewandelt. Maximal 12 Seiten/Bilder pro Auswertung.</p>
-<label>Fotos oder PDF-Dateien
-<input id="invoiceFiles" type="file" accept="image/jpeg,image/png,image/webp,application/pdf" multiple>
-</label>
-<button id="invoiceCamera" class="secondary">Rechnung fotografieren</button>
-<input id="invoiceCameraInput" type="file" accept="image/*" capture="environment" class="hidden">
-<div id="invoicePhotos" class="thumbs"></div>
-<p id="invoiceCount" class="muted">Keine Dateien ausgewählt.</p>
-<button id="invoiceScan">Auswertung starten</button>
-<div id="invoiceStatus" class="status hidden"></div>
-<div id="invoiceResults"></div>
+  <h2>Rechnung erfassen</h2>
+
+  <p class="muted">
+    Fotos oder PDF-Dateien auswählen.
+    Maximal 12 Seiten oder Bilder pro Auswertung.
+  </p>
+
+  <label>
+    Fotos oder PDF-Dateien
+    <input id="invoiceFiles" type="file"
+      accept="image/jpeg,image/png,image/webp,application/pdf"
+      multiple>
+  </label>
+
+  <button id="invoiceCamera" class="secondary">
+    Rechnung fotografieren
+  </button>
+
+  <input id="invoiceCameraInput"
+    type="file"
+    accept="image/*"
+    capture="environment"
+    class="hidden">
+
+  <div id="invoicePhotos" class="thumbs"></div>
+
+  <p id="invoiceCount" class="muted">
+    Keine Dateien ausgewählt.
+  </p>
+
+  <button id="invoiceScan">Auswertung starten</button>
+
+  <div id="invoiceStatus" class="status hidden"></div>
+  <div id="invoiceResults"></div>
 </section>
 
 <section class="card">
-<div class="row">
-<h2>Archiv Lieferantenrechnungen</h2>
-<button id="invoiceRefresh" class="secondary">Aktualisieren</button>
-</div>
-<div id="invoiceArchive"></div>
+  <div class="row">
+    <h2>Archiv Lieferantenrechnungen</h2>
+    <button id="invoiceRefresh" class="secondary">
+      Aktualisieren
+    </button>
+  </div>
+
+  <div id="invoiceArchive"></div>
 </section>
+
 </div>
 </main>
+
 <footer>GastroPilot · Das Friedrich</footer>
 
 <script type="module">
-import {createClient} from 'https://esm.sh/@supabase/supabase-js@2';
+
+import {createClient}
+from 'https://esm.sh/@supabase/supabase-js@2';
 
 const db=createClient(
-'https://sjnwfwcpgwsavygewwzb.supabase.co',
-'sb_publishable__tucXG-IQGUhibMqMSUzCw_5RnH_sbQ'
+  'https://sjnwfwcpgwsavygewwzb.supabase.co',
+  'sb_publishable__tucXG-IQGUhibMqMSUzCw_5RnH_sbQ'
 );
 
 const $=id=>document.getElementById(id);
-let businessId=null,user=null,role=null;
+
+let businessId=null;
+let user=null;
+let role=null;
 let locked=false;
 
 const state={
-cash_report:{files:[],results:[]},
-invoice:{files:[],results:[]}
+  cash_report:{files:[],results:[]},
+  invoice:{files:[],results:[]}
 };
 
 const euro=x=>
-x===null||x===undefined||x===''||!Number.isFinite(Number(x))
-?'–'
-:new Intl.NumberFormat('de-AT',{
-style:'currency',currency:'EUR'
-}).format(Number(x));
+  x===null||
+  x===undefined||
+  x===''||
+  !Number.isFinite(Number(x))
+  ?'–'
+  :new Intl.NumberFormat('de-AT',{
+    style:'currency',
+    currency:'EUR'
+  }).format(Number(x));
 
-const dateLabel=x=>{
-if(!x)return '–';
-let d=new Date(String(x).slice(0,10)+'T12:00:00Z');
-return Number.isNaN(d.getTime())?'–':
-new Intl.DateTimeFormat('de-AT',{
-weekday:'long',day:'2-digit',month:'2-digit',
-year:'numeric',timeZone:'UTC'
-}).format(d);
-};
+function numericValue(value){
+  if(value===null||value===undefined||value===''){
+    return null;
+  }
+  const n=Number(value);
+  return Number.isFinite(n)?n:null;
+}
 
-const stamp=x=>x?
-new Intl.DateTimeFormat('de-AT',{
-timeZone:'Europe/Vienna',
-day:'2-digit',month:'2-digit',year:'numeric',
-hour:'2-digit',minute:'2-digit'
-}).format(new Date(x)):'–';
+function cents(value){
+  const n=numericValue(value);
+  return n===null?null:Math.round(n*100);
+}
 
-const message=(id,text,error=false)=>{
-let e=$(id);
-e.textContent=text;
-e.className='status'+(error?' error':'');
-};
+function dateLabel(x){
+  if(!x)return '–';
 
-const kindId=kind=>kind==='cash_report'?'cash':'invoice';
+  const d=new Date(String(x).slice(0,10)+'T12:00:00Z');
+
+  return Number.isNaN(d.getTime())
+  ?'–'
+  :new Intl.DateTimeFormat('de-AT',{
+    weekday:'long',
+    day:'2-digit',
+    month:'2-digit',
+    year:'numeric',
+    timeZone:'UTC'
+  }).format(d);
+}
+
+function stamp(x){
+  return x
+  ?new Intl.DateTimeFormat('de-AT',{
+    timeZone:'Europe/Vienna',
+    day:'2-digit',
+    month:'2-digit',
+    year:'numeric',
+    hour:'2-digit',
+    minute:'2-digit'
+  }).format(new Date(x))
+  :'–';
+}
+
+function message(id,text,error=false){
+  const e=$(id);
+  e.textContent=text;
+  e.className='status'+(error?' error':'');
+}
+
+function kindId(kind){
+  return kind==='cash_report'?'cash':'invoice';
+}
 
 function aggregateItems(docs){
-let map=new Map();
-for(const doc of docs){
-for(const item of doc.extracted_data?.sales_items||[]){
-let name=String(item.name||'').trim();
-let n=Number(item.quantity);
-if(!name||!Number.isFinite(n)||n<=0)continue;
-let key=name.toLocaleLowerCase('de-AT');
-let old=map.get(key);
-map.set(key,{
-name:old?.name||name,
-quantity:(old?.quantity||0)+n
-});
-}
-}
-return [...map.values()].sort(
-(a,b)=>b.quantity-a.quantity||
-a.name.localeCompare(b.name,'de-AT')
-);
+  const map=new Map();
+
+  for(const doc of docs){
+    for(const item of doc.extracted_data?.sales_items||[]){
+      const name=String(item.name||'').trim();
+      const n=Number(item.quantity);
+
+      if(!name||!Number.isFinite(n)||n<=0)continue;
+
+      const key=name.toLocaleLowerCase('de-AT');
+      const old=map.get(key);
+
+      map.set(key,{
+        name:old?.name||name,
+        quantity:(old?.quantity||0)+n
+      });
+    }
+  }
+
+  return [...map.values()].sort(
+    (a,b)=>b.quantity-a.quantity||
+    a.name.localeCompare(b.name,'de-AT')
+  );
 }
 
 function addFiles(kind,list){
-let s=state[kind];
-for(const f of [...list]){
-if(s.files.length>=12)break;
-if(![
-'image/jpeg','image/png','image/webp',
-...(kind==='invoice'?['application/pdf']:[])
-].includes(f.type))continue;
-s.files.push({
-file:f,
-url:f.type==='application/pdf'?null:URL.createObjectURL(f)
-});
-}
-s.results=[];
-$(kindId(kind)+'Results').replaceChildren();
-renderFiles(kind);
+  const s=state[kind];
+
+  for(const f of [...list]){
+    if(s.files.length>=12)break;
+
+    const allowed=[
+      'image/jpeg',
+      'image/png',
+      'image/webp',
+      ...(kind==='invoice'?['application/pdf']:[])
+    ];
+
+    if(!allowed.includes(f.type))continue;
+
+    const already=s.files.some(x=>
+      x.file.name===f.name&&
+      x.file.size===f.size&&
+      x.file.lastModified===f.lastModified
+    );
+
+    if(already)continue;
+
+    s.files.push({
+      file:f,
+      url:f.type==='application/pdf'
+        ?null
+        :URL.createObjectURL(f)
+    });
+  }
+
+  s.results=[];
+  $(kindId(kind)+'Results').replaceChildren();
+  renderFiles(kind);
 }
 
 function clearFiles(kind){
-let s=state[kind];
-s.files.forEach(f=>{
-if(f.url)URL.revokeObjectURL(f.url);
-});
-s.files=[];
-$(kindId(kind)+'Files').value='';
-$(kindId(kind)+'CameraInput').value='';
-renderFiles(kind);
+  const s=state[kind];
+
+  s.files.forEach(f=>{
+    if(f.url)URL.revokeObjectURL(f.url);
+  });
+
+  s.files=[];
+  s.results=[];
+
+  $(kindId(kind)+'Files').value='';
+  $(kindId(kind)+'CameraInput').value='';
+
+  renderFiles(kind);
 }
 
 function renderFiles(kind){
-let id=kindId(kind);
-let s=state[kind];
-let box=$(id+'Photos');
-box.replaceChildren();
+  const id=kindId(kind);
+  const s=state[kind];
+  const box=$(id+'Photos');
 
-s.files.forEach((entry,i)=>{
-let tile=document.createElement('div');
-tile.className='thumb';
+  box.replaceChildren();
 
-if(entry.url){
-let img=document.createElement('img');
-img.src=entry.url;
-tile.append(img);
-}else{
-let p=document.createElement('p');
-p.textContent='PDF';
-tile.append(p);
-}
+  s.files.forEach((entry,i)=>{
+    const tile=document.createElement('div');
+    tile.className='thumb';
 
-let name=document.createElement('small');
-name.textContent=entry.file.name;
+    if(entry.url){
+      const img=document.createElement('img');
+      img.src=entry.url;
+      tile.append(img);
+    }else{
+      const p=document.createElement('p');
+      p.textContent='PDF';
+      tile.append(p);
+    }
 
-let btn=document.createElement('button');
-btn.className='danger';
-btn.textContent='Entfernen';
-btn.disabled=locked;
-btn.onclick=()=>{
-if(entry.url)URL.revokeObjectURL(entry.url);
-s.files.splice(i,1);
-renderFiles(kind);
-};
+    const name=document.createElement('small');
+    name.textContent=entry.file.name;
 
-tile.append(name,btn);
-box.append(tile);
-});
+    const btn=document.createElement('button');
+    btn.className='danger';
+    btn.textContent='Entfernen';
+    btn.disabled=locked;
 
-$(id+'Count').textContent=s.files.length
-?s.files.length+' Datei(en) ausgewählt'
-:'Keine Dateien ausgewählt.';
+    btn.onclick=()=>{
+      if(entry.url)URL.revokeObjectURL(entry.url);
+      s.files.splice(i,1);
+      s.results=[];
+      $(id+'Results').replaceChildren();
+      renderFiles(kind);
+    };
 
-$(id+'Scan').disabled=locked||!s.files.length;
+    tile.append(name,btn);
+    box.append(tile);
+  });
+
+  $(id+'Count').textContent=s.files.length
+    ?s.files.length+' Datei(en) ausgewählt'
+    :'Keine Dateien ausgewählt.';
+
+  $(id+'Scan').disabled=locked||!s.files.length;
 }
 
 for(const kind of ['cash_report','invoice']){
-let id=kindId(kind);
+  const id=kindId(kind);
 
-$(id+'Files').onchange=e=>{
-addFiles(kind,e.target.files);
-e.target.value='';
-};
+  $(id+'Files').onchange=e=>{
+    addFiles(kind,e.target.files);
+    e.target.value='';
+  };
 
-$(id+'Camera').onclick=()=>$(id+'CameraInput').click();
+  $(id+'Camera').onclick=()=>{
+    $(id+'CameraInput').click();
+  };
 
-$(id+'CameraInput').onchange=e=>{
-addFiles(kind,e.target.files);
-e.target.value='';
-};
+  $(id+'CameraInput').onchange=e=>{
+    addFiles(kind,e.target.files);
+    e.target.value='';
+  };
 
-$(id+'Scan').onclick=()=>scan(kind);
-$(id+'Refresh').onclick=()=>loadAll();
+  $(id+'Scan').onclick=()=>scan(kind);
+  $(id+'Refresh').onclick=()=>loadAll();
 }
 
 async function imageBlob(file){
-return new Promise((resolve,reject)=>{
-let url=URL.createObjectURL(file);
-let img=new Image();
+  return new Promise((resolve,reject)=>{
+    const url=URL.createObjectURL(file);
+    const img=new Image();
 
-img.onload=()=>{
-let factor=Math.min(
-1,1700/Math.max(img.width,img.height)
-);
-let c=document.createElement('canvas');
-c.width=Math.max(1,Math.round(img.width*factor));
-c.height=Math.max(1,Math.round(img.height*factor));
-c.getContext('2d').drawImage(img,0,0,c.width,c.height);
-c.toBlob(blob=>{
-URL.revokeObjectURL(url);
-blob?resolve(blob):
-reject(Error('Bildkonvertierung fehlgeschlagen'));
-},'image/jpeg',.8);
-};
+    img.onload=()=>{
+      const factor=Math.min(
+        1,
+        1700/Math.max(img.width,img.height)
+      );
 
-img.onerror=()=>{
-URL.revokeObjectURL(url);
-reject(Error('Bild nicht lesbar'));
-};
-img.src=url;
-});
+      const c=document.createElement('canvas');
+
+      c.width=Math.max(
+        1,
+        Math.round(img.width*factor)
+      );
+
+      c.height=Math.max(
+        1,
+        Math.round(img.height*factor)
+      );
+
+      c.getContext('2d').drawImage(
+        img,0,0,c.width,c.height
+      );
+
+      c.toBlob(blob=>{
+        URL.revokeObjectURL(url);
+
+        blob
+          ?resolve(blob)
+          :reject(Error('Bildkonvertierung fehlgeschlagen'));
+
+      },'image/jpeg',.8);
+    };
+
+    img.onerror=()=>{
+      URL.revokeObjectURL(url);
+      reject(Error('Bild nicht lesbar'));
+    };
+
+    img.src=url;
+  });
 }
 
 async function pdfImages(file){
-const pdfjs=await import(
-'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.min.mjs'
-);
-pdfjs.GlobalWorkerOptions.workerSrc=
-'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.worker.min.mjs';
+  const pdfjs=await import(
+    'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.min.mjs'
+  );
 
-let pdf=await pdfjs.getDocument({
-data:new Uint8Array(await file.arrayBuffer())
-}).promise;
+  pdfjs.GlobalWorkerOptions.workerSrc=
+    'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.worker.min.mjs';
 
-if(pdf.numPages>12)
-throw Error('PDF hat mehr als 12 Seiten. Bitte aufteilen.');
+  const pdf=await pdfjs.getDocument({
+    data:new Uint8Array(await file.arrayBuffer())
+  }).promise;
 
-let out=[];
+  if(pdf.numPages>12){
+    throw Error(
+      'PDF hat mehr als 12 Seiten. Bitte aufteilen.'
+    );
+  }
 
-for(let n=1;n<=pdf.numPages;n++){
-let page=await pdf.getPage(n);
-let base=page.getViewport({scale:1});
-let v=page.getViewport({
-scale:Math.min(2,1700/Math.max(base.width,base.height))
-});
-let canvas=document.createElement('canvas');
-canvas.width=Math.round(v.width);
-canvas.height=Math.round(v.height);
+  const out=[];
 
-await page.render({
-canvasContext:canvas.getContext('2d'),
-viewport:v
-}).promise;
+  for(let n=1;n<=pdf.numPages;n++){
+    const page=await pdf.getPage(n);
+    const base=page.getViewport({scale:1});
 
-let blob=await new Promise(resolve=>
-canvas.toBlob(resolve,'image/jpeg',.8)
-);
+    const v=page.getViewport({
+      scale:Math.min(
+        2,
+        1700/Math.max(base.width,base.height)
+      )
+    });
 
-if(!blob)throw Error('PDF-Seite nicht lesbar');
-out.push(blob);
-}
-return out;
+    const canvas=document.createElement('canvas');
+    canvas.width=Math.round(v.width);
+    canvas.height=Math.round(v.height);
+
+    await page.render({
+      canvasContext:canvas.getContext('2d'),
+      viewport:v
+    }).promise;
+
+    const blob=await new Promise(resolve=>
+      canvas.toBlob(resolve,'image/jpeg',.8)
+    );
+
+    if(!blob){
+      throw Error('PDF-Seite nicht lesbar');
+    }
+
+    out.push(blob);
+  }
+
+  return out;
 }
 
 async function base64(blob){
-return new Promise((resolve,reject)=>{
-let r=new FileReader();
-r.onload=()=>resolve(String(r.result).split(',')[1]);
-r.onerror=()=>reject(Error('Datei nicht lesbar'));
-r.readAsDataURL(blob);
-});
+  return new Promise((resolve,reject)=>{
+    const r=new FileReader();
+
+    r.onload=()=>{
+      resolve(String(r.result).split(',')[1]);
+    };
+
+    r.onerror=()=>{
+      reject(Error('Datei nicht lesbar'));
+    };
+
+    r.readAsDataURL(blob);
+  });
 }
 
 async function scan(kind){
-if(locked||!businessId||!state[kind].files.length)return;
+  if(
+    locked||
+    !businessId||
+    !state[kind].files.length
+  )return;
 
-locked=true;
-renderFiles('cash_report');
-renderFiles('invoice');
+  locked=true;
 
-let id=kindId(kind);
-message(id+'Status','Dateien werden vorbereitet …');
-$(id+'Results').replaceChildren();
+  renderFiles('cash_report');
+  renderFiles('invoice');
 
-try{
-let blobs=[];
+  const id=kindId(kind);
 
-for(const entry of state[kind].files){
-let b=entry.file.type==='application/pdf'
-?await pdfImages(entry.file)
-:[await imageBlob(entry.file)];
+  message(
+    id+'Status',
+    'Dateien werden vorbereitet …'
+  );
 
-blobs.push(...b);
+  $(id+'Results').replaceChildren();
 
-if(blobs.length>12)
-throw Error('Mehr als 12 Seiten/Bilder. Bitte weniger Dateien auswählen.');
-}
+  try{
+    const blobs=[];
 
-let images=[];
-for(const blob of blobs){
-images.push({
-image_base64:await base64(blob),
-mime_type:'image/jpeg'
-});
-}
+    for(const entry of state[kind].files){
+      const b=entry.file.type==='application/pdf'
+        ?await pdfImages(entry.file)
+        :[await imageBlob(entry.file)];
 
-message(id+'Status','Auswertung läuft …');
+      blobs.push(...b);
 
-let {data,error}=await db.functions.invoke('analyze-receipt',{
-body:{business_id:businessId,mode:kind,images}
-});
+      if(blobs.length>12){
+        throw Error(
+          'Mehr als 12 Seiten/Bilder. Bitte weniger Dateien auswählen.'
+        );
+      }
+    }
 
-if(error)throw error;
+    const images=[];
 
-if(!data?.success||!data.documents?.length)
-throw Error(data?.error||'Keine Belege erkannt');
+    for(const blob of blobs){
+      images.push({
+        image_base64:await base64(blob),
+        mime_type:'image/jpeg'
+      });
+    }
 
-state[kind].results=data.documents;
-renderResults(kind);
+    message(id+'Status','Auswertung läuft …');
 
-message(
-id+'Status',
-data.documents.length+' Beleg(e) erkannt. Bitte prüfen und speichern.'
-);
-}catch(e){
-message(id+'Status','Fehler: '+e.message,true);
-}finally{
-locked=false;
-renderFiles('cash_report');
-renderFiles('invoice');
-}
+    const {data,error}=await db.functions.invoke(
+      'analyze-receipt',{
+        body:{
+          business_id:businessId,
+          mode:kind,
+          images
+        }
+      }
+    );
+
+    if(error)throw error;
+
+    if(!data?.success||!data.documents?.length){
+      throw Error(
+        data?.error||'Keine Belege erkannt'
+      );
+    }
+
+    state[kind].results=data.documents;
+
+    renderResults(kind);
+
+    message(
+      id+'Status',
+      data.documents.length+
+      ' Beleg(e) erkannt. Bitte prüfen und speichern.'
+    );
+
+  }catch(e){
+    message(
+      id+'Status',
+      'Fehler: '+e.message,
+      true
+    );
+  }finally{
+    locked=false;
+    renderFiles('cash_report');
+    renderFiles('invoice');
+  }
 }
 
 function makeField(label,key,value,type='text'){
-let wrap=document.createElement('label');
-wrap.textContent=label;
-let input=document.createElement('input');
-input.dataset.key=key;
-input.type=type;
-input.value=value??'';
+  const wrap=document.createElement('label');
+  wrap.textContent=label;
 
-if(type==='number'){
-input.min='0';
-input.step=key==='receipt_count'?'1':'0.01';
-}
+  const input=document.createElement('input');
+  input.dataset.key=key;
+  input.type=type;
+  input.value=value??'';
 
-wrap.append(input);
-return wrap;
+  if(type==='number'){
+    input.min='0';
+    input.step=key==='receipt_count'?'1':'0.01';
+  }
+
+  wrap.append(input);
+  return wrap;
 }
 
 function renderResults(kind){
-let id=kindId(kind);
-let target=$(id+'Results');
-target.replaceChildren();
+  const id=kindId(kind);
+  const target=$(id+'Results');
 
-state[kind].results.forEach((doc,i)=>{
-let box=document.createElement('div');
-box.className='result';
+  target.replaceChildren();
 
-let heading=document.createElement('h3');
-heading.textContent=
-(kind==='cash_report'?'Tagesabrechnung':'Rechnung')+' '+(i+1);
-box.append(heading);
+  state[kind].results.forEach((doc,i)=>{
+    const box=document.createElement('div');
+    box.className='result';
 
-let grid=document.createElement('div');
-grid.className='grid';
+    const heading=document.createElement('h3');
+    heading.textContent=
+      (kind==='cash_report'
+        ?'Tagesabrechnung '
+        :'Rechnung ')+(i+1);
 
-let fields=[
-['Datum','date','date'],
-['Brutto (€)','gross_total','number'],
-['Netto (€)','net_total','number'],
-['Umsatzsteuer (€)','vat_total','number']
-];
+    box.append(heading);
 
-if(kind==='cash_report'){
-fields.push(
-['Bar (€)','cash_total','number'],
-['Karte (€)','card_total','number'],
-['Sonstige Zahlungen (€)','other_payments_total','number'],
-['Bonanzahl','receipt_count','number'],
-['Speisen brutto (€)','food_gross','number'],
-['Getränke brutto (€)','drinks_gross','number']
-);
-}else{
-fields.push(
-['Lieferant','supplier','text'],
-['Rechnungsnummer','invoice_number','text']
-);
-}
+    const grid=document.createElement('div');
+    grid.className='grid';
 
-for(const [label,key,type] of fields){
-grid.append(makeField(label,key,doc[key],type));
-}
+    const fields=[
+      ['Datum','date','date'],
+      ['Brutto (€)','gross_total','number'],
+      ['Netto (€)','net_total','number'],
+      ['Umsatzsteuer (€)','vat_total','number']
+    ];
 
-if(kind==='invoice'){
-let label=document.createElement('label');
-label.textContent='Zahlungsstatus';
+    if(kind==='cash_report'){
+      fields.push(
+        ['Bar (€)','cash_total','number'],
+        ['Karte (€)','card_total','number'],
+        ['Sonstige Zahlungen (€)','other_payments_total','number'],
+        ['Bonanzahl','receipt_count','number'],
+        ['Speisen brutto (€)','food_gross','number'],
+        ['Getränke brutto (€)','drinks_gross','number']
+      );
+    }else{
+      fields.push(
+        ['Lieferant','supplier','text'],
+        ['Rechnungsnummer','invoice_number','text']
+      );
+    }
 
-let select=document.createElement('select');
-select.dataset.key='payment_status';
+    for(const [label,key,type] of fields){
+      grid.append(
+        makeField(label,key,doc[key],type)
+      );
+    }
 
-for(const [value,text] of [
-['unknown','Nicht angegeben'],
-['open','Offen'],
-['paid','Bezahlt']
-]){
-let opt=document.createElement('option');
-opt.value=value;
-opt.textContent=text;
-select.append(opt);
-}
+    if(kind==='invoice'){
+      const label=document.createElement('label');
+      label.textContent='Zahlungsstatus';
 
-select.value=doc.payment_status||'unknown';
-label.append(select);
-grid.append(label);
-}
+      const select=document.createElement('select');
+      select.dataset.key='payment_status';
 
-box.append(grid);
+      for(const [value,text] of [
+        ['unknown','Nicht angegeben'],
+        ['open','Offen'],
+        ['paid','Bezahlt']
+      ]){
+        const opt=document.createElement('option');
+        opt.value=value;
+        opt.textContent=text;
+        select.append(opt);
+      }
 
-let details=document.createElement('details');
-let sum=document.createElement('summary');
-sum.textContent='Erkannte Artikel und Steuergruppen';
-details.append(sum);
+      select.value=doc.payment_status||'unknown';
+      label.append(select);
+      grid.append(label);
+    }
 
-let pre=document.createElement('pre');
-pre.style.cssText=
-'white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px';
+    box.append(grid);
 
-pre.textContent=JSON.stringify({
-tax_breakdown:doc.tax_breakdown||[],
-sales_items:doc.sales_items||[]
-},null,2);
+    if(kind==='cash_report'){
+      const hint=document.createElement('p');
+      hint.className='notice';
+      hint.textContent=
+        'Duplikatschutz: Ist für dieses Datum bereits eine '+
+        'Tagesabrechnung gespeichert, wird eine weitere '+
+        'Speicherung gesperrt. Eine Korrektur ist über '+
+        'das Archiv möglich.';
+      box.append(hint);
+    }
 
-details.append(pre);
-box.append(details);
+    const details=document.createElement('details');
 
-let save=document.createElement('button');
-save.textContent='Beleg speichern';
+    const sum=document.createElement('summary');
+    sum.textContent=
+      'Erkannte Artikel und Steuergruppen';
 
-let msg=document.createElement('div');
-msg.className='status hidden';
+    details.append(sum);
 
-save.onclick=()=>saveResult(kind,doc,box,save,msg);
-box.append(save,msg);
-target.append(box);
-});
+    const pre=document.createElement('pre');
+    pre.style.cssText=
+      'white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px';
+
+    pre.textContent=JSON.stringify({
+      tax_breakdown:doc.tax_breakdown||[],
+      sales_items:doc.sales_items||[]
+    },null,2);
+
+    details.append(pre);
+    box.append(details);
+
+    const save=document.createElement('button');
+    save.textContent='Beleg speichern';
+
+    const msg=document.createElement('div');
+    msg.className='status hidden';
+
+    save.onclick=()=>saveResult(
+      kind,doc,box,save,msg
+    );
+
+    box.append(save,msg);
+    target.append(box);
+  });
 }
 
 function numeric(raw,key){
-if(raw==='')return null;
-let n=Number(raw);
+  if(raw==='')return null;
 
-if(!Number.isFinite(n)||n<0)
-throw Error('Ungültiger Betrag bei '+key);
+  const n=Number(raw);
 
-if(key==='receipt_count'&&!Number.isInteger(n))
-throw Error('Bonanzahl muss ganzzahlig sein');
+  if(!Number.isFinite(n)||n<0){
+    throw Error(
+      'Ungültiger Betrag bei '+key
+    );
+  }
 
-return key==='receipt_count'
-?n
-:Math.round(n*100)/100;
+  if(
+    key==='receipt_count'&&
+    !Number.isInteger(n)
+  ){
+    throw Error(
+      'Bonanzahl muss ganzzahlig sein'
+    );
+  }
+
+  return key==='receipt_count'
+    ?n
+    :Math.round(n*100)/100;
+}
+
+function sameNumber(a,b){
+  const x=cents(a);
+  const y=cents(b);
+
+  return x!==null&&y!==null&&x===y;
+}
+
+async function checkCashDuplicate(reviewed){
+  /*
+    Es wird bewusst nicht nur die Monatsübersicht
+    geprüft, sondern direkt die Datenbank.
+
+    Damit werden bereits vorhandene Belege
+    unabhängig vom aktuell ausgewählten Monat
+    gefunden.
+  */
+
+  const {data,error}=await db.from('documents')
+    .select(
+      'id,document_date,created_at,extracted_data'
+    )
+    .eq('business_id',businessId)
+    .eq('document_type','cash_report')
+    .eq('document_date',reviewed.date);
+
+  if(error)throw error;
+
+  if(data?.length){
+    return {
+      duplicate:true,
+      reason:
+        'Für '+dateLabel(reviewed.date)+
+        ' ist bereits eine Tagesabrechnung gespeichert. '+
+        'Ein zweiter Beleg für denselben Tag ist gesperrt. '+
+        'Bitte die bestehende Abrechnung im Archiv prüfen.'
+    };
+  }
+
+  /*
+    Zusätzliche Prüfung:
+    gleicher Bruttoumsatz und gleiche Bonanzahl
+    innerhalb eines benachbarten Zeitraums.
+
+    Das ist nur ein Verdachtsfall, da zwei Tage
+    theoretisch denselben Umsatz haben können.
+    Deshalb wird hier nicht automatisch gelöscht.
+  */
+
+  const d=new Date(reviewed.date+'T12:00:00Z');
+
+  const from=new Date(d);
+  from.setUTCDate(from.getUTCDate()-7);
+
+  const to=new Date(d);
+  to.setUTCDate(to.getUTCDate()+7);
+
+  const fromDate=from.toISOString().slice(0,10);
+  const toDate=to.toISOString().slice(0,10);
+
+  const possible=await db.from('documents')
+    .select(
+      'id,document_date,extracted_data'
+    )
+    .eq('business_id',businessId)
+    .eq('document_type','cash_report')
+    .gte('document_date',fromDate)
+    .lte('document_date',toDate);
+
+  if(possible.error)throw possible.error;
+
+  for(const old of possible.data||[]){
+    const oldData=old.extracted_data||{};
+
+    const sameGross=sameNumber(
+      oldData.gross_total,
+      reviewed.gross_total
+    );
+
+    const sameReceipts=
+      numericValue(oldData.receipt_count)!==null&&
+      numericValue(reviewed.receipt_count)!==null&&
+      Number(oldData.receipt_count)===
+      Number(reviewed.receipt_count);
+
+    const samePayments=
+      sameNumber(
+        oldData.cash_total,
+        reviewed.cash_total
+      )&&
+      sameNumber(
+        oldData.card_total,
+        reviewed.card_total
+      );
+
+    if(sameGross&&sameReceipts&&samePayments){
+      return {
+        duplicate:true,
+        reason:
+          'Mögliches Duplikat erkannt: Eine Abrechnung '+
+          'vom '+dateLabel(old.document_date)+
+          ' hat denselben Bruttoumsatz, dieselbe '+
+          'Bonanzahl sowie dieselben Bar- und '+
+          'Kartenzahlungen. Speicherung vorsorglich '+
+          'gesperrt. Bitte die Belege im Archiv vergleichen.'
+      };
+    }
+  }
+
+  return {duplicate:false};
 }
 
 async function saveResult(kind,doc,box,button,msg){
-if(locked)return;
+  if(locked)return;
 
-locked=true;
-button.disabled=true;
-msg.className='status';
-msg.textContent='Prüfe Beleg …';
+  locked=true;
+  button.disabled=true;
 
-let saved=false;
+  msg.className='status';
+  msg.textContent='Prüfe Beleg …';
 
-try{
-let values={};
+  let saved=false;
 
-box.querySelectorAll('[data-key]').forEach(el=>{
-values[el.dataset.key]=el.value.trim();
-});
+  try{
+    const values={};
 
-if(!/^\d{4}-\d{2}-\d{2}$/.test(values.date||''))
-throw Error('Bitte ein gültiges Datum eintragen');
+    box.querySelectorAll('[data-key]')
+      .forEach(el=>{
+        values[el.dataset.key]=el.value.trim();
+      });
 
-let reviewed={
-...doc,
-document_type:kind,
-date:values.date,
-reviewed_at:new Date().toISOString()
-};
+    if(
+      !/^\d{4}-\d{2}-\d{2}$/.test(values.date||'')||
+      Number.isNaN(
+        new Date(values.date+'T12:00:00Z').getTime()
+      )
+    ){
+      throw Error(
+        'Bitte ein gültiges Datum eintragen'
+      );
+    }
 
-for(const [key,val] of Object.entries(values)){
-if(['date','supplier','invoice_number','payment_status'].includes(key)){
-reviewed[key]=val||null;
-}else{
-reviewed[key]=numeric(val,key);
-}
-}
+    const reviewed={
+      ...doc,
+      document_type:kind,
+      date:values.date,
+      reviewed_at:new Date().toISOString()
+    };
 
-if(reviewed.gross_total===null)
-throw Error('Bruttobetrag fehlt');
+    for(const [key,val] of Object.entries(values)){
+      if([
+        'date',
+        'supplier',
+        'invoice_number',
+        'payment_status'
+      ].includes(key)){
+        reviewed[key]=val||null;
+      }else{
+        reviewed[key]=numeric(val,key);
+      }
+    }
 
-if(
-reviewed.net_total!==null&&
-reviewed.vat_total!==null&&
-Math.abs(
-reviewed.net_total+reviewed.vat_total-reviewed.gross_total
-)>.03
-){
-throw Error('Netto + Steuer stimmt nicht mit Brutto überein');
-}
+    if(reviewed.gross_total===null){
+      throw Error('Bruttobetrag fehlt');
+    }
 
-if(kind==='cash_report'){
-let {data,error}=await db.from('documents')
-.select('id,created_at,extracted_data')
-.eq('business_id',businessId)
-.eq('document_type','cash_report')
-.eq('document_date',reviewed.date);
+    if(
+      reviewed.net_total!==null&&
+      reviewed.vat_total!==null&&
+      Math.abs(
+        reviewed.net_total+
+        reviewed.vat_total-
+        reviewed.gross_total
+      )>.03
+    ){
+      throw Error(
+        'Netto + Steuer stimmt nicht mit Brutto überein'
+      );
+    }
 
-if(error)throw error;
+    if(kind==='cash_report'){
 
-if(data?.length&&!confirm(
-'Für '+dateLabel(reviewed.date)+
-' sind bereits '+data.length+
-' Abrechnungen gespeichert. Erneut speichern? Der Umsatz wird sonst doppelt gezählt.'
-)){
-msg.textContent='Speichern abgebrochen.';
-return;
-}
-}else{
-let {data,error}=await db.from('documents')
-.select('id')
-.eq('business_id',businessId)
-.eq('document_type','invoice')
-.eq('invoice_number',reviewed.invoice_number||'__none__')
-.eq('supplier',reviewed.supplier||'__none__');
+      const check=await checkCashDuplicate(reviewed);
 
-if(error)throw error;
+      if(check.duplicate){
+        throw Error(check.reason);
+      }
 
-if(data?.length&&!confirm(
-'Rechnung mit gleicher Nummer und Lieferant vorhanden. Trotzdem speichern?'
-)){
-msg.textContent='Speichern abgebrochen.';
-return;
-}
-}
+      /*
+        Zahlungsabgleich:
+        Die Speicherung wird bei einer Abweichung
+        nicht automatisch verändert.
 
-let {error}=await db.from('documents').insert({
-business_id:businessId,
-uploaded_by:user.id,
-document_type:kind,
-document_date:reviewed.date,
-supplier:kind==='invoice'?reviewed.supplier:null,
-invoice_number:kind==='invoice'?reviewed.invoice_number:null,
-status:'reviewed',
-extracted_data:reviewed
-});
+        Der Benutzer sieht eine Warnung.
+      */
 
-if(error)throw error;
+      const cash=numericValue(reviewed.cash_total);
+      const card=numericValue(reviewed.card_total);
+      const other=numericValue(
+        reviewed.other_payments_total
+      );
 
-saved=true;
-msg.textContent='Gespeichert. Dateiauswahl geleert.';
-button.textContent='Gespeichert';
+      if(cash!==null&&card!==null){
+        const paymentSum=
+          cash+card+(other??0);
 
-clearFiles(kind);
-await loadAll();
+        const difference=Math.round(
+          (paymentSum-reviewed.gross_total)*100
+        )/100;
 
-}catch(e){
-msg.textContent='Fehler: '+e.message;
-msg.className='status error';
-}finally{
-locked=false;
-button.disabled=saved;
-renderFiles('cash_report');
-renderFiles('invoice');
-}
+        if(Math.abs(difference)>.05){
+          const proceed=confirm(
+            'Achtung: Zahlungsarten und Bruttoumsatz '+
+            'weichen um '+euro(Math.abs(difference))+
+            ' voneinander ab.\n\n'+
+            'Bruttoumsatz: '+
+            euro(reviewed.gross_total)+'\n'+
+            'Bar + Karte + Sonstige: '+
+            euro(paymentSum)+'\n\n'+
+            'Bitte die Werte prüfen.\n\n'+
+            'Trotz Abweichung speichern?'
+          );
+
+          if(!proceed){
+            msg.textContent=
+              'Speichern abgebrochen. Bitte Werte prüfen.';
+            return;
+          }
+        }
+      }
+
+    }else{
+
+      if(
+        reviewed.invoice_number&&
+        reviewed.supplier
+      ){
+        const {data,error}=await db.from('documents')
+          .select('id')
+          .eq('business_id',businessId)
+          .eq('document_type','invoice')
+          .eq('invoice_number',reviewed.invoice_number)
+          .eq('supplier',reviewed.supplier);
+
+        if(error)throw error;
+
+        if(data?.length){
+          throw Error(
+            'Diese Lieferantenrechnung ist bereits '+
+            'gespeichert. Bitte das Archiv prüfen.'
+          );
+        }
+      }
+    }
+
+    const {error}=await db.from('documents').insert({
+      business_id:businessId,
+      uploaded_by:user.id,
+      document_type:kind,
+      document_date:reviewed.date,
+      supplier:kind==='invoice'
+        ?reviewed.supplier
+        :null,
+      invoice_number:kind==='invoice'
+        ?reviewed.invoice_number
+        :null,
+      status:'reviewed',
+      extracted_data:reviewed
+    });
+
+    if(error)throw error;
+
+    saved=true;
+
+    msg.textContent=
+      'Gespeichert. Dateiauswahl geleert.';
+
+    button.textContent='Gespeichert';
+
+    clearFiles(kind);
+
+    await loadAll();
+
+  }catch(e){
+    msg.textContent='Fehler: '+e.message;
+    msg.className='status error';
+
+  }finally{
+    locked=false;
+    button.disabled=saved;
+
+    renderFiles('cash_report');
+    renderFiles('invoice');
+  }
 }
 
 async function allDocs(kind,start,end){
-let out=[];
+  const out=[];
 
-for(let offset=0;;offset+=500){
-let query=db.from('documents')
-.select('id,document_date,document_type,created_at,extracted_data,supplier,invoice_number')
-.eq('business_id',businessId)
-.eq('document_type',kind)
-.gte('document_date',start)
-.lt('document_date',end)
-.order('id')
-.range(offset,offset+499);
+  for(let offset=0;;offset+=500){
+    const {data,error}=await db.from('documents')
+      .select(
+        'id,document_date,document_type,created_at,'+
+        'extracted_data,supplier,invoice_number'
+      )
+      .eq('business_id',businessId)
+      .eq('document_type',kind)
+      .gte('document_date',start)
+      .lt('document_date',end)
+      .order('id')
+      .range(offset,offset+499);
 
-let {data,error}=await query;
+    if(error)throw error;
 
-if(error)throw error;
+    out.push(...data);
 
-out.push(...data);
+    if(data.length<500)break;
+  }
 
-if(data.length<500)break;
-}
-
-return out;
+  return out;
 }
 
 function renderArchive(kind,docs){
-let target=$(kindId(kind)+'Archive');
-target.replaceChildren();
+  const target=$(kindId(kind)+'Archive');
+  target.replaceChildren();
 
-if(!docs.length){
-target.textContent='Noch keine Belege in diesem Monat.';
-return;
+  if(!docs.length){
+    target.textContent=
+      'Noch keine Belege in diesem Monat.';
+    return;
+  }
+
+  docs.sort((a,b)=>
+    b.document_date.localeCompare(a.document_date)||
+    b.created_at.localeCompare(a.created_at)
+  );
+
+  for(const entry of docs){
+    const d=entry.extracted_data||{};
+    const row=document.createElement('div');
+    row.className='entry';
+
+    const title=document.createElement('strong');
+
+    title.textContent=
+      (kind==='cash_report'
+        ?'Abrechnung · '
+        :'Rechnung · ')+
+      dateLabel(entry.document_date);
+
+    const sub=document.createElement('small');
+
+    sub.textContent=
+      (kind==='invoice'
+        ?(entry.supplier||'Lieferant unbekannt')+' · '
+        :'')+
+      euro(d.gross_total);
+
+    const uploaded=document.createElement('small');
+
+    uploaded.textContent=
+      'Hochgeladen am '+stamp(entry.created_at);
+
+    row.append(title,sub,uploaded);
+
+    const detail=document.createElement('details');
+
+    const summary=document.createElement('summary');
+    summary.textContent='Details ansehen';
+
+    detail.append(summary);
+
+    const p=document.createElement('p');
+    p.className='muted';
+
+    p.textContent=
+      'Brutto: '+euro(d.gross_total)+
+      ' · Netto: '+euro(d.net_total)+
+      ' · USt: '+euro(d.vat_total)+
+      (kind==='cash_report'
+        ?' · Bar: '+euro(d.cash_total)+
+         ' · Karte: '+euro(d.card_total)+
+         ' · Sonstige: '+euro(d.other_payments_total)+
+         ' · Bons: '+(d.receipt_count??'–')
+        :' · Rechnungsnummer: '+
+         (entry.invoice_number||'–')+
+         ' · Status: '+
+         ({
+           paid:'Bezahlt',
+           open:'Offen',
+           unknown:'Nicht angegeben'
+         }[d.payment_status]||'Nicht angegeben')
+      );
+
+    detail.append(p);
+
+    if(kind==='cash_report'){
+      const top=document.createElement('p');
+      top.className='muted';
+
+      top.textContent=
+        'Top 3: '+
+        (
+          aggregateItems([entry])
+          .slice(0,3)
+          .map(x=>x.name+' ('+x.quantity+')')
+          .join(' · ')||'–'
+        );
+
+      detail.append(top);
+    }
+
+    if(d.tax_breakdown?.length){
+      const tax=document.createElement('p');
+      tax.className='muted';
+
+      tax.textContent=
+        'Steuergruppen: '+
+        d.tax_breakdown.map(t=>
+          (t.rate??'?')+'%: Netto '+
+          euro(t.net)+
+          ', USt '+euro(t.vat)
+        ).join(' | ');
+
+      detail.append(tax);
+    }
+
+    if(d.sales_items?.length){
+      const table=document.createElement('table');
+      const head=document.createElement('tr');
+
+      for(const x of ['Artikel','Menge']){
+        const th=document.createElement('th');
+        th.textContent=x;
+        head.append(th);
+      }
+
+      table.append(head);
+
+      for(const item of d.sales_items){
+        const tr=document.createElement('tr');
+
+        for(const value of [
+          item.name,
+          item.quantity
+        ]){
+          const td=document.createElement('td');
+          td.textContent=value??'–';
+          tr.append(td);
+        }
+
+        table.append(tr);
+      }
+
+      detail.append(table);
+    }
+
+    row.append(detail);
+
+    if(role==='owner'){
+      const del=document.createElement('button');
+      del.className='danger';
+      del.textContent='Beleg löschen';
+
+      del.onclick=async()=>{
+        if(!confirm(
+          'Beleg vom '+
+          dateLabel(entry.document_date)+
+          ' (hochgeladen '+
+          stamp(entry.created_at)+
+          ') endgültig löschen?'
+        ))return;
+
+        del.disabled=true;
+
+        const {data,error}=await db.from('documents')
+          .delete()
+          .eq('id',entry.id)
+          .eq('business_id',businessId)
+          .select('id');
+
+        if(error||!data?.length){
+          alert(
+            'Löschen fehlgeschlagen: '+
+            (error?.message||'Keine Berechtigung')
+          );
+
+          del.disabled=false;
+          return;
+        }
+
+        await loadAll();
+      };
+
+      row.append(del);
+    }
+
+    target.append(row);
+  }
 }
 
-docs.sort((a,b)=>
-b.document_date.localeCompare(a.document_date)||
-b.created_at.localeCompare(a.created_at)
-);
+function sumField(docs,key){
+  const known=docs.filter(d=>
+    numericValue(d.extracted_data?.[key])!==null
+  );
 
-for(const entry of docs){
-let d=entry.extracted_data||{};
-let row=document.createElement('div');
-row.className='entry';
-
-let title=document.createElement('strong');
-title.textContent=
-(kind==='cash_report'?'Abrechnung · ':'Rechnung · ')+
-dateLabel(entry.document_date);
-
-let sub=document.createElement('small');
-sub.textContent=
-(kind==='invoice'?(entry.supplier||'Lieferant unbekannt')+' · ':'')+
-euro(d.gross_total);
-
-let uploaded=document.createElement('small');
-uploaded.textContent='Hochgeladen am '+stamp(entry.created_at);
-
-row.append(title,sub,uploaded);
-
-let detail=document.createElement('details');
-let summary=document.createElement('summary');
-summary.textContent='Details ansehen';
-detail.append(summary);
-
-let p=document.createElement('p');
-p.className='muted';
-
-p.textContent=
-'Brutto: '+euro(d.gross_total)+
-' · Netto: '+euro(d.net_total)+
-' · USt: '+euro(d.vat_total)+
-(kind==='cash_report'
-?' · Bar: '+euro(d.cash_total)+
-' · Karte: '+euro(d.card_total)+
-' · Bons: '+(d.receipt_count??'–')
-:' · Rechnungsnummer: '+(entry.invoice_number||'–')+
-' · Status: '+({
-paid:'Bezahlt',
-open:'Offen',
-unknown:'Nicht angegeben'
-}[d.payment_status]||'Nicht angegeben'));
-
-detail.append(p);
-
-if(kind==='cash_report'){
-let top=document.createElement('p');
-top.className='muted';
-top.textContent='Top 3: '+
-(aggregateItems([entry]).slice(0,3)
-.map(x=>x.name+' ('+x.quantity+')')
-.join(' · ')||'–');
-detail.append(top);
-}
-
-if(d.tax_breakdown?.length){
-let tax=document.createElement('p');
-tax.className='muted';
-tax.textContent='Steuergruppen: '+
-d.tax_breakdown.map(t=>
-(t.rate??'?')+'%: Netto '+euro(t.net)+
-', USt '+euro(t.vat)
-).join(' | ');
-detail.append(tax);
-}
-
-if(d.sales_items?.length){
-let table=document.createElement('table');
-let head=document.createElement('tr');
-
-for(const x of ['Artikel','Menge']){
-let th=document.createElement('th');
-th.textContent=x;
-head.append(th);
-}
-table.append(head);
-
-for(const item of d.sales_items){
-let tr=document.createElement('tr');
-
-for(const value of [item.name,item.quantity]){
-let td=document.createElement('td');
-td.textContent=value??'–';
-tr.append(td);
-}
-table.append(tr);
-}
-detail.append(table);
-}
-
-row.append(detail);
-
-if(role==='owner'){
-let del=document.createElement('button');
-del.className='danger';
-del.textContent='Beleg löschen';
-
-del.onclick=async()=>{
-if(!confirm(
-'Beleg vom '+dateLabel(entry.document_date)+
-' (hochgeladen '+stamp(entry.created_at)+
-') endgültig löschen?'
-))return;
-
-del.disabled=true;
-
-let {data,error}=await db.from('documents')
-.delete()
-.eq('id',entry.id)
-.eq('business_id',businessId)
-.select('id');
-
-if(error||!data?.length){
-alert('Löschen fehlgeschlagen: '+
-(error?.message||'Keine Berechtigung'));
-del.disabled=false;
-return;
-}
-
-await loadAll();
-};
-
-row.append(del);
-}
-
-target.append(row);
-}
+  return {
+    value:known.reduce(
+      (s,d)=>s+
+      Number(d.extracted_data[key]),
+      0
+    ),
+    complete:known.length===docs.length,
+    known:known.length
+  };
 }
 
 async function loadAll(){
-if(!businessId)return;
+  if(!businessId)return;
 
-let month=$('month').value;
-if(!/^\d{4}-\d{2}$/.test(month))return;
+  const month=$('month').value;
 
-let [y,m]=month.split('-').map(Number);
-let start=month+'-01';
-let end=`${m===12?y+1:y}-${String(m===12?1:m+1).padStart(2,'0')}-01`;
+  if(!/^\d{4}-\d{2}$/.test(month))return;
 
-try{
-let [cash,invoices]=await Promise.all([
-allDocs('cash_report',start,end),
-allDocs('invoice',start,end)
-]);
+  const [y,m]=month.split('-').map(Number);
 
-renderArchive('cash_report',cash);
-renderArchive('invoice',invoices);
+  const start=month+'-01';
 
-let byDay=new Map();
-let duplicates=0;
+  const end=
+    `${m===12?y+1:y}-`+
+    `${String(m===12?1:m+1).padStart(2,'0')}-01`;
 
-for(const d of cash){
-let old=byDay.get(d.document_date);
+  try{
+    const [cash,invoices]=await Promise.all([
+      allDocs('cash_report',start,end),
+      allDocs('invoice',start,end)
+    ]);
 
-if(old){
-duplicates++;
-if(d.created_at>old.created_at){
-byDay.set(d.document_date,d);
-}
-}else{
-byDay.set(d.document_date,d);
-}
-}
+    renderArchive('cash_report',cash);
+    renderArchive('invoice',invoices);
 
-let unique=[...byDay.values()];
+    /*
+      Bei alten doppelten Tagesabrechnungen
+      zählt die Monatsübersicht nur die
+      zuletzt hochgeladene Version je Datum.
+    */
 
-let sum=(docs,key)=>{
-let known=docs.filter(d=>
-d.extracted_data?.[key]!==null&&
-d.extracted_data?.[key]!==undefined&&
-Number.isFinite(Number(d.extracted_data[key]))
-);
+    const byDay=new Map();
+    let duplicates=0;
 
-return {
-value:known.reduce(
-(s,d)=>s+Number(d.extracted_data[key]),0
-),
-complete:known.length===docs.length,
-known:known.length
-};
-};
+    for(const d of cash){
+      const old=byDay.get(d.document_date);
 
-let gross=sum(unique,'gross_total');
-let net=sum(unique,'net_total');
-let vat=sum(unique,'vat_total');
-let expense=sum(invoices,'net_total');
+      if(old){
+        duplicates++;
 
-$('gross').textContent=
-unique.length&&gross.complete?euro(gross.value):'–';
+        if(d.created_at>old.created_at){
+          byDay.set(d.document_date,d);
+        }
+      }else{
+        byDay.set(d.document_date,d);
+      }
+    }
 
-$('net').textContent=
-unique.length&&net.complete?euro(net.value):'–';
+    const unique=[...byDay.values()];
 
-$('vat').textContent=
-unique.length&&vat.complete?euro(vat.value):'–';
+    const gross=sumField(unique,'gross_total');
+    const net=sumField(unique,'net_total');
+    const vat=sumField(unique,'vat_total');
 
-$('days').textContent=String(unique.length);
+    const cashSum=sumField(unique,'cash_total');
+    const cardSum=sumField(unique,'card_total');
 
-$('average').textContent=
-unique.length&&gross.complete
-?euro(gross.value/unique.length)
-:'–';
+    /*
+      Sonstige Zahlungen:
+      Nur dann als 0 behandeln, wenn das Feld
+      ausdrücklich mit 0 gespeichert wurde.
+      Fehlende Werte bleiben unbekannt.
+    */
 
-$('invoices').textContent=String(invoices.length);
+    const otherSum=sumField(
+      unique,
+      'other_payments_total'
+    );
 
-$('expenses').textContent=
-invoices.length&&expense.complete
-?euro(expense.value)
-:'–';
+    const expense=sumField(invoices,'net_total');
 
-$('balance').textContent=
-unique.length&&net.complete&&
-invoices.length&&expense.complete
-?euro(net.value-expense.value)
-:'–';
+    $('gross').textContent=
+      unique.length&&gross.complete
+      ?euro(gross.value)
+      :'–';
 
-$('dashboardNote').textContent=
-'Nur gespeicherte Belege des ausgewählten Monats. '+
-'Ø Umsatz = Brutto / unterschiedliche erfasste Abrechnungstage. '+
-(duplicates
-?'Achtung: '+duplicates+
-' doppelte Tagesabrechnung(en) im Archiv; im Cockpit wird je Datum nur die zuletzt hochgeladene gezählt. '
-:'')+
-(!net.complete||!vat.complete
-?'Netto/Steuer der Abrechnungen unvollständig. '
-:'')+
-(!invoices.length
-?'Noch keine Rechnungen erfasst: Ausgaben und Saldo nicht berechenbar. '
-:!expense.complete
-?'Rechnungs-Nettoangaben unvollständig. '
-:'')+
-'Der Saldo ist kein Gewinn und keine Liquiditätsrechnung; Fixkosten und Zahlungen können fehlen.';
+    $('net').textContent=
+      unique.length&&net.complete
+      ?euro(net.value)
+      :'–';
 
-let top=$('top');
-top.replaceChildren();
+    $('vat').textContent=
+      unique.length&&vat.complete
+      ?euro(vat.value)
+      :'–';
 
-for(const item of aggregateItems(unique).slice(0,3)){
-let li=document.createElement('li');
-li.textContent=item.name+' · '+item.quantity+' Stück';
-top.append(li);
-}
+    $('days').textContent=String(unique.length);
 
-if(!top.children.length){
-top.textContent='Noch keine Artikel erfasst.';
-}
+    $('average').textContent=
+      unique.length&&gross.complete
+      ?euro(gross.value/unique.length)
+      :'–';
 
-$('last').textContent=cash.length
-?'Zuletzt hochgeladen: '+
-stamp([...cash].sort(
-(a,b)=>b.created_at.localeCompare(a.created_at)
-)[0].created_at)
-:'Noch keine Tagesabrechnung in diesem Monat.';
+    $('invoices').textContent=
+      String(invoices.length);
 
-}catch(e){
-$('dashboardNote').textContent=
-'Fehler beim Laden: '+e.message;
-}
+    $('cashTotal').textContent=
+      unique.length&&cashSum.complete
+      ?euro(cashSum.value)
+      :'–';
+
+    $('cardTotal').textContent=
+      unique.length&&cardSum.complete
+      ?euro(cardSum.value)
+      :'–';
+
+    $('otherTotal').textContent=
+      unique.length&&otherSum.complete
+      ?euro(otherSum.value)
+      :'–';
+
+    /*
+      Zahlungsabgleich:
+      Fehlende Werte dürfen nicht als
+      Null erfunden werden.
+    */
+
+    const paymentComplete=
+      unique.length>0&&
+      gross.complete&&
+      cashSum.complete&&
+      cardSum.complete&&
+      otherSum.complete;
+
+    if(paymentComplete){
+      const totalPayments=
+        cashSum.value+
+        cardSum.value+
+        otherSum.value;
+
+      const difference=Math.round(
+        (totalPayments-gross.value)*100
+      )/100;
+
+      $('paymentCheck').textContent=
+        Math.abs(difference)<=.05
+        ?'✓ Stimmt'
+        :euro(difference);
+
+      $('paymentCheck').parentElement.classList.toggle(
+        'warning',
+        Math.abs(difference)>.05
+      );
+
+    }else{
+      $('paymentCheck').textContent='–';
+
+      $('paymentCheck').parentElement.classList.remove(
+        'warning'
+      );
+    }
+
+    $('expenses').textContent=
+      invoices.length&&expense.complete
+      ?euro(expense.value)
+      :'–';
+
+    $('balance').textContent=
+      unique.length&&net.complete&&
+      invoices.length&&expense.complete
+      ?euro(net.value-expense.value)
+      :'–';
+
+    let notes=[
+      'Nur gespeicherte Belege des ausgewählten Monats.',
+      'Ø Tagesumsatz = Brutto / unterschiedliche erfasste Abrechnungstage.'
+    ];
+
+    if(duplicates){
+      notes.push(
+        'Achtung: '+duplicates+
+        ' doppelte Tagesabrechnung(en) im Archiv. '+
+        'Im Cockpit zählt je Datum nur die zuletzt hochgeladene.'
+      );
+    }
+
+    if(
+      unique.length&&
+      (!cashSum.complete||
+       !cardSum.complete||
+       !otherSum.complete)
+    ){
+      notes.push(
+        'Mindestens eine Zahlungsart fehlt in den gespeicherten Abrechnungen. '+
+        'Der Zahlungsabgleich ist deshalb unvollständig.'
+      );
+    }
+
+    if(!invoices.length){
+      notes.push(
+        'Noch keine Rechnungen erfasst: Ausgaben und Saldo nicht berechenbar.'
+      );
+    }else if(!expense.complete){
+      notes.push(
+        'Rechnungs-Nettoangaben sind unvollständig.'
+      );
+    }
+
+    notes.push(
+      'Der Saldo ist kein Gewinn und keine Liquiditätsrechnung; '+
+      'Fixkosten und Zahlungen können fehlen.'
+    );
+
+    $('dashboardNote').textContent=notes.join(' ');
+
+    const top=$('top');
+    top.replaceChildren();
+
+    for(const item of aggregateItems(unique).slice(0,3)){
+      const li=document.createElement('li');
+      li.textContent=
+        item.name+' · '+item.quantity+' Stück';
+
+      top.append(li);
+    }
+
+    if(!top.children.length){
+      top.textContent=
+        'Noch keine Artikel erfasst.';
+    }
+
+    $('last').textContent=cash.length
+      ?'Zuletzt hochgeladen: '+
+        stamp(
+          [...cash].sort(
+            (a,b)=>
+              b.created_at.localeCompare(a.created_at)
+          )[0].created_at
+        )
+      :'Noch keine Tagesabrechnung in diesem Monat.';
+
+  }catch(e){
+    $('dashboardNote').textContent=
+      'Fehler beim Laden: '+e.message;
+  }
 }
 
 $('month').onchange=loadAll;
 
 async function enter(){
-let {data:{user:u},error}=await db.auth.getUser();
+  const {
+    data:{user:u},
+    error
+  }=await db.auth.getUser();
 
-if(error||!u)return;
+  if(error||!u)return;
 
-let r=await db.from('business_members')
-.select('business_id,role,businesses(name)')
-.eq('user_id',u.id);
+  const r=await db.from('business_members')
+    .select(
+      'business_id,role,businesses(name)'
+    )
+    .eq('user_id',u.id);
 
-if(r.error||!r.data?.length){
-throw Error(r.error?.message||'Kein Betrieb zugeordnet');
-}
+  if(r.error||!r.data?.length){
+    throw Error(
+      r.error?.message||
+      'Kein Betrieb zugeordnet'
+    );
+  }
 
-let member=
-r.data.find(x=>x.businesses?.name?.includes('Friedrich'))||
-r.data[0];
+  const member=
+    r.data.find(x=>
+      x.businesses?.name?.includes('Friedrich')
+    )||r.data[0];
 
-user=u;
-businessId=member.business_id;
-role=member.role;
+  user=u;
+  businessId=member.business_id;
+  role=member.role;
 
-$('business').textContent=
-(member.businesses?.name||'Das Friedrich')+' · '+role;
+  $('business').textContent=
+    (member.businesses?.name||'Das Friedrich')+
+    ' · '+role;
 
-$('login').classList.add('hidden');
-$('app').classList.remove('hidden');
+  $('login').classList.add('hidden');
+  $('app').classList.remove('hidden');
 
-let parts=new Intl.DateTimeFormat('en-CA',{
-timeZone:'Europe/Vienna',
-year:'numeric',
-month:'2-digit'
-}).formatToParts(new Date());
+  const parts=new Intl.DateTimeFormat('en-CA',{
+    timeZone:'Europe/Vienna',
+    year:'numeric',
+    month:'2-digit'
+  }).formatToParts(new Date());
 
-$('month').value=
-parts.find(p=>p.type==='year').value+'-'+
-parts.find(p=>p.type==='month').value;
+  $('month').value=
+    parts.find(p=>p.type==='year').value+
+    '-'+
+    parts.find(p=>p.type==='month').value;
 
-await loadAll();
+  await loadAll();
 }
 
 $('loginForm').onsubmit=async e=>{
-e.preventDefault();
+  e.preventDefault();
 
-message('loginStatus','Anmeldung läuft …');
+  message(
+    'loginStatus',
+    'Anmeldung läuft …'
+  );
 
-let {error}=await db.auth.signInWithPassword({
-email:$('email').value.trim(),
-password:$('password').value
-});
+  const {error}=await db.auth.signInWithPassword({
+    email:$('email').value.trim(),
+    password:$('password').value
+  });
 
-if(error){
-message('loginStatus',error.message,true);
-return;
-}
+  if(error){
+    message(
+      'loginStatus',
+      error.message,
+      true
+    );
+    return;
+  }
 
-try{
-await enter();
-}catch(e){
-message('loginStatus',e.message,true);
-}
+  try{
+    await enter();
+  }catch(e){
+    message(
+      'loginStatus',
+      e.message,
+      true
+    );
+  }
 };
 
 $('logout').onclick=async()=>{
-await db.auth.signOut();
-user=null;
-businessId=null;
-role=null;
-$('app').classList.add('hidden');
-$('login').classList.remove('hidden');
+  await db.auth.signOut();
+
+  user=null;
+  businessId=null;
+  role=null;
+
+  $('app').classList.add('hidden');
+  $('login').classList.remove('hidden');
 };
 
 (async()=>{
-try{
-let {data:{session}}=await db.auth.getSession();
-if(session)await enter();
-}catch(e){
-message('loginStatus',e.message,true);
-}
+  try{
+    const {
+      data:{session}
+    }=await db.auth.getSession();
+
+    if(session)await enter();
+
+  }catch(e){
+    message(
+      'loginStatus',
+      e.message,
+      true
+    );
+  }
 })();
+
 </script>
 </body>
 </html>
