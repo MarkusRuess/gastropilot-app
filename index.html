@@ -8,282 +8,146 @@
 <title>GastroPilot · Das Friedrich</title>
 <style>
 :root{
-  font-family:system-ui,-apple-system,Segoe UI,sans-serif;
-  color:#14243a;
-  background:#f4f7fa
+font-family:system-ui,-apple-system,Segoe UI,sans-serif;
+color:#14243a;background:#f4f7fa
 }
 *{box-sizing:border-box}
 body{margin:0}
-header{
-  background:#14243a;
-  color:white;
-  padding:22px 18px
-}
-.header-inner{
-  max-width:1050px;
-  margin:auto
-}
+header{background:#14243a;color:white;padding:22px 18px}
+.header-inner{max-width:1050px;margin:auto}
 header b{font-size:27px}
-header small{
-  display:block;
-  color:#c2d0dd;
-  margin-top:4px
-}
-main{
-  max-width:1050px;
-  margin:16px auto;
-  padding:0 13px
-}
+header small{display:block;color:#c2d0dd;margin-top:4px}
+main{max-width:1050px;margin:16px auto;padding:0 13px}
 .card{
-  background:white;
-  border:1px solid #e0e7ee;
-  border-radius:15px;
-  padding:18px;
-  margin:14px 0;
-  box-shadow:0 3px 14px #14243a0a
+background:white;border:1px solid #e0e7ee;
+border-radius:15px;padding:18px;margin:14px 0;
+box-shadow:0 3px 14px #14243a0a
 }
-h2{
-  font-size:21px;
-  margin:0 0 13px
-}
-h3{
-  font-size:17px;
-  margin:18px 0 9px
-}
-label{
-  display:block;
-  font-weight:650;
-  margin:10px 0 5px
-}
+h2{font-size:21px;margin:0 0 13px}
+h3{font-size:17px;margin:18px 0 9px}
+label{display:block;font-weight:650;margin:10px 0 5px}
 input,select,textarea{
-  width:100%;
-  border:1px solid #c8d2de;
-  border-radius:9px;
-  padding:10px;
-  font:inherit;
-  background:white;
-  color:#14243a
+width:100%;border:1px solid #c8d2de;
+border-radius:9px;padding:10px;font:inherit;
+background:white;color:#14243a
 }
 button{
-  background:#167a61;
-  color:white;
-  border:0;
-  border-radius:10px;
-  padding:11px 14px;
-  font:inherit;
-  font-weight:700;
-  cursor:pointer;
-  margin:8px 0
+background:#167a61;color:white;border:0;
+border-radius:10px;padding:11px 14px;
+font:inherit;font-weight:700;cursor:pointer;margin:8px 0
 }
-button.secondary{
-  background:#e8eef4;
-  color:#24384b
-}
+button.secondary{background:#e8eef4;color:#24384b}
 button.danger{
-  background:#fff0ef;
-  color:#a72f25;
-  border:1px solid #edc7c3
+background:#fff0ef;color:#a72f25;
+border:1px solid #edc7c3
 }
-button:disabled{
-  opacity:.55;
-  cursor:wait
-}
+button:disabled{opacity:.55;cursor:wait}
 .hidden{display:none!important}
-.muted{
-  color:#657588;
-  font-size:13px;
-  line-height:1.5
-}
+.muted{color:#657588;font-size:13px;line-height:1.5}
 .grid{
-  display:grid;
-  grid-template-columns:repeat(2,minmax(0,1fr));
-  gap:10px
+display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+gap:10px
 }
 .metric{
-  background:#f1f5f9;
-  border-radius:12px;
-  padding:13px;
-  min-width:0
+background:#f1f5f9;border-radius:12px;
+padding:13px;min-width:0
 }
-.metric small{
-  display:block;
-  color:#64748b
-}
-.metric strong{
-  font-size:22px;
-  overflow-wrap:anywhere
-}
+.metric small{display:block;color:#64748b}
+.metric strong{font-size:22px;overflow-wrap:anywhere}
 .status{
-  padding:11px;
-  background:#edf7f2;
-  border-radius:9px;
-  margin:10px 0;
-  white-space:pre-wrap
+padding:11px;background:#edf7f2;
+border-radius:9px;margin:10px 0;white-space:pre-wrap
 }
-.error{
-  background:#fff0ef;
-  color:#a72f25
-}
-.entry{
-  border-top:1px solid #e1e7ee;
-  padding:12px 0
-}
-.entry small{
-  display:block;
-  color:#64748b
-}
+.error{background:#fff0ef;color:#a72f25}
+.entry{border-top:1px solid #e1e7ee;padding:12px 0}
+.entry small{display:block;color:#64748b}
 .thumbs{
-  display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(105px,1fr));
-  gap:9px
+display:grid;
+grid-template-columns:repeat(auto-fill,minmax(105px,1fr));
+gap:9px
 }
 .thumb{
-  border:1px solid #dbe4ed;
-  border-radius:9px;
-  padding:6px
+border:1px solid #dbe4ed;border-radius:9px;padding:6px
 }
-.thumb img{
-  width:100%;
-  height:100px;
-  object-fit:contain
-}
+.thumb img{width:100%;height:100px;object-fit:contain}
 .thumb small{
-  display:block;
-  overflow:hidden;
-  text-overflow:ellipsis;
-  white-space:nowrap
+display:block;overflow:hidden;
+text-overflow:ellipsis;white-space:nowrap
 }
-.thumb button{
-  font-size:12px;
-  padding:5px
-}
+.thumb button{font-size:12px;padding:5px}
 .result{
-  border:1px solid #dbe4ed;
-  border-radius:12px;
-  padding:13px;
-  margin:12px 0
+border:1px solid #dbe4ed;
+border-radius:12px;padding:13px;margin:12px 0
 }
 details{
-  background:#f5f8fb;
-  border-radius:9px;
-  padding:12px;
-  margin:10px 0
+background:#f5f8fb;border-radius:9px;
+padding:12px;margin:10px 0
 }
-summary{
-  cursor:pointer;
-  font-weight:700
-}
-table{
-  width:100%;
-  border-collapse:collapse;
-  font-size:13px
-}
+summary{cursor:pointer;font-weight:700}
+table{width:100%;border-collapse:collapse;font-size:13px}
 td,th{
-  padding:9px 5px;
-  border-bottom:1px solid #dce4ec;
-  text-align:left
+padding:9px 5px;border-bottom:1px solid #dce4ec;
+text-align:left
 }
 td:last-child,th:last-child{text-align:right}
 .row{
-  display:flex;
-  gap:10px;
-  align-items:center;
-  justify-content:space-between;
-  flex-wrap:wrap
+display:flex;gap:10px;align-items:center;
+justify-content:space-between;flex-wrap:wrap
 }
 footer{
-  text-align:center;
-  color:#718096;
-  padding:20px;
-  font-size:12px
+text-align:center;color:#718096;
+padding:20px;font-size:12px
 }
 .navigation{
-  display:grid;
-  grid-template-columns:repeat(4,minmax(0,1fr));
-  gap:9px;
-  margin:16px 0
+display:grid;
+grid-template-columns:repeat(4,minmax(0,1fr));
+gap:9px;margin:16px 0
 }
 .nav-button{
-  margin:0;
-  background:white;
-  color:#24384b;
-  border:1px solid #dce4ec;
-  min-height:65px;
-  padding:12px 7px;
-  font-size:14px
+margin:0;background:white;color:#24384b;
+border:1px solid #dce4ec;min-height:65px;
+padding:12px 7px;font-size:14px
 }
 .nav-button.active{
-  background:#167a61;
-  color:white;
-  border-color:#167a61
+background:#167a61;color:white;border-color:#167a61
 }
 .page{display:none}
 .page.active{display:block}
 .page-title{
-  font-size:24px;
-  font-weight:800;
-  margin:20px 2px 8px
+font-size:24px;font-weight:800;margin:20px 2px 8px
 }
 .filter-grid{
-  display:grid;
-  grid-template-columns:repeat(3,minmax(0,1fr));
-  gap:10px;
-  align-items:end
+display:grid;
+grid-template-columns:repeat(3,minmax(0,1fr));
+gap:10px;align-items:end
 }
-.table-scroll{
-  overflow-x:auto;
-  width:100%
-}
+.table-scroll{overflow-x:auto;width:100%}
 .table-scroll table{min-width:440px}
-.notice{
-  background:#fff7e3;
-  border-radius:10px;
-  padding:12px;
-  font-size:13px;
-  line-height:1.5
-}
-.section-note{
-  color:#64748b;
-  font-size:13px;
-  margin:8px 0 16px
+.trend-row{
+display:grid;grid-template-columns:100px 1fr 115px;
+gap:10px;align-items:center;padding:9px 0;
+border-bottom:1px solid #e5edf3;font-size:13px
 }
 .bar-track{
-  height:9px;
-  background:#e5edf3;
-  border-radius:9px;
-  overflow:hidden;
-  margin-top:5px
+height:9px;background:#e5edf3;
+border-radius:9px;overflow:hidden
 }
 .bar-fill{
-  height:100%;
-  background:#167a61;
-  border-radius:9px
-}
-.trend-row{
-  display:grid;
-  grid-template-columns:100px 1fr 115px;
-  gap:10px;
-  align-items:center;
-  padding:9px 0;
-  border-bottom:1px solid #e5edf3;
-  font-size:13px
+height:100%;background:#167a61;border-radius:9px
 }
 .right{text-align:right}
+.dashboard-more{
+display:flex;justify-content:flex-end;margin-top:12px
+}
 @media(max-width:650px){
-  .navigation{
-    grid-template-columns:repeat(2,minmax(0,1fr))
-  }
-  .filter-grid{
-    grid-template-columns:1fr
-  }
-  .trend-row{
-    grid-template-columns:80px 1fr 95px
-  }
+.navigation{grid-template-columns:repeat(2,minmax(0,1fr))}
+.filter-grid{grid-template-columns:1fr}
+.trend-row{grid-template-columns:80px 1fr 95px}
 }
 @media(max-width:430px){
-  .metric strong{font-size:19px}
-  .card{padding:14px}
-  header b{font-size:25px}
+.metric strong{font-size:19px}
+.card{padding:14px}
+header b{font-size:25px}
 }
 </style>
 </head>
@@ -297,17 +161,14 @@ footer{
 </header>
 
 <main>
-
 <section id="login" class="card">
 <h2>Anmelden</h2>
 <form id="loginForm">
-<label>
-E-Mail
+<label>E-Mail
 <input id="email" type="email"
 value="office@markusruess.at" required>
 </label>
-<label>
-Passwort
+<label>Passwort
 <input id="password" type="password" required>
 </label>
 <button type="submit">Anmelden</button>
@@ -323,41 +184,32 @@ Passwort
 <h2>Willkommen!</h2>
 <div id="business" class="muted"></div>
 </div>
-<button id="logout" class="secondary">
-Abmelden
-</button>
+<button id="logout" class="secondary">Abmelden</button>
 </div>
 </section>
 
 <nav class="navigation" aria-label="Hauptnavigation">
-<button class="nav-button active"
-data-page="dashboard">
+<button class="nav-button active" data-page="dashboard">
 Dashboard
 </button>
-<button class="nav-button"
-data-page="cash">
+<button class="nav-button" data-page="cash">
 Tagesabrechnungen
 </button>
-<button class="nav-button"
-data-page="invoice">
+<button class="nav-button" data-page="invoice">
 Lieferantenrechnungen
 </button>
-<button class="nav-button"
-data-page="analysis">
+<button class="nav-button" data-page="analysis">
 Auswertungen
 </button>
 </nav>
 
-<!-- DASHBOARD -->
 <section id="page-dashboard" class="page active">
-
 <div class="page-title">Dashboard</div>
 
 <section class="card">
 <div class="row">
 <h2>Monatsübersicht</h2>
-<input id="month" type="month"
-style="max-width:175px">
+<input id="month" type="month" style="max-width:175px">
 </div>
 
 <div class="grid">
@@ -425,8 +277,14 @@ style="max-width:175px">
 
 <p id="dashboardNote" class="muted"></p>
 
-<h3>Artikelgruppenstatistik – Monatsumsätze</h3>
+<h3>Top 5 Artikelgruppen nach Umsatz</h3>
 <div id="categoryTotals"></div>
+
+<div class="dashboard-more">
+<button id="showAllCategories" class="secondary">
+Alle Artikelgruppen anzeigen →
+</button>
+</div>
 
 <h3>Top 3 verkaufte Artikel</h3>
 <ol id="top"></ol>
@@ -444,35 +302,28 @@ Weitere Auswertungen
 </section>
 </section>
 
-<!-- TAGESABRECHNUNGEN -->
 <section id="page-cash" class="page">
-
 <div class="page-title">Tagesabrechnungen</div>
 
 <section class="card">
 <h2>Neue Tagesabrechnung erfassen</h2>
 <p class="muted">
 Mehrere Fotos derselben Tagesabrechnung gemeinsam
-auswählen. Unterschiedliche Abrechnungstage
-bitte einzeln auswerten.
+auswählen. Unterschiedliche Tage einzeln auswerten.
 Maximal 12 Bilder.
 </p>
 
-<label>
-Fotos auswählen
+<label>Fotos auswählen
 <input id="cashFiles" type="file"
-accept="image/jpeg,image/png,image/webp"
-multiple>
+accept="image/jpeg,image/png,image/webp" multiple>
 </label>
 
 <button id="cashCamera" class="secondary">
 Foto aufnehmen
 </button>
 
-<input id="cashCameraInput"
-type="file"
-accept="image/*"
-capture="environment"
+<input id="cashCameraInput" type="file"
+accept="image/*" capture="environment"
 class="hidden">
 
 <div id="cashPhotos" class="thumbs"></div>
@@ -480,10 +331,7 @@ class="hidden">
 Keine Fotos ausgewählt.
 </p>
 
-<button id="cashScan">
-Auswertung starten
-</button>
-
+<button id="cashScan">Auswertung starten</button>
 <div id="cashStatus" class="status hidden"></div>
 <div id="cashResults"></div>
 </section>
@@ -497,24 +345,20 @@ Aktualisieren
 </div>
 
 <p class="muted">
-Das Archiv ist standardmäßig geschlossen.
-Öffne es, um Abrechnungen zu suchen.
+Das Archiv bleibt standardmäßig geschlossen.
 </p>
 
 <details id="cashArchivePanel">
 <summary>Archiv durchsuchen</summary>
 
 <div class="filter-grid">
-<label>
-Monat
+<label>Monat
 <input id="cashArchiveMonth" type="month">
 </label>
-<label>
-Datum suchen
+<label>Datum suchen
 <input id="cashArchiveDate" type="date">
 </label>
-<label>
-Anzeige
+<label>Anzeige
 <select id="cashArchiveLimit">
 <option value="10">10 Einträge</option>
 <option value="25">25 Einträge</option>
@@ -526,27 +370,21 @@ Anzeige
 
 <p id="cashArchiveInfo" class="muted"></p>
 <div id="cashArchive"></div>
-
 </details>
 </section>
 </section>
 
-<!-- LIEFERANTENRECHNUNGEN -->
 <section id="page-invoice" class="page">
-
 <div class="page-title">Lieferantenrechnungen</div>
 
 <section class="card">
 <h2>Neue Rechnung erfassen</h2>
-
 <p class="muted">
 Fotos oder PDF-Dateien auswählen.
-PDF-Seiten werden in Bilder umgewandelt.
 Maximal 12 Seiten oder Bilder je Auswertung.
 </p>
 
-<label>
-Fotos oder PDF-Dateien
+<label>Fotos oder PDF-Dateien
 <input id="invoiceFiles" type="file"
 accept="image/jpeg,image/png,image/webp,application/pdf"
 multiple>
@@ -556,22 +394,16 @@ multiple>
 Rechnung fotografieren
 </button>
 
-<input id="invoiceCameraInput"
-type="file"
-accept="image/*"
-capture="environment"
+<input id="invoiceCameraInput" type="file"
+accept="image/*" capture="environment"
 class="hidden">
 
 <div id="invoicePhotos" class="thumbs"></div>
-
 <p id="invoiceCount" class="muted">
 Keine Dateien ausgewählt.
 </p>
 
-<button id="invoiceScan">
-Auswertung starten
-</button>
-
+<button id="invoiceScan">Auswertung starten</button>
 <div id="invoiceStatus" class="status hidden"></div>
 <div id="invoiceResults"></div>
 </section>
@@ -588,18 +420,14 @@ Aktualisieren
 <summary>Rechnungsarchiv durchsuchen</summary>
 
 <div class="filter-grid">
-<label>
-Monat
+<label>Monat
 <input id="invoiceArchiveMonth" type="month">
 </label>
-<label>
-Lieferant oder Rechnungsnummer
-<input id="invoiceSearch"
-type="search"
+<label>Lieferant oder Rechnungsnummer
+<input id="invoiceSearch" type="search"
 placeholder="Suchen …">
 </label>
-<label>
-Anzeige
+<label>Anzeige
 <select id="invoiceArchiveLimit">
 <option value="10">10 Einträge</option>
 <option value="25">25 Einträge</option>
@@ -611,14 +439,11 @@ Anzeige
 
 <p id="invoiceArchiveInfo" class="muted"></p>
 <div id="invoiceArchive"></div>
-
 </details>
 </section>
 </section>
 
-<!-- AUSWERTUNGEN -->
 <section id="page-analysis" class="page">
-
 <div class="page-title">Auswertungen</div>
 
 <section class="card">
@@ -647,7 +472,7 @@ style="max-width:175px">
 </div>
 </div>
 
-<h3>Artikelgruppen nach Umsatz</h3>
+<h3>Alle Artikelgruppen nach Umsatz</h3>
 <div id="analysisCategories"></div>
 
 <h3>Tagesumsätze im Vergleich</h3>
@@ -658,8 +483,8 @@ style="max-width:175px">
 
 <p class="muted">
 Alle Auswertungen basieren ausschließlich auf
-gespeicherten Abrechnungen. Es werden keine
-fehlenden Tage geschätzt.
+gespeicherten Abrechnungen. Fehlende Tage werden
+nicht geschätzt.
 </p>
 </section>
 </section>
@@ -686,7 +511,6 @@ let businessId=null;
 let user=null;
 let role=null;
 let locked=false;
-
 let monthlyCash=[];
 let monthlyInvoices=[];
 
@@ -696,20 +520,15 @@ invoice:{files:[],results:[]}
 };
 
 const euro=x=>
-x===null||
-x===undefined||
-x===''||
+x===null||x===undefined||x===''||
 !Number.isFinite(Number(x))
 ?'–'
 :new Intl.NumberFormat('de-AT',{
-style:'currency',
-currency:'EUR'
+style:'currency',currency:'EUR'
 }).format(Number(x));
 
 const validNumber=x=>
-x!==null&&
-x!==undefined&&
-x!==''&&
+x!==null&&x!==undefined&&x!==''&&
 Number.isFinite(Number(x));
 
 const kindId=kind=>
@@ -720,11 +539,8 @@ if(!x)return '–';
 const d=new Date(String(x).slice(0,10)+'T12:00:00Z');
 return Number.isNaN(d.getTime())?'–':
 new Intl.DateTimeFormat('de-AT',{
-weekday:'long',
-day:'2-digit',
-month:'2-digit',
-year:'numeric',
-timeZone:'UTC'
+weekday:'long',day:'2-digit',month:'2-digit',
+year:'numeric',timeZone:'UTC'
 }).format(d);
 }
 
@@ -732,11 +548,8 @@ function stamp(x){
 return x?
 new Intl.DateTimeFormat('de-AT',{
 timeZone:'Europe/Vienna',
-day:'2-digit',
-month:'2-digit',
-year:'numeric',
-hour:'2-digit',
-minute:'2-digit'
+day:'2-digit',month:'2-digit',year:'numeric',
+hour:'2-digit',minute:'2-digit'
 }).format(new Date(x))
 :'–';
 }
@@ -751,14 +564,9 @@ function switchPage(page){
 document.querySelectorAll('.page').forEach(x=>{
 x.classList.toggle('active',x.id==='page-'+page);
 });
-
 document.querySelectorAll('.nav-button').forEach(x=>{
-x.classList.toggle(
-'active',
-x.dataset.page===page
-);
+x.classList.toggle('active',x.dataset.page===page);
 });
-
 window.scrollTo({top:0,behavior:'smooth'});
 }
 
@@ -768,6 +576,7 @@ b.onclick=()=>switchPage(b.dataset.page);
 
 $('goCash').onclick=()=>switchPage('cash');
 $('goAnalysis').onclick=()=>switchPage('analysis');
+$('showAllCategories').onclick=()=>switchPage('analysis');
 
 function aggregateItems(docs){
 const map=new Map();
@@ -807,9 +616,7 @@ return a.filter(x=>x&&typeof x==='object')
 .map(x=>{
 const raw=x.gross??x.gross_total??x.amount;
 return {
-name:String(
-x.name||x.category||x.sparte||''
-).trim(),
+name:String(x.name||x.category||x.sparte||'').trim(),
 gross:validNumber(raw)?Number(raw):null,
 net:validNumber(x.net)?Number(x.net):null,
 vat:validNumber(x.vat)?Number(x.vat):null,
@@ -850,7 +657,12 @@ const total=rows.reduce((s,x)=>s+x.gross,0);
 return {rows,total,reported};
 }
 
-function categoryTable(docs,monthly=false){
+/*
+  Neue Funktion:
+  limit = 5 zeigt nur die Top 5 im Dashboard.
+  Ohne limit werden alle Artikelgruppen angezeigt.
+*/
+function categoryTable(docs,monthly=false,limit=null){
 const data=categorySummary(docs);
 const box=document.createElement('div');
 
@@ -859,6 +671,10 @@ box.textContent=
 'Noch keine Artikelgruppenumsätze gespeichert.';
 return box;
 }
+
+const rows=limit?
+data.rows.slice(0,limit):
+data.rows;
 
 const scroll=document.createElement('div');
 scroll.className='table-scroll';
@@ -875,7 +691,7 @@ head.append(th);
 }
 table.append(head);
 
-data.rows.forEach((x,i)=>{
+rows.forEach((x,i)=>{
 const tr=document.createElement('tr');
 
 const share=data.total>0?
@@ -903,7 +719,7 @@ const note=document.createElement('p');
 note.className='muted';
 
 note.textContent=
-'Prozentanteile beziehen sich auf die Summe der erfassten Artikelgruppen. '+
+'Anteile beziehen sich auf alle erfassten Artikelgruppen. '+
 (monthly?
 'Artikelgruppen vorhanden für '+
 data.reported+' von '+docs.length+' Umsatztagen.'
@@ -968,11 +784,8 @@ lines.append(line);
 
 for(const x of categories(doc)){
 add(
-x.name,
-x.gross??'',
-x.net??'',
-x.vat??'',
-x.quantity??''
+x.name,x.gross??'',x.net??'',
+x.vat??'',x.quantity??''
 );
 }
 
@@ -1024,9 +837,7 @@ for(const f of [...list]){
 if(s.files.length>=12)break;
 
 const allowed=[
-'image/jpeg',
-'image/png',
-'image/webp',
+'image/jpeg','image/png','image/webp',
 ...(kind==='invoice'?['application/pdf']:[])
 ];
 
@@ -1183,9 +994,7 @@ data:new Uint8Array(await file.arrayBuffer())
 }).promise;
 
 if(pdf.numPages>12){
-throw Error(
-'PDF hat mehr als 12 Seiten. Bitte aufteilen.'
-);
+throw Error('PDF hat mehr als 12 Seiten. Bitte aufteilen.');
 }
 
 const out=[];
@@ -1368,9 +1177,7 @@ fields.push(
 }
 
 for(const [label,key,type] of fields){
-grid.append(makeField(
-label,key,doc[key],type
-));
+grid.append(makeField(label,key,doc[key],type));
 }
 
 if(kind==='invoice'){
@@ -1425,8 +1232,7 @@ save.textContent='Beleg speichern';
 const msg=document.createElement('div');
 msg.className='status hidden';
 
-save.onclick=()=>
-saveResult(kind,doc,box,save,msg);
+save.onclick=()=>saveResult(kind,doc,box,save,msg);
 
 box.append(save,msg);
 target.append(box);
@@ -1483,10 +1289,7 @@ reviewed_at:new Date().toISOString()
 
 for(const [key,val] of Object.entries(values)){
 if([
-'date',
-'supplier',
-'invoice_number',
-'payment_status'
+'date','supplier','invoice_number','payment_status'
 ].includes(key)){
 reviewed[key]=val||null;
 }else{
@@ -1532,8 +1335,7 @@ throw Error(
 }
 
 }else if(
-reviewed.invoice_number&&
-reviewed.supplier
+reviewed.invoice_number&&reviewed.supplier
 ){
 const {data,error}=await db.from('documents')
 .select('id')
@@ -1681,10 +1483,7 @@ b.document_date.localeCompare(a.document_date)||
 b.created_at.localeCompare(a.created_at)
 );
 
-const limit=$(
-kindId(kind)+'ArchiveLimit'
-).value;
-
+const limit=$(kindId(kind)+'ArchiveLimit').value;
 const total=result.length;
 
 if(limit!=='all'){
@@ -1707,8 +1506,7 @@ total+' Beleg(e) gefunden. '+
 result.length+' angezeigt.';
 
 if(!result.length){
-target.textContent=
-'Keine passenden Belege gefunden.';
+target.textContent='Keine passenden Belege gefunden.';
 return;
 }
 
@@ -1773,8 +1571,7 @@ validNumber(d.receipt_count)&&
 Number(d.receipt_count)>0&&
 validNumber(d.gross_total)
 ?euro(
-Number(d.gross_total)/
-Number(d.receipt_count)
+Number(d.gross_total)/Number(d.receipt_count)
 )
 :'–'
 );
@@ -1909,8 +1706,7 @@ $('average').textContent=
 unique.length&&gross.complete?
 euro(gross.value/unique.length):'–';
 
-$('invoices').textContent=
-String(invoices.length);
+$('invoices').textContent=String(invoices.length);
 
 $('cashTotal').textContent=
 unique.length&&bar.complete?
@@ -1969,8 +1765,9 @@ Math.abs(difference)<=.05?
 $('paymentCheck').textContent='–';
 }
 
+/* Dashboard zeigt jetzt ausschließlich die Top 5. */
 $('categoryTotals').replaceChildren(
-categoryTable(unique,true)
+categoryTable(unique,true,5)
 );
 
 $('expenses').textContent=
@@ -2001,19 +1798,17 @@ notes.push(
 'Noch keine Rechnungen erfasst: Ausgaben und Saldo nicht berechenbar.'
 );
 }else if(!expense.complete){
-notes.push(
-'Rechnungs-Nettoangaben unvollständig.'
-);
+notes.push('Rechnungs-Nettoangaben unvollständig.');
 }
 
 if(unique.length&&!bons.complete){
-notes.push(
-'Bonanzahl nicht für alle Tage vorhanden.'
-);
+notes.push('Bonanzahl nicht für alle Tage vorhanden.');
 }
 
-if(!paymentComplete&&unique.length&&
-gross.complete&&bar.complete&&card.complete){
+if(
+!paymentComplete&&unique.length&&
+gross.complete&&bar.complete&&card.complete
+){
 notes.push(
 '*Sonstige Zahlungsarten sind nicht vollständig ausgewiesen. '+
 'Der Vergleich Bar + Karte ist daher kein vollständiger Zahlungsabgleich.'
@@ -2053,9 +1848,7 @@ function renderAnalysis(unique){
 const summary=categorySummary(unique);
 const best=summary.rows[0];
 
-$('bestCategory').textContent=
-best?.name||'–';
-
+$('bestCategory').textContent=best?.name||'–';
 $('bestCategoryGross').textContent=
 best?euro(best.gross):'–';
 
@@ -2075,6 +1868,7 @@ $('bestDayGross').textContent=
 strongest?
 euro(strongest.extracted_data.gross_total):'–';
 
+/* In den Auswertungen bleiben alle Artikelgruppen. */
 $('analysisCategories').replaceChildren(
 categoryTable(unique,true)
 );
@@ -2098,7 +1892,8 @@ const row=document.createElement('div');
 row.className='trend-row';
 
 const date=document.createElement('span');
-date.textContent=doc.document_date.slice(8,10)+'.'+
+date.textContent=
+doc.document_date.slice(8,10)+'.'+
 doc.document_date.slice(5,7)+'.';
 
 const track=document.createElement('div');
@@ -2106,8 +1901,7 @@ track.className='bar-track';
 
 const fill=document.createElement('div');
 fill.className='bar-fill';
-fill.style.width=
-(max>0?value/max*100:0)+'%';
+fill.style.width=(max>0?value/max*100:0)+'%';
 
 track.append(fill);
 
@@ -2240,10 +2034,8 @@ refreshArchives();
 };
 
 $('invoiceArchiveMonth').onchange=refreshArchives;
-
 $('cashArchiveDate').onchange=refreshArchives;
 $('cashArchiveLimit').onchange=refreshArchives;
-
 $('invoiceSearch').oninput=refreshArchives;
 $('invoiceArchiveLimit').onchange=refreshArchives;
 
@@ -2281,8 +2073,7 @@ $('app').classList.remove('hidden');
 
 const parts=new Intl.DateTimeFormat('en-CA',{
 timeZone:'Europe/Vienna',
-year:'numeric',
-month:'2-digit'
+year:'numeric',month:'2-digit'
 }).formatToParts(new Date());
 
 const month=
