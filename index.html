@@ -7,147 +7,73 @@
 <meta name="theme-color" content="#14243a">
 <title>GastroPilot · Das Friedrich</title>
 <style>
-:root{
-font-family:system-ui,-apple-system,Segoe UI,sans-serif;
-color:#14243a;background:#f4f7fa
-}
+:root{font-family:system-ui,-apple-system,Segoe UI,sans-serif;color:#14243a;background:#f4f7fa}
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
 body{margin:0}
-header{background:#14243a;color:white;padding:22px 18px}
+header{background:#14243a;color:#fff;padding:22px 18px}
 .header-inner{max-width:1050px;margin:auto}
 header b{font-size:27px}
 header small{display:block;color:#c2d0dd;margin-top:4px}
 main{max-width:1050px;margin:16px auto;padding:0 13px}
-.card{
-background:white;border:1px solid #e0e7ee;
-border-radius:15px;padding:18px;margin:14px 0;
-box-shadow:0 3px 14px #14243a0a
-}
+.card{background:#fff;border:1px solid #e0e7ee;border-radius:15px;padding:18px;margin:14px 0;box-shadow:0 3px 14px #14243a0a}
 h2{font-size:21px;margin:0 0 13px}
 h3{font-size:17px;margin:18px 0 9px}
 label{display:block;font-weight:650;margin:10px 0 5px}
-input,select,textarea{
-width:100%;border:1px solid #c8d2de;
-border-radius:9px;padding:10px;font:inherit;
-background:white;color:#14243a
-}
-button{
-background:#167a61;color:white;border:0;
-border-radius:10px;padding:11px 14px;
-font:inherit;font-weight:700;cursor:pointer;margin:8px 0
-}
+input,select,textarea{width:100%;border:1px solid #c8d2de;border-radius:9px;padding:10px;font:inherit;background:#fff;color:#14243a}
+button{background:#167a61;color:#fff;border:0;border-radius:10px;padding:11px 14px;font:inherit;font-weight:700;cursor:pointer;margin:8px 0}
 button.secondary{background:#e8eef4;color:#24384b}
-button.danger{
-background:#fff0ef;color:#a72f25;
-border:1px solid #edc7c3
-}
+button.danger{background:#fff0ef;color:#a72f25;border:1px solid #edc7c3}
 button:disabled{opacity:.55;cursor:wait}
 .hidden{display:none!important}
 .muted{color:#657588;font-size:13px;line-height:1.5}
-.grid{
-display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
-gap:10px
-}
-.metric{
-background:#f1f5f9;border-radius:12px;
-padding:13px;min-width:0
-}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.metric{background:#f1f5f9;border-radius:12px;padding:13px;min-width:0}
 .metric small{display:block;color:#64748b}
 .metric strong{font-size:22px;overflow-wrap:anywhere}
-.status{
-padding:11px;background:#edf7f2;
-border-radius:9px;margin:10px 0;white-space:pre-wrap
-}
+.status{padding:11px;background:#edf7f2;border-radius:9px;margin:10px 0;white-space:pre-wrap}
 .error{background:#fff0ef;color:#a72f25}
 .entry{border-top:1px solid #e1e7ee;padding:12px 0}
 .entry small{display:block;color:#64748b}
-.thumbs{
-display:grid;
-grid-template-columns:repeat(auto-fill,minmax(105px,1fr));
-gap:9px
-}
-.thumb{
-border:1px solid #dbe4ed;border-radius:9px;padding:6px
-}
+.thumbs{display:grid;grid-template-columns:repeat(auto-fill,minmax(105px,1fr));gap:9px}
+.thumb{border:1px solid #dbe4ed;border-radius:9px;padding:6px}
 .thumb img{width:100%;height:100px;object-fit:contain}
-.thumb small{
-display:block;overflow:hidden;
-text-overflow:ellipsis;white-space:nowrap
-}
+.thumb small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .thumb button{font-size:12px;padding:5px}
-.result{
-border:1px solid #dbe4ed;
-border-radius:12px;padding:13px;margin:12px 0
-}
-details{
-background:#f5f8fb;border-radius:9px;
-padding:12px;margin:10px 0
-}
+.result{border:1px solid #dbe4ed;border-radius:12px;padding:13px;margin:12px 0}
+details{background:#f5f8fb;border-radius:9px;padding:12px;margin:10px 0}
 summary{cursor:pointer;font-weight:700}
 table{width:100%;border-collapse:collapse;font-size:13px}
-td,th{
-padding:9px 5px;border-bottom:1px solid #dce4ec;
-text-align:left
-}
+td,th{padding:9px 5px;border-bottom:1px solid #dce4ec;text-align:left}
 td:last-child,th:last-child{text-align:right}
-.row{
-display:flex;gap:10px;align-items:center;
-justify-content:space-between;flex-wrap:wrap
-}
-footer{
-text-align:center;color:#718096;
-padding:20px;font-size:12px
-}
-.navigation{
-display:grid;
-grid-template-columns:repeat(4,minmax(0,1fr));
-gap:9px;margin:16px 0
-}
-.nav-button{
-margin:0;background:white;color:#24384b;
-border:1px solid #dce4ec;min-height:65px;
-padding:12px 7px;font-size:14px
-}
-.nav-button.active{
-background:#167a61;color:white;border-color:#167a61
-}
+.row{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+footer{text-align:center;color:#718096;padding:20px;font-size:12px}
+.navigation{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;margin:16px 0}
+.nav-button{margin:0;background:#fff;color:#24384b;border:1px solid #dce4ec;min-height:65px;padding:12px 7px;font-size:14px}
+.nav-button.active{background:#167a61;color:#fff;border-color:#167a61}
 .page{display:none}
 .page.active{display:block}
-.page-title{
-font-size:24px;font-weight:800;margin:20px 2px 8px
-}
-.filter-grid{
-display:grid;
-grid-template-columns:repeat(3,minmax(0,1fr));
-gap:10px;align-items:end
-}
+.page-title{font-size:24px;font-weight:800;margin:20px 2px 8px}
+.filter-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;align-items:end}
 .table-scroll{overflow-x:auto;width:100%}
-.table-scroll table{min-width:440px}
-.trend-row{
-display:grid;grid-template-columns:100px 1fr 115px;
-gap:10px;align-items:center;padding:9px 0;
-border-bottom:1px solid #e5edf3;font-size:13px
-}
-.bar-track{
-height:9px;background:#e5edf3;
-border-radius:9px;overflow:hidden
-}
-.bar-fill{
-height:100%;background:#167a61;border-radius:9px
-}
+.table-scroll table{min-width:540px}
+.trend-row{display:grid;grid-template-columns:100px 1fr 115px;gap:10px;align-items:center;padding:9px 0;border-bottom:1px solid #e5edf3;font-size:13px}
+.bar-track{height:9px;background:#e5edf3;border-radius:9px;overflow:hidden}
+.bar-fill{height:100%;background:#167a61;border-radius:9px}
 .right{text-align:right}
-.dashboard-more{
-display:flex;justify-content:flex-end;margin-top:12px
-}
-.review-summary{
-background:#f1f5f9;border-radius:10px;
-padding:12px;cursor:pointer
-}
+.dashboard-more{display:flex;justify-content:flex-end;margin-top:12px}
+.review-summary{background:#f1f5f9;border-radius:10px;padding:12px;cursor:pointer}
 .review-summary strong{display:block}
 .review-summary small{display:block;color:#64748b;margin-top:4px}
 .review-body{padding-top:12px}
 #cashCapture,#invoiceCapture{scroll-margin-top:12px}
+.check{font-weight:750}
+.check-ok{color:#14745b}
+.check-small{color:#9a6714}
+.check-bad{color:#b3322a}
+.check-unknown{color:#657588}
+.check-note{padding:12px;border-radius:10px;background:#f3f6fa;margin:12px 0}
+.check-note strong{display:block;margin-bottom:4px}
 @media(max-width:650px){
 .navigation{grid-template-columns:repeat(2,minmax(0,1fr))}
 .filter-grid{grid-template-columns:1fr}
@@ -161,7 +87,6 @@ header b{font-size:25px}
 </style>
 </head>
 <body>
-
 <header>
 <div class="header-inner">
 <b>GastroPilot</b>
@@ -174,8 +99,7 @@ header b{font-size:25px}
 <h2>Anmelden</h2>
 <form id="loginForm">
 <label>E-Mail
-<input id="email" type="email"
-value="office@markusruess.at" required>
+<input id="email" type="email" value="office@markusruess.at" required>
 </label>
 <label>Passwort
 <input id="password" type="password" required>
@@ -186,7 +110,6 @@ value="office@markusruess.at" required>
 </section>
 
 <div id="app" class="hidden">
-
 <section class="card">
 <div class="row">
 <div>
@@ -198,23 +121,14 @@ value="office@markusruess.at" required>
 </section>
 
 <nav class="navigation" aria-label="Hauptnavigation">
-<button class="nav-button active" data-page="dashboard">
-Dashboard
-</button>
-<button class="nav-button" data-page="cash">
-Tagesabrechnungen
-</button>
-<button class="nav-button" data-page="invoice">
-Lieferantenrechnungen
-</button>
-<button class="nav-button" data-page="analysis">
-Auswertungen
-</button>
+<button class="nav-button active" data-page="dashboard">Dashboard</button>
+<button class="nav-button" data-page="cash">Tagesabrechnungen</button>
+<button class="nav-button" data-page="invoice">Lieferantenrechnungen</button>
+<button class="nav-button" data-page="analysis">Auswertungen</button>
 </nav>
 
 <section id="page-dashboard" class="page active">
 <div class="page-title">Dashboard</div>
-
 <section class="card">
 <div class="row">
 <h2>Monatsübersicht</h2>
@@ -222,152 +136,76 @@ Auswertungen
 </div>
 
 <div class="grid">
-<div class="metric">
-<small>Umsatz brutto</small>
-<strong id="gross">–</strong>
-</div>
-<div class="metric">
-<small>Umsatz netto</small>
-<strong id="net">–</strong>
-</div>
-<div class="metric">
-<small>Umsatzsteuer</small>
-<strong id="vat">–</strong>
-</div>
-<div class="metric">
-<small>Erfasste Umsatztage</small>
-<strong id="days">–</strong>
-</div>
-<div class="metric">
-<small>Ø Tagesumsatz brutto</small>
-<strong id="average">–</strong>
-</div>
-<div class="metric">
-<small>Lieferantenrechnungen</small>
-<strong id="invoices">–</strong>
-</div>
-<div class="metric">
-<small>Barumsatz</small>
-<strong id="cashTotal">–</strong>
-</div>
-<div class="metric">
-<small>Kartenumsatz</small>
-<strong id="cardTotal">–</strong>
-</div>
-<div class="metric">
-<small>Sonstige Zahlungsarten</small>
-<strong id="otherTotal">–</strong>
-</div>
-<div class="metric">
-<small>Zahlungsabgleich</small>
-<strong id="paymentCheck">–</strong>
-</div>
-<div class="metric">
-<small>Anzahl Kassenbons</small>
-<strong id="receiptCount">–</strong>
-</div>
-<div class="metric">
-<small>Ø Bonwert brutto</small>
-<strong id="averageReceipt">–</strong>
-</div>
-<div class="metric">
-<small>Ø Bons je Umsatztag</small>
-<strong id="receiptsPerDay">–</strong>
-</div>
-<div class="metric">
-<small>Ausgaben netto (Rechnungen)</small>
-<strong id="expenses">–</strong>
-</div>
-<div class="metric">
-<small>Einnahmen – Ausgaben netto</small>
-<strong id="balance">–</strong>
-</div>
+<div class="metric"><small>Umsatz brutto</small><strong id="gross">–</strong></div>
+<div class="metric"><small>Umsatz netto</small><strong id="net">–</strong></div>
+<div class="metric"><small>Umsatzsteuer</small><strong id="vat">–</strong></div>
+<div class="metric"><small>Erfasste Umsatztage</small><strong id="days">–</strong></div>
+<div class="metric"><small>Ø Tagesumsatz brutto</small><strong id="average">–</strong></div>
+<div class="metric"><small>Lieferantenrechnungen</small><strong id="invoices">–</strong></div>
+<div class="metric"><small>Barumsatz</small><strong id="cashTotal">–</strong></div>
+<div class="metric"><small>Kartenumsatz</small><strong id="cardTotal">–</strong></div>
+<div class="metric"><small>Sonstige Zahlungsarten</small><strong id="otherTotal">–</strong></div>
+<div class="metric"><small>Zahlungsabgleich</small><strong id="paymentCheck">–</strong></div>
+<div class="metric"><small>Anzahl Kassenbons</small><strong id="receiptCount">–</strong></div>
+<div class="metric"><small>Ø Bonwert brutto</small><strong id="averageReceipt">–</strong></div>
+<div class="metric"><small>Ø Bons je Umsatztag</small><strong id="receiptsPerDay">–</strong></div>
+<div class="metric"><small>Ausgaben netto (Rechnungen)</small><strong id="expenses">–</strong></div>
+<div class="metric"><small>Einnahmen – Ausgaben netto</small><strong id="balance">–</strong></div>
 </div>
 
 <p id="dashboardNote" class="muted"></p>
 
+<h3>Zahlungsabgleich nach Tagen</h3>
+<div id="paymentDaily"></div>
+
 <h3>Top 5 Artikelgruppen nach Umsatz</h3>
 <div id="categoryTotals"></div>
-
 <div class="dashboard-more">
-<button id="showAllCategories" class="secondary">
-Alle Artikelgruppen anzeigen →
-</button>
+<button id="showAllCategories" class="secondary">Alle Artikelgruppen anzeigen →</button>
 </div>
 
 <h3>Top 3 verkaufte Artikel</h3>
 <ol id="top"></ol>
-
 <p id="last" class="muted"></p>
 
 <div class="row">
-<button class="secondary" id="goCash">
-Tagesabrechnungen öffnen
-</button>
-<button class="secondary" id="goAnalysis">
-Weitere Auswertungen
-</button>
+<button class="secondary" id="goCash">Tagesabrechnungen öffnen</button>
+<button class="secondary" id="goAnalysis">Weitere Auswertungen</button>
 </div>
 </section>
 </section>
 
 <section id="page-cash" class="page">
 <div class="page-title">Tagesabrechnungen</div>
-
 <section class="card" id="cashCapture">
 <h2>Neue Tagesabrechnung erfassen</h2>
 <p class="muted">
-Mehrere Fotos derselben Tagesabrechnung gemeinsam
-auswählen. Unterschiedliche Tage einzeln auswerten.
-Maximal 12 Bilder.
+Mehrere Fotos derselben Tagesabrechnung gemeinsam auswählen.
+Unterschiedliche Tage einzeln auswerten. Maximal 12 Bilder.
 </p>
-
 <label>Fotos auswählen
-<input id="cashFiles" type="file"
-accept="image/jpeg,image/png,image/webp" multiple>
+<input id="cashFiles" type="file" accept="image/jpeg,image/png,image/webp" multiple>
 </label>
-
-<button id="cashCamera" class="secondary">
-Foto aufnehmen
-</button>
-
-<input id="cashCameraInput" type="file"
-accept="image/*" capture="environment"
-class="hidden">
-
+<button id="cashCamera" class="secondary">Foto aufnehmen</button>
+<input id="cashCameraInput" type="file" accept="image/*" capture="environment" class="hidden">
 <div id="cashPhotos" class="thumbs"></div>
-<p id="cashCount" class="muted">
-Keine Fotos ausgewählt.
-</p>
-
+<p id="cashCount" class="muted">Keine Fotos ausgewählt.</p>
 <button id="cashScan">Auswertung starten</button>
-<div id="cashStatus" class="status hidden"
-role="status" aria-live="polite"></div>
+<div id="cashStatus" class="status hidden" role="status" aria-live="polite"></div>
 <div id="cashResults"></div>
 </section>
 
 <section class="card">
 <div class="row">
 <h2>Tagesarchiv</h2>
-<button id="cashRefresh" class="secondary">
-Aktualisieren
-</button>
+<button id="cashRefresh" class="secondary">Aktualisieren</button>
 </div>
-
-<p class="muted">
-Das Archiv bleibt standardmäßig geschlossen.
-</p>
-
+<p class="muted">Das Archiv bleibt standardmäßig geschlossen.</p>
 <details id="cashArchivePanel">
 <summary>Archiv durchsuchen</summary>
-
 <div class="filter-grid">
-<label>Monat
-<input id="cashArchiveMonth" type="month">
-</label>
-<label>Datum suchen
-<input id="cashArchiveDate" type="date">
-</label>
+<label>Monat<input id="cashArchiveMonth" type="month"></label>
+<label>Datum suchen<input id="cashArchiveDate" type="date"></label>
 <label>Anzeige
 <select id="cashArchiveLimit">
 <option value="10">10 Einträge</option>
@@ -377,7 +215,6 @@ Das Archiv bleibt standardmäßig geschlossen.
 </select>
 </label>
 </div>
-
 <p id="cashArchiveInfo" class="muted"></p>
 <div id="cashArchive"></div>
 </details>
@@ -386,57 +223,32 @@ Das Archiv bleibt standardmäßig geschlossen.
 
 <section id="page-invoice" class="page">
 <div class="page-title">Lieferantenrechnungen</div>
-
 <section class="card" id="invoiceCapture">
 <h2>Neue Rechnung erfassen</h2>
-<p class="muted">
-Fotos oder PDF-Dateien auswählen.
-Maximal 12 Seiten oder Bilder je Auswertung.
-</p>
-
+<p class="muted">Fotos oder PDF-Dateien auswählen. Maximal 12 Seiten oder Bilder je Auswertung.</p>
 <label>Fotos oder PDF-Dateien
-<input id="invoiceFiles" type="file"
-accept="image/jpeg,image/png,image/webp,application/pdf"
-multiple>
+<input id="invoiceFiles" type="file" accept="image/jpeg,image/png,image/webp,application/pdf" multiple>
 </label>
-
-<button id="invoiceCamera" class="secondary">
-Rechnung fotografieren
-</button>
-
-<input id="invoiceCameraInput" type="file"
-accept="image/*" capture="environment"
-class="hidden">
-
+<button id="invoiceCamera" class="secondary">Rechnung fotografieren</button>
+<input id="invoiceCameraInput" type="file" accept="image/*" capture="environment" class="hidden">
 <div id="invoicePhotos" class="thumbs"></div>
-<p id="invoiceCount" class="muted">
-Keine Dateien ausgewählt.
-</p>
-
+<p id="invoiceCount" class="muted">Keine Dateien ausgewählt.</p>
 <button id="invoiceScan">Auswertung starten</button>
-<div id="invoiceStatus" class="status hidden"
-role="status" aria-live="polite"></div>
+<div id="invoiceStatus" class="status hidden" role="status" aria-live="polite"></div>
 <div id="invoiceResults"></div>
 </section>
 
 <section class="card">
 <div class="row">
 <h2>Rechnungsarchiv</h2>
-<button id="invoiceRefresh" class="secondary">
-Aktualisieren
-</button>
+<button id="invoiceRefresh" class="secondary">Aktualisieren</button>
 </div>
-
 <details id="invoiceArchivePanel">
 <summary>Rechnungsarchiv durchsuchen</summary>
-
 <div class="filter-grid">
-<label>Monat
-<input id="invoiceArchiveMonth" type="month">
-</label>
+<label>Monat<input id="invoiceArchiveMonth" type="month"></label>
 <label>Lieferant oder Rechnungsnummer
-<input id="invoiceSearch" type="search"
-placeholder="Suchen …">
+<input id="invoiceSearch" type="search" placeholder="Suchen …">
 </label>
 <label>Anzeige
 <select id="invoiceArchiveLimit">
@@ -447,7 +259,6 @@ placeholder="Suchen …">
 </select>
 </label>
 </div>
-
 <p id="invoiceArchiveInfo" class="muted"></p>
 <div id="invoiceArchive"></div>
 </details>
@@ -456,60 +267,38 @@ placeholder="Suchen …">
 
 <section id="page-analysis" class="page">
 <div class="page-title">Auswertungen</div>
-
 <section class="card">
 <div class="row">
 <h2>Monatsanalyse</h2>
-<input id="analysisMonth" type="month"
-style="max-width:175px">
+<input id="analysisMonth" type="month" style="max-width:175px">
 </div>
-
 <div class="grid">
-<div class="metric">
-<small>Umsatzstärkste Artikelgruppe</small>
-<strong id="bestCategory">–</strong>
+<div class="metric"><small>Umsatzstärkste Artikelgruppe</small><strong id="bestCategory">–</strong></div>
+<div class="metric"><small>Umsatz dieser Artikelgruppe</small><strong id="bestCategoryGross">–</strong></div>
+<div class="metric"><small>Umsatzstärkster Tag</small><strong id="bestDay">–</strong></div>
+<div class="metric"><small>Umsatz am stärksten Tag</small><strong id="bestDayGross">–</strong></div>
 </div>
-<div class="metric">
-<small>Umsatz dieser Artikelgruppe</small>
-<strong id="bestCategoryGross">–</strong>
-</div>
-<div class="metric">
-<small>Umsatzstärkster Tag</small>
-<strong id="bestDay">–</strong>
-</div>
-<div class="metric">
-<small>Umsatz am stärksten Tag</small>
-<strong id="bestDayGross">–</strong>
-</div>
-</div>
-
+<h3>Zahlungsabgleich aller Tage</h3>
+<div id="analysisPayments"></div>
 <h3>Alle Artikelgruppen nach Umsatz</h3>
 <div id="analysisCategories"></div>
-
 <h3>Tagesumsätze im Vergleich</h3>
 <div id="dailyTrend"></div>
-
 <h3>Verkaufte Artikel nach Menge</h3>
 <div id="analysisItems"></div>
-
 <p class="muted">
-Alle Auswertungen basieren ausschließlich auf
-gespeicherten Abrechnungen. Fehlende Tage werden
-nicht geschätzt.
+Alle Auswertungen basieren ausschließlich auf gespeicherten Abrechnungen.
+Fehlende Tage und Beträge werden nicht geschätzt.
 </p>
 </section>
 </section>
-
 </div>
 </main>
 
-<footer>
-GastroPilot · Das Friedrich · Brot & Wasser RA GmbH
-</footer>
+<footer>GastroPilot · Das Friedrich · Brot & Wasser RA GmbH</footer>
 
 <script type="module">
-import {createClient}
-from 'https://esm.sh/@supabase/supabase-js@2';
+import {createClient} from 'https://esm.sh/@supabase/supabase-js@2';
 
 const db=createClient(
 'https://sjnwfwcpgwsavygewwzb.supabase.co',
@@ -517,6 +306,10 @@ const db=createClient(
 );
 
 const $=id=>document.getElementById(id);
+const state={
+cash_report:{files:[],results:[]},
+invoice:{files:[],results:[]}
+};
 
 let businessId=null;
 let user=null;
@@ -525,25 +318,17 @@ let locked=false;
 let monthlyCash=[];
 let monthlyInvoices=[];
 
-const state={
-cash_report:{files:[],results:[]},
-invoice:{files:[],results:[]}
-};
-
 const euro=x=>
-x===null||x===undefined||x===''||
-!Number.isFinite(Number(x))
+x===null||x===undefined||x===''||!Number.isFinite(Number(x))
 ?'–'
 :new Intl.NumberFormat('de-AT',{
 style:'currency',currency:'EUR'
 }).format(Number(x));
 
 const validNumber=x=>
-x!==null&&x!==undefined&&x!==''&&
-Number.isFinite(Number(x));
+x!==null&&x!==undefined&&x!==''&&Number.isFinite(Number(x));
 
-const kindId=kind=>
-kind==='cash_report'?'cash':'invoice';
+const kindId=kind=>kind==='cash_report'?'cash':'invoice';
 
 function dateLabel(x){
 if(!x)return '–';
@@ -556,13 +341,11 @@ year:'numeric',timeZone:'UTC'
 }
 
 function stamp(x){
-return x?
-new Intl.DateTimeFormat('de-AT',{
-timeZone:'Europe/Vienna',
-day:'2-digit',month:'2-digit',year:'numeric',
+return x?new Intl.DateTimeFormat('de-AT',{
+timeZone:'Europe/Vienna',day:'2-digit',
+month:'2-digit',year:'numeric',
 hour:'2-digit',minute:'2-digit'
-}).format(new Date(x))
-:'–';
+}).format(new Date(x)):'–';
 }
 
 function message(id,text,error=false){
@@ -584,10 +367,184 @@ window.scrollTo({top:0,behavior:'smooth'});
 document.querySelectorAll('.nav-button').forEach(b=>{
 b.onclick=()=>switchPage(b.dataset.page);
 });
-
 $('goCash').onclick=()=>switchPage('cash');
 $('goAnalysis').onclick=()=>switchPage('analysis');
 $('showAllCategories').onclick=()=>switchPage('analysis');
+
+/* =========================================
+   ZAHLUNGSABGLEICH – NEU
+   ========================================= */
+
+function paymentAnalysis(doc){
+const d=doc?.extracted_data||doc||{};
+
+const gross=validNumber(d.gross_total)?Number(d.gross_total):null;
+const cash=validNumber(d.cash_total)?Number(d.cash_total):null;
+const card=validNumber(d.card_total)?Number(d.card_total):null;
+const other=validNumber(d.other_payments_total)?
+Number(d.other_payments_total):null;
+
+const complete=[gross,cash,card,other].every(x=>x!==null);
+
+if(!complete){
+return {
+gross,cash,card,other,
+complete:false,
+difference:null,
+status:'unknown',
+label:'Zahlungsangaben unvollständig'
+};
+}
+
+/* Rechnen in Cent verhindert Gleitkomma-Abweichungen. */
+const cents=x=>Math.round(x*100);
+
+const differenceCents=
+cents(cash)+cents(card)+cents(other)-cents(gross);
+
+const difference=differenceCents/100;
+const absolute=Math.abs(differenceCents);
+
+return {
+gross,cash,card,other,
+complete:true,
+difference,
+status:absolute===0?'ok':absolute<=50?'small':'bad',
+label:absolute===0?
+'✓ Zahlungsarten stimmen':
+absolute<=50?
+'Geringe Abweichung – bitte prüfen':
+'Achtung – Zahlungsdifferenz'
+};
+}
+
+function paymentClass(status){
+return 'check check-'+status;
+}
+
+function paymentTable(docs){
+const box=document.createElement('div');
+
+if(!docs.length){
+box.textContent='Noch keine Tagesabrechnungen vorhanden.';
+return box;
+}
+
+const sorted=[...docs].sort((a,b)=>
+a.document_date.localeCompare(b.document_date)
+);
+
+const scroll=document.createElement('div');
+scroll.className='table-scroll';
+
+const table=document.createElement('table');
+const head=document.createElement('tr');
+
+for(const label of [
+'Datum','Brutto','Bar','Karte','Sonstige','Differenz','Prüfung'
+]){
+const th=document.createElement('th');
+th.textContent=label;
+head.append(th);
+}
+table.append(head);
+
+let ok=0,small=0,bad=0,unknown=0;
+
+for(const entry of sorted){
+const p=paymentAnalysis(entry);
+const tr=document.createElement('tr');
+
+const values=[
+dateLabel(entry.document_date),
+euro(p.gross),
+euro(p.cash),
+euro(p.card),
+euro(p.other),
+p.complete?euro(p.difference):'–',
+p.label
+];
+
+values.forEach((value,i)=>{
+const td=document.createElement('td');
+td.textContent=value;
+
+if(i===5||i===6){
+td.className=paymentClass(p.status);
+}
+
+tr.append(td);
+});
+
+table.append(tr);
+
+if(p.status==='ok')ok++;
+if(p.status==='small')small++;
+if(p.status==='bad')bad++;
+if(p.status==='unknown')unknown++;
+}
+
+scroll.append(table);
+box.append(scroll);
+
+const note=document.createElement('div');
+note.className='check-note';
+
+const title=document.createElement('strong');
+title.textContent='Prüfstatus';
+
+const detail=document.createElement('span');
+detail.className='muted';
+detail.textContent=
+ok+' Tage stimmen · '+
+small+' Tage mit geringer Abweichung · '+
+bad+' Tage mit größerer Differenz · '+
+unknown+' Tage unvollständig.';
+
+note.append(title,detail);
+box.append(note);
+
+const explanation=document.createElement('p');
+explanation.className='muted';
+explanation.textContent=
+'Differenz = Bar + Karte + sonstige Zahlungsarten − Bruttoumsatz. '+
+'Eine negative Differenz bedeutet, dass die erfassten Zahlungen niedriger sind als der Bruttoumsatz. '+
+'Fehlende Beträge werden nicht als 0 € behandelt. '+
+'Bei Abweichungen bitte den Originalbeleg kontrollieren.';
+box.append(explanation);
+
+return box;
+}
+
+function paymentMonthStatus(docs){
+if(!docs.length)return {label:'–',status:'unknown'};
+
+const results=docs.map(paymentAnalysis);
+
+if(results.some(x=>!x.complete)){
+return {
+label:'Unvollständig',
+status:'unknown'
+};
+}
+
+const cents=results.reduce(
+(s,x)=>s+Math.round(x.difference*100),0
+);
+
+const difference=cents/100;
+
+return {
+label:
+(cents===0?'✓ Stimmt · ':'')+euro(difference),
+status:cents===0?'ok':
+Math.abs(cents)<=50?'small':'bad'
+};
+}
+
+/* =========================================
+   ARTIKELGRUPPEN UND ARTIKEL
+   ========================================= */
 
 function aggregateItems(docs){
 const map=new Map();
@@ -616,8 +573,7 @@ a.name.localeCompare(b.name,'de-AT')
 }
 
 function categories(doc){
-const a=
-doc?.category_sales||
+const a=doc?.category_sales||
 doc?.department_sales||
 doc?.spartenumsaetze||[];
 
@@ -631,8 +587,7 @@ name:String(x.name||x.category||x.sparte||'').trim(),
 gross:validNumber(raw)?Number(raw):null,
 net:validNumber(x.net)?Number(x.net):null,
 vat:validNumber(x.vat)?Number(x.vat):null,
-quantity:validNumber(x.quantity)?
-Number(x.quantity):null
+quantity:validNumber(x.quantity)?Number(x.quantity):null
 };
 }).filter(x=>x.name);
 }
@@ -663,9 +618,11 @@ const rows=[...map.values()].sort(
 (a,b)=>b.gross-a.gross
 );
 
-const total=rows.reduce((s,x)=>s+x.gross,0);
-
-return {rows,total,reported};
+return {
+rows,
+total:rows.reduce((s,x)=>s+x.gross,0),
+reported
+};
 }
 
 function categoryTable(docs,monthly=false,limit=null){
@@ -673,24 +630,18 @@ const data=categorySummary(docs);
 const box=document.createElement('div');
 
 if(!data.rows.length){
-box.textContent=
-'Noch keine Artikelgruppenumsätze gespeichert.';
+box.textContent='Noch keine Artikelgruppenumsätze gespeichert.';
 return box;
 }
 
-const rows=limit?
-data.rows.slice(0,limit):
-data.rows;
-
+const rows=limit?data.rows.slice(0,limit):data.rows;
 const scroll=document.createElement('div');
 scroll.className='table-scroll';
 
 const table=document.createElement('table');
 const head=document.createElement('tr');
 
-for(const value of [
-'Rang / Artikelgruppe','Brutto','Anteil'
-]){
+for(const value of ['Rang / Artikelgruppe','Brutto','Anteil']){
 const th=document.createElement('th');
 th.textContent=value;
 head.append(th);
@@ -703,13 +654,10 @@ const tr=document.createElement('tr');
 const share=data.total>0?
 (x.gross/data.total*100).toLocaleString(
 'de-AT',{maximumFractionDigits:1}
-)+' %'
-:'–';
+)+' %':'–';
 
 for(const value of [
-(i+1)+'. '+x.name,
-euro(x.gross),
-share
+(i+1)+'. '+x.name,euro(x.gross),share
 ]){
 const td=document.createElement('td');
 td.textContent=value;
@@ -723,14 +671,11 @@ box.append(scroll);
 
 const note=document.createElement('p');
 note.className='muted';
-
 note.textContent=
 'Anteile beziehen sich auf alle erfassten Artikelgruppen. '+
 (monthly?
 'Artikelgruppen vorhanden für '+
-data.reported+' von '+docs.length+' Umsatztagen.'
-:'');
-
+data.reported+' von '+docs.length+' Umsatztagen.':'');
 box.append(note);
 
 return box;
@@ -738,7 +683,6 @@ return box;
 
 function categoryEditor(box,doc){
 const wrap=document.createElement('div');
-
 const h=document.createElement('h3');
 h.textContent='Artikelgruppenstatistik laut Kassenbeleg';
 wrap.append(h);
@@ -772,7 +716,6 @@ const input=document.createElement('input');
 input.className=cls;
 input.type=type;
 input.value=value??'';
-
 if(type==='number')input.step='0.01';
 
 field.append(input);
@@ -789,10 +732,7 @@ lines.append(line);
 };
 
 for(const x of categories(doc)){
-add(
-x.name,x.gross??'',x.net??'',
-x.vat??'',x.quantity??''
-);
+add(x.name,x.gross??'',x.net??'',x.vat??'',x.quantity??'');
 }
 
 const button=document.createElement('button');
@@ -835,6 +775,10 @@ quantity:parse(qtyRaw,'Menge')
 
 return out;
 }
+
+/* =========================================
+   DATEIEN UND SCAN
+   ========================================= */
 
 function addFiles(kind,list){
 const s=state[kind];
@@ -883,8 +827,6 @@ const id=kindId(kind);
 
 $(id+'Files').value='';
 $(id+'CameraInput').value='';
-
-/* Ergebnisansicht sofort vollständig schließen. */
 $(id+'Results').replaceChildren();
 
 renderFiles(kind);
@@ -932,8 +874,8 @@ box.append(tile);
 });
 
 $(id+'Count').textContent=s.files.length?
-s.files.length+' Datei(en) ausgewählt'
-:'Keine Dateien ausgewählt.';
+s.files.length+' Datei(en) ausgewählt':
+'Keine Dateien ausgewählt.';
 
 $(id+'Scan').disabled=locked||!s.files.length;
 }
@@ -946,8 +888,7 @@ addFiles(kind,e.target.files);
 e.target.value='';
 };
 
-$(id+'Camera').onclick=()=>
-$(id+'CameraInput').click();
+$(id+'Camera').onclick=()=>$(id+'CameraInput').click();
 
 $(id+'CameraInput').onchange=e=>{
 addFiles(kind,e.target.files);
@@ -1044,12 +985,8 @@ async function base64(blob){
 return new Promise((resolve,reject)=>{
 const r=new FileReader();
 
-r.onload=()=>
-resolve(String(r.result).split(',')[1]);
-
-r.onerror=()=>
-reject(Error('Datei nicht lesbar'));
-
+r.onload=()=>resolve(String(r.result).split(',')[1]);
+r.onerror=()=>reject(Error('Datei nicht lesbar'));
 r.readAsDataURL(blob);
 });
 }
@@ -1160,17 +1097,17 @@ panel.open=state[kind].results.length===1;
 const summary=document.createElement('summary');
 summary.className='review-summary';
 
-const summaryTitle=document.createElement('strong');
-summaryTitle.textContent=
+const title=document.createElement('strong');
+title.textContent=
 (kind==='cash_report'?'Tagesabrechnung':'Rechnung')+
 ' '+(i+1)+' · '+(doc.date||'Datum prüfen');
 
-const summarySub=document.createElement('small');
-summarySub.textContent=
+const sub=document.createElement('small');
+sub.textContent=
 euro(doc.gross_total)+
 ' · Zum Prüfen und Speichern antippen';
 
-summary.append(summaryTitle,summarySub);
+summary.append(title,sub);
 panel.append(summary);
 
 const body=document.createElement('div');
@@ -1233,6 +1170,47 @@ body.append(grid);
 
 if(kind==='cash_report'){
 categoryEditor(body,doc);
+
+const check=document.createElement('div');
+check.className='check-note';
+
+const heading=document.createElement('strong');
+heading.textContent='Zahlungsabgleich vor dem Speichern';
+
+const detail=document.createElement('div');
+
+const updateCheck=()=>{
+const values={};
+
+for(const key of [
+'gross_total','cash_total',
+'card_total','other_payments_total'
+]){
+const el=body.querySelector('[data-key="'+key+'"]');
+values[key]=el?.value.trim()||null;
+}
+
+const p=paymentAnalysis(values);
+
+detail.textContent=p.complete?
+p.label+' · Differenz: '+euro(p.difference):
+'Nicht alle Zahlungsarten erfasst. Bitte Originalbeleg kontrollieren.';
+
+detail.className=paymentClass(p.status);
+};
+
+body.querySelectorAll('[data-key]').forEach(el=>{
+if([
+'gross_total','cash_total',
+'card_total','other_payments_total'
+].includes(el.dataset.key)){
+el.addEventListener('input',updateCheck);
+}
+});
+
+check.append(heading,detail);
+body.append(check);
+updateCheck();
 }
 
 const details=document.createElement('details');
@@ -1258,9 +1236,7 @@ save.textContent='Beleg speichern';
 const msg=document.createElement('div');
 msg.className='status hidden';
 
-save.onclick=()=>saveResult(
-kind,doc,body,save,msg,box
-);
+save.onclick=()=>saveResult(kind,doc,body,save,msg,box);
 
 body.append(save,msg);
 panel.append(body);
@@ -1278,10 +1254,7 @@ if(!Number.isFinite(n)||n<0){
 throw Error('Ungültiger Betrag bei '+key);
 }
 
-if(
-key==='receipt_count'&&
-!Number.isInteger(n)
-){
+if(key==='receipt_count'&&!Number.isInteger(n)){
 throw Error('Bonanzahl muss ganzzahlig sein');
 }
 
@@ -1364,9 +1337,7 @@ throw Error(
 );
 }
 
-}else if(
-reviewed.invoice_number&&reviewed.supplier
-){
+}else if(reviewed.invoice_number&&reviewed.supplier){
 const {data,error}=await db.from('documents')
 .select('id')
 .eq('business_id',businessId)
@@ -1389,8 +1360,7 @@ uploaded_by:user.id,
 document_type:kind,
 document_date:reviewed.date,
 supplier:kind==='invoice'?reviewed.supplier:null,
-invoice_number:kind==='invoice'?
-reviewed.invoice_number:null,
+invoice_number:kind==='invoice'?reviewed.invoice_number:null,
 status:'reviewed',
 extracted_data:reviewed
 });
@@ -1399,14 +1369,7 @@ if(error)throw error;
 
 saved=true;
 
-/*
- NEU:
- Nur den erfolgreich gespeicherten Beleg entfernen.
- Weitere erkannte Belege bleiben erhalten und können
- einzeln gespeichert werden.
-*/
 const resultIndex=state[kind].results.indexOf(doc);
-
 if(resultIndex!==-1){
 state[kind].results.splice(resultIndex,1);
 }
@@ -1416,16 +1379,8 @@ resultBox.remove();
 const id=kindId(kind);
 
 if(state[kind].results.length===0){
-/*
- Alle erkannten Belege sind gespeichert.
- Dateien und gesamte Ergebnisansicht schließen.
-*/
 clearFiles(kind);
 }else{
-/*
- Weitere Belege warten auf Prüfung.
- Die übrigen Ergebnisansichten geschlossen halten.
-*/
 $(id+'Results')
 .querySelectorAll('details')
 .forEach(panel=>panel.open=false);
@@ -1439,10 +1394,6 @@ id+'Status',
 ' Beleg(e) zur Prüfung vorhanden.':'')
 );
 
-/*
- Sofort zurück zum Erfassungsbereich,
- ohne langes Scrollen auf dem Handy.
-*/
 $(id+'Capture').scrollIntoView({
 behavior:'smooth',
 block:'start'
@@ -1460,6 +1411,10 @@ renderFiles('cash_report');
 renderFiles('invoice');
 }
 }
+
+/* =========================================
+   DATENBANK UND ARCHIV
+   ========================================= */
 
 async function allDocs(kind,start,end){
 const out=[];
@@ -1479,7 +1434,6 @@ const {data,error}=await db.from('documents')
 if(error)throw error;
 
 out.push(...data);
-
 if(data.length<500)break;
 }
 
@@ -1503,10 +1457,7 @@ byDay.set(d.document_date,d);
 }
 }
 
-return {
-docs:[...byDay.values()],
-duplicates
-};
+return {docs:[...byDay.values()],duplicates};
 }
 
 function sumField(docs,key){
@@ -1572,14 +1523,12 @@ return {result,total};
 function renderArchive(kind,docs){
 const id=kindId(kind);
 const target=$(id+'Archive');
-
 target.replaceChildren();
 
 const {result,total}=archiveFilter(kind,docs);
 
 $(id+'ArchiveInfo').textContent=
-total+' Beleg(e) gefunden. '+
-result.length+' angezeigt.';
+total+' Beleg(e) gefunden. '+result.length+' angezeigt.';
 
 if(!result.length){
 target.textContent='Keine passenden Belege gefunden.';
@@ -1603,8 +1552,7 @@ sub.textContent=
 euro(d.gross_total);
 
 const uploaded=document.createElement('small');
-uploaded.textContent=
-'Hochgeladen am '+stamp(entry.created_at);
+uploaded.textContent='Hochgeladen am '+stamp(entry.created_at);
 
 row.append(title,sub,uploaded);
 
@@ -1623,6 +1571,7 @@ p.textContent=
 (kind==='cash_report'?
 ' · Bar: '+euro(d.cash_total)+
 ' · Karte: '+euro(d.card_total)+
+' · Sonstige: '+euro(d.other_payments_total)+
 ' · Bons: '+(d.receipt_count??'–')
 :
 ' · Rechnungsnummer: '+
@@ -1638,9 +1587,18 @@ unknown:'Nicht angegeben'
 detail.append(p);
 
 if(kind==='cash_report'){
+const payment=paymentAnalysis(entry);
+
+const check=document.createElement('p');
+check.className=paymentClass(payment.status);
+check.textContent=
+'Zahlungsabgleich: '+payment.label+
+(payment.complete?' · '+euro(payment.difference):'');
+
+detail.append(check);
+
 const bons=document.createElement('p');
 bons.className='muted';
-
 bons.textContent='Ø Bonwert: '+
 (
 validNumber(d.receipt_count)&&
@@ -1754,6 +1712,10 @@ target.append(row);
 }
 }
 
+/* =========================================
+   DASHBOARD UND AUSWERTUNGEN
+   ========================================= */
+
 function updateDashboard(unique,invoices,duplicates){
 const gross=sumField(unique,'gross_total');
 const net=sumField(unique,'net_total');
@@ -1765,16 +1727,13 @@ const bons=sumField(unique,'receipt_count');
 const expense=sumField(invoices,'net_total');
 
 $('gross').textContent=
-unique.length&&gross.complete?
-euro(gross.value):'–';
+unique.length&&gross.complete?euro(gross.value):'–';
 
 $('net').textContent=
-unique.length&&net.complete?
-euro(net.value):'–';
+unique.length&&net.complete?euro(net.value):'–';
 
 $('vat').textContent=
-unique.length&&vat.complete?
-euro(vat.value):'–';
+unique.length&&vat.complete?euro(vat.value):'–';
 
 $('days').textContent=String(unique.length);
 
@@ -1785,61 +1744,36 @@ euro(gross.value/unique.length):'–';
 $('invoices').textContent=String(invoices.length);
 
 $('cashTotal').textContent=
-unique.length&&bar.complete?
-euro(bar.value):'–';
+unique.length&&bar.complete?euro(bar.value):'–';
 
 $('cardTotal').textContent=
-unique.length&&card.complete?
-euro(card.value):'–';
+unique.length&&card.complete?euro(card.value):'–';
 
 $('otherTotal').textContent=
-unique.length&&other.complete?
-euro(other.value):'–';
+unique.length&&other.complete?euro(other.value):'–';
 
 $('receiptCount').textContent=
 unique.length&&bons.complete?
-new Intl.NumberFormat('de-AT').format(bons.value)
-:'–';
+new Intl.NumberFormat('de-AT').format(bons.value):'–';
 
 $('averageReceipt').textContent=
-unique.length&&gross.complete&&
-bons.complete&&bons.value>0
-?euro(gross.value/bons.value)
-:'–';
+unique.length&&gross.complete&&bons.complete&&bons.value>0
+?euro(gross.value/bons.value):'–';
 
 $('receiptsPerDay').textContent=
 unique.length&&bons.complete?
 new Intl.NumberFormat('de-AT',{
 maximumFractionDigits:1
-}).format(bons.value/unique.length)
-:'–';
+}).format(bons.value/unique.length):'–';
 
-const paymentComplete=
-unique.length&&gross.complete&&
-bar.complete&&card.complete&&other.complete;
+const payment=paymentMonthStatus(unique);
 
-if(paymentComplete){
-const diff=Math.round(
-(bar.value+card.value+other.value-gross.value)*100
-)/100;
+$('paymentCheck').textContent=payment.label;
+$('paymentCheck').className=paymentClass(payment.status);
 
-$('paymentCheck').textContent=
-Math.abs(diff)<=.05?'✓ Stimmt':euro(diff);
-}else if(
-unique.length&&gross.complete&&
-bar.complete&&card.complete
-){
-const difference=Math.round(
-(gross.value-bar.value-card.value)*100
-)/100;
-
-$('paymentCheck').textContent=
-Math.abs(difference)<=.05?
-'Bar + Karte stimmt*':
-'Rest: '+euro(difference);
-}else{
-$('paymentCheck').textContent='–';
-}
+$('paymentDaily').replaceChildren(
+paymentTable(unique)
+);
 
 $('categoryTotals').replaceChildren(
 categoryTable(unique,true,5)
@@ -1852,8 +1786,7 @@ euro(expense.value):'–';
 $('balance').textContent=
 unique.length&&net.complete&&
 invoices.length&&expense.complete
-?euro(net.value-expense.value)
-:'–';
+?euro(net.value-expense.value):'–';
 
 const notes=[
 'Nur gespeicherte Belege des ausgewählten Monats.',
@@ -1880,13 +1813,9 @@ if(unique.length&&!bons.complete){
 notes.push('Bonanzahl nicht für alle Tage vorhanden.');
 }
 
-if(
-!paymentComplete&&unique.length&&
-gross.complete&&bar.complete&&card.complete
-){
+if(unique.some(x=>!paymentAnalysis(x).complete)){
 notes.push(
-'*Sonstige Zahlungsarten sind nicht vollständig ausgewiesen. '+
-'Der Vergleich Bar + Karte ist daher kein vollständiger Zahlungsabgleich.'
+'Der Zahlungsabgleich ist unvollständig, weil Zahlungsarten fehlen.'
 );
 }
 
@@ -1902,8 +1831,7 @@ top.replaceChildren();
 
 for(const item of aggregateItems(unique).slice(0,3)){
 const li=document.createElement('li');
-li.textContent=
-item.name+' · '+item.quantity+' Stück';
+li.textContent=item.name+' · '+item.quantity+' Stück';
 top.append(li);
 }
 
@@ -1943,6 +1871,10 @@ $('bestDayGross').textContent=
 strongest?
 euro(strongest.extracted_data.gross_total):'–';
 
+$('analysisPayments').replaceChildren(
+paymentTable(unique)
+);
+
 $('analysisCategories').replaceChildren(
 categoryTable(unique,true)
 );
@@ -1976,7 +1908,6 @@ track.className='bar-track';
 const fill=document.createElement('div');
 fill.className='bar-fill';
 fill.style.width=(max>0?value/max*100:0)+'%';
-
 track.append(fill);
 
 const amount=document.createElement('span');
@@ -2113,9 +2044,12 @@ $('cashArchiveLimit').onchange=refreshArchives;
 $('invoiceSearch').oninput=refreshArchives;
 $('invoiceArchiveLimit').onchange=refreshArchives;
 
+/* =========================================
+   ANMELDUNG
+   ========================================= */
+
 async function enter(){
-const {data:{user:u},error}=
-await db.auth.getUser();
+const {data:{user:u},error}=await db.auth.getUser();
 
 if(error||!u)return;
 
