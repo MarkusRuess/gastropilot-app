@@ -7,52 +7,1002 @@
 <meta name="theme-color" content="#14243a">
 <title>GastoPilot · Das Friedrich</title>
 <style>
-:root{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;color:#14243a;background:#f4f7fa}*{box-sizing:border-box}body{margin:0}header{background:#14243a;color:white;padding:22px 18px}header strong{font-size:27px}header small{display:block;color:#c2d0dd;margin-top:4px}main{max-width:720px;margin:18px auto;padding:0 14px}.card{background:#fff;border:1px solid #e1e7ee;border-radius:16px;padding:19px;margin:14px 0;box-shadow:0 4px 18px #14243a0b}h2{font-size:19px;margin:0 0 12px}h3{font-size:16px;margin:15px 0 8px}label{display:block;font-weight:650;margin:12px 0 5px}input,textarea{width:100%;padding:11px;border:1px solid #c5d0db;border-radius:10px;font-size:16px;color:#14243a;background:#fff}textarea{min-height:70px}button{background:#167a61;color:#fff;border:0;border-radius:11px;padding:13px 16px;font-size:16px;font-weight:700;cursor:pointer;width:100%;margin-top:12px}button.secondary{background:#e7edf3;color:#26394b}button.danger{background:#fff0ef;color:#a72f25;border:1px solid #efc7c3}button.small{width:auto;font-size:13px;padding:8px 12px;margin-top:7px}button:disabled{opacity:.55;cursor:wait}.hidden{display:none!important}.muted{color:#617285;font-size:14px;line-height:1.5}.status{padding:11px 12px;border-radius:9px;background:#eef3f8;margin-top:12px;white-space:pre-wrap;overflow-wrap:anywhere}.error{background:#fff0ef;color:#a72f25}.ok{background:#e9f8f0;color:#186344}.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.full{grid-column:1/-1}.modebuttons{display:grid;grid-template-columns:1fr 1fr;gap:10px}.modebuttons button{margin:0;background:#e7edf3;color:#26394b}.modebuttons button.active{background:#14243a;color:#fff}.thumbs{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:9px;margin-top:12px}.thumb{border:1px solid #dce4ec;border-radius:10px;padding:7px;overflow:hidden}.thumb img{width:100%;height:100px;object-fit:contain}.thumb small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#617285}.thumb button{margin-top:5px;padding:6px;font-size:12px}.entry{border-bottom:1px solid #e1e7ee;padding:12px 0}.entry:last-child{border-bottom:0}.entry strong{display:block}.entry small{display:block;color:#657587;margin-top:4px}.resultdoc{border:1px solid #dce4ec;border-radius:12px;padding:15px;margin:12px 0}.resultdoc header{background:none;color:#14243a;padding:0;font-weight:700}.notice{background:#fff8e8;padding:10px;border-radius:9px;font-size:13px;color:#69551d}footer{text-align:center;color:#778595;font-size:12px;padding:22px}
+:root{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;color:#14243a;background:#f4f7fa}
+*{box-sizing:border-box}
+body{margin:0}
+header{background:#14243a;color:white;padding:22px 18px}
+header strong{font-size:27px}
+header small{display:block;color:#c2d0dd;margin-top:4px}
+main{max-width:720px;margin:18px auto;padding:0 14px}
+.card{background:#fff;border:1px solid #e1e7ee;border-radius:16px;padding:19px;margin:14px 0;box-shadow:0 4px 18px #14243a0b}
+h2{font-size:19px;margin:0 0 12px}
+h3{font-size:16px;margin:15px 0 8px}
+label{display:block;font-weight:650;margin:12px 0 5px}
+input,textarea{width:100%;padding:11px;border:1px solid #c5d0db;border-radius:10px;font-size:16px;color:#14243a;background:#fff}
+textarea{min-height:70px}
+button{background:#167a61;color:#fff;border:0;border-radius:11px;padding:13px 16px;font-size:16px;font-weight:700;cursor:pointer;width:100%;margin-top:12px}
+button.secondary{background:#e7edf3;color:#26394b}
+button.danger{background:#fff0ef;color:#a72f25;border:1px solid #efc7c3}
+button.small{width:auto;font-size:13px;padding:8px 12px;margin-top:7px}
+button:disabled{opacity:.55;cursor:wait}
+.hidden{display:none!important}
+.muted{color:#617285;font-size:14px;line-height:1.5}
+.status{padding:11px 12px;border-radius:9px;background:#eef3f8;margin-top:12px;white-space:pre-wrap;overflow-wrap:anywhere}
+.error{background:#fff0ef;color:#a72f25}
+.ok{background:#e9f8f0;color:#186344}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.full{grid-column:1/-1}
+.modebuttons{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.modebuttons button{margin:0;background:#e7edf3;color:#26394b}
+.modebuttons button.active{background:#14243a;color:#fff}
+.thumbs{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:9px;margin-top:12px}
+.thumb{border:1px solid #dce4ec;border-radius:10px;padding:7px;overflow:hidden}
+.thumb img{width:100%;height:100px;object-fit:contain}
+.thumb small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#617285}
+.thumb button{margin-top:5px;padding:6px;font-size:12px}
+.entry{border-bottom:1px solid #e1e7ee;padding:12px 0}
+.entry:last-child{border-bottom:0}
+.entry strong{display:block}
+.entry small{display:block;color:#657587;margin-top:4px}
+.resultdoc{border:1px solid #dce4ec;border-radius:12px;padding:15px;margin:12px 0}
+.resultdoc header{background:none;color:#14243a;padding:0;font-weight:700}
+.notice{background:#fff8e8;padding:10px;border-radius:9px;font-size:13px;color:#69551d}
+.dashboard{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.metric{background:#f1f5f9;border-radius:12px;padding:15px}
+.metric span{display:block;color:#617285;font-size:13px}
+.metric strong{display:block;font-size:25px;margin-top:5px}
+.lastreport{padding:12px 0 0;color:#26394b;font-size:14px}
+.lastreport strong{display:block;margin-bottom:3px}
+@media(max-width:430px){.metric strong{font-size:20px}}
+footer{text-align:center;color:#778595;font-size:12px;padding:22px}
 </style>
 </head>
 <body>
-<header><strong>GastoPilot</strong><small>Das Friedrich · Abrechnungen und Rechnungen</small></header>
+<header>
+<strong>GastoPilot</strong>
+<small>Das Friedrich · Abrechnungen und Rechnungen</small>
+</header>
+
 <main>
-<section id="login" class="card"><h2>Anmelden</h2><form id="loginForm"><label for="email">E-Mail</label><input id="email" type="email" autocomplete="username" value="office@markusruess.at" required><label for="password">Passwort</label><input id="password" type="password" autocomplete="current-password" required><button id="loginBtn" type="submit">Anmelden</button></form><div id="loginStatus" class="status hidden" role="status"></div></section>
+<section id="login" class="card">
+<h2>Anmelden</h2>
+<form id="loginForm">
+<label for="email">E-Mail</label>
+<input id="email" type="email" autocomplete="username" value="office@markusruess.at" required>
+<label for="password">Passwort</label>
+<input id="password" type="password" autocomplete="current-password" required>
+<button id="loginBtn" type="submit">Anmelden</button>
+</form>
+<div id="loginStatus" class="status hidden" role="status"></div>
+</section>
+
 <section id="workspace" class="hidden">
-<section class="card"><div style="display:flex;justify-content:space-between;align-items:center;gap:12px"><div><h2 style="margin:0">Willkommen!</h2><div id="business" class="muted">Betrieb wird geladen …</div></div><button id="logout" class="secondary small">Abmelden</button></div></section>
-<section class="card"><h2>Was möchtest du erfassen?</h2><div class="modebuttons"><button type="button" id="cashMode" class="active">Abrechnungen</button><button type="button" id="invoiceMode">Rechnungen</button></div><p id="modeHint" class="muted">Alle Fotos gehören zu einer Tagesabrechnung. Mehrere Seiten werden gemeinsam ausgewertet.</p>
-<label for="photos">Fotos aus Galerie auswählen</label><input id="photos" type="file" accept="image/jpeg,image/png,image/webp" multiple>
-<button id="camera" type="button" class="secondary">Weiteres Foto aufnehmen</button><input id="cameraInput" type="file" accept="image/*" capture="environment" class="hidden">
-<div id="photoCount" class="muted" style="margin-top:12px">Noch keine Fotos ausgewählt.</div><div id="thumbnails" class="thumbs"></div><button id="clearPhotos" class="secondary hidden" type="button">Alle Fotos entfernen</button><button id="scan" type="button" disabled>Auswertung starten</button><div id="scanStatus" class="status hidden" role="status"></div>
+<section class="card">
+<div style="display:flex;justify-content:space-between;align-items:center;gap:12px">
+<div>
+<h2 style="margin:0">Willkommen!</h2>
+<div id="business" class="muted">Betrieb wird geladen …</div>
+</div>
+<button id="logout" class="secondary small">Abmelden</button>
+</div>
 </section>
-<section id="results" class="card hidden"><h2>Ergebnisse prüfen</h2><p class="muted">Jede Rechnung wird einzeln angezeigt. Prüfe besonders die Zuordnung der Seiten, Rechnungsnummern und Beträge. Erst nach deiner Bestätigung wird gespeichert.</p><div id="resultsList"></div><div id="saveStatus" class="status hidden" role="status"></div></section>
-<section class="card"><h2>Gespeicherte Belege</h2><p class="muted">Die letzten 20 gespeicherten Dokumente.</p><button id="refresh" class="secondary">Belegliste aktualisieren</button><div id="listStatus" class="status hidden" role="status"></div><div id="documentList"></div></section>
+
+<section class="card" aria-label="Monatsübersicht">
+<h2 id="monthTitle">Monatsübersicht</h2>
+<div class="dashboard">
+<div class="metric">
+<span>Umsatz bisher (brutto)</span>
+<strong id="monthRevenue">–</strong>
+</div>
+<div class="metric">
+<span>Erfasste Abrechnungen</span>
+<strong id="monthCount">–</strong>
+</div>
+</div>
+<div class="lastreport">
+<strong>Letzte Abrechnung</strong>
+<div id="lastReport">Wird geladen …</div>
+</div>
+<p class="muted" id="monthHint">Nur gespeicherte Tagesabrechnungen. Fehlende Tage sind nicht enthalten.</p>
 </section>
-</main><footer>GastoPilot · Pilotbetrieb Das Friedrich</footer>
+
+<section class="card">
+<h2>Was möchtest du erfassen?</h2>
+<div class="modebuttons">
+<button type="button" id="cashMode" class="active">Abrechnungen</button>
+<button type="button" id="invoiceMode">Rechnungen</button>
+</div>
+<p id="modeHint" class="muted">Alle Fotos gehören zu einer Tagesabrechnung. Mehrere Seiten werden gemeinsam ausgewertet.</p>
+<label for="photos">Fotos aus Galerie auswählen</label>
+<input id="photos" type="file" accept="image/jpeg,image/png,image/webp" multiple>
+<button id="camera" type="button" class="secondary">Weiteres Foto aufnehmen</button>
+<input id="cameraInput" type="file" accept="image/*" capture="environment" class="hidden">
+<div id="photoCount" class="muted" style="margin-top:12px">Noch keine Fotos ausgewählt.</div>
+<div id="thumbnails" class="thumbs"></div>
+<button id="clearPhotos" class="secondary hidden" type="button">Alle Fotos entfernen</button>
+<button id="scan" type="button" disabled>Auswertung starten</button>
+<div id="scanStatus" class="status hidden" role="status"></div>
+</section>
+
+<section id="results" class="card hidden">
+<h2>Ergebnisse prüfen</h2>
+<p class="muted">Jede Rechnung wird einzeln angezeigt. Prüfe besonders die Zuordnung der Seiten, Rechnungsnummern und Beträge. Erst nach deiner Bestätigung wird gespeichert.</p>
+<div id="resultsList"></div>
+<div id="saveStatus" class="status hidden" role="status"></div>
+</section>
+
+<section class="card">
+<h2>Gespeicherte Belege</h2>
+<p class="muted">Die letzten 20 gespeicherten Dokumente.</p>
+<button id="refresh" class="secondary">Belegliste aktualisieren</button>
+<div id="listStatus" class="status hidden" role="status"></div>
+<div id="documentList"></div>
+</section>
+</section>
+</main>
+
+<footer>GastoPilot · Pilotbetrieb Das Friedrich</footer>
+
 <script type="module">
 import {createClient} from 'https://esm.sh/@supabase/supabase-js@2';
-const supabase=createClient('https://sjnwfwcpgwsavygewwzb.supabase.co','sb_publishable__tucXG-IQGUhibMqMSUzCw_5RnH_sbQ',{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:false}});
+
+const supabase=createClient(
+  'https://sjnwfwcpgwsavygewwzb.supabase.co',
+  'sb_publishable__tucXG-IQGUhibMqMSUzCw_5RnH_sbQ',
+  {auth:{
+    persistSession:true,
+    autoRefreshToken:true,
+    detectSessionInUrl:false
+  }}
+);
+
 const $=id=>window.document.getElementById(id);
-let businessId=null,currentUser=null,currentRole=null,mode='cash_report',photos=[],results=[],busy=false;
+
+let businessId=null;
+let currentUser=null;
+let currentRole=null;
+let mode='cash_report';
+let photos=[];
+let results=[];
+let busy=false;
+
 const MAX_PHOTOS=12;
-function status(id,msg,error=false){const e=$(id);e.textContent=msg;e.className='status '+(error?'error':'ok');}
-function money(value){if(value===null||value===undefined||value==='')return '–';const n=Number(value);return Number.isFinite(n)?new Intl.NumberFormat('de-AT',{style:'currency',currency:'EUR'}).format(n):'–';}
-function dateValue(value){return typeof value==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(value)?value:'';}
-function numberValue(value){if(value===null||value===undefined||value==='')return '';const n=Number(value);return Number.isFinite(n)?String(n):'';}
-function numberFrom(input){if(input.value.trim()==='')return null;const n=Number(input.value);if(!Number.isFinite(n)||n<0)throw Error('Bitte die Beträge prüfen.');return Math.round(n*100)/100;}
-function field(label,key,value,type='text',full=false){const wrapper=window.document.createElement('div');if(full)wrapper.className='full';const lab=window.document.createElement('label');lab.textContent=label;const input=window.document.createElement('input');input.type=type;input.dataset.key=key;if(type==='number'){input.min='0';input.step='0.01';input.inputMode='decimal';input.value=numberValue(value);}else if(type==='date')input.value=dateValue(value);else input.value=value??'';wrapper.append(lab,input);return wrapper;}
-function setMode(next){if(busy)return;mode=next;$('cashMode').classList.toggle('active',mode==='cash_report');$('invoiceMode').classList.toggle('active',mode==='invoice');$('modeHint').textContent=mode==='cash_report'?'Alle Fotos gehören zu einer Tagesabrechnung. Mehrere Seiten werden gemeinsam ausgewertet.':'Du kannst verschiedene Rechnungen auf einmal hochladen. Mehrseitige Rechnungen werden nach Möglichkeit zusammengefasst.';results=[];$('results').classList.add('hidden');$('scanStatus').classList.add('hidden');}
-$('cashMode').onclick=()=>setMode('cash_report');$('invoiceMode').onclick=()=>setMode('invoice');
-function renderPhotos(){const wrap=$('thumbnails');wrap.replaceChildren();photos.forEach((photo,index)=>{const tile=window.document.createElement('div');tile.className='thumb';const img=window.document.createElement('img');img.src=photo.url;img.alt='Foto '+(index+1);const caption=window.document.createElement('small');caption.textContent=(index+1)+'. '+photo.file.name;const remove=window.document.createElement('button');remove.className='danger';remove.textContent='Entfernen';remove.disabled=busy;remove.onclick=()=>{URL.revokeObjectURL(photo.url);photos.splice(index,1);renderPhotos();};tile.append(img,caption,remove);wrap.append(tile);});$('photoCount').textContent=photos.length?photos.length+' Foto(s) ausgewählt · maximal '+MAX_PHOTOS:'Noch keine Fotos ausgewählt.';$('clearPhotos').classList.toggle('hidden',photos.length===0);$('scan').disabled=busy||photos.length===0;}
-function addPhotos(fileList){let rejected=0;for(const file of Array.from(fileList||[])){if(photos.length>=MAX_PHOTOS){rejected++;continue;}if(!['image/jpeg','image/png','image/webp'].includes(file.type)){rejected++;continue;}photos.push({file,url:URL.createObjectURL(file)});}renderPhotos();results=[];$('results').classList.add('hidden');if(rejected)status('scanStatus',rejected+' Foto(s) nicht übernommen. Nur JPG, PNG und WebP; maximal '+MAX_PHOTOS+' Fotos.',true);else $('scanStatus').classList.add('hidden');}
-$('photos').onchange=e=>{addPhotos(e.target.files);e.target.value='';};$('camera').onclick=()=>$('cameraInput').click();$('cameraInput').onchange=e=>{addPhotos(e.target.files);e.target.value='';};$('clearPhotos').onclick=()=>{photos.forEach(p=>URL.revokeObjectURL(p.url));photos=[];renderPhotos();results=[];$('results').classList.add('hidden');};
-async function compress(file){return new Promise((resolve,reject)=>{const url=URL.createObjectURL(file);const img=new Image();img.onload=()=>{try{const scale=Math.min(1,1600/Math.max(img.width,img.height));const canvas=window.document.createElement('canvas');canvas.width=Math.max(1,Math.round(img.width*scale));canvas.height=Math.max(1,Math.round(img.height*scale));canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);canvas.toBlob(blob=>{URL.revokeObjectURL(url);blob?resolve(blob):reject(Error('Foto konnte nicht vorbereitet werden.'));},'image/jpeg',0.76);}catch(err){URL.revokeObjectURL(url);reject(err);}};img.onerror=()=>{URL.revokeObjectURL(url);reject(Error('Foto konnte nicht geöffnet werden.'));};img.src=url;});}
-async function toBase64(blob){return new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(String(reader.result).split(',')[1]);reader.onerror=()=>reject(Error('Foto konnte nicht gelesen werden.'));reader.readAsDataURL(blob);});}
-$('scan').onclick=async()=>{if(busy||!businessId||!photos.length)return;busy=true;$('scan').disabled=true;$('results').classList.add('hidden');status('scanStatus','Fotos werden vorbereitet …');try{const images=[];for(let i=0;i<photos.length;i++){status('scanStatus','Foto '+(i+1)+' von '+photos.length+' wird vorbereitet …');const blob=await compress(photos[i].file);images.push({image_base64:await toBase64(blob),mime_type:'image/jpeg'});}status('scanStatus','Belege werden verarbeitet … Das kann bei mehreren Seiten etwas dauern.');const {data,error}=await supabase.functions.invoke('analyze-receipt',{body:{business_id:businessId,mode,images}});if(error){let message=error.message;try{const detail=await error.context?.json?.();message=detail?.error||message;}catch{}throw Error(message);}if(!data?.success||!Array.isArray(data.documents)||!data.documents.length)throw Error(data?.error||'Keine Dokumente erkannt.');results=data.documents;renderResults();status('scanStatus',results.length+' Dokument(e) erkannt. Bitte sorgfältig prüfen.');$('results').classList.remove('hidden');$('results').scrollIntoView({behavior:'smooth'});}catch(err){status('scanStatus','Verarbeitung fehlgeschlagen: '+err.message,true);}finally{busy=false;renderPhotos();}};
-function renderResults(){const target=$('resultsList');target.replaceChildren();$('saveStatus').classList.add('hidden');results.forEach((doc,index)=>{const card=window.document.createElement('section');card.className='resultdoc';const title=window.document.createElement('header');title.textContent=(mode==='cash_report'?'Abrechnung':'Rechnung')+' '+(index+1)+' von '+results.length;card.append(title);const indices=Array.isArray(doc.image_indices)?doc.image_indices.filter(x=>Number.isInteger(x)&&x>=1&&x<=photos.length):[];const pages=window.document.createElement('p');pages.className='muted';pages.textContent='Zugeordnete Fotos: '+(indices.length?indices.join(', '):'nicht eindeutig erkannt');card.append(pages);if(!indices.length){const warn=window.document.createElement('p');warn.className='notice';warn.textContent='Seitenzuordnung unklar. Bitte anhand deiner Fotos prüfen.';card.append(warn);}const grid=window.document.createElement('div');grid.className='grid';grid.append(field('Datum','date',doc.date,'date'),field('Bruttobetrag (€)','gross_total',doc.gross_total,'number'),field('Lieferant','supplier',doc.supplier,'text',true),field('Rechnungsnummer','invoice_number',doc.invoice_number,'text',true),field('Speisen (€)','food_gross',doc.food_gross,'number'),field('Getränke (€)','drinks_gross',doc.drinks_gross,'number'),field('Non-Food (€)','nonfood_gross',doc.nonfood_gross,'number'),field('Sonstiges (€)','other_gross',doc.other_gross,'number'));card.append(grid);const noteLabel=window.document.createElement('label');noteLabel.textContent='Anmerkungen';const note=window.document.createElement('textarea');note.dataset.key='notes';note.value=doc.notes??'';card.append(noteLabel,note);const itemTitle=window.document.createElement('h3');itemTitle.textContent='Erkannte Artikel';const items=window.document.createElement('div');items.className='muted';items.textContent=Array.isArray(doc.sales_items)&&doc.sales_items.length?doc.sales_items.map(item=>(item.name||'Artikel')+': '+(item.quantity??'?')).join(' · '):'Keine Artikel erkannt';card.append(itemTitle,items);const save=window.document.createElement('button');save.textContent='Beleg speichern';save.onclick=()=>saveDocument(card,doc,save);card.append(save);const message=window.document.createElement('div');message.className='status hidden';message.dataset.status='save';card.append(message);target.append(card);});}
-async function saveDocument(card,doc,button){if(busy||button.disabled||!businessId||!currentUser)return;const values={};card.querySelectorAll('[data-key]').forEach(el=>values[el.dataset.key]=el.value.trim());const localStatus=card.querySelector('[data-status="save"]');const show=(msg,error=false)=>{localStatus.textContent=msg;localStatus.className='status '+(error?'error':'ok');};if(!values.date){show('Bitte Datum eintragen.',true);return;}busy=true;button.disabled=true;show('Beleg wird gespeichert …');try{const reviewed={...doc,document_type:mode,date:values.date,supplier:values.supplier||null,invoice_number:values.invoice_number||null,gross_total:numberFrom(card.querySelector('[data-key="gross_total"]')),food_gross:numberFrom(card.querySelector('[data-key="food_gross"]')),drinks_gross:numberFrom(card.querySelector('[data-key="drinks_gross"]')),nonfood_gross:numberFrom(card.querySelector('[data-key="nonfood_gross"]')),other_gross:numberFrom(card.querySelector('[data-key="other_gross"]')),notes:values.notes||null,reviewed_at:new Date().toISOString()};if(reviewed.gross_total===null)throw Error('Bitte den Bruttobetrag eintragen.');const {error}=await supabase.from('documents').insert({business_id:businessId,uploaded_by:currentUser.id,document_type:mode,document_date:reviewed.date,supplier:reviewed.supplier,invoice_number:reviewed.invoice_number,status:'reviewed',extracted_data:reviewed});if(error)throw error;button.textContent='Gespeichert';show('Beleg erfolgreich gespeichert.');try{await loadDocuments();}catch(err){status('listStatus','Beleg gespeichert, Liste konnte nicht aktualisiert werden: '+err.message,true);}}catch(err){show('Speichern fehlgeschlagen: '+err.message,true);button.disabled=false;}finally{busy=false;}}
-async function loadDocuments(){if(!businessId)return;status('listStatus','Belegliste wird geladen …');const {data,error}=await supabase.from('documents').select('id,document_type,document_date,supplier,status,extracted_data,created_at').eq('business_id',businessId).order('created_at',{ascending:false}).limit(20);if(error){status('listStatus','Belegliste konnte nicht geladen werden: '+error.message,true);return;}const list=$('documentList');list.replaceChildren();if(!data?.length){status('listStatus','Noch keine Belege gespeichert.');return;}$('listStatus').classList.add('hidden');for(const savedDocument of data){const row=window.document.createElement('div');row.className='entry';const title=window.document.createElement('strong');title.textContent=(savedDocument.document_type==='cash_report'?'Abrechnung':'Rechnung')+' · '+(savedDocument.document_date||'Ohne Datum');const detail=window.document.createElement('small');detail.textContent=(savedDocument.supplier||'Das Friedrich')+' · '+money(savedDocument.extracted_data?.gross_total);row.append(title,detail);if(currentRole==='owner'){const del=window.document.createElement('button');del.className='danger small';del.textContent='Beleg löschen';del.onclick=async()=>{if(!window.confirm('Diesen Beleg wirklich endgültig löschen?\n\n'+title.textContent+'\n\nDieser Vorgang kann nicht rückgängig gemacht werden.'))return;del.disabled=true;status('listStatus','Beleg wird gelöscht …');const {data:deleted,error:deleteError}=await supabase.from('documents').delete().eq('id',savedDocument.id).eq('business_id',businessId).select('id');if(deleteError||!deleted?.length){status('listStatus','Löschen fehlgeschlagen: '+(deleteError?.message||'Keine Löschberechtigung'),true);del.disabled=false;return;}await loadDocuments();status('listStatus','Beleg gelöscht.');};row.append(del);}list.append(row);}}
-$('refresh').onclick=()=>loadDocuments();
-async function enter(){const {data:{user},error:userError}=await supabase.auth.getUser();if(userError||!user){$('login').classList.remove('hidden');$('workspace').classList.add('hidden');return;}const {data,error}=await supabase.from('business_members').select('business_id,role,businesses(name)').eq('user_id',user.id);if(error||!data?.length)throw Error(error?.message||'Kein Betrieb zugeordnet.');const membership=data.find(x=>x.businesses?.name?.includes('Friedrich'))||data[0];businessId=membership.business_id;currentUser=user;currentRole=membership.role;$('business').textContent=(membership.businesses?.name||'Betrieb')+' · '+currentRole;$('login').classList.add('hidden');$('workspace').classList.remove('hidden');await loadDocuments();}
-$('loginForm').onsubmit=async event=>{event.preventDefault();$('loginBtn').disabled=true;status('loginStatus','Anmeldung läuft …');try{const {error}=await supabase.auth.signInWithPassword({email:$('email').value.trim(),password:$('password').value});if(error)throw error;$('password').value='';await enter();}catch(err){status('loginStatus','Anmeldung fehlgeschlagen: '+err.message,true);}finally{$('loginBtn').disabled=false;}};
-$('logout').onclick=async()=>{await supabase.auth.signOut();businessId=null;currentUser=null;currentRole=null;$('workspace').classList.add('hidden');$('login').classList.remove('hidden');$('results').classList.add('hidden');};
-(async()=>{try{const {data:{session}}=await supabase.auth.getSession();if(session)await enter();}catch(err){status('loginStatus','Start fehlgeschlagen: '+err.message,true);}})();
+
+function status(id,msg,error=false){
+  const e=$(id);
+  e.textContent=msg;
+  e.className='status '+(error?'error':'ok');
+}
+
+function money(value){
+  if(value===null||value===undefined||value==='')return '–';
+  const n=Number(value);
+  return Number.isFinite(n)
+    ?new Intl.NumberFormat('de-AT',{
+      style:'currency',
+      currency:'EUR'
+    }).format(n)
+    :'–';
+}
+
+function viennaToday(){
+  const parts=new Intl.DateTimeFormat('en-CA',{
+    timeZone:'Europe/Vienna',
+    year:'numeric',
+    month:'2-digit',
+    day:'2-digit'
+  }).formatToParts(new Date());
+
+  const get=type=>parts.find(p=>p.type===type)?.value;
+  return `${get('year')}-${get('month')}-${get('day')}`;
+}
+
+function austrianDate(value){
+  if(!value)return '–';
+  const parts=String(value).slice(0,10).split('-');
+  return parts.length===3
+    ?`${parts[2]}.${parts[1]}.${parts[0]}`
+    :value;
+}
+
+function viennaTimestamp(value){
+  if(!value)return '–';
+  const d=new Date(value);
+  return Number.isNaN(d.getTime())
+    ?'–'
+    :new Intl.DateTimeFormat('de-AT',{
+      timeZone:'Europe/Vienna',
+      day:'2-digit',
+      month:'2-digit',
+      year:'numeric',
+      hour:'2-digit',
+      minute:'2-digit'
+    }).format(d);
+}
+
+async function loadDashboard(){
+  if(!businessId)return;
+
+  const today=viennaToday();
+  const start=today.slice(0,7)+'-01';
+  const [year,month]=start.split('-').map(Number);
+
+  const end=`${month===12?year+1:year}-${String(
+    month===12?1:month+1
+  ).padStart(2,'0')}-01`;
+
+  $('monthTitle').textContent=new Intl.DateTimeFormat(
+    'de-AT',{
+      month:'long',
+      year:'numeric',
+      timeZone:'Europe/Vienna'
+    }
+  ).format(new Date(`${start}T12:00:00Z`));
+
+  $('monthRevenue').textContent='Wird geladen …';
+  $('monthCount').textContent='–';
+  $('lastReport').textContent='Wird geladen …';
+
+  try{
+    let count=0;
+    let total=0;
+    let offset=0;
+    const batchSize=500;
+
+    while(true){
+      const {data,error}=await supabase
+        .from('documents')
+        .select('id,extracted_data')
+        .eq('business_id',businessId)
+        .eq('document_type','cash_report')
+        .gte('document_date',start)
+        .lt('document_date',end)
+        .order('id',{ascending:true})
+        .range(offset,offset+batchSize-1);
+
+      if(error)throw error;
+
+      const batch=data||[];
+      count+=batch.length;
+
+      for(const doc of batch){
+        const value=doc.extracted_data?.gross_total;
+        if(value!==null&&value!==undefined&&value!==''){
+          const amount=Number(value);
+          if(Number.isFinite(amount))total+=amount;
+        }
+      }
+
+      if(batch.length<batchSize)break;
+      offset+=batchSize;
+    }
+
+    $('monthRevenue').textContent=money(total);
+    $('monthCount').textContent=String(count);
+
+    const {data:last,error:lastError}=await supabase
+      .from('documents')
+      .select('document_date,created_at')
+      .eq('business_id',businessId)
+      .eq('document_type','cash_report')
+      .order('created_at',{ascending:false})
+      .limit(1);
+
+    if(lastError)throw lastError;
+
+    $('lastReport').textContent=last?.length
+      ?`Abrechnung vom ${austrianDate(last[0].document_date)} · hinzugefügt ${viennaTimestamp(last[0].created_at)}`
+      :'Noch keine Abrechnung gespeichert';
+
+    $('monthHint').textContent=
+      'Nur erfasste Tagesabrechnungen. Fehlende Tage sind nicht enthalten; Rechnungen zählen nicht zum Umsatz.';
+
+  }catch(error){
+    $('monthRevenue').textContent='–';
+    $('monthCount').textContent='–';
+    $('lastReport').textContent='Monatsdaten konnten nicht geladen werden.';
+    $('monthHint').textContent='Fehler beim Laden: '+error.message;
+  }
+}
+
+function dateValue(value){
+  return typeof value==='string'&&
+    /^\d{4}-\d{2}-\d{2}$/.test(value)?value:'';
+}
+
+function numberValue(value){
+  if(value===null||value===undefined||value==='')return '';
+  const n=Number(value);
+  return Number.isFinite(n)?String(n):'';
+}
+
+function numberFrom(input){
+  if(input.value.trim()==='')return null;
+  const n=Number(input.value);
+  if(!Number.isFinite(n)||n<0){
+    throw Error('Bitte die Beträge prüfen.');
+  }
+  return Math.round(n*100)/100;
+}
+
+function field(label,key,value,type='text',full=false){
+  const wrapper=window.document.createElement('div');
+  if(full)wrapper.className='full';
+
+  const lab=window.document.createElement('label');
+  lab.textContent=label;
+
+  const input=window.document.createElement('input');
+  input.type=type;
+  input.dataset.key=key;
+
+  if(type==='number'){
+    input.min='0';
+    input.step='0.01';
+    input.inputMode='decimal';
+    input.value=numberValue(value);
+  }else if(type==='date'){
+    input.value=dateValue(value);
+  }else{
+    input.value=value??'';
+  }
+
+  wrapper.append(lab,input);
+  return wrapper;
+}
+
+function setMode(next){
+  if(busy)return;
+
+  mode=next;
+
+  $('cashMode').classList.toggle(
+    'active',mode==='cash_report'
+  );
+
+  $('invoiceMode').classList.toggle(
+    'active',mode==='invoice'
+  );
+
+  $('modeHint').textContent=mode==='cash_report'
+    ?'Alle Fotos gehören zu einer Tagesabrechnung. Mehrere Seiten werden gemeinsam ausgewertet.'
+    :'Du kannst verschiedene Rechnungen auf einmal hochladen. Mehrseitige Rechnungen werden nach Möglichkeit zusammengefasst.';
+
+  results=[];
+  $('results').classList.add('hidden');
+  $('scanStatus').classList.add('hidden');
+}
+
+$('cashMode').onclick=()=>setMode('cash_report');
+$('invoiceMode').onclick=()=>setMode('invoice');
+
+function renderPhotos(){
+  const wrap=$('thumbnails');
+  wrap.replaceChildren();
+
+  photos.forEach((photo,index)=>{
+    const tile=window.document.createElement('div');
+    tile.className='thumb';
+
+    const img=window.document.createElement('img');
+    img.src=photo.url;
+    img.alt='Foto '+(index+1);
+
+    const caption=window.document.createElement('small');
+    caption.textContent=(index+1)+'. '+photo.file.name;
+
+    const remove=window.document.createElement('button');
+    remove.className='danger';
+    remove.textContent='Entfernen';
+    remove.disabled=busy;
+
+    remove.onclick=()=>{
+      URL.revokeObjectURL(photo.url);
+      photos.splice(index,1);
+      renderPhotos();
+    };
+
+    tile.append(img,caption,remove);
+    wrap.append(tile);
+  });
+
+  $('photoCount').textContent=photos.length
+    ?photos.length+' Foto(s) ausgewählt · maximal '+MAX_PHOTOS
+    :'Noch keine Fotos ausgewählt.';
+
+  $('clearPhotos').classList.toggle(
+    'hidden',photos.length===0
+  );
+
+  $('scan').disabled=busy||photos.length===0;
+}
+
+function addPhotos(fileList){
+  let rejected=0;
+
+  for(const file of Array.from(fileList||[])){
+    if(photos.length>=MAX_PHOTOS){
+      rejected++;
+      continue;
+    }
+
+    if(![
+      'image/jpeg',
+      'image/png',
+      'image/webp'
+    ].includes(file.type)){
+      rejected++;
+      continue;
+    }
+
+    photos.push({
+      file,
+      url:URL.createObjectURL(file)
+    });
+  }
+
+  renderPhotos();
+
+  results=[];
+  $('results').classList.add('hidden');
+
+  if(rejected){
+    status(
+      'scanStatus',
+      rejected+' Foto(s) nicht übernommen. Nur JPG, PNG und WebP; maximal '+MAX_PHOTOS+' Fotos.',
+      true
+    );
+  }else{
+    $('scanStatus').classList.add('hidden');
+  }
+}
+
+$('photos').onchange=e=>{
+  addPhotos(e.target.files);
+  e.target.value='';
+};
+
+$('camera').onclick=()=>$('cameraInput').click();
+
+$('cameraInput').onchange=e=>{
+  addPhotos(e.target.files);
+  e.target.value='';
+};
+
+$('clearPhotos').onclick=()=>{
+  photos.forEach(p=>URL.revokeObjectURL(p.url));
+  photos=[];
+  renderPhotos();
+  results=[];
+  $('results').classList.add('hidden');
+};
+
+async function compress(file){
+  return new Promise((resolve,reject)=>{
+    const url=URL.createObjectURL(file);
+    const img=new Image();
+
+    img.onload=()=>{
+      try{
+        const scale=Math.min(
+          1,1600/Math.max(img.width,img.height)
+        );
+
+        const canvas=window.document.createElement('canvas');
+        canvas.width=Math.max(
+          1,Math.round(img.width*scale)
+        );
+        canvas.height=Math.max(
+          1,Math.round(img.height*scale)
+        );
+
+        canvas.getContext('2d').drawImage(
+          img,0,0,canvas.width,canvas.height
+        );
+
+        canvas.toBlob(blob=>{
+          URL.revokeObjectURL(url);
+          blob
+            ?resolve(blob)
+            :reject(Error('Foto konnte nicht vorbereitet werden.'));
+        },'image/jpeg',0.76);
+
+      }catch(err){
+        URL.revokeObjectURL(url);
+        reject(err);
+      }
+    };
+
+    img.onerror=()=>{
+      URL.revokeObjectURL(url);
+      reject(Error('Foto konnte nicht geöffnet werden.'));
+    };
+
+    img.src=url;
+  });
+}
+
+async function toBase64(blob){
+  return new Promise((resolve,reject)=>{
+    const reader=new FileReader();
+
+    reader.onload=()=>resolve(
+      String(reader.result).split(',')[1]
+    );
+
+    reader.onerror=()=>reject(
+      Error('Foto konnte nicht gelesen werden.')
+    );
+
+    reader.readAsDataURL(blob);
+  });
+}
+
+$('scan').onclick=async()=>{
+  if(busy||!businessId||!photos.length)return;
+
+  busy=true;
+  $('scan').disabled=true;
+  $('results').classList.add('hidden');
+
+  status('scanStatus','Fotos werden vorbereitet …');
+
+  try{
+    const images=[];
+
+    for(let i=0;i<photos.length;i++){
+      status(
+        'scanStatus',
+        'Foto '+(i+1)+' von '+photos.length+' wird vorbereitet …'
+      );
+
+      const blob=await compress(photos[i].file);
+
+      images.push({
+        image_base64:await toBase64(blob),
+        mime_type:'image/jpeg'
+      });
+    }
+
+    status(
+      'scanStatus',
+      'Belege werden verarbeitet … Das kann bei mehreren Seiten etwas dauern.'
+    );
+
+    const {data,error}=await supabase.functions.invoke(
+      'analyze-receipt',{
+        body:{
+          business_id:businessId,
+          mode,
+          images
+        }
+      }
+    );
+
+    if(error){
+      let message=error.message;
+
+      try{
+        const detail=await error.context?.json?.();
+        message=detail?.error||message;
+      }catch{}
+
+      throw Error(message);
+    }
+
+    if(
+      !data?.success||
+      !Array.isArray(data.documents)||
+      !data.documents.length
+    ){
+      throw Error(data?.error||'Keine Dokumente erkannt.');
+    }
+
+    results=data.documents;
+    renderResults();
+
+    status(
+      'scanStatus',
+      results.length+' Dokument(e) erkannt. Bitte sorgfältig prüfen.'
+    );
+
+    $('results').classList.remove('hidden');
+    $('results').scrollIntoView({behavior:'smooth'});
+
+  }catch(err){
+    status(
+      'scanStatus',
+      'Verarbeitung fehlgeschlagen: '+err.message,
+      true
+    );
+  }finally{
+    busy=false;
+    renderPhotos();
+  }
+};
+
+function renderResults(){
+  const target=$('resultsList');
+  target.replaceChildren();
+  $('saveStatus').classList.add('hidden');
+
+  results.forEach((doc,index)=>{
+    const card=window.document.createElement('section');
+    card.className='resultdoc';
+
+    const title=window.document.createElement('header');
+    title.textContent=
+      (mode==='cash_report'?'Abrechnung':'Rechnung')+
+      ' '+(index+1)+' von '+results.length;
+
+    card.append(title);
+
+    const indices=Array.isArray(doc.image_indices)
+      ?doc.image_indices.filter(
+        x=>Number.isInteger(x)&&x>=1&&x<=photos.length
+      )
+      :[];
+
+    const pages=window.document.createElement('p');
+    pages.className='muted';
+    pages.textContent='Zugeordnete Fotos: '+
+      (indices.length?indices.join(', '):'nicht eindeutig erkannt');
+
+    card.append(pages);
+
+    if(!indices.length){
+      const warn=window.document.createElement('p');
+      warn.className='notice';
+      warn.textContent=
+        'Seitenzuordnung unklar. Bitte anhand deiner Fotos prüfen.';
+      card.append(warn);
+    }
+
+    const grid=window.document.createElement('div');
+    grid.className='grid';
+
+    grid.append(
+      field('Datum','date',doc.date,'date'),
+      field('Bruttobetrag (€)','gross_total',doc.gross_total,'number'),
+      field('Lieferant','supplier',doc.supplier,'text',true),
+      field('Rechnungsnummer','invoice_number',doc.invoice_number,'text',true),
+      field('Speisen (€)','food_gross',doc.food_gross,'number'),
+      field('Getränke (€)','drinks_gross',doc.drinks_gross,'number'),
+      field('Non-Food (€)','nonfood_gross',doc.nonfood_gross,'number'),
+      field('Sonstiges (€)','other_gross',doc.other_gross,'number')
+    );
+
+    card.append(grid);
+
+    const noteLabel=window.document.createElement('label');
+    noteLabel.textContent='Anmerkungen';
+
+    const note=window.document.createElement('textarea');
+    note.dataset.key='notes';
+    note.value=doc.notes??'';
+
+    card.append(noteLabel,note);
+
+    const itemTitle=window.document.createElement('h3');
+    itemTitle.textContent='Erkannte Artikel';
+
+    const items=window.document.createElement('div');
+    items.className='muted';
+
+    items.textContent=
+      Array.isArray(doc.sales_items)&&doc.sales_items.length
+        ?doc.sales_items.map(
+          item=>(item.name||'Artikel')+': '+(item.quantity??'?')
+        ).join(' · ')
+        :'Keine Artikel erkannt';
+
+    card.append(itemTitle,items);
+
+    const save=window.document.createElement('button');
+    save.textContent='Beleg speichern';
+    save.onclick=()=>saveDocument(card,doc,save);
+
+    card.append(save);
+
+    const message=window.document.createElement('div');
+    message.className='status hidden';
+    message.dataset.status='save';
+
+    card.append(message);
+    target.append(card);
+  });
+}
+
+async function saveDocument(card,doc,button){
+  if(busy||button.disabled||!businessId||!currentUser)return;
+
+  const values={};
+
+  card.querySelectorAll('[data-key]').forEach(
+    el=>values[el.dataset.key]=el.value.trim()
+  );
+
+  const localStatus=card.querySelector('[data-status="save"]');
+
+  const show=(msg,error=false)=>{
+    localStatus.textContent=msg;
+    localStatus.className='status '+(error?'error':'ok');
+  };
+
+  if(!values.date){
+    show('Bitte Datum eintragen.',true);
+    return;
+  }
+
+  busy=true;
+  button.disabled=true;
+  show('Beleg wird gespeichert …');
+
+  try{
+    const reviewed={
+      ...doc,
+      document_type:mode,
+      date:values.date,
+      supplier:values.supplier||null,
+      invoice_number:values.invoice_number||null,
+      gross_total:numberFrom(
+        card.querySelector('[data-key="gross_total"]')
+      ),
+      food_gross:numberFrom(
+        card.querySelector('[data-key="food_gross"]')
+      ),
+      drinks_gross:numberFrom(
+        card.querySelector('[data-key="drinks_gross"]')
+      ),
+      nonfood_gross:numberFrom(
+        card.querySelector('[data-key="nonfood_gross"]')
+      ),
+      other_gross:numberFrom(
+        card.querySelector('[data-key="other_gross"]')
+      ),
+      notes:values.notes||null,
+      reviewed_at:new Date().toISOString()
+    };
+
+    if(reviewed.gross_total===null){
+      throw Error('Bitte den Bruttobetrag eintragen.');
+    }
+
+    const {error}=await supabase
+      .from('documents')
+      .insert({
+        business_id:businessId,
+        uploaded_by:currentUser.id,
+        document_type:mode,
+        document_date:reviewed.date,
+        supplier:reviewed.supplier,
+        invoice_number:reviewed.invoice_number,
+        status:'reviewed',
+        extracted_data:reviewed
+      });
+
+    if(error)throw error;
+
+    button.textContent='Gespeichert';
+    show('Beleg erfolgreich gespeichert.');
+
+    try{
+      await Promise.all([
+        loadDocuments(),
+        loadDashboard()
+      ]);
+    }catch(err){
+      status(
+        'listStatus',
+        'Beleg gespeichert, Liste konnte nicht aktualisiert werden: '+err.message,
+        true
+      );
+    }
+
+  }catch(err){
+    show('Speichern fehlgeschlagen: '+err.message,true);
+    button.disabled=false;
+  }finally{
+    busy=false;
+  }
+}
+
+async function loadDocuments(){
+  if(!businessId)return;
+
+  status('listStatus','Belegliste wird geladen …');
+
+  const {data,error}=await supabase
+    .from('documents')
+    .select(
+      'id,document_type,document_date,supplier,status,extracted_data,created_at'
+    )
+    .eq('business_id',businessId)
+    .order('created_at',{ascending:false})
+    .limit(20);
+
+  if(error){
+    status(
+      'listStatus',
+      'Belegliste konnte nicht geladen werden: '+error.message,
+      true
+    );
+    return;
+  }
+
+  const list=$('documentList');
+  list.replaceChildren();
+
+  if(!data?.length){
+    status('listStatus','Noch keine Belege gespeichert.');
+    return;
+  }
+
+  $('listStatus').classList.add('hidden');
+
+  for(const savedDocument of data){
+    const row=window.document.createElement('div');
+    row.className='entry';
+
+    const title=window.document.createElement('strong');
+    title.textContent=
+      (savedDocument.document_type==='cash_report'
+        ?'Abrechnung'
+        :'Rechnung')+
+      ' · '+(savedDocument.document_date||'Ohne Datum');
+
+    const detail=window.document.createElement('small');
+    detail.textContent=
+      (savedDocument.supplier||'Das Friedrich')+
+      ' · '+money(savedDocument.extracted_data?.gross_total);
+
+    row.append(title,detail);
+
+    if(currentRole==='owner'){
+      const del=window.document.createElement('button');
+      del.className='danger small';
+      del.textContent='Beleg löschen';
+
+      del.onclick=async()=>{
+        if(!window.confirm(
+          'Diesen Beleg wirklich endgültig löschen?\n\n'+
+          title.textContent+
+          '\n\nDieser Vorgang kann nicht rückgängig gemacht werden.'
+        ))return;
+
+        del.disabled=true;
+        status('listStatus','Beleg wird gelöscht …');
+
+        const {data:deleted,error:deleteError}=await supabase
+          .from('documents')
+          .delete()
+          .eq('id',savedDocument.id)
+          .eq('business_id',businessId)
+          .select('id');
+
+        if(deleteError||!deleted?.length){
+          status(
+            'listStatus',
+            'Löschen fehlgeschlagen: '+
+              (deleteError?.message||'Keine Löschberechtigung'),
+            true
+          );
+          del.disabled=false;
+          return;
+        }
+
+        await Promise.all([
+          loadDocuments(),
+          loadDashboard()
+        ]);
+
+        status('listStatus','Beleg gelöscht.');
+      };
+
+      row.append(del);
+    }
+
+    list.append(row);
+  }
+}
+
+$('refresh').onclick=()=>Promise.all([
+  loadDocuments(),
+  loadDashboard()
+]);
+
+async function enter(){
+  const {data:{user},error:userError}=
+    await supabase.auth.getUser();
+
+  if(userError||!user){
+    $('login').classList.remove('hidden');
+    $('workspace').classList.add('hidden');
+    return;
+  }
+
+  const {data,error}=await supabase
+    .from('business_members')
+    .select('business_id,role,businesses(name)')
+    .eq('user_id',user.id);
+
+  if(error||!data?.length){
+    throw Error(error?.message||'Kein Betrieb zugeordnet.');
+  }
+
+  const membership=
+    data.find(x=>x.businesses?.name?.includes('Friedrich'))||
+    data[0];
+
+  businessId=membership.business_id;
+  currentUser=user;
+  currentRole=membership.role;
+
+  $('business').textContent=
+    (membership.businesses?.name||'Betrieb')+
+    ' · '+currentRole;
+
+  $('login').classList.add('hidden');
+  $('workspace').classList.remove('hidden');
+
+  await Promise.all([
+    loadDocuments(),
+    loadDashboard()
+  ]);
+}
+
+$('loginForm').onsubmit=async event=>{
+  event.preventDefault();
+
+  $('loginBtn').disabled=true;
+  status('loginStatus','Anmeldung läuft …');
+
+  try{
+    const {error}=await supabase.auth.signInWithPassword({
+      email:$('email').value.trim(),
+      password:$('password').value
+    });
+
+    if(error)throw error;
+
+    $('password').value='';
+    await enter();
+
+  }catch(err){
+    status(
+      'loginStatus',
+      'Anmeldung fehlgeschlagen: '+err.message,
+      true
+    );
+  }finally{
+    $('loginBtn').disabled=false;
+  }
+};
+
+$('logout').onclick=async()=>{
+  await supabase.auth.signOut();
+
+  businessId=null;
+  currentUser=null;
+  currentRole=null;
+
+  $('workspace').classList.add('hidden');
+  $('login').classList.remove('hidden');
+  $('results').classList.add('hidden');
+};
+
+(async()=>{
+  try{
+    const {data:{session}}=await supabase.auth.getSession();
+    if(session)await enter();
+  }catch(err){
+    status(
+      'loginStatus',
+      'Start fehlgeschlagen: '+err.message,
+      true
+    );
+  }
+})();
 </script>
 </body>
 </html>
