@@ -12,6 +12,7 @@ font-family:system-ui,-apple-system,Segoe UI,sans-serif;
 color:#14243a;background:#f4f7fa
 }
 *{box-sizing:border-box}
+html{scroll-behavior:smooth}
 body{margin:0}
 header{background:#14243a;color:white;padding:22px 18px}
 .header-inner{max-width:1050px;margin:auto}
@@ -139,6 +140,14 @@ height:100%;background:#167a61;border-radius:9px
 .dashboard-more{
 display:flex;justify-content:flex-end;margin-top:12px
 }
+.review-summary{
+background:#f1f5f9;border-radius:10px;
+padding:12px;cursor:pointer
+}
+.review-summary strong{display:block}
+.review-summary small{display:block;color:#64748b;margin-top:4px}
+.review-body{padding-top:12px}
+#cashCapture,#invoiceCapture{scroll-margin-top:12px}
 @media(max-width:650px){
 .navigation{grid-template-columns:repeat(2,minmax(0,1fr))}
 .filter-grid{grid-template-columns:1fr}
@@ -305,7 +314,7 @@ Weitere Auswertungen
 <section id="page-cash" class="page">
 <div class="page-title">Tagesabrechnungen</div>
 
-<section class="card">
+<section class="card" id="cashCapture">
 <h2>Neue Tagesabrechnung erfassen</h2>
 <p class="muted">
 Mehrere Fotos derselben Tagesabrechnung gemeinsam
@@ -332,7 +341,8 @@ Keine Fotos ausgewählt.
 </p>
 
 <button id="cashScan">Auswertung starten</button>
-<div id="cashStatus" class="status hidden"></div>
+<div id="cashStatus" class="status hidden"
+role="status" aria-live="polite"></div>
 <div id="cashResults"></div>
 </section>
 
@@ -377,7 +387,7 @@ Das Archiv bleibt standardmäßig geschlossen.
 <section id="page-invoice" class="page">
 <div class="page-title">Lieferantenrechnungen</div>
 
-<section class="card">
+<section class="card" id="invoiceCapture">
 <h2>Neue Rechnung erfassen</h2>
 <p class="muted">
 Fotos oder PDF-Dateien auswählen.
@@ -404,7 +414,8 @@ Keine Dateien ausgewählt.
 </p>
 
 <button id="invoiceScan">Auswertung starten</button>
-<div id="invoiceStatus" class="status hidden"></div>
+<div id="invoiceStatus" class="status hidden"
+role="status" aria-live="polite"></div>
 <div id="invoiceResults"></div>
 </section>
 
@@ -657,11 +668,6 @@ const total=rows.reduce((s,x)=>s+x.gross,0);
 return {rows,total,reported};
 }
 
-/*
-  Neue Funktion:
-  limit = 5 zeigt nur die Top 5 im Dashboard.
-  Ohne limit werden alle Artikelgruppen angezeigt.
-*/
 function categoryTable(docs,monthly=false,limit=null){
 const data=categorySummary(docs);
 const box=document.createElement('div');
@@ -873,8 +879,13 @@ if(f.url)URL.revokeObjectURL(f.url);
 s.files=[];
 s.results=[];
 
-$(kindId(kind)+'Files').value='';
-$(kindId(kind)+'CameraInput').value='';
+const id=kindId(kind);
+
+$(id+'Files').value='';
+$(id+'CameraInput').value='';
+
+/* Ergebnisansicht sofort vollständig schließen. */
+$(id+'Results').replaceChildren();
 
 renderFiles(kind);
 }
@@ -1094,7 +1105,7 @@ images
 
 if(error)throw error;
 
-if(!data?.success||!data.documents?.length){
+if(!data?.documents?.length){
 throw Error(data?.error||'Keine Belege erkannt');
 }
 
@@ -1143,12 +1154,27 @@ state[kind].results.forEach((doc,i)=>{
 const box=document.createElement('div');
 box.className='result';
 
-const heading=document.createElement('h3');
-heading.textContent=
-(kind==='cash_report'?'Tagesabrechnung':'Rechnung')+
-' '+(i+1);
+const panel=document.createElement('details');
+panel.open=state[kind].results.length===1;
 
-box.append(heading);
+const summary=document.createElement('summary');
+summary.className='review-summary';
+
+const summaryTitle=document.createElement('strong');
+summaryTitle.textContent=
+(kind==='cash_report'?'Tagesabrechnung':'Rechnung')+
+' '+(i+1)+' · '+(doc.date||'Datum prüfen');
+
+const summarySub=document.createElement('small');
+summarySub.textContent=
+euro(doc.gross_total)+
+' · Zum Prüfen und Speichern antippen';
+
+summary.append(summaryTitle,summarySub);
+panel.append(summary);
+
+const body=document.createElement('div');
+body.className='review-body';
 
 const grid=document.createElement('div');
 grid.className='grid';
@@ -1203,10 +1229,10 @@ label.append(select);
 grid.append(label);
 }
 
-box.append(grid);
+body.append(grid);
 
 if(kind==='cash_report'){
-categoryEditor(box,doc);
+categoryEditor(body,doc);
 }
 
 const details=document.createElement('details');
@@ -1224,7 +1250,7 @@ sales_items:doc.sales_items||[]
 },null,2);
 
 details.append(pre);
-box.append(details);
+body.append(details);
 
 const save=document.createElement('button');
 save.textContent='Beleg speichern';
@@ -1232,9 +1258,13 @@ save.textContent='Beleg speichern';
 const msg=document.createElement('div');
 msg.className='status hidden';
 
-save.onclick=()=>saveResult(kind,doc,box,save,msg);
+save.onclick=()=>saveResult(
+kind,doc,body,save,msg,box
+);
 
-box.append(save,msg);
+body.append(save,msg);
+panel.append(body);
+box.append(panel);
 target.append(box);
 });
 }
@@ -1259,7 +1289,7 @@ return key==='receipt_count'?
 n:Math.round(n*100)/100;
 }
 
-async function saveResult(kind,doc,box,button,msg){
+async function saveResult(kind,doc,box,button,msg,resultBox){
 if(locked)return;
 
 locked=true;
@@ -1368,10 +1398,56 @@ extracted_data:reviewed
 if(error)throw error;
 
 saved=true;
-msg.textContent='Gespeichert.';
-button.textContent='Gespeichert';
 
+/*
+ NEU:
+ Nur den erfolgreich gespeicherten Beleg entfernen.
+ Weitere erkannte Belege bleiben erhalten und können
+ einzeln gespeichert werden.
+*/
+const resultIndex=state[kind].results.indexOf(doc);
+
+if(resultIndex!==-1){
+state[kind].results.splice(resultIndex,1);
+}
+
+resultBox.remove();
+
+const id=kindId(kind);
+
+if(state[kind].results.length===0){
+/*
+ Alle erkannten Belege sind gespeichert.
+ Dateien und gesamte Ergebnisansicht schließen.
+*/
 clearFiles(kind);
+}else{
+/*
+ Weitere Belege warten auf Prüfung.
+ Die übrigen Ergebnisansichten geschlossen halten.
+*/
+$(id+'Results')
+.querySelectorAll('details')
+.forEach(panel=>panel.open=false);
+}
+
+message(
+id+'Status',
+'✓ Beleg erfolgreich gespeichert.'+
+(state[kind].results.length?
+' Noch '+state[kind].results.length+
+' Beleg(e) zur Prüfung vorhanden.':'')
+);
+
+/*
+ Sofort zurück zum Erfassungsbereich,
+ ohne langes Scrollen auf dem Handy.
+*/
+$(id+'Capture').scrollIntoView({
+behavior:'smooth',
+block:'start'
+});
+
 await loadAll();
 
 }catch(e){
@@ -1765,7 +1841,6 @@ Math.abs(difference)<=.05?
 $('paymentCheck').textContent='–';
 }
 
-/* Dashboard zeigt jetzt ausschließlich die Top 5. */
 $('categoryTotals').replaceChildren(
 categoryTable(unique,true,5)
 );
@@ -1868,7 +1943,6 @@ $('bestDayGross').textContent=
 strongest?
 euro(strongest.extracted_data.gross_total):'–';
 
-/* In den Auswertungen bleiben alle Artikelgruppen. */
 $('analysisCategories').replaceChildren(
 categoryTable(unique,true)
 );
