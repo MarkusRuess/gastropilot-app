@@ -6,12 +6,11 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#14243a">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <title>GastoPilot · Das Friedrich</title>
 
   <style>
     :root {
-      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+      font-family: system-ui,-apple-system,"Segoe UI",sans-serif;
       color: #14243a;
       background: #f4f7fa;
     }
@@ -112,8 +111,15 @@
       overflow-wrap: anywhere;
     }
 
-    .error { background: #fff0ef; color: #a72f25; }
-    .ok { background: #e9f8f0; color: #186344; }
+    .error {
+      background: #fff0ef;
+      color: #a72f25;
+    }
+
+    .ok {
+      background: #e9f8f0;
+      color: #186344;
+    }
 
     img {
       max-width: 100%;
@@ -175,6 +181,7 @@
 
   <section id="login" class="card">
     <h2>Anmelden</h2>
+
     <p class="muted">
       Melde dich mit deinem GastoPilot-Benutzerkonto an.
     </p>
@@ -197,10 +204,16 @@
         required
       >
 
-      <button id="loginBtn" type="submit">Anmelden</button>
+      <button id="loginBtn" type="submit">
+        Anmelden
+      </button>
     </form>
 
-    <div id="loginStatus" class="status hidden" role="status"></div>
+    <div
+      id="loginStatus"
+      class="status hidden"
+      role="status"
+    ></div>
   </section>
 
   <section id="workspace" class="hidden">
@@ -209,14 +222,18 @@
       <div style="display:flex;justify-content:space-between;gap:12px;align-items:center">
         <div>
           <h2 style="margin-bottom:3px">Willkommen!</h2>
-          <div id="business" class="muted">Betrieb wird geladen …</div>
+          <div id="business" class="muted">
+            Betrieb wird geladen …
+          </div>
         </div>
 
         <button
           class="secondary"
           id="logout"
           style="width:auto;margin:0"
-        >Abmelden</button>
+        >
+          Abmelden
+        </button>
       </div>
     </section>
 
@@ -224,11 +241,15 @@
       <h2>Beleg fotografieren</h2>
 
       <p class="muted">
-        Fotografiere einen Kassenbericht oder eine Lieferantenrechnung.
-        Bitte vorerst nur Testbelege ohne personenbezogene Daten verwenden.
+        Fotografiere einen Kassenbericht oder eine
+        Lieferantenrechnung. Verwende vorerst Testbelege
+        ohne personenbezogene Daten.
       </p>
 
-      <label for="photo">Foto auswählen oder Kamera öffnen</label>
+      <label for="photo">
+        Foto auswählen oder Kamera öffnen
+      </label>
+
       <input
         id="photo"
         type="file"
@@ -236,11 +257,21 @@
         capture="environment"
       >
 
-      <img id="preview" class="hidden" alt="Vorschau des Belegs">
+      <img
+        id="preview"
+        class="hidden"
+        alt="Vorschau des Belegs"
+      >
 
-      <button id="scan" disabled>Mit KI auslesen</button>
+      <button id="scan" disabled>
+        Mit KI auslesen
+      </button>
 
-      <div id="scanStatus" class="status hidden" role="status"></div>
+      <div
+        id="scanStatus"
+        class="status hidden"
+        role="status"
+      ></div>
     </section>
 
     <section id="result" class="card hidden">
@@ -290,22 +321,42 @@
 
         <div>
           <label for="foodGross">Speisen (€)</label>
-          <input id="foodGross" type="number" min="0" step="0.01">
+          <input
+            id="foodGross"
+            type="number"
+            min="0"
+            step="0.01"
+          >
         </div>
 
         <div>
           <label for="drinksGross">Getränke (€)</label>
-          <input id="drinksGross" type="number" min="0" step="0.01">
+          <input
+            id="drinksGross"
+            type="number"
+            min="0"
+            step="0.01"
+          >
         </div>
 
         <div>
           <label for="nonfoodGross">Non-Food (€)</label>
-          <input id="nonfoodGross" type="number" min="0" step="0.01">
+          <input
+            id="nonfoodGross"
+            type="number"
+            min="0"
+            step="0.01"
+          >
         </div>
 
         <div>
           <label for="otherGross">Sonstiges (€)</label>
-          <input id="otherGross" type="number" min="0" step="0.01">
+          <input
+            id="otherGross"
+            type="number"
+            min="0"
+            step="0.01"
+          >
         </div>
 
         <div class="full">
@@ -318,8 +369,15 @@
       <h3>Erkannte Artikel</h3>
       <div id="items" class="muted"></div>
 
-      <button id="save">Geprüften Beleg speichern</button>
-      <div id="saveStatus" class="status hidden" role="status"></div>
+      <button id="save">
+        Geprüften Beleg speichern
+      </button>
+
+      <div
+        id="saveStatus"
+        class="status hidden"
+        role="status"
+      ></div>
 
       <details style="margin-top:18px">
         <summary>Technische KI-Rohdaten</summary>
@@ -338,7 +396,12 @@
         Belegliste aktualisieren
       </button>
 
-      <div id="listStatus" class="status hidden" role="status"></div>
+      <div
+        id="listStatus"
+        class="status hidden"
+        role="status"
+      ></div>
+
       <div id="documentList"></div>
     </section>
 
@@ -346,7 +409,9 @@
 
 </main>
 
-<footer>GastoPilot · Pilotbetrieb Das Friedrich</footer>
+<footer>
+  GastoPilot · Pilotbetrieb Das Friedrich
+</footer>
 
 <script type="module">
 
@@ -371,7 +436,8 @@ const supabase = createClient(
   }
 );
 
-const $ = id => window.document.getElementById(id);
+const $ = id =>
+  window.document.getElementById(id);
 
 let businessId = null;
 let selectedFile = null;
@@ -382,12 +448,16 @@ let saveInProgress = false;
 
 function status(id, message, error = false) {
   const element = $(id);
+
   element.textContent = message;
-  element.className = 'status ' + (error ? 'error' : 'ok');
+
+  element.className =
+    'status ' + (error ? 'error' : 'ok');
 }
 
 function setValue(id, value) {
-  $(id).value = value == null ? '' : String(value);
+  $(id).value =
+    value == null ? '' : String(value);
 }
 
 function optionalNumber(id) {
@@ -398,17 +468,24 @@ function optionalNumber(id) {
   const number = Number(value);
 
   if (!Number.isFinite(number) || number < 0) {
-    throw new Error('Ungültiger Betrag: ' + id);
+    throw new Error(
+      'Ungültiger Betrag im Feld: ' + id
+    );
   }
 
   return Math.round(number * 100) / 100;
 }
 
 function euro(value) {
-  if (value == null || value === '') return '–';
+  if (value == null || value === '') {
+    return '–';
+  }
 
   const number = Number(value);
-  if (!Number.isFinite(number)) return '–';
+
+  if (!Number.isFinite(number)) {
+    return '–';
+  }
 
   return new Intl.NumberFormat('de-AT', {
     style: 'currency',
@@ -433,8 +510,10 @@ async function initialize() {
 }
 
 async function enter() {
-  const { data: { user }, error: userError } =
-    await supabase.auth.getUser();
+  const {
+    data: { user },
+    error: userError
+  } = await supabase.auth.getUser();
 
   if (userError || !user) {
     $('login').classList.remove('hidden');
@@ -460,8 +539,8 @@ async function enter() {
   }
 
   const membership =
-    data.find(
-      item => item.businesses?.name?.includes('Friedrich')
+    data.find(item =>
+      item.businesses?.name?.includes('Friedrich')
     ) || data[0];
 
   businessId = membership.business_id;
@@ -469,56 +548,81 @@ async function enter() {
 
   $('business').textContent =
     (membership.businesses?.name || 'Betrieb') +
-    ' · ' + membership.role;
+    ' · ' +
+    membership.role;
 
   $('login').classList.add('hidden');
   $('workspace').classList.remove('hidden');
 
-  await loadDocuments();
-}
-
-$('loginForm').addEventListener('submit', async event => {
-  event.preventDefault();
-  $('loginBtn').disabled = true;
-  status('loginStatus', 'Anmeldung läuft …');
-
   try {
-    const { error } = await supabase.auth.signInWithPassword({
-      email: $('email').value.trim(),
-      password: $('password').value
-    });
-
-    $('password').value = '';
-
-    if (error) throw error;
-
-    await enter();
+    await loadDocuments();
   } catch (error) {
     status(
-      'loginStatus',
-      'Anmeldung fehlgeschlagen: ' + error.message,
+      'listStatus',
+      'Belegliste konnte nicht geladen werden: ' +
+      error.message,
       true
     );
-  } finally {
-    $('loginBtn').disabled = false;
   }
-});
+}
 
-$('logout').addEventListener('click', async () => {
-  await supabase.auth.signOut();
+$('loginForm').addEventListener(
+  'submit',
+  async event => {
+    event.preventDefault();
 
-  businessId = null;
-  currentUser = null;
-  extractedData = null;
-  selectedFile = null;
+    $('loginBtn').disabled = true;
+    status(
+      'loginStatus',
+      'Anmeldung läuft …'
+    );
 
-  $('workspace').classList.add('hidden');
-  $('login').classList.remove('hidden');
-  $('result').classList.add('hidden');
-});
+    try {
+      const { error } =
+        await supabase.auth.signInWithPassword({
+          email: $('email').value.trim(),
+          password: $('password').value
+        });
+
+      $('password').value = '';
+
+      if (error) throw error;
+
+      await enter();
+
+    } catch (error) {
+      status(
+        'loginStatus',
+        'Anmeldung fehlgeschlagen: ' +
+        error.message,
+        true
+      );
+    } finally {
+      $('loginBtn').disabled = false;
+    }
+  }
+);
+
+$('logout').addEventListener(
+  'click',
+  async () => {
+    await supabase.auth.signOut();
+
+    businessId = null;
+    currentUser = null;
+    extractedData = null;
+    selectedFile = null;
+
+    $('workspace').classList.add('hidden');
+    $('login').classList.remove('hidden');
+    $('result').classList.add('hidden');
+  }
+);
 
 $('photo').addEventListener('change', () => {
-  selectedFile = $('photo').files?.[0] || null;
+  selectedFile =
+    $('photo').files?.[0] || null;
+
   extractedData = null;
 
   $('result').classList.add('hidden');
@@ -541,11 +645,14 @@ $('photo').addEventListener('change', () => {
       'Bitte JPG, PNG oder WebP auswählen.',
       true
     );
+
     $('scan').disabled = true;
     return;
   }
 
-  previewUrl = URL.createObjectURL(selectedFile);
+  previewUrl =
+    URL.createObjectURL(selectedFile);
+
   $('preview').src = previewUrl;
   $('preview').classList.remove('hidden');
 });
@@ -555,7 +662,9 @@ function imageToBase64(file) {
     const reader = new FileReader();
 
     reader.onerror = () => reject(
-      new Error('Foto konnte nicht gelesen werden')
+      new Error(
+        'Foto konnte nicht gelesen werden'
+      )
     );
 
     reader.onload = () => resolve(
@@ -569,18 +678,26 @@ function imageToBase64(file) {
 function compress(file) {
   return new Promise((resolve, reject) => {
     const img = new Image();
-    const objectUrl = URL.createObjectURL(file);
+    const objectUrl =
+      URL.createObjectURL(file);
 
     img.onload = () => {
       const scale = Math.min(
         1,
-        1800 / Math.max(img.width, img.height)
+        1800 / Math.max(
+          img.width,
+          img.height
+        )
       );
 
-      const canvas = window.document.createElement('canvas');
+      const canvas =
+        window.document.createElement('canvas');
 
-      canvas.width = Math.round(img.width * scale);
-      canvas.height = Math.round(img.height * scale);
+      canvas.width =
+        Math.round(img.width * scale);
+
+      canvas.height =
+        Math.round(img.height * scale);
 
       canvas.getContext('2d').drawImage(
         img,
@@ -596,7 +713,9 @@ function compress(file) {
         blob => blob
           ? resolve(blob)
           : reject(
-              new Error('Foto konnte nicht verarbeitet werden')
+              new Error(
+                'Foto konnte nicht verarbeitet werden'
+              )
             ),
         'image/jpeg',
         0.82
@@ -605,224 +724,312 @@ function compress(file) {
 
     img.onerror = () => {
       URL.revokeObjectURL(objectUrl);
-      reject(new Error('Bild konnte nicht geöffnet werden'));
+
+      reject(
+        new Error(
+          'Bild konnte nicht geöffnet werden'
+        )
+      );
     };
 
     img.src = objectUrl;
   });
 }
 
-$('scan').addEventListener('click', async () => {
-  if (!businessId || !selectedFile) return;
-
-  $('scan').disabled = true;
-
-  status(
-    'scanStatus',
-    'Foto wird vorbereitet und mit KI ausgewertet …'
-  );
-
-  try {
-    const compressed = await compress(selectedFile);
-    const base64 = await imageToBase64(compressed);
-
-    const { data, error } = await supabase.functions.invoke(
-      'analyze-receipt',
-      {
-        body: {
-          business_id: businessId,
-          image_base64: base64,
-          mime_type: 'image/jpeg'
-        }
-      }
-    );
-
-    if (error) {
-      let message = error.message;
-
-      try {
-        if (error.context?.json) {
-          const response = await error.context.json();
-          message = response.error || message;
-        }
-      } catch (_) {}
-
-      throw new Error(message);
+$('scan').addEventListener(
+  'click',
+  async () => {
+    if (!businessId || !selectedFile) {
+      return;
     }
 
-    if (!data?.success) {
-      throw new Error(
-        data?.error || 'Unbekannte KI-Antwort'
-      );
-    }
-
-    extractedData = data.data || {};
-    const result = extractedData;
-
-    setValue(
-      'documentType',
-      ['cash_report', 'invoice'].includes(result.document_type)
-        ? result.document_type
-        : 'other'
-    );
-
-    setValue('documentDate', safeDate(result.date));
-    setValue('grossTotal', result.gross_total);
-    setValue('supplier', result.supplier);
-    setValue('invoiceNumber', result.invoice_number);
-    setValue('foodGross', result.food_gross);
-    setValue('drinksGross', result.drinks_gross);
-    setValue('nonfoodGross', result.nonfood_gross);
-    setValue('otherGross', result.other_gross);
-    setValue('notes', result.notes);
-
-    const items = Array.isArray(result.sales_items)
-      ? result.sales_items
-      : [];
-
-    $('items').textContent = items.length
-      ? items.map(item =>
-          `${item.name || 'Artikel'}: ` +
-          `${item.quantity ?? '?'} Stück`
-        ).join(' · ')
-      : 'Keine Artikel erkannt';
-
-    $('raw').textContent =
-      JSON.stringify(result, null, 2);
-
-    $('saveStatus').className = 'status hidden';
-    $('save').disabled = false;
-    $('result').classList.remove('hidden');
+    $('scan').disabled = true;
 
     status(
       'scanStatus',
-      'KI-Auswertung fertig. Bitte Daten prüfen.'
+      'Foto wird vorbereitet und mit KI ausgewertet …'
     );
 
-    $('result').scrollIntoView({
-      behavior: 'smooth',
-      block: 'start'
-    });
-
-  } catch (error) {
-    status(
-      'scanStatus',
-      'Fehler: ' + error.message,
-      true
-    );
-  } finally {
-    $('scan').disabled = false;
-  }
-});
-
-$('save').addEventListener('click', async () => {
-  if (saveInProgress) return;
-
-  if (!businessId || !currentUser || !extractedData) {
-    status(
-      'saveStatus',
-      'Bitte zuerst einen Beleg auslesen.',
-      true
-    );
-    return;
-  }
-
-  const documentType = $('documentType').value;
-  const documentDate = $('documentDate').value || null;
-
-  if (!documentDate) {
-    status(
-      'saveStatus',
-      'Bitte ein Belegdatum eintragen.',
-      true
-    );
-    return;
-  }
-
-  saveInProgress = true;
-  $('save').disabled = true;
-
-  status(
-    'saveStatus',
-    'Geprüfter Beleg wird gespeichert …'
-  );
-
-  let successfullySaved = false;
-
-  try {
-    const grossTotal = optionalNumber('grossTotal');
-
-    if (grossTotal === null) {
-      throw new Error(
-        'Bitte den Bruttobetrag eintragen.'
-      );
-    }
-
-    const reviewedData = {
-      ...extractedData,
-      document_type: documentType,
-      date: documentDate,
-      supplier: $('supplier').value.trim() || null,
-      invoice_number:
-        $('invoiceNumber').value.trim() || null,
-      gross_total: grossTotal,
-      food_gross: optionalNumber('foodGross'),
-      drinks_gross: optionalNumber('drinksGross'),
-      nonfood_gross: optionalNumber('nonfoodGross'),
-      other_gross: optionalNumber('otherGross'),
-      notes: $('notes').value.trim() || null,
-      reviewed_at: new Date().toISOString()
-    };
-
-    const payload = {
-      business_id: businessId,
-      uploaded_by: currentUser.id,
-      document_type: documentType,
-      document_date: documentDate,
-      supplier: reviewedData.supplier,
-      invoice_number: reviewedData.invoice_number,
-      status: 'reviewed',
-      extracted_data: reviewedData
-    };
-
-    const { error } = await supabase
-      .from('documents')
-      .insert(payload);
-
-    if (error) throw error;
-
-    successfullySaved = true;
-    extractedData = null;
-
-    status(
-      'saveStatus',
-      'Beleg erfolgreich in Supabase gespeichert!'
-    );
-
-  } catch (error) {
-    status(
-      'saveStatus',
-      'Speichern fehlgeschlagen: ' + error.message,
-      true
-    );
-  } finally {
-    saveInProgress = false;
-    $('save').disabled = successfullySaved;
-  }
-
-  if (successfullySaved) {
     try {
-      await loadDocuments();
+      const compressed =
+        await compress(selectedFile);
+
+      const base64 =
+        await imageToBase64(compressed);
+
+      const { data, error } =
+        await supabase.functions.invoke(
+          'analyze-receipt',
+          {
+            body: {
+              business_id: businessId,
+              image_base64: base64,
+              mime_type: 'image/jpeg'
+            }
+          }
+        );
+
+      if (error) {
+        let message = error.message;
+
+        try {
+          if (error.context?.json) {
+            const response =
+              await error.context.json();
+
+            message =
+              response.error || message;
+          }
+        } catch (_) {}
+
+        throw new Error(message);
+      }
+
+      if (!data?.success) {
+        throw new Error(
+          data?.error ||
+          'Unbekannte KI-Antwort'
+        );
+      }
+
+      extractedData = data.data || {};
+
+      const result = extractedData;
+
+      setValue(
+        'documentType',
+        ['cash_report', 'invoice'].includes(
+          result.document_type
+        )
+          ? result.document_type
+          : 'other'
+      );
+
+      setValue(
+        'documentDate',
+        safeDate(result.date)
+      );
+
+      setValue(
+        'grossTotal',
+        result.gross_total
+      );
+
+      setValue(
+        'supplier',
+        result.supplier
+      );
+
+      setValue(
+        'invoiceNumber',
+        result.invoice_number
+      );
+
+      setValue(
+        'foodGross',
+        result.food_gross
+      );
+
+      setValue(
+        'drinksGross',
+        result.drinks_gross
+      );
+
+      setValue(
+        'nonfoodGross',
+        result.nonfood_gross
+      );
+
+      setValue(
+        'otherGross',
+        result.other_gross
+      );
+
+      setValue(
+        'notes',
+        result.notes
+      );
+
+      const items =
+        Array.isArray(result.sales_items)
+          ? result.sales_items
+          : [];
+
+      $('items').textContent =
+        items.length
+          ? items.map(item =>
+              `${item.name || 'Artikel'}: ` +
+              `${item.quantity ?? '?'} Stück`
+            ).join(' · ')
+          : 'Keine Artikel erkannt';
+
+      $('raw').textContent =
+        JSON.stringify(result, null, 2);
+
+      $('saveStatus').className =
+        'status hidden';
+
+      $('save').disabled = false;
+
+      $('result').classList.remove(
+        'hidden'
+      );
+
+      status(
+        'scanStatus',
+        'KI-Auswertung fertig. Bitte Daten prüfen.'
+      );
+
+      $('result').scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
+      });
+
     } catch (error) {
       status(
-        'listStatus',
-        'Beleg gespeichert, aber die Liste konnte nicht ' +
-        'aktualisiert werden: ' + error.message,
+        'scanStatus',
+        'Fehler: ' + error.message,
         true
       );
+
+    } finally {
+      $('scan').disabled = false;
     }
   }
-});
+);
+
+$('save').addEventListener(
+  'click',
+  async () => {
+    if (saveInProgress) return;
+
+    if (
+      !businessId ||
+      !currentUser ||
+      !extractedData
+    ) {
+      status(
+        'saveStatus',
+        'Bitte zuerst einen Beleg auslesen.',
+        true
+      );
+      return;
+    }
+
+    const documentType =
+      $('documentType').value;
+
+    const documentDate =
+      $('documentDate').value || null;
+
+    if (!documentDate) {
+      status(
+        'saveStatus',
+        'Bitte ein Belegdatum eintragen.',
+        true
+      );
+      return;
+    }
+
+    saveInProgress = true;
+    $('save').disabled = true;
+
+    status(
+      'saveStatus',
+      'Geprüfter Beleg wird gespeichert …'
+    );
+
+    let successfullySaved = false;
+
+    try {
+      const grossTotal =
+        optionalNumber('grossTotal');
+
+      if (grossTotal === null) {
+        throw new Error(
+          'Bitte den Bruttobetrag eintragen.'
+        );
+      }
+
+      const reviewedData = {
+        ...extractedData,
+        document_type: documentType,
+        date: documentDate,
+        supplier:
+          $('supplier').value.trim() || null,
+        invoice_number:
+          $('invoiceNumber').value.trim() || null,
+        gross_total: grossTotal,
+        food_gross:
+          optionalNumber('foodGross'),
+        drinks_gross:
+          optionalNumber('drinksGross'),
+        nonfood_gross:
+          optionalNumber('nonfoodGross'),
+        other_gross:
+          optionalNumber('otherGross'),
+        notes:
+          $('notes').value.trim() || null,
+        reviewed_at:
+          new Date().toISOString()
+      };
+
+      const payload = {
+        business_id: businessId,
+        uploaded_by: currentUser.id,
+        document_type: documentType,
+        document_date: documentDate,
+        supplier: reviewedData.supplier,
+        invoice_number:
+          reviewedData.invoice_number,
+        status: 'reviewed',
+        extracted_data: reviewedData
+      };
+
+      const { error } = await supabase
+        .from('documents')
+        .insert(payload);
+
+      if (error) throw error;
+
+      successfullySaved = true;
+      extractedData = null;
+
+      status(
+        'saveStatus',
+        'Beleg erfolgreich in Supabase gespeichert!'
+      );
+
+    } catch (error) {
+      status(
+        'saveStatus',
+        'Speichern fehlgeschlagen: ' +
+        error.message,
+        true
+      );
+
+    } finally {
+      saveInProgress = false;
+
+      $('save').disabled =
+        successfullySaved;
+    }
+
+    if (successfullySaved) {
+      try {
+        await loadDocuments();
+
+      } catch (error) {
+        status(
+          'listStatus',
+          'Beleg wurde gespeichert, aber die Liste konnte nicht aktualisiert werden: ' +
+          error.message,
+          true
+        );
+      }
+    }
+  }
+);
 
 async function loadDocuments() {
   if (!businessId) return;
@@ -838,10 +1045,13 @@ async function loadDocuments() {
       'id,document_type,document_date,supplier,status,extracted_data,created_at'
     )
     .eq('business_id', businessId)
-    .order('created_at', { ascending: false })
+    .order('created_at', {
+      ascending: false
+    })
     .limit(20);
 
   const list = $('documentList');
+
   list.replaceChildren();
 
   if (error) {
@@ -862,40 +1072,61 @@ async function loadDocuments() {
     return;
   }
 
-  $('listStatus').className = 'status hidden';
+  $('listStatus').className =
+    'status hidden';
+
+  // Wichtig: Die Variable heißt savedDocument,
+  // damit das Browser-Objekt document
+  // nicht überschrieben wird.
 
   for (const savedDocument of data) {
+    const row =
+      window.document.createElement('div');
 
-    // KORREKTUR: createElement wird als Funktion aufgerufen.
-    const row = window.document.createElement('div');
     row.className = 'entry';
 
-    const title = window.document.createElement('strong');
+    const title =
+      window.document.createElement('strong');
 
     const typeLabel =
-      savedDocument.document_type === 'cash_report'
+      savedDocument.document_type ===
+      'cash_report'
         ? 'Kassenbericht'
-        : savedDocument.document_type === 'invoice'
+        : savedDocument.document_type ===
+          'invoice'
           ? 'Rechnung'
           : 'Sonstiger Beleg';
 
     title.textContent =
-      typeLabel + ' · ' +
-      (savedDocument.document_date || 'Ohne Datum');
+      typeLabel +
+      ' · ' +
+      (
+        savedDocument.document_date ||
+        'Ohne Datum'
+      );
 
-    const details = window.document.createElement('small');
+    const details =
+      window.document.createElement('small');
 
     details.textContent =
-      (savedDocument.supplier || 'Das Friedrich') +
+      (
+        savedDocument.supplier ||
+        'Das Friedrich'
+      ) +
       ' · ' +
-      euro(savedDocument.extracted_data?.gross_total);
+      euro(
+        savedDocument.extracted_data
+          ?.gross_total
+      );
 
-    const state = window.document.createElement('small');
+    const state =
+      window.document.createElement('small');
 
     state.textContent =
       savedDocument.status === 'reviewed'
         ? 'Geprüft und gespeichert'
-        : 'Status: ' + savedDocument.status;
+        : 'Status: ' +
+          savedDocument.status;
 
     row.appendChild(title);
     row.appendChild(details);
@@ -905,17 +1136,22 @@ async function loadDocuments() {
   }
 }
 
-$('refresh').addEventListener('click', async () => {
-  try {
-    await loadDocuments();
-  } catch (error) {
-    status(
-      'listStatus',
-      'Fehler: ' + error.message,
-      true
-    );
+$('refresh').addEventListener(
+  'click',
+  async () => {
+    try {
+      await loadDocuments();
+
+    } catch (error) {
+      status(
+        'listStatus',
+        'Fehler beim Aktualisieren: ' +
+        error.message,
+        true
+      );
+    }
   }
-});
+);
 
 initialize().catch(error => {
   status(
@@ -927,5 +1163,6 @@ initialize().catch(error => {
 });
 
 </script>
+
 </body>
 </html>
