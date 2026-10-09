@@ -40,7 +40,7 @@ button:disabled{opacity:.55;cursor:wait}
 .thumb img{width:100%;height:100px;object-fit:contain}
 .thumb small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .thumb button{font-size:12px;padding:5px}
-.result{border:1px solid #dbe4ed;border-radius:12px;padding:13px;margin:12px 0}
+.result{border:1px solid #dbe4ed;border-radius:12px;padding:13px;margin:12px 0;scroll-margin-top:12px}
 details{background:#f5f8fb;border-radius:9px;padding:12px;margin:10px 0}
 summary{cursor:pointer;font-weight:700}
 table{width:100%;border-collapse:collapse;font-size:13px}
@@ -74,10 +74,83 @@ footer{text-align:center;color:#718096;padding:20px;font-size:12px}
 .check-unknown{color:#657588}
 .check-note{padding:12px;border-radius:10px;background:#f3f6fa;margin:12px 0}
 .check-note strong{display:block;margin-bottom:4px}
+.save-primary{width:100%;font-size:17px;padding:15px;margin:13px 0 5px}
+.review-top{border-bottom:1px solid #e0e7ee;padding-bottom:12px}
+.review-extra{margin-top:12px}
+.review-extra>summary{font-size:15px}
+.compact-hint{font-size:12px;color:#64748b;margin:3px 0 8px}
+
+/* Neues Kontrollfenster */
+.payment-dialog{
+width:min(1050px,96vw);
+max-width:1050px;
+max-height:88vh;
+overflow-y:auto;
+border:1px solid #dce4ec;
+border-radius:16px;
+padding:22px;
+color:#14243a;
+background:#fff;
+box-shadow:0 15px 60px rgba(0,0,0,.2)
+}
+.payment-dialog::backdrop{
+background:rgba(15,30,45,.55)
+}
+.payment-summary{
+margin:12px 0;
+padding:14px;
+background:#edf7f2;
+border-radius:10px;
+font-weight:750;
+color:#167a61
+}
+.payment-summary.warning{
+background:#fff5e8;
+color:#9a6714
+}
+.payment-summary.bad{
+background:#fff0ef;
+color:#b3322a
+}
+.payment-summary.unknown{
+background:#f1f5f9;
+color:#657588
+}
+.payment-dialog .row{
+position:sticky;
+top:-22px;
+background:white;
+z-index:1;
+padding:8px 0 12px;
+border-bottom:1px solid #e0e7ee
+}
+.top-item{
+display:grid;
+grid-template-columns:32px minmax(0,1fr) 85px;
+gap:10px;
+align-items:center;
+padding:11px 0;
+border-bottom:1px solid #e5edf3
+}
+.top-rank{
+font-weight:800;
+color:#167a61
+}
+.top-quantity{
+text-align:right;
+font-weight:750;
+white-space:nowrap
+}
 @media(max-width:650px){
 .navigation{grid-template-columns:repeat(2,minmax(0,1fr))}
 .filter-grid{grid-template-columns:1fr}
 .trend-row{grid-template-columns:80px 1fr 95px}
+.payment-dialog{
+width:98vw;
+max-height:92vh;
+padding:12px
+}
+.payment-dialog .row{top:-12px}
 }
 @media(max-width:430px){
 .metric strong{font-size:19px}
@@ -87,6 +160,7 @@ header b{font-size:25px}
 </style>
 </head>
 <body>
+
 <header>
 <div class="header-inner">
 <b>GastroPilot</b>
@@ -110,6 +184,7 @@ header b{font-size:25px}
 </section>
 
 <div id="app" class="hidden">
+
 <section class="card">
 <div class="row">
 <div>
@@ -126,6 +201,8 @@ header b{font-size:25px}
 <button class="nav-button" data-page="invoice">Lieferantenrechnungen</button>
 <button class="nav-button" data-page="analysis">Auswertungen</button>
 </nav>
+
+<!-- DASHBOARD -->
 
 <section id="page-dashboard" class="page active">
 <div class="page-title">Dashboard</div>
@@ -155,57 +232,97 @@ header b{font-size:25px}
 
 <p id="dashboardNote" class="muted"></p>
 
-<h3>Zahlungsabgleich nach Tagen</h3>
-<div id="paymentDaily"></div>
+<h3>Zahlungsabgleich</h3>
+<div id="paymentDailySummary" class="payment-summary">
+Noch keine Abrechnungen geladen.
+</div>
+<button id="openPaymentCheck" class="secondary" type="button">
+Zahlungsabgleich prüfen →
+</button>
 
 <h3>Top 5 Artikelgruppen nach Umsatz</h3>
 <div id="categoryTotals"></div>
 <div class="dashboard-more">
-<button id="showAllCategories" class="secondary">Alle Artikelgruppen anzeigen →</button>
+<button id="showAllCategories" class="secondary">
+Alle Artikelgruppen anzeigen →
+</button>
 </div>
 
-<h3>Top 3 verkaufte Artikel</h3>
-<ol id="top"></ol>
+<h3>Top 10 verkaufte Artikel</h3>
+<div id="top10"></div>
+
 <p id="last" class="muted"></p>
 
 <div class="row">
-<button class="secondary" id="goCash">Tagesabrechnungen öffnen</button>
-<button class="secondary" id="goAnalysis">Weitere Auswertungen</button>
+<button class="secondary" id="goCash">
+Tagesabrechnungen öffnen
+</button>
+<button class="secondary" id="goAnalysis">
+Weitere Auswertungen
+</button>
 </div>
 </section>
 </section>
 
+<!-- TAGESABRECHNUNGEN -->
+
 <section id="page-cash" class="page">
 <div class="page-title">Tagesabrechnungen</div>
+
 <section class="card" id="cashCapture">
 <h2>Neue Tagesabrechnung erfassen</h2>
 <p class="muted">
 Mehrere Fotos derselben Tagesabrechnung gemeinsam auswählen.
 Unterschiedliche Tage einzeln auswerten. Maximal 12 Bilder.
 </p>
+
 <label>Fotos auswählen
-<input id="cashFiles" type="file" accept="image/jpeg,image/png,image/webp" multiple>
+<input id="cashFiles" type="file"
+accept="image/jpeg,image/png,image/webp" multiple>
 </label>
-<button id="cashCamera" class="secondary">Foto aufnehmen</button>
-<input id="cashCameraInput" type="file" accept="image/*" capture="environment" class="hidden">
+
+<button id="cashCamera" class="secondary">
+Foto aufnehmen
+</button>
+
+<input id="cashCameraInput" type="file"
+accept="image/*" capture="environment" class="hidden">
+
 <div id="cashPhotos" class="thumbs"></div>
 <p id="cashCount" class="muted">Keine Fotos ausgewählt.</p>
+
 <button id="cashScan">Auswertung starten</button>
-<div id="cashStatus" class="status hidden" role="status" aria-live="polite"></div>
+
+<div id="cashStatus" class="status hidden"
+role="status" aria-live="polite"></div>
+
 <div id="cashResults"></div>
 </section>
 
 <section class="card">
 <div class="row">
 <h2>Tagesarchiv</h2>
-<button id="cashRefresh" class="secondary">Aktualisieren</button>
+<button id="cashRefresh" class="secondary">
+Aktualisieren
+</button>
 </div>
-<p class="muted">Das Archiv bleibt standardmäßig geschlossen.</p>
+
+<p class="muted">
+Das Archiv bleibt standardmäßig geschlossen.
+</p>
+
 <details id="cashArchivePanel">
 <summary>Archiv durchsuchen</summary>
+
 <div class="filter-grid">
-<label>Monat<input id="cashArchiveMonth" type="month"></label>
-<label>Datum suchen<input id="cashArchiveDate" type="date"></label>
+<label>Monat
+<input id="cashArchiveMonth" type="month">
+</label>
+
+<label>Datum suchen
+<input id="cashArchiveDate" type="date">
+</label>
+
 <label>Anzeige
 <select id="cashArchiveLimit">
 <option value="10">10 Einträge</option>
@@ -215,41 +332,73 @@ Unterschiedliche Tage einzeln auswerten. Maximal 12 Bilder.
 </select>
 </label>
 </div>
+
 <p id="cashArchiveInfo" class="muted"></p>
 <div id="cashArchive"></div>
 </details>
 </section>
 </section>
 
+<!-- LIEFERANTENRECHNUNGEN -->
+
 <section id="page-invoice" class="page">
 <div class="page-title">Lieferantenrechnungen</div>
+
 <section class="card" id="invoiceCapture">
 <h2>Neue Rechnung erfassen</h2>
-<p class="muted">Fotos oder PDF-Dateien auswählen. Maximal 12 Seiten oder Bilder je Auswertung.</p>
+
+<p class="muted">
+Fotos oder PDF-Dateien auswählen.
+Maximal 12 Seiten oder Bilder je Auswertung.
+</p>
+
 <label>Fotos oder PDF-Dateien
-<input id="invoiceFiles" type="file" accept="image/jpeg,image/png,image/webp,application/pdf" multiple>
+<input id="invoiceFiles" type="file"
+accept="image/jpeg,image/png,image/webp,application/pdf"
+multiple>
 </label>
-<button id="invoiceCamera" class="secondary">Rechnung fotografieren</button>
-<input id="invoiceCameraInput" type="file" accept="image/*" capture="environment" class="hidden">
+
+<button id="invoiceCamera" class="secondary">
+Rechnung fotografieren
+</button>
+
+<input id="invoiceCameraInput" type="file"
+accept="image/*" capture="environment" class="hidden">
+
 <div id="invoicePhotos" class="thumbs"></div>
-<p id="invoiceCount" class="muted">Keine Dateien ausgewählt.</p>
+<p id="invoiceCount" class="muted">
+Keine Dateien ausgewählt.
+</p>
+
 <button id="invoiceScan">Auswertung starten</button>
-<div id="invoiceStatus" class="status hidden" role="status" aria-live="polite"></div>
+
+<div id="invoiceStatus" class="status hidden"
+role="status" aria-live="polite"></div>
+
 <div id="invoiceResults"></div>
 </section>
 
 <section class="card">
 <div class="row">
 <h2>Rechnungsarchiv</h2>
-<button id="invoiceRefresh" class="secondary">Aktualisieren</button>
+<button id="invoiceRefresh" class="secondary">
+Aktualisieren
+</button>
 </div>
+
 <details id="invoiceArchivePanel">
 <summary>Rechnungsarchiv durchsuchen</summary>
+
 <div class="filter-grid">
-<label>Monat<input id="invoiceArchiveMonth" type="month"></label>
-<label>Lieferant oder Rechnungsnummer
-<input id="invoiceSearch" type="search" placeholder="Suchen …">
+<label>Monat
+<input id="invoiceArchiveMonth" type="month">
 </label>
+
+<label>Lieferant oder Rechnungsnummer
+<input id="invoiceSearch" type="search"
+placeholder="Suchen …">
+</label>
+
 <label>Anzeige
 <select id="invoiceArchiveLimit">
 <option value="10">10 Einträge</option>
@@ -259,46 +408,92 @@ Unterschiedliche Tage einzeln auswerten. Maximal 12 Bilder.
 </select>
 </label>
 </div>
+
 <p id="invoiceArchiveInfo" class="muted"></p>
 <div id="invoiceArchive"></div>
 </details>
 </section>
 </section>
 
+<!-- AUSWERTUNGEN -->
+
 <section id="page-analysis" class="page">
 <div class="page-title">Auswertungen</div>
+
 <section class="card">
 <div class="row">
 <h2>Monatsanalyse</h2>
-<input id="analysisMonth" type="month" style="max-width:175px">
+<input id="analysisMonth" type="month"
+style="max-width:175px">
 </div>
+
 <div class="grid">
-<div class="metric"><small>Umsatzstärkste Artikelgruppe</small><strong id="bestCategory">–</strong></div>
-<div class="metric"><small>Umsatz dieser Artikelgruppe</small><strong id="bestCategoryGross">–</strong></div>
-<div class="metric"><small>Umsatzstärkster Tag</small><strong id="bestDay">–</strong></div>
-<div class="metric"><small>Umsatz am stärksten Tag</small><strong id="bestDayGross">–</strong></div>
+<div class="metric">
+<small>Umsatzstärkste Artikelgruppe</small>
+<strong id="bestCategory">–</strong>
 </div>
+<div class="metric">
+<small>Umsatz dieser Artikelgruppe</small>
+<strong id="bestCategoryGross">–</strong>
+</div>
+<div class="metric">
+<small>Umsatzstärkster Tag</small>
+<strong id="bestDay">–</strong>
+</div>
+<div class="metric">
+<small>Umsatz am stärksten Tag</small>
+<strong id="bestDayGross">–</strong>
+</div>
+</div>
+
 <h3>Zahlungsabgleich aller Tage</h3>
-<div id="analysisPayments"></div>
+<button id="analysisOpenPayment" class="secondary">
+Zahlungsabgleich prüfen →
+</button>
+
 <h3>Alle Artikelgruppen nach Umsatz</h3>
 <div id="analysisCategories"></div>
+
 <h3>Tagesumsätze im Vergleich</h3>
 <div id="dailyTrend"></div>
-<h3>Verkaufte Artikel nach Menge</h3>
+
+<h3>Top 20 Artikel nach Menge</h3>
 <div id="analysisItems"></div>
+
 <p class="muted">
-Alle Auswertungen basieren ausschließlich auf gespeicherten Abrechnungen.
-Fehlende Tage und Beträge werden nicht geschätzt.
+Alle Auswertungen basieren ausschließlich auf
+gespeicherten Abrechnungen. Fehlende Tage und Beträge
+werden nicht geschätzt.
 </p>
 </section>
 </section>
+
 </div>
 </main>
 
-<footer>GastroPilot · Das Friedrich · Brot & Wasser RA GmbH</footer>
+<!-- EIGENES ZAHLUNGS-KONTROLLFENSTER -->
+
+<dialog id="paymentDialog" class="payment-dialog">
+<div class="row">
+<h2>Zahlungsabgleich nach Tagen</h2>
+<button id="closePaymentCheck"
+class="secondary" type="button">
+Schließen ✕
+</button>
+</div>
+
+<p id="paymentDialogMonth" class="muted"></p>
+
+<div id="paymentDaily"></div>
+</dialog>
+
+<footer>
+GastroPilot · Das Friedrich · Brot & Wasser RA GmbH
+</footer>
 
 <script type="module">
-import {createClient} from 'https://esm.sh/@supabase/supabase-js@2';
+import {createClient} from
+'https://esm.sh/@supabase/supabase-js@2';
 
 const db=createClient(
 'https://sjnwfwcpgwsavygewwzb.supabase.co',
@@ -306,6 +501,7 @@ const db=createClient(
 );
 
 const $=id=>document.getElementById(id);
+
 const state={
 cash_report:{files:[],results:[]},
 invoice:{files:[],results:[]}
@@ -319,32 +515,49 @@ let monthlyCash=[];
 let monthlyInvoices=[];
 
 const euro=x=>
-x===null||x===undefined||x===''||!Number.isFinite(Number(x))
+x===null||x===undefined||x===''||
+!Number.isFinite(Number(x))
 ?'–'
 :new Intl.NumberFormat('de-AT',{
-style:'currency',currency:'EUR'
+style:'currency',
+currency:'EUR'
 }).format(Number(x));
 
 const validNumber=x=>
-x!==null&&x!==undefined&&x!==''&&Number.isFinite(Number(x));
+x!==null&&
+x!==undefined&&
+x!==''&&
+Number.isFinite(Number(x));
 
-const kindId=kind=>kind==='cash_report'?'cash':'invoice';
+const kindId=kind=>
+kind==='cash_report'?'cash':'invoice';
 
 function dateLabel(x){
 if(!x)return '–';
-const d=new Date(String(x).slice(0,10)+'T12:00:00Z');
+
+const d=new Date(
+String(x).slice(0,10)+'T12:00:00Z'
+);
+
 return Number.isNaN(d.getTime())?'–':
 new Intl.DateTimeFormat('de-AT',{
-weekday:'long',day:'2-digit',month:'2-digit',
-year:'numeric',timeZone:'UTC'
+weekday:'long',
+day:'2-digit',
+month:'2-digit',
+year:'numeric',
+timeZone:'UTC'
 }).format(d);
 }
 
 function stamp(x){
-return x?new Intl.DateTimeFormat('de-AT',{
-timeZone:'Europe/Vienna',day:'2-digit',
-month:'2-digit',year:'numeric',
-hour:'2-digit',minute:'2-digit'
+return x?
+new Intl.DateTimeFormat('de-AT',{
+timeZone:'Europe/Vienna',
+day:'2-digit',
+month:'2-digit',
+year:'numeric',
+hour:'2-digit',
+minute:'2-digit'
 }).format(new Date(x)):'–';
 }
 
@@ -356,35 +569,55 @@ e.className='status'+(error?' error':'');
 
 function switchPage(page){
 document.querySelectorAll('.page').forEach(x=>{
-x.classList.toggle('active',x.id==='page-'+page);
+x.classList.toggle(
+'active',
+x.id==='page-'+page
+);
 });
+
 document.querySelectorAll('.nav-button').forEach(x=>{
-x.classList.toggle('active',x.dataset.page===page);
+x.classList.toggle(
+'active',
+x.dataset.page===page
+);
 });
-window.scrollTo({top:0,behavior:'smooth'});
+
+window.scrollTo({
+top:0,
+behavior:'smooth'
+});
 }
 
 document.querySelectorAll('.nav-button').forEach(b=>{
 b.onclick=()=>switchPage(b.dataset.page);
 });
+
 $('goCash').onclick=()=>switchPage('cash');
 $('goAnalysis').onclick=()=>switchPage('analysis');
 $('showAllCategories').onclick=()=>switchPage('analysis');
 
-/* =========================================
-   ZAHLUNGSABGLEICH – NEU
-   ========================================= */
+/* ======================================
+   ZAHLUNGSABGLEICH
+   ====================================== */
 
 function paymentAnalysis(doc){
 const d=doc?.extracted_data||doc||{};
 
-const gross=validNumber(d.gross_total)?Number(d.gross_total):null;
-const cash=validNumber(d.cash_total)?Number(d.cash_total):null;
-const card=validNumber(d.card_total)?Number(d.card_total):null;
+const gross=validNumber(d.gross_total)?
+Number(d.gross_total):null;
+
+const cash=validNumber(d.cash_total)?
+Number(d.cash_total):null;
+
+const card=validNumber(d.card_total)?
+Number(d.card_total):null;
+
 const other=validNumber(d.other_payments_total)?
 Number(d.other_payments_total):null;
 
-const complete=[gross,cash,card,other].every(x=>x!==null);
+const complete=[
+gross,cash,card,other
+].every(x=>x!==null);
 
 if(!complete){
 return {
@@ -396,11 +629,13 @@ label:'Zahlungsangaben unvollständig'
 };
 }
 
-/* Rechnen in Cent verhindert Gleitkomma-Abweichungen. */
 const cents=x=>Math.round(x*100);
 
 const differenceCents=
-cents(cash)+cents(card)+cents(other)-cents(gross);
+cents(cash)+
+cents(card)+
+cents(other)-
+cents(gross);
 
 const difference=differenceCents/100;
 const absolute=Math.abs(differenceCents);
@@ -409,7 +644,8 @@ return {
 gross,cash,card,other,
 complete:true,
 difference,
-status:absolute===0?'ok':absolute<=50?'small':'bad',
+status:absolute===0?'ok':
+absolute<=50?'small':'bad',
 label:absolute===0?
 '✓ Zahlungsarten stimmen':
 absolute<=50?
@@ -426,7 +662,8 @@ function paymentTable(docs){
 const box=document.createElement('div');
 
 if(!docs.length){
-box.textContent='Noch keine Tagesabrechnungen vorhanden.';
+box.textContent=
+'Noch keine Tagesabrechnungen vorhanden.';
 return box;
 }
 
@@ -441,15 +678,20 @@ const table=document.createElement('table');
 const head=document.createElement('tr');
 
 for(const label of [
-'Datum','Brutto','Bar','Karte','Sonstige','Differenz','Prüfung'
+'Datum','Brutto','Bar','Karte',
+'Sonstige','Differenz','Prüfung'
 ]){
 const th=document.createElement('th');
 th.textContent=label;
 head.append(th);
 }
+
 table.append(head);
 
-let ok=0,small=0,bad=0,unknown=0;
+let ok=0;
+let small=0;
+let bad=0;
+let unknown=0;
 
 for(const entry of sorted){
 const p=paymentAnalysis(entry);
@@ -495,6 +737,7 @@ title.textContent='Prüfstatus';
 
 const detail=document.createElement('span');
 detail.className='muted';
+
 detail.textContent=
 ok+' Tage stimmen · '+
 small+' Tage mit geringer Abweichung · '+
@@ -506,18 +749,23 @@ box.append(note);
 
 const explanation=document.createElement('p');
 explanation.className='muted';
-explanation.textContent=
-'Differenz = Bar + Karte + sonstige Zahlungsarten − Bruttoumsatz. '+
-'Eine negative Differenz bedeutet, dass die erfassten Zahlungen niedriger sind als der Bruttoumsatz. '+
-'Fehlende Beträge werden nicht als 0 € behandelt. '+
-'Bei Abweichungen bitte den Originalbeleg kontrollieren.';
-box.append(explanation);
 
+explanation.textContent=
+'Differenz = Bar + Karte + sonstige Zahlungsarten '+
+'− Bruttoumsatz. Fehlende Beträge werden nicht '+
+'als 0 € behandelt.';
+
+box.append(explanation);
 return box;
 }
 
 function paymentMonthStatus(docs){
-if(!docs.length)return {label:'–',status:'unknown'};
+if(!docs.length){
+return {
+label:'–',
+status:'unknown'
+};
+}
 
 const results=docs.map(paymentAnalysis);
 
@@ -529,32 +777,100 @@ status:'unknown'
 }
 
 const cents=results.reduce(
-(s,x)=>s+Math.round(x.difference*100),0
+(s,x)=>s+Math.round(x.difference*100),
+0
 );
 
-const difference=cents/100;
-
 return {
-label:
-(cents===0?'✓ Stimmt · ':'')+euro(difference),
+label:(cents===0?'✓ Stimmt · ':'')+
+euro(cents/100),
 status:cents===0?'ok':
 Math.abs(cents)<=50?'small':'bad'
 };
 }
 
-/* =========================================
-   ARTIKELGRUPPEN UND ARTIKEL
-   ========================================= */
+function updatePaymentSummary(docs){
+const checks=docs.map(paymentAnalysis);
+
+const correct=checks.filter(
+x=>x.status==='ok'
+).length;
+
+const incomplete=checks.filter(
+x=>x.status==='unknown'
+).length;
+
+const differences=checks.filter(
+x=>x.status==='small'||x.status==='bad'
+).length;
+
+const summary=$('paymentDailySummary');
+
+if(!docs.length){
+summary.textContent=
+'Noch keine Tagesabrechnungen vorhanden.';
+summary.className='payment-summary unknown';
+return;
+}
+
+summary.textContent=
+correct+' von '+docs.length+
+' Tagen korrekt'+
+(differences?
+' · '+differences+' mit Differenz':'')+
+(incomplete?
+' · '+incomplete+' unvollständig':'');
+
+summary.className=
+'payment-summary'+
+(differences?' bad':
+incomplete?' warning':'');
+
+$('paymentDaily').replaceChildren(
+paymentTable(docs)
+);
+}
+
+function openPaymentDialog(){
+$('paymentDialogMonth').textContent=
+'Ausgewählter Monat: '+
+$('month').value;
+
+$('paymentDialog').showModal();
+}
+
+$('openPaymentCheck').onclick=openPaymentDialog;
+$('analysisOpenPayment').onclick=openPaymentDialog;
+
+$('closePaymentCheck').onclick=()=>{
+$('paymentDialog').close();
+};
+
+$('paymentDialog').addEventListener('click',e=>{
+if(e.target===$('paymentDialog')){
+$('paymentDialog').close();
+}
+});
+
+/* ======================================
+   ARTIKEL UND ARTIKELGRUPPEN
+   ====================================== */
 
 function aggregateItems(docs){
 const map=new Map();
 
 for(const doc of docs){
-for(const item of doc.extracted_data?.sales_items||[]){
+for(const item of
+doc.extracted_data?.sales_items||[]
+){
 const name=String(item.name||'').trim();
 const n=Number(item.quantity);
 
-if(!name||!Number.isFinite(n)||n<=0)continue;
+if(
+!name||
+!Number.isFinite(n)||
+n<=0
+)continue;
 
 const key=name.toLocaleLowerCase('de-AT');
 const old=map.get(key);
@@ -572,6 +888,41 @@ a.name.localeCompare(b.name,'de-AT')
 );
 }
 
+function renderTop10(docs){
+const box=$('top10');
+box.replaceChildren();
+
+const items=aggregateItems(docs).slice(0,10);
+
+if(!items.length){
+box.textContent=
+'Noch keine Artikelmengen gespeichert.';
+return;
+}
+
+items.forEach((item,index)=>{
+const row=document.createElement('div');
+row.className='top-item';
+
+const rank=document.createElement('span');
+rank.className='top-rank';
+rank.textContent=(index+1)+'.';
+
+const name=document.createElement('span');
+name.textContent=item.name;
+
+const quantity=document.createElement('span');
+quantity.className='top-quantity';
+quantity.textContent=
+new Intl.NumberFormat('de-AT',{
+maximumFractionDigits:2
+}).format(item.quantity)+' Stk.';
+
+row.append(rank,name,quantity);
+box.append(row);
+});
+}
+
 function categories(doc){
 const a=doc?.category_sales||
 doc?.department_sales||
@@ -579,15 +930,20 @@ doc?.spartenumsaetze||[];
 
 if(!Array.isArray(a))return [];
 
-return a.filter(x=>x&&typeof x==='object')
-.map(x=>{
+return a.filter(x=>
+x&&typeof x==='object'
+).map(x=>{
 const raw=x.gross??x.gross_total??x.amount;
+
 return {
-name:String(x.name||x.category||x.sparte||'').trim(),
+name:String(
+x.name||x.category||x.sparte||''
+).trim(),
 gross:validNumber(raw)?Number(raw):null,
 net:validNumber(x.net)?Number(x.net):null,
 vat:validNumber(x.vat)?Number(x.vat):null,
-quantity:validNumber(x.quantity)?Number(x.quantity):null
+quantity:validNumber(x.quantity)?
+Number(x.quantity):null
 };
 }).filter(x=>x.name);
 }
@@ -599,7 +955,9 @@ let reported=0;
 for(const d of docs){
 const c=categories(d.extracted_data||d);
 
-if(c.some(x=>validNumber(x.gross)))reported++;
+if(c.some(x=>validNumber(x.gross))){
+reported++;
+}
 
 for(const x of c){
 if(!validNumber(x.gross))continue;
@@ -625,27 +983,38 @@ reported
 };
 }
 
-function categoryTable(docs,monthly=false,limit=null){
+function categoryTable(
+docs,
+monthly=false,
+limit=null
+){
 const data=categorySummary(docs);
 const box=document.createElement('div');
 
 if(!data.rows.length){
-box.textContent='Noch keine Artikelgruppenumsätze gespeichert.';
+box.textContent=
+'Noch keine Artikelgruppenumsätze gespeichert.';
 return box;
 }
 
-const rows=limit?data.rows.slice(0,limit):data.rows;
+const rows=limit?
+data.rows.slice(0,limit):
+data.rows;
+
 const scroll=document.createElement('div');
 scroll.className='table-scroll';
 
 const table=document.createElement('table');
 const head=document.createElement('tr');
 
-for(const value of ['Rang / Artikelgruppe','Brutto','Anteil']){
+for(const value of [
+'Rang / Artikelgruppe','Brutto','Anteil'
+]){
 const th=document.createElement('th');
 th.textContent=value;
 head.append(th);
 }
+
 table.append(head);
 
 rows.forEach((x,i)=>{
@@ -653,16 +1022,20 @@ const tr=document.createElement('tr');
 
 const share=data.total>0?
 (x.gross/data.total*100).toLocaleString(
-'de-AT',{maximumFractionDigits:1}
+'de-AT',
+{maximumFractionDigits:1}
 )+' %':'–';
 
 for(const value of [
-(i+1)+'. '+x.name,euro(x.gross),share
+(i+1)+'. '+x.name,
+euro(x.gross),
+share
 ]){
 const td=document.createElement('td');
 td.textContent=value;
 tr.append(td);
 }
+
 table.append(tr);
 });
 
@@ -671,32 +1044,42 @@ box.append(scroll);
 
 const note=document.createElement('p');
 note.className='muted';
+
 note.textContent=
-'Anteile beziehen sich auf alle erfassten Artikelgruppen. '+
+'Anteile beziehen sich auf alle erfassten '+
+'Artikelgruppen. '+
 (monthly?
 'Artikelgruppen vorhanden für '+
-data.reported+' von '+docs.length+' Umsatztagen.':'');
-box.append(note);
+data.reported+' von '+
+docs.length+' Umsatztagen.':''
+);
 
+box.append(note);
 return box;
 }
 
 function categoryEditor(box,doc){
 const wrap=document.createElement('div');
-const h=document.createElement('h3');
-h.textContent='Artikelgruppenstatistik laut Kassenbeleg';
-wrap.append(h);
 
 const help=document.createElement('p');
 help.className='muted';
+
 help.textContent=
-'Erkannte Artikelgruppen kontrollieren. Fehlende Werte nur anhand des Originalbelegs ergänzen.';
+'Artikelgruppen laut Kassenbeleg kontrollieren. '+
+'Fehlende Werte nur anhand des Originals ergänzen.';
+
 wrap.append(help);
 
 const lines=document.createElement('div');
 wrap.append(lines);
 
-const add=(name='',gross='',net='',vat='',qty='')=>{
+const add=(
+name='',
+gross='',
+net='',
+vat='',
+qty=''
+)=>{
 const line=document.createElement('div');
 line.className='category-line result';
 
@@ -716,7 +1099,10 @@ const input=document.createElement('input');
 input.className=cls;
 input.type=type;
 input.value=value??'';
-if(type==='number')input.step='0.01';
+
+if(type==='number'){
+input.step='0.01';
+}
 
 field.append(input);
 line.append(field);
@@ -725,6 +1111,7 @@ line.append(field);
 const remove=document.createElement('button');
 remove.className='secondary';
 remove.textContent='Artikelgruppe entfernen';
+
 remove.onclick=()=>line.remove();
 
 line.append(remove);
@@ -732,7 +1119,13 @@ lines.append(line);
 };
 
 for(const x of categories(doc)){
-add(x.name,x.gross??'',x.net??'',x.vat??'',x.quantity??'');
+add(
+x.name,
+x.gross??'',
+x.net??'',
+x.vat??'',
+x.quantity??''
+);
 }
 
 const button=document.createElement('button');
@@ -747,20 +1140,41 @@ box.append(wrap);
 function readCategories(box){
 const out=[];
 
-for(const line of box.querySelectorAll('.category-line')){
-const name=line.querySelector('.cat-name').value.trim();
-const raw=line.querySelector('.cat-gross').value.trim();
-const netRaw=line.querySelector('.cat-net').value.trim();
-const vatRaw=line.querySelector('.cat-vat').value.trim();
-const qtyRaw=line.querySelector('.cat-quantity').value.trim();
+for(const line of
+box.querySelectorAll('.category-line')
+){
+const name=
+line.querySelector('.cat-name').value.trim();
 
-if(!name&&!raw&&!netRaw&&!vatRaw&&!qtyRaw)continue;
-if(!name)throw Error('Artikelgruppe ohne Bezeichnung');
+const raw=
+line.querySelector('.cat-gross').value.trim();
+
+const netRaw=
+line.querySelector('.cat-net').value.trim();
+
+const vatRaw=
+line.querySelector('.cat-vat').value.trim();
+
+const qtyRaw=
+line.querySelector('.cat-quantity').value.trim();
+
+if(
+!name&&!raw&&!netRaw&&!vatRaw&&!qtyRaw
+)continue;
+
+if(!name){
+throw Error('Artikelgruppe ohne Bezeichnung');
+}
 
 const parse=(value,label)=>{
 if(value==='')return null;
+
 const n=Number(value);
-if(!Number.isFinite(n))throw Error('Ungültig: '+label);
+
+if(!Number.isFinite(n)){
+throw Error('Ungültig: '+label);
+}
+
 return Math.round(n*100)/100;
 };
 
@@ -776,9 +1190,9 @@ quantity:parse(qtyRaw,'Menge')
 return out;
 }
 
-/* =========================================
-   DATEIEN UND SCAN
-   ========================================= */
+/* ======================================
+   DATEIEN UND FOTOS
+   ====================================== */
 
 function addFiles(kind,list){
 const s=state[kind];
@@ -787,8 +1201,11 @@ for(const f of [...list]){
 if(s.files.length>=12)break;
 
 const allowed=[
-'image/jpeg','image/png','image/webp',
-...(kind==='invoice'?['application/pdf']:[])
+'image/jpeg',
+'image/png',
+'image/webp',
+...(kind==='invoice'?
+['application/pdf']:[])
 ];
 
 if(!allowed.includes(f.type))continue;
@@ -809,6 +1226,7 @@ null:URL.createObjectURL(f)
 }
 
 s.results=[];
+
 $(kindId(kind)+'Results').replaceChildren();
 renderFiles(kind);
 }
@@ -862,9 +1280,13 @@ btn.textContent='Entfernen';
 btn.disabled=locked;
 
 btn.onclick=()=>{
-if(entry.url)URL.revokeObjectURL(entry.url);
+if(entry.url){
+URL.revokeObjectURL(entry.url);
+}
+
 s.files.splice(i,1);
 s.results=[];
+
 $(id+'Results').replaceChildren();
 renderFiles(kind);
 };
@@ -877,10 +1299,13 @@ $(id+'Count').textContent=s.files.length?
 s.files.length+' Datei(en) ausgewählt':
 'Keine Dateien ausgewählt.';
 
-$(id+'Scan').disabled=locked||!s.files.length;
+$(id+'Scan').disabled=
+locked||!s.files.length;
 }
 
-for(const kind of ['cash_report','invoice']){
+for(const kind of [
+'cash_report','invoice'
+]){
 const id=kindId(kind);
 
 $(id+'Files').onchange=e=>{
@@ -888,7 +1313,9 @@ addFiles(kind,e.target.files);
 e.target.value='';
 };
 
-$(id+'Camera').onclick=()=>$(id+'CameraInput').click();
+$(id+'Camera').onclick=()=>{
+$(id+'CameraInput').click();
+};
 
 $(id+'CameraInput').onchange=e=>{
 addFiles(kind,e.target.files);
@@ -906,12 +1333,19 @@ const img=new Image();
 
 img.onload=()=>{
 const factor=Math.min(
-1,1700/Math.max(img.width,img.height)
+1,
+1700/Math.max(img.width,img.height)
 );
 
 const c=document.createElement('canvas');
-c.width=Math.max(1,Math.round(img.width*factor));
-c.height=Math.max(1,Math.round(img.height*factor));
+
+c.width=Math.max(
+1,Math.round(img.width*factor)
+);
+
+c.height=Math.max(
+1,Math.round(img.height*factor)
+);
 
 c.getContext('2d').drawImage(
 img,0,0,c.width,c.height
@@ -919,6 +1353,7 @@ img,0,0,c.width,c.height
 
 c.toBlob(blob=>{
 URL.revokeObjectURL(url);
+
 blob?resolve(blob):
 reject(Error('Bildkonvertierung fehlgeschlagen'));
 },'image/jpeg',.8);
@@ -942,26 +1377,37 @@ pdfjs.GlobalWorkerOptions.workerSrc=
 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.worker.min.mjs';
 
 const pdf=await pdfjs.getDocument({
-data:new Uint8Array(await file.arrayBuffer())
+data:new Uint8Array(
+await file.arrayBuffer()
+)
 }).promise;
 
 if(pdf.numPages>12){
-throw Error('PDF hat mehr als 12 Seiten. Bitte aufteilen.');
+throw Error(
+'PDF hat mehr als 12 Seiten. Bitte aufteilen.'
+);
 }
 
 const out=[];
 
 for(let n=1;n<=pdf.numPages;n++){
 const page=await pdf.getPage(n);
-const base=page.getViewport({scale:1});
+
+const base=page.getViewport({
+scale:1
+});
 
 const v=page.getViewport({
 scale:Math.min(
-2,1700/Math.max(base.width,base.height)
+2,
+1700/Math.max(
+base.width,base.height
+)
 )
 });
 
 const canvas=document.createElement('canvas');
+
 canvas.width=Math.round(v.width);
 canvas.height=Math.round(v.height);
 
@@ -971,10 +1417,15 @@ viewport:v
 }).promise;
 
 const blob=await new Promise(resolve=>
-canvas.toBlob(resolve,'image/jpeg',.8)
+canvas.toBlob(
+resolve,'image/jpeg',.8
+)
 );
 
-if(!blob)throw Error('PDF-Seite nicht lesbar');
+if(!blob){
+throw Error('PDF-Seite nicht lesbar');
+}
+
 out.push(blob);
 }
 
@@ -985,28 +1436,47 @@ async function base64(blob){
 return new Promise((resolve,reject)=>{
 const r=new FileReader();
 
-r.onload=()=>resolve(String(r.result).split(',')[1]);
-r.onerror=()=>reject(Error('Datei nicht lesbar'));
+r.onload=()=>{
+resolve(
+String(r.result).split(',')[1]
+);
+};
+
+r.onerror=()=>{
+reject(Error('Datei nicht lesbar'));
+};
+
 r.readAsDataURL(blob);
 });
 }
 
 async function scan(kind){
-if(locked||!businessId||!state[kind].files.length)return;
+if(
+locked||
+!businessId||
+!state[kind].files.length
+)return;
 
 locked=true;
+
 renderFiles('cash_report');
 renderFiles('invoice');
 
 const id=kindId(kind);
-message(id+'Status','Dateien werden vorbereitet …');
+
+message(
+id+'Status',
+'Dateien werden vorbereitet …'
+);
+
 $(id+'Results').replaceChildren();
 
 try{
 const blobs=[];
 
 for(const entry of state[kind].files){
-const b=entry.file.type==='application/pdf'?
+const b=
+entry.file.type==='application/pdf'?
 await pdfImages(entry.file):
 [await imageBlob(entry.file)];
 
@@ -1014,7 +1484,8 @@ blobs.push(...b);
 
 if(blobs.length>12){
 throw Error(
-'Mehr als 12 Seiten/Bilder. Bitte weniger Dateien auswählen.'
+'Mehr als 12 Seiten/Bilder. '+
+'Bitte weniger Dateien auswählen.'
 );
 }
 }
@@ -1030,7 +1501,8 @@ mime_type:'image/jpeg'
 
 message(id+'Status','Auswertung läuft …');
 
-const {data,error}=await db.functions.invoke(
+const {data,error}=
+await db.functions.invoke(
 'analyze-receipt',{
 body:{
 business_id:businessId,
@@ -1043,7 +1515,9 @@ images
 if(error)throw error;
 
 if(!data?.documents?.length){
-throw Error(data?.error||'Keine Belege erkannt');
+throw Error(
+data?.error||'Keine Belege erkannt'
+);
 }
 
 state[kind].results=data.documents;
@@ -1052,11 +1526,26 @@ renderResults(kind);
 message(
 id+'Status',
 data.documents.length+
-' Beleg(e) erkannt. Bitte alle Werte kontrollieren.'
+' Beleg(e) erkannt. Bitte Werte kontrollieren.'
 );
 
+/* Automatisch zur Belegprüfung springen. */
+const first=$(id+'Results')
+.querySelector('.result');
+
+if(first){
+first.scrollIntoView({
+behavior:'smooth',
+block:'start'
+});
+}
+
 }catch(e){
-message(id+'Status','Fehler: '+e.message,true);
+message(
+id+'Status',
+'Fehler: '+e.message,
+true
+);
 }finally{
 locked=false;
 renderFiles('cash_report');
@@ -1064,27 +1553,36 @@ renderFiles('invoice');
 }
 }
 
-function makeField(label,key,value,type='text'){
+function makeField(
+label,key,value,type='text'
+){
 const wrap=document.createElement('label');
 wrap.textContent=label;
 
 const input=document.createElement('input');
+
 input.dataset.key=key;
 input.type=type;
 input.value=value??'';
 
 if(type==='number'){
 input.min='0';
-input.step=key==='receipt_count'?'1':'0.01';
+input.step=
+key==='receipt_count'?'1':'0.01';
 }
 
 wrap.append(input);
 return wrap;
 }
 
+/* ======================================
+   KOMPAKTE BELEGPRÜFUNG
+   ====================================== */
+
 function renderResults(kind){
 const id=kindId(kind);
 const target=$(id+'Results');
+
 target.replaceChildren();
 
 state[kind].results.forEach((doc,i)=>{
@@ -1092,15 +1590,18 @@ const box=document.createElement('div');
 box.className='result';
 
 const panel=document.createElement('details');
-panel.open=state[kind].results.length===1;
+panel.open=
+state[kind].results.length===1;
 
 const summary=document.createElement('summary');
 summary.className='review-summary';
 
 const title=document.createElement('strong');
 title.textContent=
-(kind==='cash_report'?'Tagesabrechnung':'Rechnung')+
-' '+(i+1)+' · '+(doc.date||'Datum prüfen');
+(kind==='cash_report'?
+'Tagesabrechnung':'Rechnung')+
+' '+(i+1)+' · '+
+(doc.date||'Datum prüfen');
 
 const sub=document.createElement('small');
 sub.textContent=
@@ -1113,10 +1614,13 @@ panel.append(summary);
 const body=document.createElement('div');
 body.className='review-body';
 
+const important=document.createElement('div');
+important.className='review-top';
+
 const grid=document.createElement('div');
 grid.className='grid';
 
-const fields=[
+const mainFields=[
 ['Datum','date','date'],
 ['Brutto (€)','gross_total','number'],
 ['Netto (€)','net_total','number'],
@@ -1124,26 +1628,59 @@ const fields=[
 ];
 
 if(kind==='cash_report'){
-fields.push(
+mainFields.push(
 ['Bar (€)','cash_total','number'],
 ['Karte (€)','card_total','number'],
-['Sonstige Zahlungen (€)','other_payments_total','number'],
+['Sonstige Zahlungen (€)',
+'other_payments_total','number']
+);
+}else{
+mainFields.push(
+['Lieferant','supplier','text'],
+['Rechnungsnummer',
+'invoice_number','text']
+);
+}
+
+for(const [
+label,key,type
+] of mainFields){
+grid.append(
+makeField(label,key,doc[key],type)
+);
+}
+
+important.append(grid);
+body.append(important);
+
+const extra=document.createElement('details');
+extra.className='review-extra';
+
+const extraSummary=document.createElement('summary');
+
+extraSummary.textContent=
+kind==='cash_report'?
+'Weitere Angaben und Artikelgruppen prüfen':
+'Weitere Rechnungsangaben prüfen';
+
+extra.append(extraSummary);
+
+const extraGrid=document.createElement('div');
+extraGrid.className='grid';
+
+if(kind==='cash_report'){
+for(const [
+label,key,type
+] of [
 ['Bonanzahl','receipt_count','number'],
 ['Speisen brutto (€)','food_gross','number'],
 ['Getränke brutto (€)','drinks_gross','number']
+]){
+extraGrid.append(
+makeField(label,key,doc[key],type)
 );
+}
 }else{
-fields.push(
-['Lieferant','supplier','text'],
-['Rechnungsnummer','invoice_number','text']
-);
-}
-
-for(const [label,key,type] of fields){
-grid.append(makeField(label,key,doc[key],type));
-}
-
-if(kind==='invoice'){
 const label=document.createElement('label');
 label.textContent='Zahlungsstatus';
 
@@ -1161,21 +1698,71 @@ opt.textContent=text;
 select.append(opt);
 }
 
-select.value=doc.payment_status||'unknown';
+select.value=
+doc.payment_status||'unknown';
+
 label.append(select);
-grid.append(label);
+extraGrid.append(label);
 }
 
-body.append(grid);
+extra.append(extraGrid);
 
 if(kind==='cash_report'){
-categoryEditor(body,doc);
+const h=document.createElement('h3');
+h.textContent='Artikelgruppenstatistik';
 
+extra.append(h);
+categoryEditor(extra,doc);
+}
+
+const raw=document.createElement('details');
+const rawSummary=document.createElement('summary');
+
+rawSummary.textContent=
+'Erkannte Artikel und Steuergruppen';
+
+raw.append(rawSummary);
+
+const pre=document.createElement('pre');
+
+pre.style.cssText=
+'white-space:pre-wrap;'+
+'overflow-wrap:anywhere;'+
+'font-size:12px';
+
+pre.textContent=JSON.stringify({
+tax_breakdown:doc.tax_breakdown||[],
+sales_items:doc.sales_items||[]
+},null,2);
+
+raw.append(pre);
+extra.append(raw);
+
+const msg=document.createElement('div');
+msg.className='status hidden';
+
+const save=document.createElement('button');
+save.className='save-primary';
+save.textContent='✓ Beleg speichern';
+
+body.append(save,msg);
+
+const hint=document.createElement('p');
+hint.className='compact-hint';
+
+hint.textContent=
+'Bitte die Beträge kontrollieren. '+
+'Weitere Angaben können darunter '+
+'aufgeklappt werden.';
+
+body.append(hint);
+
+if(kind==='cash_report'){
 const check=document.createElement('div');
 check.className='check-note';
 
 const heading=document.createElement('strong');
-heading.textContent='Zahlungsabgleich vor dem Speichern';
+heading.textContent='Zahlungsabgleich';
 
 const detail=document.createElement('div');
 
@@ -1183,28 +1770,41 @@ const updateCheck=()=>{
 const values={};
 
 for(const key of [
-'gross_total','cash_total',
-'card_total','other_payments_total'
+'gross_total',
+'cash_total',
+'card_total',
+'other_payments_total'
 ]){
-const el=body.querySelector('[data-key="'+key+'"]');
+const el=body.querySelector(
+'[data-key="'+key+'"]'
+);
+
 values[key]=el?.value.trim()||null;
 }
 
 const p=paymentAnalysis(values);
 
 detail.textContent=p.complete?
-p.label+' · Differenz: '+euro(p.difference):
-'Nicht alle Zahlungsarten erfasst. Bitte Originalbeleg kontrollieren.';
+p.label+' · Differenz: '+
+euro(p.difference):
+'Zahlungsangaben unvollständig – '+
+'bitte kontrollieren.';
 
 detail.className=paymentClass(p.status);
 };
 
-body.querySelectorAll('[data-key]').forEach(el=>{
+body.querySelectorAll(
+'[data-key]'
+).forEach(el=>{
 if([
-'gross_total','cash_total',
-'card_total','other_payments_total'
+'gross_total',
+'cash_total',
+'card_total',
+'other_payments_total'
 ].includes(el.dataset.key)){
-el.addEventListener('input',updateCheck);
+el.addEventListener(
+'input',updateCheck
+);
 }
 });
 
@@ -1213,36 +1813,25 @@ body.append(check);
 updateCheck();
 }
 
-const details=document.createElement('details');
-const sum=document.createElement('summary');
-sum.textContent='Erkannte Artikel und Steuergruppen';
-details.append(sum);
+body.append(extra);
 
-const pre=document.createElement('pre');
-pre.style.cssText=
-'white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px';
+save.onclick=()=>saveResult(
+kind,doc,body,save,msg,box
+);
 
-pre.textContent=JSON.stringify({
-tax_breakdown:doc.tax_breakdown||[],
-sales_items:doc.sales_items||[]
-},null,2);
-
-details.append(pre);
-body.append(details);
-
-const save=document.createElement('button');
-save.textContent='Beleg speichern';
-
-const msg=document.createElement('div');
-msg.className='status hidden';
-
-save.onclick=()=>saveResult(kind,doc,body,save,msg,box);
-
-body.append(save,msg);
 panel.append(body);
 box.append(panel);
 target.append(box);
 });
+
+/* Bei mehreren Belegen ersten direkt öffnen. */
+const firstPanel=target.querySelector(
+'.result details'
+);
+
+if(firstPanel){
+firstPanel.open=true;
+}
 }
 
 function numeric(raw,key){
@@ -1251,22 +1840,32 @@ if(raw==='')return null;
 const n=Number(raw);
 
 if(!Number.isFinite(n)||n<0){
-throw Error('Ungültiger Betrag bei '+key);
+throw Error(
+'Ungültiger Betrag bei '+key
+);
 }
 
-if(key==='receipt_count'&&!Number.isInteger(n)){
-throw Error('Bonanzahl muss ganzzahlig sein');
+if(
+key==='receipt_count'&&
+!Number.isInteger(n)
+){
+throw Error(
+'Bonanzahl muss ganzzahlig sein'
+);
 }
 
 return key==='receipt_count'?
 n:Math.round(n*100)/100;
 }
 
-async function saveResult(kind,doc,box,button,msg,resultBox){
+async function saveResult(
+kind,doc,box,button,msg,resultBox
+){
 if(locked)return;
 
 locked=true;
 button.disabled=true;
+
 msg.className='status';
 msg.textContent='Prüfe Beleg …';
 
@@ -1275,12 +1874,21 @@ let saved=false;
 try{
 const values={};
 
-box.querySelectorAll('[data-key]').forEach(el=>{
-values[el.dataset.key]=el.value.trim();
+box.querySelectorAll(
+'[data-key]'
+).forEach(el=>{
+values[el.dataset.key]=
+el.value.trim();
 });
 
-if(!/^\d{4}-\d{2}-\d{2}$/.test(values.date||'')){
-throw Error('Bitte ein gültiges Datum eintragen');
+if(
+!/^\d{4}-\d{2}-\d{2}$/.test(
+values.date||''
+)
+){
+throw Error(
+'Bitte ein gültiges Datum eintragen'
+);
 }
 
 const reviewed={
@@ -1290,9 +1898,14 @@ date:values.date,
 reviewed_at:new Date().toISOString()
 };
 
-for(const [key,val] of Object.entries(values)){
+for(const [
+key,val
+] of Object.entries(values)){
 if([
-'date','supplier','invoice_number','payment_status'
+'date',
+'supplier',
+'invoice_number',
+'payment_status'
 ].includes(key)){
 reviewed[key]=val||null;
 }else{
@@ -1314,14 +1927,17 @@ reviewed.gross_total
 )>.03
 ){
 throw Error(
-'Netto + Steuer stimmt nicht mit Brutto überein'
+'Netto + Steuer stimmt nicht '+
+'mit Brutto überein'
 );
 }
 
 if(kind==='cash_report'){
-reviewed.category_sales=readCategories(box);
+reviewed.category_sales=
+readCategories(box);
 
-const {data,error}=await db.from('documents')
+const {data,error}=
+await db.from('documents')
 .select('id,created_at')
 .eq('business_id',businessId)
 .eq('document_type','cash_report')
@@ -1332,35 +1948,44 @@ if(error)throw error;
 if(data?.length){
 throw Error(
 'Für '+dateLabel(reviewed.date)+
-' ist bereits eine Tagesabrechnung gespeichert. '+
-'Bitte den vorhandenen Beleg im Archiv prüfen.'
+' ist bereits eine Tagesabrechnung '+
+'gespeichert. Bitte Archiv prüfen.'
 );
 }
 
-}else if(reviewed.invoice_number&&reviewed.supplier){
-const {data,error}=await db.from('documents')
+}else if(
+reviewed.invoice_number&&
+reviewed.supplier
+){
+const {data,error}=
+await db.from('documents')
 .select('id')
 .eq('business_id',businessId)
 .eq('document_type','invoice')
-.eq('invoice_number',reviewed.invoice_number)
+.eq('invoice_number',
+reviewed.invoice_number)
 .eq('supplier',reviewed.supplier);
 
 if(error)throw error;
 
 if(data?.length){
 throw Error(
-'Rechnung bereits vorhanden. Bitte Archiv prüfen.'
+'Rechnung bereits vorhanden. '+
+'Bitte Archiv prüfen.'
 );
 }
 }
 
-const {error}=await db.from('documents').insert({
+const {error}=
+await db.from('documents').insert({
 business_id:businessId,
 uploaded_by:user.id,
 document_type:kind,
 document_date:reviewed.date,
-supplier:kind==='invoice'?reviewed.supplier:null,
-invoice_number:kind==='invoice'?reviewed.invoice_number:null,
+supplier:kind==='invoice'?
+reviewed.supplier:null,
+invoice_number:kind==='invoice'?
+reviewed.invoice_number:null,
 status:'reviewed',
 extracted_data:reviewed
 });
@@ -1369,9 +1994,13 @@ if(error)throw error;
 
 saved=true;
 
-const resultIndex=state[kind].results.indexOf(doc);
+const resultIndex=
+state[kind].results.indexOf(doc);
+
 if(resultIndex!==-1){
-state[kind].results.splice(resultIndex,1);
+state[kind].results.splice(
+resultIndex,1
+);
 }
 
 resultBox.remove();
@@ -1383,21 +2012,42 @@ clearFiles(kind);
 }else{
 $(id+'Results')
 .querySelectorAll('details')
-.forEach(panel=>panel.open=false);
+.forEach(panel=>{
+panel.open=false;
+});
+
+/* Nächsten Beleg automatisch öffnen. */
+const next=$(id+'Results')
+.querySelector('.result details');
+
+if(next)next.open=true;
 }
 
 message(
 id+'Status',
 '✓ Beleg erfolgreich gespeichert.'+
 (state[kind].results.length?
-' Noch '+state[kind].results.length+
+' Noch '+
+state[kind].results.length+
 ' Beleg(e) zur Prüfung vorhanden.':'')
 );
 
+if(state[kind].results.length){
+const next=$(id+'Results')
+.querySelector('.result');
+
+if(next){
+next.scrollIntoView({
+behavior:'smooth',
+block:'start'
+});
+}
+}else{
 $(id+'Capture').scrollIntoView({
 behavior:'smooth',
 block:'start'
 });
+}
 
 await loadAll();
 
@@ -1407,22 +2057,29 @@ msg.className='status error';
 }finally{
 locked=false;
 button.disabled=saved;
+
 renderFiles('cash_report');
 renderFiles('invoice');
 }
 }
 
-/* =========================================
+/* ======================================
    DATENBANK UND ARCHIV
-   ========================================= */
+   ====================================== */
 
 async function allDocs(kind,start,end){
 const out=[];
 
-for(let offset=0;;offset+=500){
-const {data,error}=await db.from('documents')
+for(
+let offset=0;;
+offset+=500
+){
+const {data,error}=
+await db.from('documents')
 .select(
-'id,document_date,document_type,created_at,extracted_data,supplier,invoice_number'
+'id,document_date,document_type,'+
+'created_at,extracted_data,'+
+'supplier,invoice_number'
 )
 .eq('business_id',businessId)
 .eq('document_type',kind)
@@ -1434,6 +2091,7 @@ const {data,error}=await db.from('documents')
 if(error)throw error;
 
 out.push(...data);
+
 if(data.length<500)break;
 }
 
@@ -1445,29 +2103,43 @@ const byDay=new Map();
 let duplicates=0;
 
 for(const d of cash){
-const old=byDay.get(d.document_date);
+const old=byDay.get(
+d.document_date
+);
 
 if(old){
 duplicates++;
+
 if(d.created_at>old.created_at){
-byDay.set(d.document_date,d);
+byDay.set(
+d.document_date,d
+);
 }
 }else{
-byDay.set(d.document_date,d);
+byDay.set(
+d.document_date,d
+);
 }
 }
 
-return {docs:[...byDay.values()],duplicates};
+return {
+docs:[...byDay.values()],
+duplicates
+};
 }
 
 function sumField(docs,key){
 const known=docs.filter(d=>
-validNumber(d.extracted_data?.[key])
+validNumber(
+d.extracted_data?.[key]
+)
 );
 
 return {
 value:known.reduce(
-(s,d)=>s+Number(d.extracted_data[key]),0
+(s,d)=>s+Number(
+d.extracted_data[key]
+),0
 ),
 complete:known.length===docs.length
 };
@@ -1479,7 +2151,9 @@ const [y,m]=month.split('-').map(Number);
 return {
 start:month+'-01',
 end:
-`${m===12?y+1:y}-${String(m===12?1:m+1).padStart(2,'0')}-01`
+`${m===12?y+1:y}-${String(
+m===12?1:m+1
+).padStart(2,'0')}-01`
 };
 }
 
@@ -1488,33 +2162,48 @@ let result=[...docs];
 
 if(kind==='cash_report'){
 const date=$('cashArchiveDate').value;
+
 if(date){
-result=result.filter(x=>x.document_date===date);
+result=result.filter(x=>
+x.document_date===date
+);
 }
 }else{
 const q=$('invoiceSearch').value
-.trim().toLocaleLowerCase('de-AT');
+.trim()
+.toLocaleLowerCase('de-AT');
 
 if(q){
 result=result.filter(x=>
 String(x.supplier||'')
-.toLocaleLowerCase('de-AT').includes(q)||
+.toLocaleLowerCase('de-AT')
+.includes(q)||
 String(x.invoice_number||'')
-.toLocaleLowerCase('de-AT').includes(q)
+.toLocaleLowerCase('de-AT')
+.includes(q)
 );
 }
 }
 
 result.sort((a,b)=>
-b.document_date.localeCompare(a.document_date)||
-b.created_at.localeCompare(a.created_at)
+b.document_date.localeCompare(
+a.document_date
+)||
+b.created_at.localeCompare(
+a.created_at
+)
 );
 
-const limit=$(kindId(kind)+'ArchiveLimit').value;
+const limit=$(
+kindId(kind)+'ArchiveLimit'
+).value;
+
 const total=result.length;
 
 if(limit!=='all'){
-result=result.slice(0,Number(limit));
+result=result.slice(
+0,Number(limit)
+);
 }
 
 return {result,total};
@@ -1523,42 +2212,53 @@ return {result,total};
 function renderArchive(kind,docs){
 const id=kindId(kind);
 const target=$(id+'Archive');
+
 target.replaceChildren();
 
-const {result,total}=archiveFilter(kind,docs);
+const {result,total}=
+archiveFilter(kind,docs);
 
 $(id+'ArchiveInfo').textContent=
-total+' Beleg(e) gefunden. '+result.length+' angezeigt.';
+total+' Beleg(e) gefunden. '+
+result.length+' angezeigt.';
 
 if(!result.length){
-target.textContent='Keine passenden Belege gefunden.';
+target.textContent=
+'Keine passenden Belege gefunden.';
 return;
 }
 
 for(const entry of result){
 const d=entry.extracted_data||{};
+
 const row=document.createElement('div');
 row.className='entry';
 
 const title=document.createElement('strong');
 title.textContent=
-(kind==='cash_report'?'Abrechnung · ':'Rechnung · ')+
+(kind==='cash_report'?
+'Abrechnung · ':'Rechnung · ')+
 dateLabel(entry.document_date);
 
 const sub=document.createElement('small');
 sub.textContent=
 (kind==='invoice'?
-(entry.supplier||'Lieferant unbekannt')+' · ':'')+
+(entry.supplier||
+'Lieferant unbekannt')+' · ':'')+
 euro(d.gross_total);
 
 const uploaded=document.createElement('small');
-uploaded.textContent='Hochgeladen am '+stamp(entry.created_at);
+uploaded.textContent=
+'Hochgeladen am '+
+stamp(entry.created_at);
 
 row.append(title,sub,uploaded);
 
 const detail=document.createElement('details');
+
 const summary=document.createElement('summary');
 summary.textContent='Details ansehen';
+
 detail.append(summary);
 
 const p=document.createElement('p');
@@ -1571,8 +2271,10 @@ p.textContent=
 (kind==='cash_report'?
 ' · Bar: '+euro(d.cash_total)+
 ' · Karte: '+euro(d.card_total)+
-' · Sonstige: '+euro(d.other_payments_total)+
-' · Bons: '+(d.receipt_count??'–')
+' · Sonstige: '+
+euro(d.other_payments_total)+
+' · Bons: '+
+(d.receipt_count??'–')
 :
 ' · Rechnungsnummer: '+
 (entry.invoice_number||'–')+
@@ -1581,7 +2283,8 @@ p.textContent=
 paid:'Bezahlt',
 open:'Offen',
 unknown:'Nicht angegeben'
-}[d.payment_status]||'Nicht angegeben')
+}[d.payment_status]||
+'Nicht angegeben')
 );
 
 detail.append(p);
@@ -1590,22 +2293,29 @@ if(kind==='cash_report'){
 const payment=paymentAnalysis(entry);
 
 const check=document.createElement('p');
-check.className=paymentClass(payment.status);
+check.className=paymentClass(
+payment.status
+);
+
 check.textContent=
-'Zahlungsabgleich: '+payment.label+
-(payment.complete?' · '+euro(payment.difference):'');
+'Zahlungsabgleich: '+
+payment.label+
+(payment.complete?
+' · '+euro(payment.difference):'');
 
 detail.append(check);
 
 const bons=document.createElement('p');
 bons.className='muted';
+
 bons.textContent='Ø Bonwert: '+
 (
 validNumber(d.receipt_count)&&
 Number(d.receipt_count)>0&&
 validNumber(d.gross_total)
 ?euro(
-Number(d.gross_total)/Number(d.receipt_count)
+Number(d.gross_total)/
+Number(d.receipt_count)
 )
 :'–'
 );
@@ -1614,14 +2324,22 @@ detail.append(bons);
 
 const spart=document.createElement('h3');
 spart.textContent='Artikelgruppenstatistik';
-detail.append(spart,categoryTable([entry]));
+
+detail.append(
+spart,
+categoryTable([entry])
+);
 
 const top=document.createElement('p');
 top.className='muted';
-top.textContent='Top 3: '+
+
+top.textContent='Top 10 Artikel: '+
 (
-aggregateItems([entry]).slice(0,3)
-.map(x=>x.name+' ('+x.quantity+')')
+aggregateItems([entry])
+.slice(0,10)
+.map(x=>
+x.name+' ('+x.quantity+')'
+)
 .join(' · ')||'–'
 );
 
@@ -1635,7 +2353,8 @@ tax.className='muted';
 tax.textContent='Steuergruppen: '+
 d.tax_breakdown.map(t=>
 (t.rate??'?')+'%: Netto '+
-euro(t.net)+', USt '+euro(t.vat)
+euro(t.net)+
+', USt '+euro(t.vat)
 ).join(' | ');
 
 detail.append(tax);
@@ -1653,12 +2372,15 @@ const th=document.createElement('th');
 th.textContent=x;
 head.append(th);
 }
+
 table.append(head);
 
 for(const item of d.sales_items){
 const tr=document.createElement('tr');
 
-for(const value of [item.name,item.quantity]){
+for(const value of [
+item.name,item.quantity
+]){
 const td=document.createElement('td');
 td.textContent=value??'–';
 tr.append(td);
@@ -1680,14 +2402,17 @@ del.textContent='Beleg löschen';
 
 del.onclick=async()=>{
 if(!confirm(
-'Beleg vom '+dateLabel(entry.document_date)+
-' (hochgeladen '+stamp(entry.created_at)+
+'Beleg vom '+
+dateLabel(entry.document_date)+
+' (hochgeladen '+
+stamp(entry.created_at)+
 ') endgültig löschen?'
 ))return;
 
 del.disabled=true;
 
-const {data,error}=await db.from('documents')
+const {data,error}=
+await db.from('documents')
 .delete()
 .eq('id',entry.id)
 .eq('business_id',businessId)
@@ -1696,8 +2421,10 @@ const {data,error}=await db.from('documents')
 if(error||!data?.length){
 alert(
 'Löschen fehlgeschlagen: '+
-(error?.message||'Keine Berechtigung')
+(error?.message||
+'Keine Berechtigung')
 );
+
 del.disabled=false;
 return;
 }
@@ -1712,72 +2439,121 @@ target.append(row);
 }
 }
 
-/* =========================================
-   DASHBOARD UND AUSWERTUNGEN
-   ========================================= */
+/* ======================================
+   DASHBOARD
+   ====================================== */
 
-function updateDashboard(unique,invoices,duplicates){
-const gross=sumField(unique,'gross_total');
-const net=sumField(unique,'net_total');
-const vat=sumField(unique,'vat_total');
-const bar=sumField(unique,'cash_total');
-const card=sumField(unique,'card_total');
-const other=sumField(unique,'other_payments_total');
-const bons=sumField(unique,'receipt_count');
-const expense=sumField(invoices,'net_total');
+function updateDashboard(
+unique,invoices,duplicates
+){
+const gross=sumField(
+unique,'gross_total'
+);
+
+const net=sumField(
+unique,'net_total'
+);
+
+const vat=sumField(
+unique,'vat_total'
+);
+
+const bar=sumField(
+unique,'cash_total'
+);
+
+const card=sumField(
+unique,'card_total'
+);
+
+const other=sumField(
+unique,'other_payments_total'
+);
+
+const bons=sumField(
+unique,'receipt_count'
+);
+
+const expense=sumField(
+invoices,'net_total'
+);
 
 $('gross').textContent=
-unique.length&&gross.complete?euro(gross.value):'–';
+unique.length&&gross.complete?
+euro(gross.value):'–';
 
 $('net').textContent=
-unique.length&&net.complete?euro(net.value):'–';
+unique.length&&net.complete?
+euro(net.value):'–';
 
 $('vat').textContent=
-unique.length&&vat.complete?euro(vat.value):'–';
+unique.length&&vat.complete?
+euro(vat.value):'–';
 
-$('days').textContent=String(unique.length);
+$('days').textContent=
+String(unique.length);
 
 $('average').textContent=
 unique.length&&gross.complete?
-euro(gross.value/unique.length):'–';
+euro(
+gross.value/unique.length
+):'–';
 
-$('invoices').textContent=String(invoices.length);
+$('invoices').textContent=
+String(invoices.length);
 
 $('cashTotal').textContent=
-unique.length&&bar.complete?euro(bar.value):'–';
+unique.length&&bar.complete?
+euro(bar.value):'–';
 
 $('cardTotal').textContent=
-unique.length&&card.complete?euro(card.value):'–';
+unique.length&&card.complete?
+euro(card.value):'–';
 
 $('otherTotal').textContent=
-unique.length&&other.complete?euro(other.value):'–';
+unique.length&&other.complete?
+euro(other.value):'–';
 
 $('receiptCount').textContent=
 unique.length&&bons.complete?
-new Intl.NumberFormat('de-AT').format(bons.value):'–';
+new Intl.NumberFormat('de-AT')
+.format(bons.value):'–';
 
 $('averageReceipt').textContent=
-unique.length&&gross.complete&&bons.complete&&bons.value>0
-?euro(gross.value/bons.value):'–';
+unique.length&&
+gross.complete&&
+bons.complete&&
+bons.value>0
+?euro(
+gross.value/bons.value
+):'–';
 
 $('receiptsPerDay').textContent=
 unique.length&&bons.complete?
 new Intl.NumberFormat('de-AT',{
 maximumFractionDigits:1
-}).format(bons.value/unique.length):'–';
+}).format(
+bons.value/unique.length
+):'–';
 
-const payment=paymentMonthStatus(unique);
+const payment=
+paymentMonthStatus(unique);
 
-$('paymentCheck').textContent=payment.label;
-$('paymentCheck').className=paymentClass(payment.status);
+$('paymentCheck').textContent=
+payment.label;
 
-$('paymentDaily').replaceChildren(
-paymentTable(unique)
-);
+$('paymentCheck').className=
+paymentClass(payment.status);
+
+/* Kompakte Anzeige und eigenes Kontrollfenster */
+updatePaymentSummary(unique);
 
 $('categoryTotals').replaceChildren(
 categoryTable(unique,true,5)
 );
+
+/* Top 10 statt Top 3 */
+renderTop10(unique);
 
 $('expenses').textContent=
 invoices.length&&expense.complete?
@@ -1786,7 +2562,9 @@ euro(expense.value):'–';
 $('balance').textContent=
 unique.length&&net.complete&&
 invoices.length&&expense.complete
-?euro(net.value-expense.value):'–';
+?euro(
+net.value-expense.value
+):'–';
 
 const notes=[
 'Nur gespeicherte Belege des ausgewählten Monats.',
@@ -1803,77 +2581,91 @@ notes.push(
 
 if(!invoices.length){
 notes.push(
-'Noch keine Rechnungen erfasst: Ausgaben und Saldo nicht berechenbar.'
+'Noch keine Rechnungen erfasst: '+
+'Ausgaben und Saldo nicht berechenbar.'
 );
 }else if(!expense.complete){
-notes.push('Rechnungs-Nettoangaben unvollständig.');
+notes.push(
+'Rechnungs-Nettoangaben unvollständig.'
+);
 }
 
 if(unique.length&&!bons.complete){
-notes.push('Bonanzahl nicht für alle Tage vorhanden.');
+notes.push(
+'Bonanzahl nicht für alle Tage vorhanden.'
+);
 }
 
-if(unique.some(x=>!paymentAnalysis(x).complete)){
+if(unique.some(x=>
+!paymentAnalysis(x).complete
+)){
 notes.push(
-'Der Zahlungsabgleich ist unvollständig, weil Zahlungsarten fehlen.'
+'Der Zahlungsabgleich ist unvollständig, '+
+'weil Zahlungsarten fehlen.'
 );
 }
 
 notes.push(
-'Der Saldo ist kein Gewinn und keine Liquiditätsrechnung; '+
-'Fixkosten und Zahlungen können fehlen.'
+'Der Saldo ist kein Gewinn und keine '+
+'Liquiditätsrechnung; Fixkosten und '+
+'Zahlungen können fehlen.'
 );
 
-$('dashboardNote').textContent=notes.join(' ');
-
-const top=$('top');
-top.replaceChildren();
-
-for(const item of aggregateItems(unique).slice(0,3)){
-const li=document.createElement('li');
-li.textContent=item.name+' · '+item.quantity+' Stück';
-top.append(li);
-}
-
-if(!top.children.length){
-top.textContent='Noch keine Artikel erfasst.';
-}
+$('dashboardNote').textContent=
+notes.join(' ');
 
 $('last').textContent=unique.length?
 'Zuletzt hochgeladen: '+
-stamp([...unique].sort(
-(a,b)=>b.created_at.localeCompare(a.created_at)
-)[0].created_at)
-:'Noch keine Tagesabrechnung in diesem Monat.';
+stamp(
+[...unique].sort(
+(a,b)=>b.created_at.localeCompare(
+a.created_at
+)
+)[0].created_at
+)
+:
+'Noch keine Tagesabrechnung in diesem Monat.';
 }
+
+/* ======================================
+   WEITERE AUSWERTUNGEN
+   ====================================== */
 
 function renderAnalysis(unique){
 const summary=categorySummary(unique);
 const best=summary.rows[0];
 
-$('bestCategory').textContent=best?.name||'–';
+$('bestCategory').textContent=
+best?.name||'–';
+
 $('bestCategoryGross').textContent=
 best?euro(best.gross):'–';
 
 const daily=unique.filter(x=>
-validNumber(x.extracted_data?.gross_total)
+validNumber(
+x.extracted_data?.gross_total
+)
 ).sort((a,b)=>
-Number(b.extracted_data.gross_total)-
-Number(a.extracted_data.gross_total)
+Number(
+b.extracted_data.gross_total
+)-
+Number(
+a.extracted_data.gross_total
+)
 );
 
 const strongest=daily[0];
 
 $('bestDay').textContent=
-strongest?dateLabel(strongest.document_date):'–';
+strongest?
+dateLabel(strongest.document_date):
+'–';
 
 $('bestDayGross').textContent=
 strongest?
-euro(strongest.extracted_data.gross_total):'–';
-
-$('analysisPayments').replaceChildren(
-paymentTable(unique)
-);
+euro(
+strongest.extracted_data.gross_total
+):'–';
 
 $('analysisCategories').replaceChildren(
 categoryTable(unique,true)
@@ -1883,21 +2675,31 @@ const trend=$('dailyTrend');
 trend.replaceChildren();
 
 if(!daily.length){
-trend.textContent='Noch keine Tagesumsätze vorhanden.';
+trend.textContent=
+'Noch keine Tagesumsätze vorhanden.';
 }else{
 const max=Math.max(
-...daily.map(x=>Number(x.extracted_data.gross_total))
+...daily.map(x=>
+Number(
+x.extracted_data.gross_total
+)
+)
 );
 
 for(const doc of [...daily].sort(
-(a,b)=>a.document_date.localeCompare(b.document_date)
+(a,b)=>a.document_date.localeCompare(
+b.document_date
+)
 )){
-const value=Number(doc.extracted_data.gross_total);
+const value=Number(
+doc.extracted_data.gross_total
+);
 
 const row=document.createElement('div');
 row.className='trend-row';
 
 const date=document.createElement('span');
+
 date.textContent=
 doc.document_date.slice(8,10)+'.'+
 doc.document_date.slice(5,7)+'.';
@@ -1907,7 +2709,10 @@ track.className='bar-track';
 
 const fill=document.createElement('div');
 fill.className='bar-fill';
-fill.style.width=(max>0?value/max*100:0)+'%';
+
+fill.style.width=
+(max>0?value/max*100:0)+'%';
+
 track.append(fill);
 
 const amount=document.createElement('span');
@@ -1925,7 +2730,8 @@ items.replaceChildren();
 const all=aggregateItems(unique);
 
 if(!all.length){
-items.textContent='Noch keine Artikelmengen vorhanden.';
+items.textContent=
+'Noch keine Artikelmengen vorhanden.';
 }else{
 const scroll=document.createElement('div');
 scroll.className='table-scroll';
@@ -1938,12 +2744,15 @@ const th=document.createElement('th');
 th.textContent=value;
 head.append(th);
 }
+
 table.append(head);
 
 for(const item of all.slice(0,20)){
 const tr=document.createElement('tr');
 
-for(const value of [item.name,item.quantity]){
+for(const value of [
+item.name,item.quantity
+]){
 const td=document.createElement('td');
 td.textContent=value;
 tr.append(td);
@@ -1957,26 +2766,43 @@ items.append(scroll);
 }
 }
 
+/* ======================================
+   MONATSDATEN LADEN
+   ====================================== */
+
 async function loadAll(){
 if(!businessId)return;
 
 const month=$('month').value;
-if(!/^\d{4}-\d{2}$/.test(month))return;
+
+if(
+!/^\d{4}-\d{2}$/.test(month)
+)return;
 
 const {start,end}=monthBounds(month);
 
 try{
-const [cash,invoices]=await Promise.all([
-allDocs('cash_report',start,end),
-allDocs('invoice',start,end)
+const [cash,invoices]=
+await Promise.all([
+allDocs(
+'cash_report',start,end
+),
+allDocs(
+'invoice',start,end
+)
 ]);
 
 monthlyCash=cash;
 monthlyInvoices=invoices;
 
-const {docs:unique,duplicates}=uniqueDays(cash);
+const {
+docs:unique,
+duplicates
+}=uniqueDays(cash);
 
-updateDashboard(unique,invoices,duplicates);
+updateDashboard(
+unique,invoices,duplicates
+);
 
 $('analysisMonth').value=month;
 renderAnalysis(unique);
@@ -2001,20 +2827,37 @@ async function refreshArchives(){
 if(!businessId)return;
 
 try{
-const cashMonth=$('cashArchiveMonth').value;
-const invoiceMonth=$('invoiceArchiveMonth').value;
+const cashMonth=
+$('cashArchiveMonth').value;
+
+const invoiceMonth=
+$('invoiceArchiveMonth').value;
 
 let cash=monthlyCash;
 let invoices=monthlyInvoices;
 
-if(cashMonth&&cashMonth!==$('month').value){
+if(
+cashMonth&&
+cashMonth!==$('month').value
+){
 const b=monthBounds(cashMonth);
-cash=await allDocs('cash_report',b.start,b.end);
+
+cash=await allDocs(
+'cash_report',
+b.start,b.end
+);
 }
 
-if(invoiceMonth&&invoiceMonth!==$('month').value){
+if(
+invoiceMonth&&
+invoiceMonth!==$('month').value
+){
 const b=monthBounds(invoiceMonth);
-invoices=await allDocs('invoice',b.start,b.end);
+
+invoices=await allDocs(
+'invoice',
+b.start,b.end
+);
 }
 
 renderArchive('cash_report',cash);
@@ -2029,7 +2872,9 @@ $('cashArchiveInfo').textContent=
 $('month').onchange=loadAll;
 
 $('analysisMonth').onchange=()=>{
-$('month').value=$('analysisMonth').value;
+$('month').value=
+$('analysisMonth').value;
+
 loadAll();
 };
 
@@ -2038,34 +2883,51 @@ $('cashArchiveDate').value='';
 refreshArchives();
 };
 
-$('invoiceArchiveMonth').onchange=refreshArchives;
-$('cashArchiveDate').onchange=refreshArchives;
-$('cashArchiveLimit').onchange=refreshArchives;
-$('invoiceSearch').oninput=refreshArchives;
-$('invoiceArchiveLimit').onchange=refreshArchives;
+$('invoiceArchiveMonth').onchange=
+refreshArchives;
 
-/* =========================================
+$('cashArchiveDate').onchange=
+refreshArchives;
+
+$('cashArchiveLimit').onchange=
+refreshArchives;
+
+$('invoiceSearch').oninput=
+refreshArchives;
+
+$('invoiceArchiveLimit').onchange=
+refreshArchives;
+
+/* ======================================
    ANMELDUNG
-   ========================================= */
+   ====================================== */
 
 async function enter(){
-const {data:{user:u},error}=await db.auth.getUser();
+const {
+data:{user:u},
+error
+}=await db.auth.getUser();
 
 if(error||!u)return;
 
 const r=await db.from('business_members')
-.select('business_id,role,businesses(name)')
+.select(
+'business_id,role,businesses(name)'
+)
 .eq('user_id',u.id);
 
 if(r.error||!r.data?.length){
 throw Error(
-r.error?.message||'Kein Betrieb zugeordnet'
+r.error?.message||
+'Kein Betrieb zugeordnet'
 );
 }
 
 const member=
 r.data.find(x=>
-x.businesses?.name?.includes('Friedrich')
+x.businesses?.name?.includes(
+'Friedrich'
+)
 )||r.data[0];
 
 user=u;
@@ -2073,20 +2935,27 @@ businessId=member.business_id;
 role=member.role;
 
 $('business').textContent=
-(member.businesses?.name||'Das Friedrich')+
+(member.businesses?.name||
+'Das Friedrich')+
 ' · '+role;
 
 $('login').classList.add('hidden');
 $('app').classList.remove('hidden');
 
-const parts=new Intl.DateTimeFormat('en-CA',{
+const parts=
+new Intl.DateTimeFormat('en-CA',{
 timeZone:'Europe/Vienna',
-year:'numeric',month:'2-digit'
+year:'numeric',
+month:'2-digit'
 }).formatToParts(new Date());
 
 const month=
-parts.find(p=>p.type==='year').value+'-'+
-parts.find(p=>p.type==='month').value;
+parts.find(p=>
+p.type==='year'
+).value+'-'+
+parts.find(p=>
+p.type==='month'
+).value;
 
 $('month').value=month;
 $('analysisMonth').value=month;
@@ -2099,22 +2968,34 @@ await loadAll();
 $('loginForm').onsubmit=async e=>{
 e.preventDefault();
 
-message('loginStatus','Anmeldung läuft …');
+message(
+'loginStatus',
+'Anmeldung läuft …'
+);
 
-const {error}=await db.auth.signInWithPassword({
+const {error}=
+await db.auth.signInWithPassword({
 email:$('email').value.trim(),
 password:$('password').value
 });
 
 if(error){
-message('loginStatus',error.message,true);
+message(
+'loginStatus',
+error.message,
+true
+);
 return;
 }
 
 try{
 await enter();
 }catch(e){
-message('loginStatus',e.message,true);
+message(
+'loginStatus',
+e.message,
+true
+);
 }
 };
 
@@ -2131,10 +3012,19 @@ $('login').classList.remove('hidden');
 
 (async()=>{
 try{
-const {data:{session}}=await db.auth.getSession();
-if(session)await enter();
+const {
+data:{session}
+}=await db.auth.getSession();
+
+if(session){
+await enter();
+}
 }catch(e){
-message('loginStatus',e.message,true);
+message(
+'loginStatus',
+e.message,
+true
+);
 }
 })();
 </script>
