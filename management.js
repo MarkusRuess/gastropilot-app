@@ -13,7 +13,7 @@ function entry(id,title,detail){
 }
 function showPage(p){
  document.querySelectorAll('.page').forEach(x=>x.classList.toggle('active',x.id==='page-'+p));
- document.querySelectorAll('[data-page]').forEach(x=>x.style.background=x.dataset.page===p?'#167a61':'#70839a');
+ document.querySelectorAll('[data-page]').forEach(x=>x.classList.toggle('active',x.dataset.page===p));
 }
 document.querySelectorAll('[data-page]').forEach(x=>x.onclick=()=>showPage(x.dataset.page));
 async function list(table){
@@ -86,10 +86,10 @@ async function enter(){
  if(r.error||!r.data.user)throw Error('Bitte anmelden.');
  const m=await db.from('business_members').select('business_id,role,businesses(name)').eq('user_id',r.data.user.id);
  if(m.error)throw m.error;
- const member=m.data?.find(x=>x.businesses?.name?.includes('Friedrich'));
- if(!member)throw Error('Kein Zugriff auf Das Friedrich.');
+ const member=window.GastroPilotBusiness.choose(m.data);
+ if(!member)throw Error('Kein Zugriff auf den gewählten Betrieb.');
  if(member.role!=='owner')throw Error('Die Verwaltung ist derzeit nur für Betriebsinhaber freigeschaltet.');
- businessId=member.business_id;role=member.role;
+ businessId=member.business_id;role=member.role;window.GastroPilotBusiness.render(m.data,member.business_id);
  $('business').textContent=(member.businesses?.name||'Das Friedrich')+' · Inhaber';
  $('login').classList.add('hidden');$('app').classList.remove('hidden');
  $('personMonth').value='2026-09';$('personForm').elements.accounting_month.value='2026-09';
