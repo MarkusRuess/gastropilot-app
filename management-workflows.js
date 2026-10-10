@@ -47,6 +47,7 @@ $('gpOriginalUpload').onclick=async()=>{
   if(up.error)throw up.error;
   const ins=await db.from('management_originals').insert({business_id:businessId,uploaded_by:user.id,kind,file_name:file.name,storage_path:path,file_size:file.size});
   if(ins.error)throw ins.error;
+  path=null;
   $('gpOriginalFile').value='';msg('Original sicher gespeichert.');await archive();
  }catch(e){
   if(path)await db.storage.from('management-originals').remove([path]);
