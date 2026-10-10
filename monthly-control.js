@@ -1,7 +1,7 @@
 import {createClient} from 'https://esm.sh/@supabase/supabase-js@2';
 const db=createClient('https://sjnwfwcpgwsavygewwzb.supabase.co','sb_publishable__tucXG-IQGUhibMqMSUzCw_5RnH_sbQ');
 const $=id=>document.getElementById(id),euro=n=>new Intl.NumberFormat('de-AT',{style:'currency',currency:'EUR'}).format(n);
-let businessId=null,pdfRead=false;
+let businessId=null,pdfRead=false,photoCount=0;
 const status=t=>$('status').textContent=t;
 function line(target,title,detail){const div=document.createElement('div');div.className='entry';const a=document.createElement('strong');a.textContent=title;const b=document.createElement('small');b.textContent=' '+detail;div.append(a,b);target.append(div)}
 async function enter(){
@@ -56,15 +56,31 @@ $('readPdf').onclick=async()=>{
  $('preview').value=t.slice(0,60000);pdfRead=true;status('PDF gelesen. Bitte Monatswerte mit Original prüfen und eingeben.');
  }catch(e){status('PDF nicht lesbar: '+e.message)}
 };
+let photoUrls=[];
+function updatePhotos(files,append){
+ if(!append){for(const u of photoUrls)URL.revokeObjectURL(u);photoUrls=[];$('photoGallery').replaceChildren();photoCount=0;}
+ for(const file of files){
+  if(photoCount>=12){$('photoStatus').textContent='Maximal 12 Fotos pro Monatsabrechnung.';break}
+  if(!['image/jpeg','image/png','image/webp','image/heic','image/heif'].includes(file.type)&&!/\\.(jpe?g|png|webp|heic|heif)$/i.test(file.name))continue;
+  if(file.size>15e6){$('photoStatus').textContent='Foto zu groß: maximal 15 MB pro Bild.';continue}
+  const url=URL.createObjectURL(file);photoUrls.push(url);photoCount++;
+  const a=document.createElement('a');a.href=url;a.target='_blank';a.rel='noopener noreferrer';
+  const img=document.createElement('img');img.src=url;img.alt='Monatsabrechnung Seite '+photoCount;img.style.cssText='width:100%;height:210px;object-fit:contain;border:1px solid #ddd;border-radius:10px;background:#fafafa';
+  const label=document.createElement('small');label.textContent='Seite '+photoCount+' · Vergrößern';a.append(img,label);$('photoGallery').append(a);
+ }
+ if(photoCount)$('photoStatus').textContent=photoCount+' Foto(s) lokal geladen. Werte aus den Fotos bitte manuell übertragen und kontrollieren. Fotos werden nicht hochgeladen.';
+}
+$('monthlyPhotos').addEventListener('change',e=>updatePhotos(e.target.files,false));
+$('monthlyCamera').addEventListener('change',e=>updatePhotos(e.target.files,true));
 $('summaryForm').onsubmit=async e=>{
  e.preventDefault();try{
- if(!pdfRead)throw Error('Bitte Monats-PDF zuerst auslesen.');
+ if(!pdfRead&&photoCount===0)throw Error('Bitte zuerst Fotos auswählen oder das Monats-PDF auslesen.');
  const f=new FormData(e.currentTarget);if(f.get('verified')!=='on')throw Error('Prüfung fehlt.');
  const row={business_id:businessId,month:$('month').value+'-01',notes:String(f.get('notes')||'')};
  for(const k of ['gross_revenue','cash_total','card_total','receipt_count']){const v=f.get(k);row[k]=v===''?null:Number(v);if(row[k]!=null&&!Number.isFinite(row[k]))throw Error('Ungültige Zahl.')}
  if(row.gross_revenue==null)throw Error('Bruttoumsatz fehlt.');
  const r=await db.from('monthly_cash_summaries').upsert(row,{onConflict:'business_id,month'});if(r.error)throw r.error;
- pdfRead=false;status('Monatsabschluss gespeichert.');await refresh();
+ status('Monatsabschluss gespeichert.');await refresh();
  }catch(err){status('Nicht gespeichert: '+err.message)}
 };
 $('hourForm').onsubmit=async e=>{
