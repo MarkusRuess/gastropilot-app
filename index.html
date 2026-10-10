@@ -2637,7 +2637,8 @@ async function enter(){
   }
 
   const member=window.GastroPilotBusiness.choose(r.data);
-  if(!member)throw Error('Kein freigegebener Betrieb.');\n  window.GastroPilotBusiness.render(r.data,member.business_id);
+  if(!member)throw Error('Kein freigegebener Betrieb.');
+  window.GastroPilotBusiness.render(r.data,member.business_id);
 
   user=u;
   businessId=member.business_id;
