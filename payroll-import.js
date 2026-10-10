@@ -41,8 +41,8 @@ $('payrollSave').onclick=async()=>{
  const a=await db.auth.getUser();if(a.error||!a.data.user)throw Error('Bitte anmelden.');
  const m=await db.from('business_members').select('business_id,role,businesses(name)').eq('user_id',a.data.user.id);
  if(m.error)throw m.error;
- const member=m.data?.find(x=>x.role==='owner'&&x.businesses?.name?.includes('Friedrich'));
- if(!member)throw Error('Kein Inhaberzugriff für Das Friedrich.');
+ const member=window.GastroPilotBusiness.choose(m.data?.filter(v=>v.role==='owner'));
+ if(!member)throw Error('Kein Inhaberzugriff für den gewählten Betrieb.');
  const row={business_id:member.business_id,accounting_month:month+'-01',employee_name:name,gross_salary:gross,employer_costs:employer,total_costs:gross+employer,net_payable:netAmount,payment_status:'open'};
  const previous=await db.from('personnel_costs').select('id').eq('business_id',member.business_id).eq('accounting_month',month+'-01').ilike('employee_name',name);
  if(previous.error)throw previous.error;
