@@ -8,9 +8,9 @@ async function enter(){
  const a=await db.auth.getUser();if(a.error||!a.data.user)return;
  const m=await db.from('business_members').select('business_id,role,businesses(name)').eq('user_id',a.data.user.id);
  if(m.error)throw m.error;
- const x=m.data?.find(v=>v.role==='owner'&&v.businesses?.name?.includes('Friedrich'));
- if(!x)throw Error('Kein Inhaberzugriff für Das Friedrich.');
- businessId=x.business_id;$('login').classList.add('hidden');$('app').classList.remove('hidden');await refresh();
+ const x=window.GastroPilotBusiness.choose(m.data?.filter(v=>v.role==='owner'));
+ if(!x)throw Error('Kein Inhaberzugriff für den gewählten Betrieb.');
+ businessId=x.business_id;window.GastroPilotBusiness.render(m.data,x.business_id);$('login').classList.add('hidden');$('app').classList.remove('hidden');await refresh();
 }
 async function refresh(){
  if(!businessId)return;
