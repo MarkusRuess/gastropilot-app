@@ -25,7 +25,7 @@ $('payrollRead').onclick=async()=>{
  const text=pages.join('\n--- SEITE ---\n');
  if(text.trim().length<30)throw Error('Kein PDF-Text gefunden. Bild-PDFs benötigen eine separate gesicherte Texterkennung.');
  $('payrollPreview').value=text.slice(0,20000);
- $('payrollMonth').value='2026-09';$('payrollEmployee').value='';$('payrollGross').value='';$('payrollEmployer').value='';
+ $('payrollMonth').value='2026-09';$('payrollEmployee').value='';$('payrollGross').value='';$('payrollEmployer').value='';$('payrollNet').value='';
  $('payrollReview').classList.remove('hidden');loaded=true;
  msg('PDF gelesen. Bitte Mitarbeitername, Bruttolohn und zusätzliche Dienstgeberkosten anhand des Originals eintragen. Keine Werte werden geschätzt.');
  }catch(e){msg('Auslesen fehlgeschlagen: '+e.message)}
@@ -33,17 +33,17 @@ $('payrollRead').onclick=async()=>{
 $('payrollSave').onclick=async()=>{
  if(!loaded)return msg('Bitte zuerst einen Lohnzettel auslesen.');
  if(!$('payrollConfirm').checked)return msg('Bitte die Angaben erst kontrollieren und bestätigen.');
- const month=$('payrollMonth').value,name=$('payrollEmployee').value.trim(),g=$('payrollGross').value,e=$('payrollEmployer').value;
+ const month=$('payrollMonth').value,name=$('payrollEmployee').value.trim(),g=$('payrollGross').value,e=$('payrollEmployer').value,net=$('payrollNet').value;
  if(!/^\d{4}-\d{2}$/.test(month)||!name||g===''||e==='')return msg('Monat, Name und beide Beträge vollständig eintragen.');
- const gross=Number(g),employer=Number(e);
- if(!Number.isFinite(gross)||!Number.isFinite(employer)||gross<0||employer<0)return msg('Bitte gültige Beträge eintragen.');
+ const gross=Number(g),employer=Number(e),netAmount=net===''?null:Number(net);
+ if(!Number.isFinite(gross)||!Number.isFinite(employer)||gross<0||employer<0||(netAmount!==null&&(!Number.isFinite(netAmount)||netAmount<0)))return msg('Bitte gültige Beträge eintragen.');
  try{
  const a=await db.auth.getUser();if(a.error||!a.data.user)throw Error('Bitte anmelden.');
  const m=await db.from('business_members').select('business_id,role,businesses(name)').eq('user_id',a.data.user.id);
  if(m.error)throw m.error;
  const member=m.data?.find(x=>x.role==='owner'&&x.businesses?.name?.includes('Friedrich'));
  if(!member)throw Error('Kein Inhaberzugriff für Das Friedrich.');
- const row={business_id:member.business_id,accounting_month:month+'-01',employee_name:name,gross_salary:gross,employer_costs:employer,total_costs:gross+employer,payment_status:'open'};
+ const row={business_id:member.business_id,accounting_month:month+'-01',employee_name:name,gross_salary:gross,employer_costs:employer,total_costs:gross+employer,net_payable:netAmount,payment_status:'open'};
  const previous=await db.from('personnel_costs').select('id').eq('business_id',member.business_id).eq('accounting_month',month+'-01').ilike('employee_name',name);
  if(previous.error)throw previous.error;
  if(previous.data?.length)return msg('Für diesen Namen und Monat existiert bereits ein Eintrag. Bitte zuerst prüfen – keine doppelte Speicherung.');
