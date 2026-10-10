@@ -38,7 +38,7 @@ window.GastroPilotBusiness={
    btn.addEventListener('click',()=>{
     if(member.business_id===currentId)return;
     localStorage.setItem(this.key,member.business_id);
-    window.location.reload();
+    window.dispatchEvent(new CustomEvent('gastropilot:business-change',{detail:{businessId:member.business_id}}));
    });
    group.append(btn);
   }
