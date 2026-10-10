@@ -199,6 +199,40 @@ dialog::backdrop{background:#0f1e2d99}
   .card{padding:14px}
   header b{font-size:25px}
 }
+
+/* GastroPilot mobile-first accordion update */
+.module-accordion { padding: 0; overflow: hidden; }
+.module-accordion > .module-heading {
+  padding: 17px 18px; display: flex; align-items: flex-start;
+  flex-direction: column; gap: 5px; list-style-position: inside;
+  font-size: 18px; font-weight: 800; cursor: pointer;
+}
+.module-heading small { font-size: 12px; font-weight: 500; color: #657588; }
+.module-accordion > :not(summary) { margin-left: 18px; margin-right: 18px; }
+.module-accordion > :last-child { margin-bottom: 18px; }
+.module-accordion[open] > .module-heading { border-bottom: 1px solid #e0e7ee; }
+.compact-accordion {
+  background: #f5f8fb; border: 1px solid #e0e7ee;
+  border-radius: 12px; padding: 13px; margin: 12px 0;
+}
+.compact-accordion > summary { font-size: 15px; }
+.compact-accordion[open] > summary { margin-bottom: 12px; }
+.compact-accordion h3 { margin-top: 8px; }
+@media(max-width:650px) {
+  .navigation {
+    display:flex; gap:8px; overflow-x:auto; padding-bottom:6px;
+    scroll-snap-type:x proximity;
+  }
+  .nav-button {
+    flex: 0 0 auto; min-height:48px; padding:10px 13px;
+    font-size:13px; white-space:nowrap; scroll-snap-align:start;
+  }
+  .grid { gap:8px; }
+  .metric { padding:11px; }
+  .module-accordion > .module-heading { padding:15px 13px; }
+  .module-accordion > :not(summary) { margin-left:13px; margin-right:13px; }
+  button { max-width:100%; }
+}
 </style>
 </head>
 <body>
@@ -273,6 +307,7 @@ dialog::backdrop{background:#0f1e2d99}
 
 <p id="dashboardNote" class="muted"></p>
 
+<details class="compact-accordion"><summary>✓ Zahlungsabgleich prüfen</summary>
 <h3>Zahlungsabgleich</h3>
 <div id="paymentDailySummary" class="payment-summary">
 Noch keine Abrechnungen geladen.
@@ -281,6 +316,8 @@ Noch keine Abrechnungen geladen.
 Zahlungsabgleich prüfen →
 </button>
 
+</details>
+<details class="compact-accordion"><summary>📊 Artikelgruppen nach Umsatz</summary>
 <h3>Top 5 Artikelgruppen nach Umsatz</h3>
 <div id="categoryTotals"></div>
 <div class="dashboard-more">
@@ -289,12 +326,15 @@ Alle Artikelgruppen anzeigen →
 </button>
 </div>
 
+</details>
+<details class="compact-accordion"><summary>🏆 Top 10 verkaufte Artikel</summary>
 <h3>Top 10 verkaufte Artikel</h3>
 <p class="muted">
 Artikel anklicken, um die erfassten Mengen je Tag
 zu prüfen und bei Bedarf zu korrigieren.
 </p>
 <div id="top10"></div>
+</details>
 
 <p id="last" class="muted"></p>
 
@@ -308,8 +348,9 @@ zu prüfen und bei Bedarf zu korrigieren.
 <section id="page-cash" class="page">
 <div class="page-title">Tagesabrechnungen</div>
 
-<section class="card" id="cashCapture">
-<h2>Neue Tagesabrechnung erfassen</h2>
+<details class="card module-accordion" id="cashCapture" open>
+<summary class="module-heading"><span>📸 Tagesabrechnung erfassen</span><small>Fotos aufnehmen oder hochladen</small></summary>
+
 <p class="muted">
 Mehrere Fotos derselben Tagesabrechnung gemeinsam auswählen.
 Maximal 12 Bilder.
@@ -329,7 +370,7 @@ accept="image/*" capture="environment" class="hidden">
 <button id="cashScan">Auswertung starten</button>
 <div id="cashStatus" class="status hidden" role="status"></div>
 <div id="cashResults"></div>
-</section>
+</details>
 
 <section class="card">
 <div class="row">
@@ -359,8 +400,9 @@ accept="image/*" capture="environment" class="hidden">
 <section id="page-invoice" class="page">
 <div class="page-title">Lieferantenrechnungen</div>
 
-<section class="card" id="invoiceCapture">
-<h2>Neue Rechnung erfassen</h2>
+<details class="card module-accordion" id="invoiceCapture" open>
+<summary class="module-heading"><span>🧾 Lieferantenrechnung erfassen</span><small>Foto oder PDF direkt hier hochladen</small></summary>
+
 <p class="muted">
 Fotos oder PDF-Dateien auswählen.
 Maximal 12 Seiten oder Bilder.
@@ -380,7 +422,7 @@ accept="image/*" capture="environment" class="hidden">
 <button id="invoiceScan">Auswertung starten</button>
 <div id="invoiceStatus" class="status hidden" role="status"></div>
 <div id="invoiceResults"></div>
-</section>
+</details>
 
 <section class="card">
 <div class="row">
@@ -424,19 +466,27 @@ accept="image/*" capture="environment" class="hidden">
 <div class="metric"><small>Umsatz am stärksten Tag</small><strong id="bestDayGross">–</strong></div>
 </div>
 
+<details class="compact-accordion"><summary>✓ Zahlungsabgleich</summary>
 <h3>Zahlungsabgleich</h3>
 <button id="analysisOpenPayment" class="secondary">
 Zahlungsabgleich prüfen →
 </button>
 
+</details>
+<details class="compact-accordion"><summary>📊 Alle Artikelgruppen</summary>
 <h3>Alle Artikelgruppen nach Umsatz</h3>
 <div id="analysisCategories"></div>
 
+</details>
+<details class="compact-accordion"><summary>📈 Tagesumsätze vergleichen</summary>
 <h3>Tagesumsätze im Vergleich</h3>
 <div id="dailyTrend"></div>
 
+</details>
+<details class="compact-accordion"><summary>🏆 Top 20 Artikel</summary>
 <h3>Top 20 Artikel nach Menge</h3>
 <div id="analysisItems"></div>
+</details>
 
 <p class="muted">
 Nur gespeicherte Daten. Fehlende Beträge und Tage
