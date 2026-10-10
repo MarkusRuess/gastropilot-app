@@ -36,8 +36,8 @@ async function refresh(){
  for(const x of flows){
  const remaining=Math.max(0,Number(x.amount||0)-Number(x.paid_amount||0));
  const open=!['paid','cancelled'].includes(x.payment_status);
- if(open&&x.due_date<=end){if(x.entry_type==='inflow')incoming+=remaining;else outgoing+=remaining}
- if(open)entry('paymentList',(x.entry_type==='inflow'?'Eingang: ':'Ausgang: ')+(x.description||'Zahlung')+' · '+euro(remaining),'Fällig '+(x.due_date||'unbekannt'));
+ if(open&&x.due_date&&x.due_date<=end){if(x.entry_type==='inflow')incoming+=remaining;else outgoing+=remaining}
+ if(open){entry('paymentList',(x.entry_type==='inflow'?'Eingang: ':'Ausgang: ')+(x.description||'Zahlung')+' · '+euro(remaining),'Fällig '+(x.due_date||'unbekannt'));const btn=document.createElement('button');btn.type='button';btn.className='secondary';btn.textContent='Als bezahlt markieren';btn.onclick=async()=>{if(!confirm('Zahlung wirklich als vollständig bezahlt markieren?'))return;const result=await db.from('cash_flow_entries').update({payment_status:'paid',paid_amount:Number(x.amount),paid_at:today()}).eq('id',x.id).eq('business_id',businessId);if(result.error){status('Nicht gespeichert: '+result.error.message);return}await refresh()};$('paymentList').lastElementChild.append(btn)}
  }
  $('balance').textContent=good.length?euro(balance):'–';
  $('inflow').textContent=euro(incoming);$('outflow').textContent=euro(outgoing);
@@ -64,7 +64,19 @@ function form(id,table,convert){
  }catch(e){status('Nicht gespeichert: '+e.message)}
  };
 }
-form('accountForm','cash_accounts',f=>({account_name:f.get('account_name'),account_type:f.get('account_type'),current_balance:Number(f.get('current_balance')),balance_date:f.get('balance_date')}));
+$('accountForm').onsubmit=async ev=>{
+ ev.preventDefault();if(role!=='owner')return;
+ const f=new FormData($('accountForm'));
+ const name=String(f.get('account_name')||'').trim();
+ const row={business_id:businessId,account_name:name,account_type:f.get('account_type'),current_balance:Number(f.get('current_balance')),balance_date:f.get('balance_date')};
+ try{
+ const existing=await db.from('cash_accounts').select('id').eq('business_id',businessId).ilike('account_name',name).limit(1);
+ if(existing.error)throw existing.error;
+ const result=existing.data?.length?await db.from('cash_accounts').update(row).eq('id',existing.data[0].id).eq('business_id',businessId):await db.from('cash_accounts').insert(row);
+ if(result.error)throw result.error;
+ $('accountForm').reset();await refresh();status('Kontostand gespeichert.');
+ }catch(e){status('Nicht gespeichert: '+e.message)}
+};
 form('costForm','expenses',f=>({supplier:f.get('supplier'),description:f.get('description'),category:f.get('category'),gross_amount:Number(f.get('gross_amount')),due_date:f.get('due_date'),expense_date:f.get('due_date'),accounting_month:String(f.get('due_date')).slice(0,7)+'-01',payment_status:'open',is_recurring:true}));
 form('paymentForm','cash_flow_entries',f=>({entry_type:f.get('entry_type'),description:f.get('description'),amount:Number(f.get('amount')),due_date:f.get('due_date'),payment_status:'open',paid_amount:0}));
 form('personForm','personnel_costs',f=>({accounting_month:f.get('accounting_month')+'-01',employee_name:f.get('employee_name'),gross_salary:Number(f.get('gross_salary')),employer_costs:Number(f.get('employer_costs')),total_costs:Number(f.get('gross_salary'))+Number(f.get('employer_costs')),payment_status:'open'}));
