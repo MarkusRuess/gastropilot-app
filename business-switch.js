@@ -21,6 +21,7 @@ window.GastroPilotBusiness={
   select.style.cssText='display:block;width:100%;background:#fff;color:#111;border:1px solid #ccc;padding:11px;border-radius:9px';
   for(const m of allowed){const option=document.createElement('option');option.value=m.business_id;option.textContent=m.businesses.name;select.append(option)}
   select.value=currentId;
+  const subtitle=document.querySelector('header small');if(subtitle){subtitle.textContent=(allowed.find(m=>m.business_id===currentId)?.businesses?.name||'GastroPilot')+(location.pathname.includes('management')?' · Verwaltung':'');}
   select.addEventListener('change',()=>{
    if(!allowed.some(m=>m.business_id===select.value))return;
    localStorage.setItem(this.key,select.value);
