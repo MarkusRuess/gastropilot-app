@@ -4,62 +4,62 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#14243a">
+<meta name="theme-color" content="#111111">
 <title>GastroPilot · Das Friedrich</title>
 <style>
 :root{
   font-family:system-ui,-apple-system,Segoe UI,sans-serif;
-  color:#14243a;background:#f4f7fa
+  color:#111111;background:#ffffff
 }
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
 body{margin:0}
-header{background:#14243a;color:white;padding:22px 18px}
+header{background:#111111;color:white;padding:22px 18px}
 .header-inner{max-width:1050px;margin:auto}
 header b{font-size:27px}
-header small{display:block;color:#c2d0dd;margin-top:4px}
+header small{display:block;color:#666666;margin-top:4px}
 main{max-width:1050px;margin:16px auto;padding:0 13px}
 .card{
-  background:#fff;border:1px solid #e0e7ee;
+  background:#fff;border:1px solid #dedede;
   border-radius:15px;padding:18px;margin:14px 0;
-  box-shadow:0 3px 14px #14243a0a
+  box-shadow:0 3px 14px #1111110a
 }
 h2{font-size:21px;margin:0 0 13px}
 h3{font-size:17px;margin:18px 0 9px}
 label{display:block;font-weight:650;margin:10px 0 5px}
 input,select,textarea{
-  width:100%;border:1px solid #c8d2de;border-radius:9px;
-  padding:10px;font:inherit;background:#fff;color:#14243a
+  width:100%;border:1px solid #cccccc;border-radius:9px;
+  padding:10px;font:inherit;background:#fff;color:#111111
 }
 button{
-  background:#167a61;color:white;border:0;
+  background:#111111;color:white;border:0;
   border-radius:10px;padding:11px 14px;
   font:inherit;font-weight:700;cursor:pointer;margin:8px 0
 }
-button.secondary{background:#e8eef4;color:#24384b}
+button.secondary{background:#f3f3f3;color:#222222}
 button.danger{
-  background:#fff0ef;color:#a72f25;
-  border:1px solid #edc7c3
+  background:#f5f5f5;color:#333333;
+  border:1px solid #cccccc
 }
 button:disabled{opacity:.55;cursor:wait}
 .hidden{display:none!important}
-.muted{color:#657588;font-size:13px;line-height:1.5}
+.muted{color:#666666;font-size:13px;line-height:1.5}
 .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
-.metric{background:#f1f5f9;border-radius:12px;padding:13px;min-width:0}
-.metric small{display:block;color:#64748b}
+.metric{background:#f7f7f7;border-radius:12px;padding:13px;min-width:0}
+.metric small{display:block;color:#666666}
 .metric strong{font-size:22px;overflow-wrap:anywhere}
 .status{
-  padding:11px;background:#edf7f2;
+  padding:11px;background:#f5f5f5;
   border-radius:9px;margin:10px 0;white-space:pre-wrap
 }
-.error{background:#fff0ef;color:#a72f25}
-.entry{border-top:1px solid #e1e7ee;padding:12px 0}
-.entry small{display:block;color:#64748b}
+.error{background:#f5f5f5;color:#333333}
+.entry{border-top:1px solid #dddddd;padding:12px 0}
+.entry small{display:block;color:#666666}
 .thumbs{
   display:grid;grid-template-columns:repeat(auto-fill,minmax(105px,1fr));
   gap:9px
 }
-.thumb{border:1px solid #dbe4ed;border-radius:9px;padding:6px}
+.thumb{border:1px solid #dddddd;border-radius:9px;padding:6px}
 .thumb img{width:100%;height:100px;object-fit:contain}
 .thumb small{
   display:block;overflow:hidden;text-overflow:ellipsis;
@@ -67,30 +67,30 @@ button:disabled{opacity:.55;cursor:wait}
 }
 .thumb button{font-size:12px;padding:5px}
 .result{
-  border:1px solid #dbe4ed;border-radius:12px;
+  border:1px solid #dddddd;border-radius:12px;
   padding:13px;margin:12px 0;scroll-margin-top:12px
 }
-details{background:#f5f8fb;border-radius:9px;padding:12px;margin:10px 0}
+details{background:#fafafa;border-radius:9px;padding:12px;margin:10px 0}
 summary{cursor:pointer;font-weight:700}
 table{width:100%;border-collapse:collapse;font-size:13px}
-td,th{padding:9px 5px;border-bottom:1px solid #dce4ec;text-align:left}
+td,th{padding:9px 5px;border-bottom:1px solid #dddddd;text-align:left}
 td:last-child,th:last-child{text-align:right}
 .row{
   display:flex;gap:10px;align-items:center;
   justify-content:space-between;flex-wrap:wrap
 }
-footer{text-align:center;color:#718096;padding:20px;font-size:12px}
+footer{text-align:center;color:#666666;padding:20px;font-size:12px}
 .navigation{
   display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
   gap:12px;margin:16px 0
 }
 .nav-button{
-  margin:0;background:white;color:#24384b;
-  border:1px solid #dce4ec;min-height:65px;
+  margin:0;background:white;color:#222222;
+  border:1px solid #dddddd;min-height:65px;
   padding:12px 7px;font-size:14px
 }
 .nav-button.active{
-  background:#167a61;color:white;border-color:#167a61
+  background:#111111;color:white;border-color:#111111
 }
 .page{display:none}
 .page.active{display:block}
@@ -104,78 +104,78 @@ footer{text-align:center;color:#718096;padding:20px;font-size:12px}
 .trend-row{
   display:grid;grid-template-columns:100px 1fr 115px;
   gap:10px;align-items:center;padding:9px 0;
-  border-bottom:1px solid #e5edf3;font-size:13px
+  border-bottom:1px solid #eeeeee;font-size:13px
 }
-.bar-track{height:9px;background:#e5edf3;border-radius:9px;overflow:hidden}
-.bar-fill{height:100%;background:#167a61;border-radius:9px}
+.bar-track{height:9px;background:#eeeeee;border-radius:9px;overflow:hidden}
+.bar-fill{height:100%;background:#111111;border-radius:9px}
 .right{text-align:right}
 .dashboard-more{display:flex;justify-content:flex-end;margin-top:12px}
 .review-summary{
-  background:#f1f5f9;border-radius:10px;padding:12px;cursor:pointer
+  background:#f7f7f7;border-radius:10px;padding:12px;cursor:pointer
 }
 .review-summary strong{display:block}
-.review-summary small{display:block;color:#64748b;margin-top:4px}
+.review-summary small{display:block;color:#666666;margin-top:4px}
 .review-body{padding-top:12px}
 #cashCapture,#invoiceCapture{scroll-margin-top:12px}
 .check{font-weight:750}
-.check-ok{color:#14745b}
-.check-small{color:#9a6714}
-.check-bad{color:#b3322a}
-.check-unknown{color:#657588}
+.check-ok{color:#222222}
+.check-small{color:#555555}
+.check-bad{color:#333333}
+.check-unknown{color:#666666}
 .check-note{
-  padding:12px;border-radius:10px;background:#f3f6fa;margin:12px 0
+  padding:12px;border-radius:10px;background:#f7f7f7;margin:12px 0
 }
 .check-note strong{display:block;margin-bottom:4px}
 .save-primary{
   width:100%;font-size:17px;padding:15px;margin:13px 0 5px
 }
-.review-top{border-bottom:1px solid #e0e7ee;padding-bottom:12px}
+.review-top{border-bottom:1px solid #dedede;padding-bottom:12px}
 .review-extra{margin-top:12px}
-.compact-hint{font-size:12px;color:#64748b;margin:3px 0 8px}
+.compact-hint{font-size:12px;color:#666666;margin:3px 0 8px}
 .payment-summary{
-  margin:12px 0;padding:14px;background:#edf7f2;
-  border-radius:10px;font-weight:750;color:#167a61
+  margin:12px 0;padding:14px;background:#f5f5f5;
+  border-radius:10px;font-weight:750;color:#111111
 }
-.payment-summary.warning{background:#fff5e8;color:#9a6714}
-.payment-summary.bad{background:#fff0ef;color:#b3322a}
-.payment-summary.unknown{background:#f1f5f9;color:#657588}
+.payment-summary.warning{background:#f5f5f5;color:#555555}
+.payment-summary.bad{background:#f5f5f5;color:#333333}
+.payment-summary.unknown{background:#f7f7f7;color:#666666}
 dialog{
   width:min(1050px,96vw);max-width:1050px;
   max-height:88vh;overflow-y:auto;
-  border:1px solid #dce4ec;border-radius:16px;
-  padding:22px;color:#14243a;background:white;
+  border:1px solid #dddddd;border-radius:16px;
+  padding:22px;color:#111111;background:white;
   box-shadow:0 15px 60px #0003
 }
 dialog::backdrop{background:#0f1e2d99}
 .dialog-head{
   position:sticky;top:-22px;background:white;
   z-index:2;padding:8px 0 12px;
-  border-bottom:1px solid #e0e7ee
+  border-bottom:1px solid #dedede
 }
 .top-item{
   display:grid;grid-template-columns:32px minmax(0,1fr) 85px;
   gap:10px;align-items:center;padding:11px 0;
-  border-bottom:1px solid #e5edf3
+  border-bottom:1px solid #eeeeee
 }
-.top-rank{font-weight:800;color:#167a61}
+.top-rank{font-weight:800;color:#111111}
 .top-quantity{text-align:right;font-weight:750;white-space:nowrap}
 .top-link{
-  background:transparent;color:#14243a;
+  background:transparent;color:#111111;
   padding:0;margin:0;text-align:left;
   font-weight:500;border-radius:0
 }
-.top-link:hover{text-decoration:underline;color:#167a61}
+.top-link:hover{text-decoration:underline;color:#111111}
 .warning-pill{
-  display:inline-block;background:#fff1d7;color:#925e0b;
+  display:inline-block;background:#eeeeee;color:#444444;
   border-radius:7px;padding:3px 7px;font-size:11px;
   font-weight:700;margin-left:5px
 }
 .article-day{
-  border:1px solid #dce4ec;border-radius:11px;
+  border:1px solid #dddddd;border-radius:11px;
   padding:13px;margin:12px 0
 }
 .article-line{
-  border-top:1px solid #e4ebf1;
+  border-top:1px solid #e5e5e5;
   padding:12px 0;margin-top:10px
 }
 .article-line:first-child{border-top:0}
@@ -184,8 +184,8 @@ dialog::backdrop{background:#0f1e2d99}
 .article-actions{display:flex;gap:8px;flex-wrap:wrap}
 .article-actions button{font-size:13px}
 .article-hint{
-  padding:12px;border-radius:10px;background:#fff7e9;
-  color:#81591c;font-size:13px;line-height:1.5
+  padding:12px;border-radius:10px;background:#f5f5f5;
+  color:#444444;font-size:13px;line-height:1.5
 }
 @media(max-width:650px){
   .navigation{grid-template-columns:repeat(2,minmax(0,1fr))}
@@ -244,7 +244,7 @@ dialog::backdrop{background:#0f1e2d99}
 <button class="nav-button" data-page="invoice">Lieferantenrechnungen</button>
 <button class="nav-button" data-page="analysis">Auswertungen</button>
 </nav>
-<p style="margin:8px 0 16px"><a href="./management.html" style="display:block;background:#e8f5ef;color:#146b53;border:1px solid #c4e6d7;border-radius:12px;padding:14px;text-align:center;font-weight:700;text-decoration:none">Liquidität · Personal · Verwaltung →</a></p>
+<p style="margin:8px 0 16px"><a href="./management.html" style="display:block;background:#f5f5f5;color:#111111;border:1px solid #dedede;border-radius:12px;padding:14px;text-align:center;font-weight:700;text-decoration:none">Liquidität · Personal · Verwaltung →</a></p>
 
 <section id="page-dashboard" class="page active">
 <div class="page-title">Dashboard</div>
