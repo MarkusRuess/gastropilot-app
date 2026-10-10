@@ -23,3 +23,31 @@ a[style*="background"],a[href*="management.html"][style]{background:#fff!importa
 .navigation .nav-name{font-size:clamp(15px,2.4vw,21px)!important;font-weight:750!important;line-height:1.25!important;letter-spacing:-.4px;overflow-wrap:anywhere}
 .navigation .nav-arrow{position:absolute!important;top:15px!important;right:18px!important;font-size:22px!important}
 @media(max-width:420px){.navigation button.nav-button{min-height:132px!important;padding:14px!important}.navigation .nav-name{font-size:15px!important}.navigation .nav-arrow{top:10px!important;right:12px!important}}
+
+/* Einheitliches reines Schwarz-Weiß auch für Links als Buttons, Dialogaktionen,
+   Datei-Upload, Navigation und alle Zustände – beide Betriebe. */
+html body button,html body button[type],html body input[type="submit"],
+html body input[type="button"],html body input[type="reset"],
+html body input::file-selector-button,html body .btn,html body .button,
+html body a[role="button"],html body a[href$=".html"],
+html body .nav button,html body .navigation button,
+html body [class*="button"],html body [class*="btn"],
+html body select,html body option{
+ background:#fff!important;background-color:#fff!important;
+ background-image:none!important;color:#111!important;
+ -webkit-text-fill-color:#111!important;border:1px solid #d5d5d5!important;
+ box-shadow:none!important;text-shadow:none!important;
+ filter:none!important;transform:none!important;transition:none!important;
+ animation:none!important;
+}
+html body button:hover,html body button:focus,html body button:active,
+html body button:disabled,html body a[role="button"]:hover,
+html body .nav button.active,html body .navigation button.active,
+html body [class*="button"]:hover,html body [class*="btn"]:hover{
+ background:#fff!important;background-color:#fff!important;
+ background-image:none!important;color:#111!important;
+ -webkit-text-fill-color:#111!important;box-shadow:none!important;
+}
+html body button *,html body [class*="button"] *,html body [class*="btn"] *{
+ color:#111!important;-webkit-text-fill-color:#111!important;
+}
