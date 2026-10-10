@@ -94,3 +94,21 @@ $('hourForm').onsubmit=async e=>{
  }catch(err){status('Nicht gespeichert: '+err.message)}
 };
 try{await enter()}catch(e){status(e.message)}
+
+/* Direkter Betriebswechsel ohne Login-Zwischenseite. */
+window.addEventListener('gastropilot:business-change',async e=>{
+ const next=e.detail?.businessId;
+ if(!next||next===businessId)return;
+ try{
+  const a=await db.auth.getUser();
+  if(a.error||!a.data.user)throw Error('Sitzung abgelaufen.');
+  const m=await db.from('business_members').select('business_id,role,businesses(name)').eq('user_id',a.data.user.id);
+  if(m.error)throw m.error;
+  const x=m.data.find(v=>v.business_id===next&&v.role==='owner');
+  if(!x)throw Error('Kein Inhaberzugriff.');
+  businessId=x.business_id;
+  
+  window.GastroPilotBusiness.render(m.data,businessId);
+  await refresh();
+ }catch(err){status('Betriebswechsel: '+err.message);}
+});
