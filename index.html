@@ -223,7 +223,7 @@ html body #app #page-dashboard h3,
 html body #app #page-dashboard strong,
 html body #app #page-dashboard small,
 html body #app #page-dashboard p{color:#111!important}
-</style></head>
+</style><script src="./business-switch.js?v=1" defer></script></head>
 <body>
 
 <header>
@@ -255,7 +255,7 @@ html body #app #page-dashboard p{color:#111!important}
 <div class="row">
 <div>
 <h2 style="font-size:clamp(25px,4vw,34px);letter-spacing:-1px;margin:0 0 7px">Dein Betrieb. Dein Überblick.</h2>
-<div id="business" class="muted"></div>
+<div id="business" class="muted"></div><div id="gp-business-switch" style="margin-top:12px;max-width:500px"></div>
 </div>
 <button id="logout" class="secondary">Abmelden</button>
 </div>
@@ -2636,10 +2636,8 @@ async function enter(){
     );
   }
 
-  const member=
-    r.data.find(x=>
-      x.businesses?.name?.includes('Friedrich')
-    )||r.data[0];
+  const member=window.GastroPilotBusiness.choose(r.data);
+  if(!member)throw Error('Kein freigegebener Betrieb.');\n  window.GastroPilotBusiness.render(r.data,member.business_id);
 
   user=u;
   businessId=member.business_id;
