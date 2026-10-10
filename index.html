@@ -555,7 +555,7 @@ function switchPage(page){
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
-document.querySelectorAll('.nav-button').forEach(b=>{
+document.querySelectorAll('button.nav-button[data-page]').forEach(b=>{
   b.onclick=()=>switchPage(b.dataset.page);
 });
 
