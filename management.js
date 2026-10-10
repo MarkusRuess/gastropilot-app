@@ -27,9 +27,9 @@ async function refresh(){
  status('Daten werden geladen …');
  const [accounts,flows,costs,people]=await Promise.all(['cash_accounts','cash_flow_entries','expenses','personnel_costs'].map(list));
  for(const id of ['accountList','costList','paymentList','personList'])$(id).replaceChildren();
- const good=accounts.filter(x=>x.current_balance!==null&&Number.isFinite(Number(x.current_balance)));
+ const newest=new Map();for(const x of [...accounts].sort((a,b)=>String(b.balance_date||'').localeCompare(String(a.balance_date||''))||String(b.created_at||'').localeCompare(String(a.created_at||'')))){const key=String(x.account_name||'').trim().toLocaleLowerCase('de-AT');if(!newest.has(key))newest.set(key,x)}const latest=[...newest.values()];const good=latest.filter(x=>x.current_balance!==null&&Number.isFinite(Number(x.current_balance)));
  const balance=good.reduce((s,x)=>s+Number(x.current_balance),0);
- for(const x of accounts)entry('accountList',x.account_name+' · '+euro(x.current_balance),(x.account_type||'')+' · Stand '+(x.balance_date||'ohne Datum'));
+ for(const x of latest)entry('accountList',x.account_name+' · '+euro(x.current_balance),(x.account_type||'')+' · Stand '+(x.balance_date||'ohne Datum'));
  const d=new Date(today()+'T12:00:00Z');d.setUTCDate(d.getUTCDate()+30);
  const end=d.toISOString().slice(0,10);
  let incoming=0,outgoing=0;
