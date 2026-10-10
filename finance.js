@@ -8,8 +8,8 @@ async function owner(){
  const a=await db.auth.getUser();if(a.error||!a.data.user)throw Error('Bitte anmelden.');
  const m=await db.from('business_members').select('business_id,role,businesses(name)').eq('user_id',a.data.user.id);
  if(m.error)throw m.error;
- const x=m.data?.find(z=>z.role==='owner'&&z.businesses?.name?.includes('Friedrich'));
- if(!x)throw Error('Kein Inhaberzugriff für Das Friedrich.');
+ const x=window.GastroPilotBusiness.choose(m.data?.filter(v=>v.role==='owner'));
+ if(!x)throw Error('Kein Inhaberzugriff für den gewählten Betrieb.');
  return x.business_id;
 }
 $('fsRead').onclick=async()=>{
