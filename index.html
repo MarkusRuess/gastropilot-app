@@ -237,16 +237,16 @@ html body #app #page-dashboard p{color:#111!important}
 
 <section id="login" class="card">
 <h2>Anmelden</h2>
-<form id="loginForm">
+<form id="loginForm" autocomplete="on">
 <label>E-Mail
-<input id="email" type="email" value="office@markusruess.at" required>
+<input id="email" name="email" autocomplete="username" type="email" value="office@markusruess.at" required>
 </label>
 <label>Passwort
-<input id="password" type="password" required>
+<input id="password" name="password" autocomplete="current-password" type="password" required>
 </label>
 <button type="submit">Anmelden</button>
 </form>
-<div id="loginStatus" class="status hidden"></div>
+<div id="loginStatus" class="status" role="status" aria-live="polite" style="display:none"></div>
 </section>
 
 <div id="app" class="hidden">
@@ -503,6 +503,14 @@ Artikelstatistik – nicht Umsatz, Steuer oder Zahlungsarten.
 GastroPilot · Das Friedrich · Brot & Wasser RA GmbH
 </footer>
 
+<script>
+window.addEventListener('error',e=>{const x=document.getElementById('loginStatus');if(x){x.style.display='block';x.textContent='App-Fehler: '+e.message;}});
+window.addEventListener('unhandledrejection',e=>{const x=document.getElementById('loginStatus');if(x){x.style.display='block';x.textContent='Verbindungsfehler: '+(e.reason?.message||e.reason||'Unbekannt');}});
+document.addEventListener('DOMContentLoaded',()=>{
+ const f=document.getElementById('loginForm'),b=f?.querySelector('button[type="submit"]');
+ if(b)b.addEventListener('click',()=>{const x=document.getElementById('loginStatus');if(x&&f.checkValidity()){x.style.display='block';x.textContent='Anmeldung wird gestartet …';}});
+});
+</script>
 <script type="module">
 import {createClient} from
 'https://esm.sh/@supabase/supabase-js@2';
@@ -2671,7 +2679,8 @@ async function enter(){
 
 $('loginForm').onsubmit=async e=>{
   e.preventDefault();
-  message('loginStatus','Anmeldung läuft …');
+  $('loginStatus').style.display='block';
+  $('loginStatus').textContent='Anmeldung läuft …';
 
   const {error}=await db.auth.signInWithPassword({
     email:$('email').value.trim(),
@@ -2679,14 +2688,14 @@ $('loginForm').onsubmit=async e=>{
   });
 
   if(error){
-    message('loginStatus',error.message,true);
+    $('loginStatus').textContent='Anmeldung fehlgeschlagen: '+error.message;
     return;
   }
 
   try{
     await enter();
   }catch(e){
-    message('loginStatus',e.message,true);
+    $('loginStatus').textContent='Anmeldung nicht abgeschlossen: '+e.message;
   }
 };
 
@@ -2705,7 +2714,8 @@ $('logout').onclick=async()=>{
     const {data:{session}}=await db.auth.getSession();
     if(session)await enter();
   }catch(e){
-    message('loginStatus',e.message,true);
+    $('loginStatus').style.display='block';
+    $('loginStatus').textContent='Startfehler: '+e.message;
   }
 })();
 </script>
