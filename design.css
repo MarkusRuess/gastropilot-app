@@ -53,3 +53,11 @@ details{background:#fafafa!important;border-color:#e3e3e3!important}
 .status{background:#f7f7f7!important;border-color:#ddd!important}
 a{color:#111!important;text-decoration:underline;text-underline-offset:3px}
 :focus-visible{outline:3px solid #555!important}
+
+/* Selected navigation uses muted metallic gold; actions remain black. */
+:root{--gp-gold:#b59a59;--gp-gold-dark:#92763a}
+.navigation .nav-button.active,.nav .nav-button.active,.nav button.active,button[data-page].active,button[aria-selected="true"],button[aria-pressed="true"]{background:var(--gp-gold)!important;background-color:var(--gp-gold)!important;border-color:var(--gp-gold)!important;color:#111!important}
+.navigation .nav-button.active:hover,.nav button.active:hover,button[data-page].active:hover{background:var(--gp-gold-dark)!important;background-color:var(--gp-gold-dark)!important;color:#111!important}
+#cashScan,#invoiceScan{background:#111!important;background-color:#111!important;border:1px solid #111!important;color:#fff!important}
+#cashScan:hover,#invoiceScan:hover{background:#242424!important;background-color:#242424!important;color:#fff!important}
+a[href*="management.html"][style]{background:#f7f7f7!important;background-color:#f7f7f7!important;border-color:#dedede!important;color:#111!important}
