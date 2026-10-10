@@ -223,7 +223,7 @@ html body #app #page-dashboard h3,
 html body #app #page-dashboard strong,
 html body #app #page-dashboard small,
 html body #app #page-dashboard p{color:#111!important}
-</style><script src="./business-switch.js?v=2"></script></head>
+</style><script src="./business-switch.js?v=3"></script></head>
 <body>
 
 <header>
@@ -2626,6 +2626,23 @@ $('cashArchiveLimit').onchange=refreshArchives;
 $('invoiceSearch').oninput=refreshArchives;
 $('invoiceArchiveLimit').onchange=refreshArchives;
 
+/* Betriebswechsel ohne erneute Anmeldung oder Seiten-Neuladen. */
+window.addEventListener('gastropilot:business-change',async e=>{
+ const next=e.detail?.businessId;
+ if(!next||next===businessId)return;
+ try{
+  const a=await db.auth.getUser();
+  if(a.error||!a.data.user)throw Error('Sitzung abgelaufen. Bitte neu anmelden.');
+  const m=await db.from('business_members').select('business_id,role,businesses(name)').eq('user_id',a.data.user.id).eq('business_id',next).single();
+  if(m.error||!m.data)throw Error('Kein Zugriff auf diesen Betrieb.');
+  businessId=m.data.business_id;role=m.data.role;
+  $('business').textContent=(m.data.businesses?.name||'Betrieb')+' · '+role;
+  window.GastroPilotBusiness.render([m.data],businessId);
+  const all=await db.from('business_members').select('business_id,role,businesses(name)').eq('user_id',a.data.user.id);
+  if(!all.error)window.GastroPilotBusiness.render(all.data,businessId);
+  await loadAll();
+ }catch(err){$('loginStatus').style.display='block';$('loginStatus').textContent='Betriebswechsel: '+err.message;}
+});
 /* ANMELDUNG */
 
 async function enter(){
