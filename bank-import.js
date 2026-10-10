@@ -53,8 +53,8 @@ $('bankSave').onclick=async()=>{
  const auth=await supabase.auth.getUser();if(auth.error||!auth.data.user)throw Error('Bitte anmelden.');
  const m=await supabase.from('business_members').select('business_id,role,businesses(name)').eq('user_id',auth.data.user.id);
  if(m.error)throw m.error;
- const member=m.data?.find(x=>x.role==='owner'&&x.businesses?.name?.includes('Friedrich'));
- if(!member)throw Error('Kein Inhaberzugriff für Das Friedrich.');
+ const member=window.GastroPilotBusiness.choose(m.data?.filter(v=>v.role==='owner'));
+ if(!member)throw Error('Kein Inhaberzugriff für den gewählten Betrieb.');
  const existing=await supabase.from('cash_accounts').select('id,balance_date').eq('business_id',member.business_id).ilike('account_name',account).order('balance_date',{ascending:false}).limit(1);
  if(existing.error)throw existing.error;
  if(existing.data?.length&&existing.data[0].balance_date>date)throw Error('Ein neuerer Kontostand ist bereits gespeichert. Bitte zuerst den Zeitraum prüfen.');
