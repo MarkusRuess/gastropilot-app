@@ -15,9 +15,9 @@ async function enter(){
 async function refresh(){
  if(!businessId)return;
  try{
- const month=$('month').value,start=month+'-01',end=month+'-31';
+ const month=$('month').value,start=month+'-01',end=new Date(Date.UTC(Number(month.slice(0,4)),Number(month.slice(5,7)),1)).toISOString().slice(0,10);
  const [days,summ,items,hours]=await Promise.all([
- db.from('cash_reports').select('id,report_date,gross_revenue').eq('business_id',businessId).gte('report_date',start).lte('report_date',end).order('report_date'),
+ db.from('cash_reports').select('id,report_date,gross_revenue').eq('business_id',businessId).gte('report_date',start).lt('report_date',end).order('report_date'),
  db.from('monthly_cash_summaries').select('*').eq('business_id',businessId).eq('month',start).maybeSingle(),
  db.from('sales_items').select('item_name,quantity,gross_amount,cash_report_id').eq('business_id',businessId).limit(10000),
  db.from('monthly_hourly_sales').select('*').eq('business_id',businessId).eq('month',start).order('hour_of_day')
