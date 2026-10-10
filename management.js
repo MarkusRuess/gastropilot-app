@@ -104,3 +104,21 @@ $('loginForm').onsubmit=async ev=>{
 };
 $('logout').onclick=async()=>{await db.auth.signOut();businessId=null;role=null;$('app').classList.add('hidden');$('login').classList.remove('hidden')};
 (async()=>{const r=await db.auth.getSession();if(r.data.session){try{await enter()}catch(e){$('loginStatus').textContent=e.message}}})();
+
+/* Direkter Betriebswechsel ohne Login-Zwischenseite. */
+window.addEventListener('gastropilot:business-change',async e=>{
+ const next=e.detail?.businessId;
+ if(!next||next===businessId)return;
+ try{
+  const a=await db.auth.getUser();
+  if(a.error||!a.data.user)throw Error('Sitzung abgelaufen.');
+  const m=await db.from('business_members').select('business_id,role,businesses(name)').eq('user_id',a.data.user.id);
+  if(m.error)throw m.error;
+  const x=m.data.find(v=>v.business_id===next&&v.role==='owner');
+  if(!x)throw Error('Kein Inhaberzugriff.');
+  businessId=x.business_id;
+  role=x.role;$('business').textContent=x.businesses.name+' · Inhaber';
+  window.GastroPilotBusiness.render(m.data,businessId);
+  await refresh();
+ }catch(err){status('Betriebswechsel: '+err.message);}
+});
