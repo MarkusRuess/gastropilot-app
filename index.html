@@ -223,6 +223,8 @@ html body #app #page-dashboard h3,
 html body #app #page-dashboard strong,
 html body #app #page-dashboard small,
 html body #app #page-dashboard p{color:#111!important}
+ .back-to-dashboard{display:block!important;width:100%!important;min-height:62px!important;margin:28px 0 18px!important;padding:16px!important;border:2px solid #111!important;border-radius:12px!important;background:#111!important;color:#fff!important;-webkit-text-fill-color:#fff!important;font-size:17px!important;font-weight:800!important;letter-spacing:.02em!important;cursor:pointer!important}
+.back-to-dashboard:focus-visible{outline:3px solid #777;outline-offset:3px}
 </style><script src="./business-switch.js?v=3"></script></head>
 <body>
 
@@ -575,6 +577,18 @@ function message(id,text,error=false){
   const e=$(id);
   e.textContent=text;
   e.className='status'+(error?' error':'');
+}
+
+// Gut erreichbare Rückkehr am Ende jedes Arbeitsbereichs.
+for(const page of document.querySelectorAll('.page')){
+  if(page.id==='page-dashboard')continue;
+  const back=document.createElement('button');
+  back.type='button';
+  back.className='back-to-dashboard';
+  back.textContent='← ZURÜCK ZUM DASHBOARD';
+  back.setAttribute('aria-label','Zurück zum Dashboard');
+  back.addEventListener('click',()=>switchPage('dashboard'));
+  page.append(back);
 }
 
 function switchPage(page){
