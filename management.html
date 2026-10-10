@@ -35,13 +35,16 @@
 <label>Abrechnungsmonat<input id="payrollMonth" type="month" value="2026-09"></label>
 <label>Mitarbeiter/in<input id="payrollEmployee" autocomplete="off"></label>
 <label>Bruttolohn (€)<input id="payrollGross" type="number" step="0.01" min="0"></label>
-<label>Zusätzliche Dienstgeberkosten (€)<input id="payrollEmployer" type="number" step="0.01" min="0"></label>
+<label>Netto-Auszahlungsbetrag (€)<input id="payrollNet" type="number" step="0.01" min="0"></label><label>Zusätzliche Dienstgeberkosten (€)<input id="payrollEmployer" type="number" step="0.01" min="0"></label>
 <label>Ausgelesener Text zur Kontrolle<textarea id="payrollPreview" rows="8" style="width:100%;padding:10px;border:1px solid #c8d2de;border-radius:9px"></textarea></label>
 <label><input id="payrollConfirm" type="checkbox" style="display:inline;width:auto"> Alle Angaben mit dem Original geprüft und zur Speicherung freigegeben.</label>
 <button type="button" id="payrollSave">Personalkosten speichern</button>
 </div></details>
-<details><summary>Personalkosten erfassen</summary><form id="personForm"><label>Monat<input name="accounting_month" type="month" required></label><label>Mitarbeiter/in<input name="employee_name" required></label><label>Bruttolohn (€)<input name="gross_salary" type="number" step="0.01" min="0" required></label><label>Zusätzliche Dienstgeberkosten (€)<input name="employer_costs" type="number" step="0.01" min="0" required></label><button>Speichern</button></form></details><label>Archivmonat<input id="personMonth" type="month"></label><div id="personList"></div></div></section>
+<details><summary>Personalkosten erfassen</summary><form id="personForm"><label>Monat<input name="accounting_month" type="month" required></label><label>Mitarbeiter/in<input name="employee_name" required></label><label>Bruttolohn (€)<input name="gross_salary" type="number" step="0.01" min="0" required></label><label>Zusätzliche Dienstgeberkosten (€)<input name="employer_costs" type="number" step="0.01" min="0" required></label><button>Speichern</button></form></details><details open><summary>September-Löhne mit Bankzahlungen abgleichen</summary><p>Nur tatsächlich geprüfte Banküberweisungen erfassen. PDF-Bankauszüge werden derzeit noch nicht automatisch nach einzelnen Überweisungen ausgewertet. Akontozahlungen separat eintragen.</p>
+<form id="salaryPaymentForm"><label>Mitarbeiter/in laut Lohnabrechnung<input name="employee_name" required></label><label>Abrechnungsmonat<input name="accounting_month" type="month" value="2026-09" required></label><label>Überweisungsdatum<input name="payment_date" type="date" required></label><label>Überwiesener Betrag (€)<input name="amount" type="number" step="0.01" min="0.01" required></label><label>Bankkonto<select name="bank_account"><option>Raiffeisen</option><option>Volksbank</option></select></label><label>Verwendungszweck / Belegreferenz<input name="reference_text"></label><label><input type="checkbox" name="verified" required style="display:inline;width:auto"> Überweisung anhand des Bankbelegs geprüft</label><button>Geprüfte Überweisung erfassen</button></form>
+<div id="salaryPaymentStatus" class="muted"></div><div id="salaryReconcileList"></div></details><label>Archivmonat<input id="personMonth" type="month"></label><div id="personList"></div></div></section>
 <p id="status" class="status">Bereit.</p></div></main>
 <script type="module" src="./management.js"></script>
 <script type="module" src="./bank-import.js"></script>
-<script type="module" src="./payroll-import.js"></script></body></html>
+<script type="module" src="./payroll-import.js"></script>
+<script type="module" src="./salary-reconcile.js"></script></body></html>
