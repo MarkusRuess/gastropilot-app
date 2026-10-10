@@ -388,7 +388,7 @@ accept="image/*" capture="environment" class="hidden">
 <h2>Neue Rechnung erfassen</h2>
 <p class="muted">
 Fotos oder PDF-Dateien auswählen.
-Maximal 12 Seiten oder Bilder.
+Maximal 12 Seiten oder Bilder. Für eine sichere Originalablage bitte jede Lieferantenrechnung einzeln scannen (mehrere Seiten derselben Rechnung sind möglich).
 </p>
 
 <label>Fotos oder PDF-Dateien
@@ -1965,7 +1965,30 @@ async function saveResult(
       }
     }
 
+    // Originale nur dann eindeutig zuordnen, wenn der Scan genau einen Beleg ergibt.
+    let originalPaths=[];
+    if(kind==='invoice'){
+      if(state.invoice.results.length!==1){
+        throw Error('Bitte jede Lieferantenrechnung einzeln scannen und speichern, damit Originale eindeutig zugeordnet bleiben.');
+      }
+      if(!state.invoice.files.length)throw Error('Originaldatei fehlt. Bitte erneut auswählen.');
+      for(const entry of state.invoice.files){
+        const file=entry.file;
+        if(file.size>20*1024*1024)throw Error('Datei zu groß (maximal 20 MB je Original).');
+        const ext=({'application/pdf':'pdf','image/jpeg':'jpg','image/png':'png','image/webp':'webp'})[file.type];
+        if(!ext)throw Error('Dateiformat nicht unterstützt.');
+        const path=businessId+'/'+crypto.randomUUID()+'.'+ext;
+        const uploaded=await db.storage.from('invoice-originals').upload(path,file,{contentType:file.type,upsert:false});
+        if(uploaded.error){
+          for(const previous of originalPaths)await db.storage.from('invoice-originals').remove([previous]);
+          throw Error('Originaldatei nicht gespeichert: '+uploaded.error.message);
+        }
+        originalPaths.push(path);
+      }
+    }
+    reviewed.original_files=originalPaths;
     const {error}=await db.from('documents').insert({
+      storage_path:originalPaths[0]||null,
       business_id:businessId,
       uploaded_by:user.id,
       document_type:kind,
@@ -1977,7 +2000,10 @@ async function saveResult(
       extracted_data:reviewed
     });
 
-    if(error)throw error;
+    if(error){
+      if(originalPaths.length)await db.storage.from('invoice-originals').remove(originalPaths);
+      throw error;
+    }
 
     saved=true;
 
@@ -2203,6 +2229,33 @@ function renderArchive(kind,docs){
       );
 
     detail.append(p);
+
+    if(kind==='invoice'){
+      const paths=Array.isArray(d.original_files)&&d.original_files.length?d.original_files:(entry.storage_path?[entry.storage_path]:[]);
+      if(paths.length){
+        for(let i=0;i<paths.length;i++){
+          const button=document.createElement('button');
+          button.type='button';
+          button.className='secondary';
+          button.textContent='Original '+(i+1)+' öffnen';
+          button.onclick=async()=>{
+            button.disabled=true;
+            try{
+              const out=await db.storage.from('invoice-originals').createSignedUrl(paths[i],60);
+              if(out.error)throw out.error;
+              window.open(out.data.signedUrl,'_blank','noopener,noreferrer');
+            }catch(err){alert('Original konnte nicht geöffnet werden: '+err.message);}
+            finally{button.disabled=false;}
+          };
+          detail.append(button);
+        }
+      }else{
+        const note=document.createElement('p');
+        note.className='muted';
+        note.textContent='Kein Original-PDF/Foto archiviert (älterer Beleg).';
+        detail.append(note);
+      }
+    }
 
     if(kind==='cash_report'){
       const payment=paymentAnalysis(entry);
