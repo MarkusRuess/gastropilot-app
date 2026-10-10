@@ -244,6 +244,7 @@ dialog::backdrop{background:#0f1e2d99}
 <button class="nav-button" data-page="invoice">Lieferantenrechnungen</button>
 <button class="nav-button" data-page="analysis">Auswertungen</button>
 </nav>
+<p style="margin:8px 0 16px"><a href="./management.html" style="display:block;background:#e8f5ef;color:#146b53;border:1px solid #c4e6d7;border-radius:12px;padding:14px;text-align:center;font-weight:700;text-decoration:none">Liquidität · Personal · Verwaltung →</a></p>
 
 <section id="page-dashboard" class="page active">
 <div class="page-title">Dashboard</div>
@@ -554,7 +555,7 @@ function switchPage(page){
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
-document.querySelectorAll('.nav-button').forEach(b=>{
+document.querySelectorAll('button.nav-button[data-page]').forEach(b=>{
   b.onclick=()=>switchPage(b.dataset.page);
 });
 
