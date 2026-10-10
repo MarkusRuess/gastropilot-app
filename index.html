@@ -2060,7 +2060,7 @@ async function allDocs(kind,start,end){
     const {data,error}=await db.from('documents')
       .select(
         'id,document_date,document_type,'+
-        'created_at,extracted_data,supplier,invoice_number'
+        'created_at,extracted_data,supplier,invoice_number,storage_path'
       )
       .eq('business_id',businessId)
       .eq('document_type',kind)
