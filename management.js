@@ -92,7 +92,7 @@ async function enter(){
  businessId=member.business_id;role=member.role;
  $('business').textContent=(member.businesses?.name||'Das Friedrich')+' · Inhaber';
  $('login').classList.add('hidden');$('app').classList.remove('hidden');
- $('personMonth').value=today().slice(0,7);$('personForm').elements.accounting_month.value=today().slice(0,7);
+ $('personMonth').value='2026-09';$('personForm').elements.accounting_month.value='2026-09';
  for(const id of ['accountForm','costForm','paymentForm'])$(id).elements[id==='accountForm'?'balance_date':'due_date'].value=today();
  await refresh();
 }
