@@ -578,13 +578,22 @@ function message(id,text,error=false){
 }
 
 function switchPage(page){
+  const target=document.getElementById('page-'+page);
+  if(!target)return;
   document.querySelectorAll('.page').forEach(x=>{
-    x.classList.toggle('active',x.id==='page-'+page);
+    x.classList.toggle('active',x===target);
   });
   document.querySelectorAll('.nav-button').forEach(x=>{
-    x.classList.toggle('active',x.dataset.page===page);
+    const active=x.dataset.page===page;
+    x.classList.toggle('active',active);
+    x.setAttribute('aria-current',active?'page':'false');
   });
-  window.scrollTo({top:0,behavior:'smooth'});
+  // Der ausgewählte Bereich beginnt direkt unter der Kopfzeile,
+  // statt erst weiter unten auf der bisherigen Scrollposition.
+  requestAnimationFrame(()=>{
+    const top=target.getBoundingClientRect().top+window.scrollY-12;
+    window.scrollTo({top:Math.max(0,top),behavior:'instant'});
+  });
 }
 
 document.querySelectorAll('button.nav-button[data-page]').forEach(b=>{
