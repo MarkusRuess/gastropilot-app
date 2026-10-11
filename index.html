@@ -2653,7 +2653,17 @@ async function applyBonitDashboard(month,manualDocs){
     .order('closing_date',{ascending:true});
   if(error){$('dashboardNote').textContent+=' BONit-Abfrage fehlgeschlagen: '+error.message;return}
   if(!bonit?.length){$('days').textContent='0';$('gross').textContent='–';$('dashboardNote').textContent='Noch keine automatischen BONit-Abschluesse fuer diesen Monat vorhanden. Manuelle Umsaetze werden nicht beruecksichtigt.';return;}
-  const bonitDates=new Set(bonit.map(x=>x.closing_date));
+  // Remove legacy manual-only dashboard blocks for Friedrich.
+  for(const id of ['paymentDailySummary','openPaymentCheck','categoryTotals','showAllCategories']){
+    const el=$(id);if(el)el.style.display='none';
+  }
+  const paymentHeading=$('paymentDailySummary')?.previousElementSibling;
+  if(paymentHeading&&paymentHeading.tagName==='H3')paymentHeading.style.display='none';
+  const categoryHeading=$('categoryTotals')?.previousElementSibling;
+  if(categoryHeading&&categoryHeading.tagName==='H3')categoryHeading.style.display='none';
+  const legacyTopNote=$('top10')?.previousElementSibling;
+  if(legacyTopNote&&legacyTopNote.tagName==='P')legacyTopNote.textContent='Automatisch aus BONit importierte Artikelmengen.';
+    const bonitDates=new Set(bonit.map(x=>x.closing_date));
   const extra=[]; // Friedrich: ausschliesslich BONit, keine manuellen Umsatztage
   const numeric=(v)=>v===null||v===undefined||v===''?null:Number(v);
   const manualValue=(doc,key)=>numeric(doc.extracted_data?.[key]);
@@ -2700,7 +2710,7 @@ async function applyBonitDashboard(month,manualDocs){
       tile.append(rank,title,qty);top.append(tile);
     });
   }
-  $('dashboardNote').textContent='BONit: '+bonit.length+' Z-Abschluesse; '+extra.length+' weitere Belegtage ohne BONit-Ueberschneidung. BONit ist fuer gleiche Tage massgeblich. Netto/USt nicht aus Brutto geschaetzt; Saldo mangels vollstaendiger Kosten nicht berechnet.';
+  $('dashboardNote').textContent='Automatische BONit-Daten: '+bonit.length+' Z-Abschluesse. Manuell erfasste Tagesabschluesse werden hier nicht angezeigt oder eingerechnet. Netto/USt und Saldo nur bei vollstaendigen Originaldaten.';
   const last=$('last');
   if(last)last.textContent='BONit-Datenstand: '+bonit[bonit.length-1].closing_date;
 }
