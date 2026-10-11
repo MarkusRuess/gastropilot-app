@@ -291,7 +291,7 @@ html body #app #page-dashboard p{color:#111!important}
 <div class="row">
 <div>
 <h2 style="font-size:clamp(25px,4vw,34px);letter-spacing:-1px;margin:0 0 7px">Dein Betrieb. Dein Überblick.</h2>
-<div id="business" class="muted"></div><div id="gp-business-switch" style="margin-top:12px;max-width:500px"></div>
+<div id="business" class="muted"></div><div id="fiscalYearInfo" class="muted" aria-live="polite" style="margin-top:8px;font-size:13px;font-weight:600">Geschäftsjahr wird geladen …</div><div id="gp-business-switch" style="margin-top:12px;max-width:500px"></div>
 </div>
 <button id="logout" class="secondary">Abmelden</button>
 </div>
@@ -2736,6 +2736,26 @@ $('cashArchiveLimit').onchange=refreshArchives;
 $('invoiceSearch').oninput=refreshArchives;
 $('invoiceArchiveLimit').onchange=refreshArchives;
 
+/* Geschäftsjahr ist je Betrieb in Supabase gespeichert. */
+async function refreshFiscalYear(){
+ const target=$('fiscalYearInfo');
+ if(!businessId||!target)return;
+ target.textContent='Geschäftsjahr wird geladen …';
+ const r=await db.from('business_fiscal_years').select('start_month,start_day,confirmed').eq('business_id',businessId).maybeSingle();
+ if(r.error||!r.data){target.textContent='Geschäftsjahr nicht verfügbar';return}
+ const x=r.data;
+ const now=new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Vienna',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date());
+ const part=t=>Number(now.find(p=>p.type===t).value);
+ const y=part('year'),m=part('month'),d=part('day');
+ const startYear=(m>x.start_month||(m===x.start_month&&d>=x.start_day))?y:y-1;
+ const start=new Date(Date.UTC(startYear,x.start_month-1,x.start_day));
+ const end=new Date(Date.UTC(startYear+1,x.start_month-1,x.start_day));
+ end.setUTCDate(end.getUTCDate()-1);
+ const fmt=dt=>new Intl.DateTimeFormat('de-AT',{timeZone:'UTC',day:'2-digit',month:'2-digit',year:'numeric'}).format(dt);
+ const daysLeft=Math.ceil((end.getTime()-Date.UTC(y,m-1,d))/86400000);
+ target.textContent='Geschäftsjahr: '+fmt(start)+' – '+fmt(end)+(x.confirmed?'':' · noch bestätigen')+
+ (daysLeft>=0&&daysLeft<=45?' · Hinweis: Geschäftsjahresende in '+daysLeft+' Tagen':'');
+}
 /* Betriebswechsel ohne erneute Anmeldung oder Seiten-Neuladen. */
 window.addEventListener('gastropilot:business-change',async e=>{
  const next=e.detail?.businessId;
@@ -2750,6 +2770,7 @@ window.addEventListener('gastropilot:business-change',async e=>{
   window.GastroPilotBusiness.render([m.data],businessId);
   const all=await db.from('business_members').select('business_id,role,businesses(name)').eq('user_id',a.data.user.id);
   if(!all.error)window.GastroPilotBusiness.render(all.data,businessId);
+  await refreshFiscalYear();
   await loadAll();
  }catch(err){$('loginStatus').style.display='block';$('loginStatus').textContent='Betriebswechsel: '+err.message;}
 });
