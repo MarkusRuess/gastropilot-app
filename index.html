@@ -2786,7 +2786,7 @@ async function refreshYoY(){
  const id=businessId,month=$('month').value;
  $('yoyMonth').textContent='–';$('yoyYear').textContent='–';
  $('yoyMonthInfo').textContent='Wird berechnet …';$('yoyYearInfo').textContent='Wird berechnet …';
- if(!id||!/^\\d{4}-\\d{2}$/.test(month))return;
+ if(!id||!/^\d{4}-\d{2}$/.test(month))return;
  try{
   const cfg=await db.from('business_fiscal_years').select('start_month,start_day').eq('business_id',id).single();
   if(cfg.error||!cfg.data)throw Error('Geschäftsjahr fehlt');
@@ -2805,7 +2805,7 @@ async function refreshYoY(){
    allDocs('cash_report',fiscalPrev,prevEnd)
   ]);
   if(id!==businessId||month!==$('month').value)return;
-  gpComparison(curMonth,oldMonth,'yoyMonth','yoyMonthInfo',bounds.start+' bis '+gpShiftYear(gpNextDate(cutoff),0).slice(0,10)+' (Vorjahreszeitraum)');
+  gpComparison(curMonth,oldMonth,'yoyMonth','yoyMonthInfo',bounds.start+' bis '+gpShiftYear(cutoff,0)+' (exklusiv; Vorjahreszeitraum)');
   gpComparison(curYear,oldYear,'yoyYear','yoyYearInfo',fiscalStart+' bis '+cutoff+' (Vorjahreszeitraum)');
  }catch(err){
   if(id!==businessId)return;
