@@ -2939,6 +2939,8 @@ async function refreshYoY(){
 /* Friedrichs historische BONit-Werte gehören nicht in den Judith-Blick. */
 function showBusinessDashboard(name){
  const friedrich=businessId==='6a5484d1-daf6-4263-897d-24cdf536aa29';
+ // Friedrich uses imported BONit Z closings exclusively; keep form for other businesses.
+ $('cashCapture').style.display=friedrich?'none':'';
  $('headerBusiness').textContent=name;
  document.title='GastroPilot · '+name;
  for(const id of ['bonitShortcut','revenueTrendCard','quickYearCard']){
