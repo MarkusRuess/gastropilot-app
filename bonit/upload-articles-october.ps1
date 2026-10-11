@@ -23,22 +23,33 @@ function SendBatch {
  $batch.Clear()
 }
 $header=$null
-Get-Content -LiteralPath $file.FullName -Encoding Default -ReadCount 1 | ForEach-Object {
- if(!$header){$header=$_;return}
- if([string]::IsNullOrWhiteSpace($_)){return}
- $item=$_ | ConvertFrom-Csv -Header ($header -split "`t") -Delimiter "`t"
- if($item.TagAbNr -notmatch '^\d+$'){return}
- $z=[int]$item.TagAbNr
- if($z -lt 1827 -or $z -gt 1835){return}
- $id=[string]$item.ID
- if([string]::IsNullOrWhiteSpace($id)){throw 'Artikel ohne ID'}
- $source='bonit-article-'+$id
- if(!$seen.Add($source)){return}
- $day=[datetime]::Parse([string]$item.Datum,$culture).ToString('yyyy-MM-dd')
- if($day -lt '2026-10-01' -or $day -gt '2026-10-10'){return}
- $quantity=[decimal]::Parse([string]$item.Menge,$culture)
- $batch.Add([pscustomobject]@{source_key=$source;closing_date=$day;z_number=[string]$z;article_number=[string]$item.PLU;article_name=[string]$item.Bezeichnung;quantity=$quantity;gross_amount=$null})
- if($batch.Count -ge 200){SendBatch}
-}
+$lines=0
+$matched=0
+$reader=New-Object System.IO.StreamReader($file.FullName,[Text.Encoding]::Default)
+Write-Host "START: Lese BONit-Export ($([math]::Round($file.Length/1MB,1)) MB)"
+try {
+ $header=$reader.ReadLine()
+ if(!$header){throw 'CSV ist leer'}
+ $columns=$header -split "`t"
+ while(($line=$reader.ReadLine()) -ne $null){
+  $lines++
+  if(($lines % 100000) -eq 0){Write-Host "Gelesen: $lines Zeilen; Oktober-Treffer: $matched; uebertragen: $total"}
+  if($line -notmatch '0[1-9]\.10\.2026|10\.10\.2026'){continue}
+  $item=$line | ConvertFrom-Csv -Header $columns -Delimiter "`t"
+  if($item.TagAbNr -notmatch '^\d+$'){continue}
+  $z=[int]$item.TagAbNr
+  if($z -lt 1827 -or $z -gt 1835){continue}
+  $day=[datetime]::Parse([string]$item.Datum,$culture).ToString('yyyy-MM-dd')
+  if($day -lt '2026-10-01' -or $day -gt '2026-10-10'){continue}
+  $id=[string]$item.ID
+  if([string]::IsNullOrWhiteSpace($id)){throw 'Artikel ohne ID'}
+  $source='bonit-article-'+$id
+  if(!$seen.Add($source)){continue}
+  $quantity=[decimal]::Parse([string]$item.Menge,$culture)
+  $batch.Add([pscustomobject]@{source_key=$source;closing_date=$day;z_number=[string]$z;article_number=[string]$item.PLU;article_name=[string]$item.Bezeichnung;quantity=$quantity;gross_amount=$null})
+  $matched++
+  if($batch.Count -ge 200){SendBatch}
+ }
+} finally {$reader.Close()}
 SendBatch
 Write-Host "FERTIG: $total Artikelpositionen aus Oktober 1-10 importiert."
