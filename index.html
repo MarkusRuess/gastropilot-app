@@ -308,6 +308,7 @@ html body #app #page-dashboard p{color:#111!important}
 
 <section id="page-dashboard" class="page active">
 <div class="page-title">Dashboard</div>
+<section class="card" id="quickYearCard" style="margin-bottom:14px"><div class="row"><h2 style="margin:0;font-size:18px">Umsätze auf einen Blick</h2><a href="./bonit-dashboard.html" style="font-size:13px;color:#111;font-weight:700">Alle Jahresvergleiche ↗</a></div><div class="grid" style="margin-top:12px"><div class="metric"><small>September 2026 · vorläufig</small><strong>47.117,00 €</strong><small>Friedrich-Aufzeichnungen · nicht BONit-abgeglichen</small></div><div class="metric"><small>Oktober 2026 · 1.–10.</small><strong id="quickOctGross">18.415,70 €</strong><small id="quickOctNote">9 originale Z-Abschlüsse</small></div><div class="metric"><small>Ø Bon Oktober · 1.–10.</small><strong id="quickOctAvg">17,83 €</strong><small>1.033 Rechnungen</small></div><div class="metric"><small>2025 / 2026</small><strong id="quickYearCoverage">Vergleichen ↗</strong><small>Jahres- und Monatskacheln</small></div></div><div class="navigation" style="margin:12px 0 0;gap:8px"><a href="./bonit-dashboard.html" style="text-decoration:none;text-align:center;padding:13px 5px;border:1px solid #ddd;border-radius:10px;color:#111;font-weight:700;font-size:13px">Monatsvergleich ↗</a><a href="./bonit-dashboard.html" style="text-decoration:none;text-align:center;padding:13px 5px;border:1px solid #ddd;border-radius:10px;color:#111;font-weight:700;font-size:13px">Geschäftsjahre ↗</a></div></section>
 <section class="card" id="yoyCard" style="margin-bottom:14px">
  <h2 style="font-size:17px;margin:0 0 12px">Umsatzentwicklung zum Vorjahr</h2>
  <div class="grid">
@@ -2882,6 +2883,12 @@ async function enter(){
 
   await refreshFiscalYear();
   await loadAll();
+  try{
+    if(businessId==='6a5484d1-daf6-4263-897d-24cdf536aa29'){
+      const {data:oct,error:octError}=await db.from('bonit_daily_closings').select('gross_amount,receipt_count').eq('business_id',businessId).gte('closing_date','2026-10-01').lt('closing_date','2026-11-01');
+      if(!octError&&oct?.length){const gross=oct.reduce((a,r)=>a+Number(r.gross_amount||0),0),receipts=oct.reduce((a,r)=>a+Number(r.receipt_count||0),0);$('quickOctGross').textContent=gross.toLocaleString('de-AT',{style:'currency',currency:'EUR'});$('quickOctAvg').textContent=receipts?(gross/receipts).toLocaleString('de-AT',{style:'currency',currency:'EUR'}):'–';$('quickOctNote').textContent=oct.length+' Z-Abschlüsse · '+receipts+' Rechnungen';}
+    }else{$('quickYearCard').style.display='none'}
+  }catch(e){console.warn('Jahreskacheln:',e.message)}
 }
 
 $('loginForm').onsubmit=async e=>{
