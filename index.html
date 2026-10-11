@@ -2737,8 +2737,12 @@ async function loadAll(){
     const {docs:unique,duplicates}=uniqueDays(cash);
 
     const isFriedrich=businessId==='6a5484d1-daf6-4263-897d-24cdf536aa29';
-    updateDashboard(isFriedrich?[]:unique,invoices,isFriedrich?0:duplicates);
-    if(isFriedrich)await applyBonitDashboard(month,[]);
+    if(isFriedrich){
+      updateDashboard([],invoices,0);
+      await applyBonitDashboard(month,[]);
+    }else{
+      updateDashboard(unique,invoices,duplicates);
+    }
     $('analysisMonth').value=month;
     renderAnalysis(isFriedrich?[]:unique);
     if(!isFriedrich)await refreshYoY();
