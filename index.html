@@ -2664,7 +2664,7 @@ async function applyBonitDashboard(month,manualDocs){
   const legacyTopNote=$('top10')?.previousElementSibling;
   if(legacyTopNote&&legacyTopNote.tagName==='P')legacyTopNote.textContent='Automatisch aus BONit importierte Artikelmengen.';
     const bonitDates=new Set(bonit.map(x=>x.closing_date));
-  const extra=[]; // Friedrich: ausschliesslich BONit, keine manuellen Umsatztage
+  const extra=[]; // Friedrich: nur BONit
   const numeric=(v)=>v===null||v===undefined||v===''?null:Number(v);
   const manualValue=(doc,key)=>numeric(doc.extracted_data?.[key]);
   const aggregate=(rows,key,manualKey)=>{
@@ -2677,7 +2677,7 @@ async function applyBonitDashboard(month,manualDocs){
   const cash=aggregate(bonit,'cash_amount','cash_total');
   const card=aggregate(bonit,'card_amount','card_total');
   const receipts=aggregate(bonit,'receipt_count','receipt_count');
-  const dayCount=new Set([...bonitDates,...extra.map(d=>d.document_date)]).size;
+  const dayCount=bonitDates.size;
   $('days').textContent=String(dayCount);
   $('gross').textContent=gross===null?'–':euro(gross);
   $('net').textContent=net===null?'–':euro(net);
@@ -2710,7 +2710,7 @@ async function applyBonitDashboard(month,manualDocs){
       tile.append(rank,title,qty);top.append(tile);
     });
   }
-  $('dashboardNote').textContent='Automatische BONit-Daten: '+bonit.length+' Z-Abschluesse. Manuell erfasste Tagesabschluesse werden hier nicht angezeigt oder eingerechnet. Netto/USt und Saldo nur bei vollstaendigen Originaldaten.';
+  $('dashboardNote').textContent='BONit automatisch: '+bonit.length+' Z-Abschluesse. Keine manuellen Umsatztage eingerechnet. Netto/USt nur mit Originaldaten.';
   const last=$('last');
   if(last)last.textContent='BONit-Datenstand: '+bonit[bonit.length-1].closing_date;
 }
