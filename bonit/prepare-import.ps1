@@ -19,8 +19,8 @@ function DayValue($v) {
   if (-not [datetime]::TryParse([string]$v,[System.Globalization.CultureInfo]::GetCultureInfo('de-AT'),[System.Globalization.DateTimeStyles]::None,[ref]$d)) { throw "Ungueltiges Datum: $v" }
   return $d.ToString('yyyy-MM-dd')
 }
-$closingFile=LatestCsv 'Tagesabschlüsse.csv'
-$articleFile=LatestCsv 'Artikelumsätze.csv'
+$closingFile=LatestCsv ('Tagesabschl' + [char]0x00FC + 'sse.csv')
+$articleFile=LatestCsv ('Artikelums' + [char]0x00E4 + 'tze.csv')
 Write-Host "Abschluesse: $($closingFile.FullName)"
 Write-Host "Artikel: $($articleFile.FullName)"
 $closings = @(Import-Csv -LiteralPath $closingFile.FullName -Delimiter "`t" | Where-Object { $_.ID -and $_.DatumDurchfuehrung } | ForEach-Object {
