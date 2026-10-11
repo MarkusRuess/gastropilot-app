@@ -2642,6 +2642,51 @@ function renderAnalysis(unique){
   }
 }
 
+/* BONit ist fuer importierte Z-Abschlusstage die fuehrende Quelle.
+   Andere Belegtage bleiben separat; keine Doppelzaehlung. */
+async function applyBonitDashboard(month,manualDocs){
+  if(businessId!=='6a5484d1-daf6-4263-897d-24cdf536aa29')return;
+  const {start,end}=monthBounds(month);
+  const {data:bonit,error}=await db.from('bonit_daily_closings')
+    .select('closing_date,z_number,gross_amount,net_amount,cash_amount,card_amount,receipt_count')
+    .eq('business_id',businessId).gte('closing_date',start).lt('closing_date',end)
+    .order('closing_date',{ascending:true});
+  if(error){$('dashboardNote').textContent+=' BONit-Abfrage fehlgeschlagen: '+error.message;return}
+  if(!bonit?.length)return;
+  const bonitDates=new Set(bonit.map(x=>x.closing_date));
+  const extra=manualDocs.filter(x=>!bonitDates.has(x.document_date));
+  const numeric=(v)=>v===null||v===undefined||v===''?null:Number(v);
+  const manualValue=(doc,key)=>numeric(doc.extracted_data?.[key]);
+  const aggregate=(rows,key,manualKey)=>{
+    const vals=[...rows.map(r=>numeric(r[key])),...extra.map(d=>manualValue(d,manualKey))];
+    return vals.length&&vals.every(v=>v!==null&&Number.isFinite(v))
+      ?vals.reduce((a,b)=>a+b,0):null;
+  };
+  const gross=aggregate(bonit,'gross_amount','gross_total');
+  const net=aggregate(bonit,'net_amount','net_total');
+  const cash=aggregate(bonit,'cash_amount','cash_total');
+  const card=aggregate(bonit,'card_amount','card_total');
+  const receipts=aggregate(bonit,'receipt_count','receipt_count');
+  const dayCount=new Set([...bonitDates,...extra.map(d=>d.document_date)]).size;
+  $('days').textContent=String(dayCount);
+  $('gross').textContent=gross===null?'–':euro(gross);
+  $('net').textContent=net===null?'–':euro(net);
+  $('vat').textContent=gross!==null&&net!==null?euro(gross-net):'–';
+  $('average').textContent=gross!==null&&dayCount?euro(gross/dayCount):'–';
+  $('cashTotal').textContent=cash===null?'–':euro(cash);
+  $('cardTotal').textContent=card===null?'–':euro(card);
+  $('otherTotal').textContent='–';
+  $('receiptCount').textContent=receipts===null?'–':new Intl.NumberFormat('de-AT').format(receipts);
+  $('averageReceipt').textContent=gross!==null&&receipts>0?euro(gross/receipts):'–';
+  $('receiptsPerDay').textContent=receipts!==null&&dayCount?new Intl.NumberFormat('de-AT',{maximumFractionDigits:1}).format(receipts/dayCount):'–';
+  $('paymentCheck').textContent=gross!==null&&cash!==null&&card!==null&&Math.abs(gross-cash-card)<0.02?'Abgeglichen':'Pruefung offen';
+  $('paymentCheck').className='';
+  $('balance').textContent='–';
+  $('dashboardNote').textContent='BONit: '+bonit.length+' Z-Abschluesse; '+extra.length+' weitere Belegtage ohne BONit-Ueberschneidung. BONit ist fuer gleiche Tage massgeblich. Netto/USt nicht aus Brutto geschaetzt; Saldo mangels vollstaendiger Kosten nicht berechnet.';
+  const last=$('last');
+  if(last)last.textContent='BONit-Datenstand: '+bonit[bonit.length-1].closing_date;
+}
+
 /* MONATSDATEN */
 
 async function loadAll(){
@@ -2664,6 +2709,7 @@ async function loadAll(){
     const {docs:unique,duplicates}=uniqueDays(cash);
 
     updateDashboard(unique,invoices,duplicates);
+    await applyBonitDashboard(month,unique);
     $('analysisMonth').value=month;
     renderAnalysis(unique);
     await refreshYoY();
