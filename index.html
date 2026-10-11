@@ -2776,6 +2776,46 @@ async function loadAll(){
   }
 }
 
+async function renderBonitCashArchive(){
+  const box=$('cashArchive'), info=$('cashArchiveInfo');
+  const month=$('cashArchiveMonth').value||$('month').value;
+  if(!/^\\d{4}-\\d{2}$/.test(month))return;
+  const {start,end}=monthBounds(month);
+  const result=await db.from('bonit_daily_closings')
+    .select('closing_date,z_number,gross_amount,net_amount,cash_amount,card_amount,receipt_count')
+    .eq('business_id',businessId).gte('closing_date',start).lt('closing_date',end)
+    .order('closing_date',{ascending:false});
+  box.replaceChildren();
+  if(result.error){info.textContent='BONit-Archivfehler: '+result.error.message;return}
+  let rows=result.data||[];
+  const date=$('cashArchiveDate').value;
+  if(date)rows=rows.filter(r=>r.closing_date===date);
+  const limit=$('cashArchiveLimit').value;
+  if(limit!=='all')rows=rows.slice(0,Number(limit)||10);
+  info.textContent='Automatisches BONit-Tagesarchiv · '+rows.length+' angezeigt. Manuelle Belege bleiben separat gespeichert.';
+  if(!rows.length){box.textContent='Keine BONit-Z-Abschluesse fuer diese Auswahl.';return}
+  for(const r of rows){
+    const card=document.createElement('details');card.className='card';card.style.marginBottom='8px';
+    const summary=document.createElement('summary');summary.style.cursor='pointer';
+    summary.style.fontWeight='700';summary.style.padding='4px 0';
+    summary.textContent=r.closing_date+' · Z '+r.z_number+' · '+euro(Number(r.gross_amount||0));
+    const detail=document.createElement('div');detail.className='grid';detail.style.marginTop='10px';
+    for(const [label,value] of [
+      ['Brutto',euro(Number(r.gross_amount||0))],
+      ['Netto',r.net_amount==null?'Noch nicht importiert':euro(Number(r.net_amount))],
+      ['Bar',r.cash_amount==null?'–':euro(Number(r.cash_amount))],
+      ['Karte',r.card_amount==null?'–':euro(Number(r.card_amount))],
+      ['Bons',r.receipt_count==null?'–':String(r.receipt_count)]
+    ]){
+      const tile=document.createElement('div');tile.className='metric';
+      const small=document.createElement('small');small.textContent=label;
+      const strong=document.createElement('strong');strong.textContent=value;
+      tile.append(small,strong);detail.append(tile);
+    }
+    card.append(summary,detail);box.append(card);
+  }
+}
+
 async function refreshArchives(){
   if(!businessId)return;
 
@@ -2800,7 +2840,8 @@ async function refreshArchives(){
       );
     }
 
-    renderArchive('cash_report',cash);
+    if(businessId==='6a5484d1-daf6-4263-897d-24cdf536aa29')await renderBonitCashArchive();
+    else renderArchive('cash_report',cash);
     renderArchive('invoice',invoices);
 
   }catch(e){
