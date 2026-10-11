@@ -291,7 +291,7 @@ html body #app #page-dashboard p{color:#111!important}
 <div class="row">
 <div>
 <h2 style="font-size:clamp(25px,4vw,34px);letter-spacing:-1px;margin:0 0 7px">Dein Betrieb. Dein Überblick.</h2>
-<div id="business" class="muted"></div><div id="fiscalYearInfo" class="muted" aria-live="polite" style="margin-top:8px;font-size:13px;font-weight:600">Geschäftsjahr wird geladen …</div><div id="gp-business-switch" style="margin-top:12px;max-width:500px"></div>
+<div id="business" class="muted"></div><div id="fiscalYearInfo" class="muted" aria-live="polite" style="margin-top:5px;font-size:11px;font-weight:400;line-height:1.45">Geschäftsjahr wird geladen …</div><div id="gp-business-switch" style="margin-top:12px;max-width:500px"></div>
 </div>
 <button id="logout" class="secondary">Abmelden</button>
 </div>
@@ -307,6 +307,14 @@ html body #app #page-dashboard p{color:#111!important}
 
 <section id="page-dashboard" class="page active">
 <div class="page-title">Dashboard</div>
+<section class="card" id="yoyCard" style="margin-bottom:14px">
+ <h2 style="font-size:17px;margin:0 0 12px">Umsatzentwicklung zum Vorjahr</h2>
+ <div class="grid">
+  <div class="metric"><small>Monat zum gleichen Vorjahreszeitraum</small><strong id="yoyMonth">–</strong><small id="yoyMonthInfo">Wird geladen …</small></div>
+  <div class="metric"><small>Geschäftsjahr bisher zum Vorjahr</small><strong id="yoyYear">–</strong><small id="yoyYearInfo">Wird geladen …</small></div>
+ </div>
+ <p class="muted" style="font-size:11px;margin:9px 0 0">Vergleich auf Basis gespeicherter Bruttoumsätze. Fehlende Umsatztage werden nicht geschätzt. Aktueller Monat: nur bis zum heutigen Tag.</p>
+</section>
 <section class="card">
 <div class="row">
 <h2>Monatsübersicht</h2>
@@ -2668,6 +2676,7 @@ async function loadAll(){
     updateDashboard(unique,invoices,duplicates);
     $('analysisMonth').value=month;
     renderAnalysis(unique);
+    await refreshYoY();
 
     if(!$('cashArchiveMonth').value){
       $('cashArchiveMonth').value=month;
@@ -2755,6 +2764,54 @@ async function refreshFiscalYear(){
  const daysLeft=Math.ceil((end.getTime()-Date.UTC(y,m-1,d))/86400000);
  target.textContent='Geschäftsjahr: '+fmt(start)+' – '+fmt(end)+(x.confirmed?'':' · noch bestätigen')+
  (daysLeft>=0&&daysLeft<=45?' · Hinweis: Geschäftsjahresende in '+daysLeft+' Tagen':'');
+}
+/* Monats- und Geschäftsjahresvergleich: gleiche Zeiträume, nur vorhandene Belege. */
+function gpDate(d){return d.toISOString().slice(0,10)}
+function gpShiftYear(date,years){const d=new Date(date+'T12:00:00Z');const y=d.getUTCFullYear()+years,m=d.getUTCMonth(),day=d.getUTCDate();return gpDate(new Date(Date.UTC(y,m,Math.min(day,new Date(Date.UTC(y,m+1,0)).getUTCDate()))))}
+function gpNextDate(date){const d=new Date(date+'T12:00:00Z');d.setUTCDate(d.getUTCDate()+1);return gpDate(d)}
+function gpFiscalStart(date,config){const y=Number(date.slice(0,4));const suffix=String(config.start_month).padStart(2,'0')+'-'+String(config.start_day).padStart(2,'0');return (date.slice(5)>=suffix?y:y-1)+'-'+suffix}
+function gpComparison(current,previous,target,detail,label){
+ const a=sumField(uniqueDays(current).docs,'gross_total'),b=sumField(uniqueDays(previous).docs,'gross_total');
+ const out=$(target),info=$(detail);
+ out.style.color='';out.textContent='–';
+ if(!current.length||!previous.length||!a.complete||!b.complete||b.value<=0){
+  info.textContent=label+' · Kein belastbarer Vorjahresvergleich verfügbar';return;
+ }
+ const pct=(a.value/b.value-1)*100;
+ out.textContent=(pct>0?'▲ ':pct<0?'▼ ':'● ')+(pct>0?'+':'')+pct.toLocaleString('de-AT',{maximumFractionDigits:1,minimumFractionDigits:1})+' %';
+ out.style.color=pct>0?'#188038':pct<0?'#c62828':'#555';
+ info.textContent=label+' · '+euro(a.value)+' / '+euro(b.value)+' · '+uniqueDays(current).docs.length+' / '+uniqueDays(previous).docs.length+' erfasste Tage';
+}
+async function refreshYoY(){
+ const id=businessId,month=$('month').value;
+ $('yoyMonth').textContent='–';$('yoyYear').textContent='–';
+ $('yoyMonthInfo').textContent='Wird berechnet …';$('yoyYearInfo').textContent='Wird berechnet …';
+ if(!id||!/^\\d{4}-\\d{2}$/.test(month))return;
+ try{
+  const cfg=await db.from('business_fiscal_years').select('start_month,start_day').eq('business_id',id).single();
+  if(cfg.error||!cfg.data)throw Error('Geschäftsjahr fehlt');
+  const todayParts=new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Vienna',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date());
+  const today=todayParts.find(x=>x.type==='year').value+'-'+todayParts.find(x=>x.type==='month').value+'-'+todayParts.find(x=>x.type==='day').value;
+  const bounds=monthBounds(month);
+  const cutoff=month===today.slice(0,7)?gpNextDate(today):bounds.end;
+  if(bounds.start>today){$('yoyMonthInfo').textContent='Zukünftiger Monat';$('yoyYearInfo').textContent='Zukünftiger Monat';return}
+  const prevStart=gpShiftYear(bounds.start,-1),prevEnd=gpShiftYear(cutoff,-1);
+  const fiscalStart=gpFiscalStart(bounds.start,cfg.data);
+  const fiscalPrev=gpShiftYear(fiscalStart,-1);
+  const [curMonth,oldMonth,curYear,oldYear]=await Promise.all([
+   allDocs('cash_report',bounds.start,cutoff),
+   allDocs('cash_report',prevStart,prevEnd),
+   allDocs('cash_report',fiscalStart,cutoff),
+   allDocs('cash_report',fiscalPrev,prevEnd)
+  ]);
+  if(id!==businessId||month!==$('month').value)return;
+  gpComparison(curMonth,oldMonth,'yoyMonth','yoyMonthInfo',bounds.start+' bis '+gpShiftYear(gpNextDate(cutoff),0).slice(0,10)+' (Vorjahreszeitraum)');
+  gpComparison(curYear,oldYear,'yoyYear','yoyYearInfo',fiscalStart+' bis '+cutoff+' (Vorjahreszeitraum)');
+ }catch(err){
+  if(id!==businessId)return;
+  $('yoyMonthInfo').textContent='Vergleich nicht verfügbar: '+err.message;
+  $('yoyYearInfo').textContent='Vergleich nicht verfügbar';
+ }
 }
 /* Betriebswechsel ohne erneute Anmeldung oder Seiten-Neuladen. */
 window.addEventListener('gastropilot:business-change',async e=>{
