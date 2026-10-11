@@ -2652,9 +2652,9 @@ async function applyBonitDashboard(month,manualDocs){
     .eq('business_id',businessId).gte('closing_date',start).lt('closing_date',end)
     .order('closing_date',{ascending:true});
   if(error){$('dashboardNote').textContent+=' BONit-Abfrage fehlgeschlagen: '+error.message;return}
-  if(!bonit?.length)return;
+  if(!bonit?.length){$('days').textContent='0';$('gross').textContent='–';$('dashboardNote').textContent='Noch keine automatischen BONit-Abschluesse fuer diesen Monat vorhanden. Manuelle Umsaetze werden nicht beruecksichtigt.';return;}
   const bonitDates=new Set(bonit.map(x=>x.closing_date));
-  const extra=manualDocs.filter(x=>!bonitDates.has(x.document_date));
+  const extra=[]; // Friedrich: ausschliesslich BONit, keine manuellen Umsatztage
   const numeric=(v)=>v===null||v===undefined||v===''?null:Number(v);
   const manualValue=(doc,key)=>numeric(doc.extracted_data?.[key]);
   const aggregate=(rows,key,manualKey)=>{
@@ -2682,6 +2682,24 @@ async function applyBonitDashboard(month,manualDocs){
   $('paymentCheck').textContent=gross!==null&&cash!==null&&card!==null&&Math.abs(gross-cash-card)<0.02?'Abgeglichen':'Pruefung offen';
   $('paymentCheck').className='';
   $('balance').textContent='–';
+  // Top-Artikel ebenfalls ausschliesslich aus BONit lesen.
+  const {data:articles, error:articleError}=await db.from('bonit_article_sales')
+    .select('article_name,quantity').eq('business_id',businessId)
+    .gte('closing_date',start).lt('closing_date',end).range(0,9999);
+  const top=$('top10');top.replaceChildren();
+  if(articleError){top.textContent='BONit-Artikel konnten nicht geladen werden.'}
+  else if(!articles?.length){top.textContent='Noch keine automatischen BONit-Artikel importiert.'}
+  else {
+    const grouped=new Map();
+    for(const a of articles){const name=String(a.article_name||'Unbekannt').trim();grouped.set(name,(grouped.get(name)||0)+Number(a.quantity||0))}
+    [...grouped.entries()].sort((a,b)=>b[1]-a[1]).slice(0,10).forEach(([name,quantity],i)=>{
+      const tile=document.createElement('div');tile.className='top-item';
+      const rank=document.createElement('span');rank.className='top-rank';rank.textContent=(i+1)+'.';
+      const title=document.createElement('div');title.textContent=name;title.style.overflowWrap='anywhere';
+      const qty=document.createElement('span');qty.className='top-quantity';qty.textContent=new Intl.NumberFormat('de-AT',{maximumFractionDigits:2}).format(quantity)+' Stk.';
+      tile.append(rank,title,qty);top.append(tile);
+    });
+  }
   $('dashboardNote').textContent='BONit: '+bonit.length+' Z-Abschluesse; '+extra.length+' weitere Belegtage ohne BONit-Ueberschneidung. BONit ist fuer gleiche Tage massgeblich. Netto/USt nicht aus Brutto geschaetzt; Saldo mangels vollstaendiger Kosten nicht berechnet.';
   const last=$('last');
   if(last)last.textContent='BONit-Datenstand: '+bonit[bonit.length-1].closing_date;
@@ -2708,11 +2726,13 @@ async function loadAll(){
 
     const {docs:unique,duplicates}=uniqueDays(cash);
 
-    updateDashboard(unique,invoices,duplicates);
-    await applyBonitDashboard(month,unique);
+    const isFriedrich=businessId==='6a5484d1-daf6-4263-897d-24cdf536aa29';
+    updateDashboard(isFriedrich?[]:unique,invoices,isFriedrich?0:duplicates);
+    if(isFriedrich)await applyBonitDashboard(month,[]);
     $('analysisMonth').value=month;
-    renderAnalysis(unique);
-    await refreshYoY();
+    renderAnalysis(isFriedrich?[]:unique);
+    if(!isFriedrich)await refreshYoY();
+    else { $('yoyMonth').textContent='–'; $('yoyYear').textContent='–'; $('yoyMonthInfo').textContent='Automatischer BONit-Vorjahresvergleich noch nicht verfuegbar'; $('yoyYearInfo').textContent='Automatischer BONit-Vorjahresvergleich noch nicht verfuegbar'; }
 
     if(!$('cashArchiveMonth').value){
       $('cashArchiveMonth').value=month;
