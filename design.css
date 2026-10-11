@@ -71,3 +71,17 @@ html body button *,html body [class*="button"] *,html body [class*="btn"] *{
  details{padding:9px!important;margin:7px 0!important}
  .muted{line-height:1.35!important}
 }
+
+/* Mobile: alle Berichte lesbar, ohne horizontales Wegschieben von Namen. */
+@media(max-width:650px){
+ .table-scroll{overflow-x:auto!important;max-width:100%!important}
+ .table-scroll table{min-width:0!important;width:100%!important;table-layout:auto!important}
+ .table-scroll th,.table-scroll td{white-space:normal!important;overflow-wrap:anywhere!important;word-break:normal!important}
+ .table-scroll th:first-child,.table-scroll td:first-child{min-width:0!important;width:48%!important}
+ #analysisItems .table-scroll{overflow-x:auto!important}
+ #analysisItems table{width:100%!important;max-width:100%!important}
+ #top10 .top-item{padding:5px 0!important;gap:4px 6px!important}
+ #top10 .top-link{font-size:13px!important;line-height:1.25!important}
+ #top10 .top-quantity{font-size:13px!important}
+ .dashboard-more button{padding:7px 10px!important;margin:4px 0!important}
+}
