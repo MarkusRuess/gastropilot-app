@@ -2,7 +2,7 @@
 $ErrorActionPreference = 'Stop'
 $keyPath = 'C:\GastroPilot\Scripts\device-key.dat'
 if (-not (Test-Path -LiteralPath $keyPath)) { throw 'Geraeteschluessel nicht gefunden.' }
-$secure = (Get-Content -LiteralPath $keyPath -Encoding Unicode | Select-Object -First 1).Trim() | ConvertTo-SecureString
+$secure = (Get-Content -LiteralPath $keyPath | Select-Object -First 1).Trim() | ConvertTo-SecureString
 $ptr = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($secure)
 try { $token = [Runtime.InteropServices.Marshal]::PtrToStringBSTR($ptr) }
 finally { [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($ptr) }
