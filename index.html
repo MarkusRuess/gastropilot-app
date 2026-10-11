@@ -259,7 +259,7 @@ html body #app #page-dashboard small,
 html body #app #page-dashboard p{color:#111!important}
  .back-to-dashboard{display:block!important;width:100%!important;min-height:62px!important;margin:28px 0 18px!important;padding:16px!important;border:2px solid #111!important;border-radius:12px!important;background:#111!important;color:#fff!important;-webkit-text-fill-color:#fff!important;font-size:17px!important;font-weight:800!important;letter-spacing:.02em!important;cursor:pointer!important}
 .back-to-dashboard:focus-visible{outline:3px solid #777;outline-offset:3px}
-</style><script src="./business-switch.js?v=3"></script><link rel="stylesheet" href="./design.css?v=tiles-20261011-4"></head>
+</style><script src="./business-switch.js?v=3"></script><link rel="stylesheet" href="./design.css?v=tiles-20261011-5"></head>
 <body>
 
 <header>
@@ -2623,35 +2623,22 @@ function renderAnalysis(unique){
   if(!all.length){
     items.textContent='Noch keine Artikelmengen vorhanden.';
   }else{
-    const scroll=document.createElement('div');
-    scroll.className='table-scroll';
-
-    const table=document.createElement('table');
-    const head=document.createElement('tr');
-
-    for(const value of ['Artikel','Stück']){
-      const th=document.createElement('th');
-      th.textContent=value;
-      head.append(th);
-    }
-    table.append(head);
-
-    for(const item of all.slice(0,20)){
-      const tr=document.createElement('tr');
-
-      for(const value of [
-        item.name,item.quantity
-      ]){
-        const td=document.createElement('td');
-        td.textContent=value;
-        tr.append(td);
-      }
-
-      table.append(tr);
-    }
-
-    scroll.append(table);
-    items.append(scroll);
+    items.className='article-tiles';
+    all.slice(0,20).forEach((item,index)=>{
+      const tile=document.createElement('div');
+      tile.className='article-tile';
+      const rank=document.createElement('span');
+      rank.className='article-tile-rank';
+      rank.textContent='#'+(index+1);
+      const name=document.createElement('strong');
+      name.className='article-tile-name';
+      name.textContent=item.name;
+      const quantity=document.createElement('span');
+      quantity.className='article-tile-detail';
+      quantity.textContent=new Intl.NumberFormat('de-AT',{maximumFractionDigits:2}).format(item.quantity)+' Stück';
+      tile.append(rank,name,quantity);
+      items.append(tile);
+    });
   }
 }
 
