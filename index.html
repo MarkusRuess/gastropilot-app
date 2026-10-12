@@ -2832,6 +2832,33 @@ async function loadAll(){
   }
 }
 
+function arrangeDashboard(){
+ const page=$('page-dashboard');
+ if(!page)return;
+ const month=$('month')?.closest('section.card');
+ const top=$('bonitTopCard');
+ const quick=$('quickYearCard');
+ const trend=$('revenueTrendCard');
+ const bank=$('bankOverviewCard');
+ if(!month||!top||!quick||!trend||!bank)return;
+ // Keep the monthly card intact, but present Top 10 as a separate dashboard block.
+ for(const el of [month,top,quick,trend,bank])page.append(el);
+ const existing=$('bankDetailsToggle');
+ if(!existing){
+  const details=document.createElement('details');
+  details.id='bankDetailsToggle';
+  details.style.marginTop='10px';
+  const summary=document.createElement('summary');
+  summary.textContent='Einzelne Bankzahlungen anzeigen';
+  summary.style.cursor='pointer';
+  summary.style.fontWeight='700';
+  summary.style.padding='12px 4px';
+  details.append(summary,$('bankOverviewRows'));
+  bank.append(details);
+ }
+}
+arrangeDashboard();
+
 async function refreshBankOverview(){
   const card=$('bankOverviewCard');
   if(!card)return;
@@ -2839,6 +2866,7 @@ async function refreshBankOverview(){
   card.style.display=isFriedrich?'':'none';
   if(!isFriedrich)return;
   const status=$('bankOverviewStatus'),accounts=$('bankOverviewAccounts'),rows=$('bankOverviewRows');
+  arrangeDashboard();
   status.textContent='Lade Bankbuchungen …';accounts.replaceChildren();rows.replaceChildren();
   const {data,error}=await db.from('bank_transactions')
     .select('account_name,booking_date,payee,description,amount,category')
@@ -2849,15 +2877,20 @@ async function refreshBankOverview(){
   const month=$('month').value;
   const inMonth=entries.filter(x=>String(x.booking_date||'').startsWith(month));
   status.textContent=entries.length+' importierte Bankbewegungen insgesamt · '+inMonth.length+' im Monat '+month+'.';
+  const statementBalances={Volksbank:{amount:4121,date:'2026-10-12'},Raika:{amount:-3650.20,date:'2026-10-12'}};
   for(const name of ['Volksbank','Raika']){
     const subset=entries.filter(x=>x.account_name===name);
     const tile=document.createElement('div');tile.className='metric';
     const label=document.createElement('small');label.textContent=name;
-    const value=document.createElement('strong');value.textContent=subset.length+' Buchungen';
-    const range=document.createElement('small');
-    const dates=subset.map(x=>x.booking_date).sort();
-    range.textContent=dates.length?dates[0]+' bis '+dates[dates.length-1]:'Noch kein Import';
-    tile.append(label,value,range);accounts.append(tile);
+    const amount=document.createElement('strong');
+    const ref=statementBalances[name];
+    amount.textContent=euro(ref.amount);
+    const date=document.createElement('small');
+    date.style.display='block';
+    date.textContent='Auszugsstand '+ref.date.split('-').reverse().join('.')+' · '+(name==='Raika'?'vorläufiger PDF-Referenzwert':'zuletzt erfasster Stand');
+    const count=document.createElement('small');
+    count.style.display='block';count.textContent=subset.length+' importierte Buchungen';
+    tile.append(label,amount,date,count);accounts.append(tile);
   }
   const heading=document.createElement('h3');heading.textContent='Zahlungen im ausgewählten Monat';rows.append(heading);
   if(!inMonth.length){const p=document.createElement('p');p.textContent='Noch keine Bankbuchungen für diesen Monat importiert.';rows.append(p)}
