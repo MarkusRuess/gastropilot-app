@@ -3248,8 +3248,9 @@ function showBusinessDashboard(name){
  $('cashCapture').style.display=friedrich?'none':'';
  $('headerBusiness').textContent=name;
  document.title='GastroPilot · '+name;
- for(const id of ['bonitShortcut','revenueTrendCard','quickYearCard']){
-   $(id).style.display=friedrich?'':'none';
+ for(const id of ['revenueTrendCard','quickYearCard']){
+   const element=$(id);
+   if(element)element.style.display=friedrich?'':'none';
  }
 }
 /* Betriebswechsel ohne erneute Anmeldung oder Seiten-Neuladen. */
