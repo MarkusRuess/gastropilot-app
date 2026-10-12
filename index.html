@@ -231,6 +231,18 @@ dialog::backdrop{background:#0f1e2d99}
  #analysisItems table{font-size:14px}
  #analysisItems th,#analysisItems td{padding:9px 7px}
 }
+
+/* BONit: ruhiges, lesbares Übertragungsprotokoll */
+#bonitImportLogCard{padding:20px 22px}
+#bonitImportLogCard h2{margin-bottom:8px}
+#bonitImportStatus{margin:0 0 15px}
+#bonitImportLog{display:grid;gap:7px}
+.bonit-log-row{display:grid;grid-template-columns:minmax(160px,1.2fr) minmax(70px,.65fr) minmax(120px,1fr);align-items:center;gap:14px;padding:14px 16px;background:#fafafa;border:1px solid #ebebeb;border-radius:12px;min-width:0}
+.bonit-log-date{font-size:14px;font-weight:650;white-space:nowrap}
+.bonit-log-number{font-size:13px;color:#666}
+.bonit-log-amount{font-size:17px;font-weight:800;text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+#bonitImportLogCard>p.muted:last-child{margin-top:18px;padding-top:12px;border-top:1px solid #eee}
+@media(max-width:540px){#bonitImportLogCard{padding:15px}.bonit-log-row{grid-template-columns:minmax(0,1fr) auto;gap:5px 10px;padding:12px}.bonit-log-date{font-size:13px}.bonit-log-number{grid-column:1;grid-row:2}.bonit-log-amount{grid-column:2;grid-row:1 / span 2;font-size:16px}}
 </style>
 <style id="dashboard-white-final">
 /* Dashboard + selected tile: always white, black typography, no state colors. */
@@ -2998,12 +3010,12 @@ async function refreshBonitImportLog(){
   box.replaceChildren();
   if(error){status.textContent='Protokoll derzeit nicht abrufbar: '+error.message;return}
   const rows=data||[];
-  status.textContent=rows.length?'Letzter gespeicherter Abschluss: '+rows[0].closing_date+' · '+rows.length+' letzte Eintraege':'Noch keine importierten BONit-Abschluesse vorhanden.';
+  status.textContent=rows.length?'Letzter gespeicherter Abschluss: '+dateLabel(rows[0].closing_date)+' · '+rows.length+' letzte Einträge':'Noch keine importierten BONit-Abschluesse vorhanden.';
   for(const r of rows){
-    const line=document.createElement('div');line.className='top-item';
-    const date=document.createElement('span');date.textContent=r.closing_date;
-    const z=document.createElement('span');z.textContent='Z '+(r.z_number??'–');
-    const amount=document.createElement('strong');amount.textContent=euro(Number(r.gross_amount||0));
+    const line=document.createElement('div');line.className='bonit-log-row';
+    const date=document.createElement('span');date.className='bonit-log-date';date.textContent=dateLabel(r.closing_date);
+    const z=document.createElement('span');z.className='bonit-log-number';z.textContent='Z '+(r.z_number??'–');
+    const amount=document.createElement('strong');amount.className='bonit-log-amount';amount.textContent=euro(Number(r.gross_amount||0));
     line.append(date,z,amount);box.append(line);
   }
 }
