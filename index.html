@@ -275,7 +275,7 @@ html body #app #page-dashboard small,
 html body #app #page-dashboard p{color:#111!important}
  .back-to-dashboard{display:block!important;width:100%!important;min-height:62px!important;margin:28px 0 18px!important;padding:16px!important;border:2px solid #111!important;border-radius:12px!important;background:#111!important;color:#fff!important;-webkit-text-fill-color:#fff!important;font-size:17px!important;font-weight:800!important;letter-spacing:.02em!important;cursor:pointer!important}
 .back-to-dashboard:focus-visible{outline:3px solid #777;outline-offset:3px}
-</style><script src="./business-switch.js?v=3"></script><link rel="stylesheet" href="./design.css?v=tiles-20261011-5"></head>
+</style><script src="./business-switch.js?v=4"></script><link rel="stylesheet" href="./design.css?v=tiles-20261011-5"></head>
 <body>
 
 <header>
@@ -3265,12 +3265,19 @@ window.addEventListener('gastropilot:business-change',async e=>{
   businessId=m.data.business_id;role=m.data.role;
   $('business').textContent=(m.data.businesses?.name||'Betrieb')+' · '+role;
   showBusinessDashboard(m.data.businesses?.name||'Betrieb');
-  window.GastroPilotBusiness.render([m.data],businessId);
+  // Keep all authorized business choices visible during switching.
   const all=await db.from('business_members').select('business_id,role,businesses(name)').eq('user_id',a.data.user.id);
   if(!all.error)window.GastroPilotBusiness.render(all.data,businessId);
   await refreshFiscalYear();
   await loadAll();
- }catch(err){$('loginStatus').style.display='block';$('loginStatus').textContent='Betriebswechsel: '+err.message;}
+ }catch(err){
+  const host=$('gp-business-switch');
+  if(host){
+   let note=document.getElementById('gp-switch-error');
+   if(!note){note=document.createElement('p');note.id='gp-switch-error';note.style.cssText='font-size:13px;color:#111;margin:10px 0';host.append(note);}
+   note.textContent='Betriebswechsel nicht möglich: '+err.message;
+  }
+ }
 });
 /* ANMELDUNG */
 
