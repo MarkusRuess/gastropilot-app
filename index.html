@@ -245,6 +245,7 @@ dialog::backdrop{background:#0f1e2d99}
 @media(max-width:540px){#bonitImportLogCard{padding:15px}.bonit-log-row{grid-template-columns:minmax(0,1fr) auto;gap:5px 10px;padding:12px}.bonit-log-date{font-size:13px}.bonit-log-number{grid-column:1;grid-row:2}.bonit-log-amount{grid-column:2;grid-row:1 / span 2;font-size:16px}}
 .gp-monthly-control-btn{display:inline-flex;align-items:center;gap:11px;min-height:48px;margin-top:10px;padding:9px 15px 9px 9px;background:#fff;color:#111;text-decoration:none;border:1px solid #d9d9d9;border-radius:13px;font-size:14px;font-weight:750;box-shadow:0 4px 12px #11111116;transition:transform .18s,background .18s,box-shadow .18s}.gp-monthly-control-btn:hover{background:#fff;color:#111;transform:translateY(-1px);box-shadow:0 7px 17px #11111125}.gp-monthly-control-btn:focus-visible{outline:3px solid #777;outline-offset:3px}.gp-monthly-control-icon{display:grid;place-items:center;width:29px;height:29px;border-radius:9px;background:#f2f2f2;font-size:17px}.gp-monthly-control-arrow{font-size:18px;margin-left:9px;opacity:.8}@media(max-width:440px){.gp-monthly-control-btn{width:100%;justify-content:flex-start}.gp-monthly-control-arrow{margin-left:auto}}
 .recent-invoice-row{display:flex;justify-content:space-between;align-items:center;gap:16px;border:1px solid #e5e5e5;background:#fff;border-radius:12px;padding:14px;margin:8px 0}.recent-invoice-row strong{display:block;font-size:15px}.recent-invoice-row small{display:block;color:#666;font-size:12px;margin-top:4px;overflow-wrap:anywhere}.recent-invoice-amount{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}@media(max-width:480px){.recent-invoice-row{align-items:flex-start;flex-direction:column}.recent-invoice-amount{text-align:left}}
+.invoice-payment-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end}.invoice-payment-select{width:auto;min-width:110px;padding:9px 12px;border:1px solid #d5d5d5;border-radius:10px;background:#fff;color:#111;font-size:14px;font-weight:650}.invoice-payment-actions small{flex-basis:100%;text-align:right}@media(max-width:480px){.invoice-payment-actions{justify-content:flex-start}.invoice-payment-actions small{text-align:left}}
 </style>
 <style id="dashboard-white-final">
 /* Dashboard + selected tile: always white, black typography, no state colors. */
@@ -3081,7 +3082,37 @@ async function refreshRecentInvoiceUploads(){
   main.append(name,info,upload);
   const total=document.createElement('strong');total.className='recent-invoice-amount';
   const raw=doc.extracted_data?.gross_total;total.textContent=validNumber(raw)?euro(Number(raw)):'Betrag offen';
-  row.append(main,total);box.append(row);
+  const payment=document.createElement('select');
+  payment.className='invoice-payment-select';
+  payment.setAttribute('aria-label','Zahlungsstatus für '+(doc.supplier||'Rechnung'));
+  for(const [value,label] of [['open','Offen'],['paid','Bezahlt']]){
+   const option=document.createElement('option');option.value=value;option.textContent=label;payment.append(option);
+  }
+  const {data:linked,error:linkedError}=await db.from('expenses').select('id,payment_status').eq('business_id',businessId).eq('document_id',doc.id).limit(1);
+  const expense=linked?.[0];
+  payment.value=expense?.payment_status==='paid'||doc.extracted_data?.payment_status==='paid'?'paid':'open';
+  if(linkedError){payment.disabled=true;payment.title='Status konnte nicht geladen werden';}
+  const feedback=document.createElement('small');feedback.setAttribute('aria-live','polite');
+  payment.onchange=async()=>{
+   const previous=payment.value==='paid'?'open':'paid',next=payment.value;
+   payment.disabled=true;feedback.textContent='Speichert …';
+   try{
+    const extracted={...(doc.extracted_data||{}),payment_status:next};
+    const result=await db.from('documents').update({extracted_data:extracted}).eq('id',doc.id).eq('business_id',businessId).select('id');
+    if(result.error)throw result.error;
+    if(!result.data?.length)throw Error('Keine Berechtigung zum Ändern des Belegs.');
+    if(expense){
+     const updated=await db.from('expenses').update({payment_status:next}).eq('id',expense.id).eq('business_id',businessId).select('id');
+     if(updated.error)throw updated.error;
+     if(!updated.data?.length)throw Error('Ausgabenstatus konnte nicht gespeichert werden.');
+    }
+    doc.extracted_data=extracted;
+    feedback.textContent='✓ '+(next==='paid'?'Bezahlt':'Offen')+' gespeichert';
+   }catch(e){payment.value=previous;feedback.textContent='Fehler: '+e.message;}
+   finally{payment.disabled=false;}
+  };
+  const actions=document.createElement('div');actions.className='invoice-payment-actions';actions.append(total,payment,feedback);
+  row.append(main,actions);box.append(row);
  }
 }
 async function refreshArchives(){
