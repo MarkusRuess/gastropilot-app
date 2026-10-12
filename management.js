@@ -50,8 +50,8 @@ async function renderFixedTiles(){
  for(const id of ['accountList','costList','paymentList','personList'])$(id).replaceChildren();
  const newest=new Map();for(const x of [...accounts].sort((a,b)=>String(b.balance_date||'').localeCompare(String(a.balance_date||''))||String(b.created_at||'').localeCompare(String(a.created_at||'')))){const key=String(x.account_name||'').trim().toLocaleLowerCase('de-AT');if(!newest.has(key))newest.set(key,x)}const latest=[...newest.values()];const good=latest.filter(x=>x.current_balance!==null&&Number.isFinite(Number(x.current_balance)));
  const balance=good.reduce((s,x)=>s+Number(x.current_balance),0);
- for(const x of latest)entry('accountList',x.account_name+' · '+euro(x.current_balance),(x.account_type||'')+' · Stand '+(x.balance_date||'ohne Datum'));
- if(businessId==='6a5484d1-daf6-4263-897d-24cdf536aa29'&&!latest.some(x=>/raika|raiffeisen/i.test(String(x.account_name||'')))){
+ for(const x of latest){const el=document.createElement('div');el.className='gp-liq-tile';const name=document.createElement('small');name.textContent=x.account_name;const amount=document.createElement('strong');amount.textContent=euro(x.current_balance);const date=document.createElement('small');date.textContent='Stand '+(x.balance_date||'unbekannt');el.append(name,amount,date);$('accountList').append(el)}
+ if(false&&businessId==='6a5484d1-daf6-4263-897d-24cdf536aa29'&&!latest.some(x=>/raika|raiffeisen/i.test(String(x.account_name||'')))){
   entry('accountList','Raika · -3.650,20 EUR','PDF-Auszug: Stand 12.10.2026 · noch nicht als bestaetigter Kontostand erfasst');
  }
 
@@ -65,7 +65,7 @@ async function renderFixedTiles(){
  if(open){entry('paymentList',(x.entry_type==='inflow'?'Eingang: ':'Ausgang: ')+(x.description||'Zahlung')+' · '+euro(remaining),'Fällig '+(x.due_date||'unbekannt'));const btn=document.createElement('button');btn.type='button';btn.className='secondary';btn.textContent='Als bezahlt markieren';btn.onclick=async()=>{if(!confirm('Zahlung wirklich als vollständig bezahlt markieren?'))return;const result=await db.from('cash_flow_entries').update({payment_status:'paid',paid_amount:Number(x.amount),paid_at:today()}).eq('id',x.id).eq('business_id',businessId);if(result.error){status('Nicht gespeichert: '+result.error.message);return}await refresh()};$('paymentList').lastElementChild.append(btn)}
  }
  const hasRaikaBalance=latest.some(x=>/raika|raiffeisen/i.test(String(x.account_name||'')));
- const provisionalRaika=businessId==='6a5484d1-daf6-4263-897d-24cdf536aa29'&&!hasRaikaBalance?-3650.20:0;
+ const provisionalRaika=0;
  const visibleBalance=balance+provisionalRaika;
  $('balance').textContent=good.length?euro(visibleBalance):'–';
  const balanceLabel=$('balance')?.previousElementSibling;
