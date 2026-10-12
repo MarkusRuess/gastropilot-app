@@ -377,6 +377,12 @@ Alle Artikelgruppen anzeigen →
 
 <section id="page-cash" class="page">
 <div class="page-title">Tagesabrechnungen</div>
+<section class="card" id="bonitImportLogCard">
+<h2>BONit · Übertragungsprotokoll</h2>
+<p id="bonitImportStatus" class="muted">Letzte importierte Abschlüsse werden geprüft …</p>
+<div id="bonitImportLog"></div>
+<p class="muted">Angezeigt werden gespeicherte Z-Abschlüsse. Ob ein geplanter Importversuch stattgefunden hat, lässt sich daraus noch nicht nachweisen. Ruhetage gelten nicht automatisch als Fehler.</p>
+</section>
 <section class="card"><h2>Monatsabrechnung & Spitzenzeiten</h2><p class="muted">Monatsabschluss gegen Tagesumsätze und Produktverkäufe prüfen; Stundenumsätze auswerten.</p><a href="./monthly-control.html">Monatskontrolle öffnen →</a></section>
 
 <section class="card" id="cashCapture">
@@ -2789,10 +2795,34 @@ async function loadAll(){
     }
 
     await refreshArchives();
+    await refreshBonitImportLog();
 
   }catch(e){
     $('dashboardNote').textContent=
       'Fehler beim Laden: '+e.message;
+  }
+}
+
+async function refreshBonitImportLog(){
+  const card=$('bonitImportLogCard');
+  if(!card)return;
+  const enabled=businessId==='6a5484d1-daf6-4263-897d-24cdf536aa29';
+  card.style.display=enabled?'':'none';
+  if(!enabled)return;
+  const status=$('bonitImportStatus'),box=$('bonitImportLog');
+  const {data,error}=await db.from('bonit_daily_closings')
+    .select('closing_date,z_number,gross_amount')
+    .eq('business_id',businessId).order('closing_date',{ascending:false}).limit(10);
+  box.replaceChildren();
+  if(error){status.textContent='Protokoll derzeit nicht abrufbar: '+error.message;return}
+  const rows=data||[];
+  status.textContent=rows.length?'Letzter gespeicherter Abschluss: '+rows[0].closing_date+' · '+rows.length+' letzte Eintraege':'Noch keine importierten BONit-Abschluesse vorhanden.';
+  for(const r of rows){
+    const line=document.createElement('div');line.className='top-item';
+    const date=document.createElement('span');date.textContent=r.closing_date;
+    const z=document.createElement('span');z.textContent='Z '+(r.z_number??'–');
+    const amount=document.createElement('strong');amount.textContent=euro(Number(r.gross_amount||0));
+    line.append(date,z,amount);box.append(line);
   }
 }
 
