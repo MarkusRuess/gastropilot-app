@@ -2097,7 +2097,22 @@ async function saveResult(
       if(next)next.open=true;
     }
 
-    message(id+'Status','✓ Beleg erfolgreich gespeichert.');
+    const statusEl=$(id+'Status');
+    statusEl.className='status';
+    statusEl.replaceChildren();
+    const confirmation=document.createElement('strong');
+    confirmation.textContent='✓ Erfolgreich gespeichert';
+    const done=document.createElement('button');
+    done.type='button';
+    done.className='secondary';
+    done.textContent='✓ Fertig / Erledigt';
+    done.style.marginLeft='12px';
+    done.onclick=()=>{
+      statusEl.className='status hidden';
+      statusEl.replaceChildren();
+    };
+    statusEl.append(confirmation,document.createTextNode(' · Der Beleg wurde in GastroPilot übernommen. '),done);
+    statusEl.scrollIntoView({behavior:'smooth',block:'center'});
 
     const next=$(id+'Results').querySelector('.result');
 
@@ -2111,7 +2126,12 @@ async function saveResult(
       });
     }
 
-    await loadAll();
+    try{
+      await loadAll();
+    }catch(refreshError){
+      console.error('Archiv-Aktualisierung fehlgeschlagen:',refreshError);
+      statusEl.append(document.createTextNode(' · Hinweis: Archiv konnte nicht aktualisiert werden. Bitte später erneut laden.'));
+    }
 
   }catch(e){
     msg.textContent='Fehler: '+e.message;
