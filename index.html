@@ -2689,13 +2689,13 @@ async function renderBonitAnalysis(month){
  const strongest=[...days].filter(x=>Number.isFinite(Number(x.gross_amount))).sort((a,b)=>Number(b.gross_amount)-Number(a.gross_amount))[0];
  $('bestDay').textContent=strongest?dateLabel(strongest.closing_date):'–';
  $('bestDayGross').textContent=strongest?euro(Number(strongest.gross_amount)):'–';
- $('bestCategory').textContent='Noch keine Artikelgruppen-Zuordnung';
- $('bestCategoryGross').textContent='–';
- $('analysisCategories').textContent='BONit-Artikelgruppenumsätze sind noch nicht zugeordnet. Keine Schätzung.';
+ $('bestCategory').textContent='Wird aus BONit-Artikeln berechnet';
+ $('bestCategoryGross').textContent='– (keine Artikelumsätze)';
+ $('analysisCategories').textContent='Artikelgruppen nach verkauften Stück werden berechnet.';
  const trend=$('dailyTrend');trend.replaceChildren();
  if(!days.length)trend.textContent='Keine BONit-Tagesabschlüsse für diesen Monat importiert.';
  for(const day of days){
-  const line=document.createElement('div');line.className='top-item';
+  const line=document.createElement('div');line.className='metric';line.style.display='flex';line.style.justifyContent='space-between';line.style.alignItems='center';line.style.gap='12px';line.style.marginBottom='6px';
   const label=document.createElement('strong');label.textContent=dateLabel(day.closing_date);
   const amount=document.createElement('strong');amount.textContent=day.gross_amount==null?'–':euro(Number(day.gross_amount));
   line.append(label,amount);trend.append(line);
@@ -2709,6 +2709,34 @@ async function renderBonitAnalysis(month){
   const previous=grouped.get(key);
   grouped.set(key,{name:previous?.name||name,quantity:(previous?.quantity||0)+qty});
  }
+ const classify=(name)=>{
+  const n=name.toLocaleLowerCase('de-AT');
+  if(/baguette|baquette|brötchen|broetchen|brot |toast|sandwich|lachs|schinken|roast beef|suppe|salat|quiche/.test(n))return 'Speisen & Brötchen';
+  if(/kuchen|torte|mehlspeise|croissant|strudel|dessert|krapfen/.test(n))return 'Mehlspeisen';
+  if(/bier|villacher|pils|radler|weizen/.test(n))return 'Bier';
+  if(/spritzer|wein|veltliner|riesling|zweigelt|blaufränkisch|chardonnay|merlot|rosé|rose |prosecco|sparkling|sekt|frizzante/.test(n))return 'Wein, Spritzer & Schaumwein';
+  if(/espresso|melange|cappuc|cappucc|verlänger|verlaenger|kaffee|latte|macchiato|americano/.test(n))return 'Kaffee';
+  if(/tee|chai|kakao|heiße schokolade/.test(n))return 'Tee & Heißgetränke';
+  if(/aperol|hugo|campari|gin|tonic|cocktail|negroni|lillet|spritz/.test(n))return 'Aperitivo & Cocktails';
+  if(/wasser|cola|fanta|sprite|limonade|saft|soda|tonic|almdudler/.test(n))return 'Alkoholfreie Getränke';
+  return 'Weitere / noch nicht zugeordnet';
+ };
+ const categories=new Map();
+ for(const a of grouped.values()){
+  const cat=classify(a.name);
+  categories.set(cat,(categories.get(cat)||0)+a.quantity);
+ }
+ const sortedCats=[...categories].sort((a,b)=>b[1]-a[1]);
+ $('bestCategory').textContent=sortedCats[0]?.[0]||'–';
+ $('bestCategoryGross').textContent=sortedCats[0]?new Intl.NumberFormat('de-AT').format(sortedCats[0][1])+' Stück':'–';
+ const categoryBox=$('analysisCategories');categoryBox.replaceChildren();
+ for(const [name,qty] of sortedCats){
+  const row=document.createElement('div');row.className='metric';row.style.marginBottom='8px';
+  const title=document.createElement('strong');title.textContent=name;
+  const value=document.createElement('div');value.textContent=new Intl.NumberFormat('de-AT').format(qty)+' Stück';
+  row.append(title,value);categoryBox.append(row);
+ }
+ const note=document.createElement('p');note.className='muted';note.textContent='Vorläufige Artikelgruppen nach Produktnamen, Mengen aus BONit. Keine Umsatzwerte je Artikel verfügbar. Zuordnung bitte prüfen.';categoryBox.append(note);
  const ranked=[...grouped.values()].sort((a,b)=>b.quantity-a.quantity).slice(0,20);
  if(!ranked.length)items.textContent='Keine BONit-Artikelmengen für diesen Monat importiert.';
  ranked.forEach((a,i)=>{
