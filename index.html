@@ -294,7 +294,7 @@ html body #app #page-dashboard p{color:#111!important}
 <input id="email" name="email" autocomplete="username" type="email" value="office@markusruess.at" required>
 </label>
 <label>Passwort
-<input id="password" name="password" autocomplete="current-password" type="password" required>
+<input id="password" name="password" autocomplete="current-password webauthn" type="password" required>
 </label>
 <button type="submit">Anmelden</button>
 </form>
@@ -3365,8 +3365,20 @@ $('logout').onclick=async()=>{
 (async()=>{
   try{
     const {data:{session}}=await db.auth.getSession();
-    if(session)await enter();
-    else $('login').classList.remove('hidden');
+    if(session){
+      try{
+        await enter();
+        if($('app').classList.contains('hidden')){
+          $('login').classList.remove('hidden');
+          $('loginStatus').style.display='block';
+          $('loginStatus').textContent='Sitzung konnte nicht geöffnet werden. Bitte mit Face ID bzw. gespeichertem Passwort erneut anmelden.';
+        }
+      }catch(loginError){
+        $('login').classList.remove('hidden');
+        $('loginStatus').style.display='block';
+        $('loginStatus').textContent='Sitzung konnte nicht geöffnet werden: '+loginError.message;
+      }
+    }else $('login').classList.remove('hidden');
   }catch(e){
     $('login').classList.remove('hidden');
     $('loginStatus').style.display='block';
