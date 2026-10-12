@@ -271,7 +271,7 @@ html body #app #page-dashboard p{color:#111!important}
 
 <main>
 
-<section id="login" class="card">
+<section id="login" class="card hidden">
 <h2>Anmelden</h2>
 <form id="loginForm" autocomplete="on">
 <label>E-Mail
@@ -3293,7 +3293,9 @@ $('logout').onclick=async()=>{
   try{
     const {data:{session}}=await db.auth.getSession();
     if(session)await enter();
+    else $('login').classList.remove('hidden');
   }catch(e){
+    $('login').classList.remove('hidden');
     $('loginStatus').style.display='block';
     $('loginStatus').textContent='Startfehler: '+e.message;
   }
