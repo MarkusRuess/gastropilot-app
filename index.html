@@ -247,7 +247,7 @@ dialog::backdrop{background:#0f1e2d99}
 .recent-invoice-row{display:flex;justify-content:space-between;align-items:center;gap:16px;border:1px solid #e5e5e5;background:#fff;border-radius:12px;padding:14px;margin:8px 0}.recent-invoice-row strong{display:block;font-size:15px}.recent-invoice-row small{display:block;color:#666;font-size:12px;margin-top:4px;overflow-wrap:anywhere}.recent-invoice-amount{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}@media(max-width:480px){.recent-invoice-row{align-items:flex-start;flex-direction:column}.recent-invoice-amount{text-align:left}}
 .invoice-payment-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end}.invoice-payment-select{width:auto;min-width:110px;padding:9px 12px;border:1px solid #d5d5d5;border-radius:10px;background:#fff;color:#111;font-size:14px;font-weight:650}.invoice-payment-actions small{flex-basis:100%;text-align:right}@media(max-width:480px){.invoice-payment-actions{justify-content:flex-start}.invoice-payment-actions small{text-align:left}}
 .gp-extra-navigation{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:14px 0 18px}.gp-extra-tile{position:relative;display:flex;flex-direction:column;justify-content:flex-end;min-height:170px;padding:16px;border:1px solid #d8d8d8;border-radius:16px;background:#fff!important;color:#111!important;text-decoration:none!important}.gp-extra-tile:hover,.gp-extra-tile:focus-visible{background:#fff!important;border-color:#777;box-shadow:0 2px 8px #00000010}.gp-extra-number{position:absolute;top:15px;left:16px;font-weight:700}.gp-extra-arrow{position:absolute;top:12px;right:16px;font-size:24px;font-weight:700}.gp-extra-tile strong{font-size:20px;color:#111}.gp-extra-tile small{font-size:13px;color:#444;margin-top:5px}@media(max-width:700px){.gp-extra-navigation{grid-template-columns:repeat(2,minmax(0,1fr))}.gp-extra-tile{min-height:140px}}@media(max-width:380px){.gp-extra-tile strong{font-size:17px}}
-</style>
+.gp-top-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.gp-top-tile{border:1px solid #e5e5e5;border-radius:14px;padding:14px;background:white;min-width:0}.gp-top-head{display:flex;align-items:flex-start;gap:10px}.gp-top-head .top-link{font-weight:650;overflow-wrap:anywhere}.gp-top-qty{display:block;margin:8px 0;font-size:20px}.gp-top-track{height:7px;background:#eee;border-radius:10px;overflow:hidden;margin-bottom:7px}.gp-top-track>div{height:100%;background:#555;border-radius:10px}.gp-top-financial{font-size:12px;color:#555;margin-top:9px;padding-top:8px;border-top:1px solid #eee}@media(max-width:640px){.gp-top-grid{grid-template-columns:1fr}}</style>
 <style id="dashboard-white-final">
 /* Dashboard + selected tile: always white, black typography, no state colors. */
 html body #app .navigation button.nav-button,
@@ -380,7 +380,7 @@ Alle Artikelgruppen anzeigen →
 </section>
 <section class="card" id="bonitTopCard">
 <div class="row"><h3 style="margin:0">Top 10 Artikel · BONit</h3><small id="bonitTopMonth" class="muted"></small></div>
-<p class="muted">Automatisch importierte Artikelverkäufe · nach Stückzahl sortiert</p>
+<p class="muted">Bestseller nach Stückzahl · mit Umsatz- und Deckungsbeitragsprüfung, soweit Quelldaten vorhanden</p>
 <div id="top10"></div>
 </section>
 <section class="card" id="quickYearCard" style="margin-bottom:14px"><div class="row"><h2 style="margin:0;font-size:18px">Umsätze auf einen Blick</h2><a href="./bonit-dashboard.html" style="font-size:13px;color:#111;font-weight:700">Alle Jahresvergleiche ↗</a></div><div class="grid" style="margin-top:12px"><div class="metric"><small>September 2026 · vorläufig</small><strong>47.117,00 €</strong><small>Friedrich-Aufzeichnungen · nicht BONit-abgeglichen</small></div><div class="metric"><small>Oktober 2026 · 1.–10.</small><strong id="quickOctGross">18.415,70 €</strong><small id="quickOctNote">9 originale Z-Abschlüsse</small></div><div class="metric"><small>Ø Bon Oktober · 1.–10.</small><strong id="quickOctAvg">17,83 €</strong><small>1.033 Rechnungen</small></div><div class="metric"><small>2025 / 2026</small><strong id="quickYearCoverage">Vergleichen ↗</strong><small>Jahres- und Monatskacheln</small></div></div><div class="navigation" style="margin:12px 0 0;gap:8px"><a href="./bonit-dashboard.html" style="text-decoration:none;text-align:center;padding:13px 5px;border:1px solid #ddd;border-radius:10px;color:#111;font-weight:700;font-size:13px">Monatsvergleich ↗</a><a href="./bonit-dashboard.html" style="text-decoration:none;text-align:center;padding:13px 5px;border:1px solid #ddd;border-radius:10px;color:#111;font-weight:700;font-size:13px">Geschäftsjahre ↗</a></div></section>
@@ -865,27 +865,23 @@ $('closePaymentCheck').onclick=()=>$('paymentDialog').close();
 
 function aggregateItems(docs){
   const map=new Map();
-
   for(const doc of docs){
     for(const item of doc.extracted_data?.sales_items||[]){
-      const name=String(item.name||'').trim();
-      const n=Number(item.quantity);
+      const name=String(item.name||'').trim(),n=Number(item.quantity);
       if(!name||!Number.isFinite(n)||n<=0)continue;
-
-      const key=itemKey(name);
-      const old=map.get(key);
-
+      const key=itemKey(name),old=map.get(key);
+      // Only use documented item totals when explicitly present; never infer sales from quantity.
+      const raw=item.total_gross??item.gross_total??item.line_total??item.total_amount;
+      const money=raw===null||raw===undefined||raw===''?null:Number(raw);
+      const valid=money!==null&&Number.isFinite(money)&&money>=0;
       map.set(key,{
-        name:old?.name||name,
-        quantity:(old?.quantity||0)+n
+        name:old?.name||name,quantity:(old?.quantity||0)+n,
+        revenue:(old?.revenue||0)+(valid?money:0),
+        revenueComplete:(old?.revenueComplete??true)&&valid
       });
     }
   }
-
-  return [...map.values()].sort(
-    (a,b)=>b.quantity-a.quantity||
-    a.name.localeCompare(b.name,'de-AT')
-  );
+  return [...map.values()].sort((a,b)=>b.quantity-a.quantity||a.name.localeCompare(b.name,'de-AT'));
 }
 
 /*
@@ -908,56 +904,34 @@ function itemWarning(item){
 }
 
 function renderTop10(docs){
-  const box=$('top10');
-  box.replaceChildren();
-
-  const items=aggregateItems(docs).slice(0,10);
-
-  if(!items.length){
-    box.textContent='Noch keine Artikelmengen gespeichert.';
-    return;
-  }
-
+  const box=$('top10');box.replaceChildren();
+  const all=aggregateItems(docs),items=all.slice(0,10);
+  if(!items.length){box.textContent='Noch keine Artikelmengen gespeichert.';return}
+  const totalQty=all.reduce((sum,x)=>sum+x.quantity,0);
+  const fmt=n=>new Intl.NumberFormat('de-AT',{style:'currency',currency:'EUR'}).format(n);
+  const intro=document.createElement('p');intro.className='muted';
+  intro.textContent='Rangliste nach verkaufter Menge · '+totalQty.toLocaleString('de-AT')+' erfasste Artikel-Einheiten. Umsatz, Wareneinsatz und Deckungsbeitrag nur bei vollständigen Quelldaten.';
+  box.append(intro);
+  const grid=document.createElement('div');grid.className='gp-top-grid';
   items.forEach((item,index)=>{
-    const row=document.createElement('div');
-    row.className='top-item';
-
-    const rank=document.createElement('span');
-    rank.className='top-rank';
-    rank.textContent=(index+1)+'.';
-
-    const nameWrap=document.createElement('div');
-    const button=document.createElement('button');
-    button.className='top-link';
-    button.textContent=item.name;
-    button.title='Artikelmengen nach Tagen kontrollieren';
-    button.onclick=()=>openArticleDialog(itemKey(item.name));
-
-    nameWrap.append(button);
-
-    const suspicious=monthlyCash.some(doc=>
-      (doc.extracted_data?.sales_items||[]).some(x=>
-        itemKey(x.name)===itemKey(item.name)&&itemWarning(x)
-      )
-    );
-
-    if(suspicious){
-      const warning=document.createElement('span');
-      warning.className='warning-pill';
-      warning.textContent='Prüfen';
-      nameWrap.append(warning);
-    }
-
-    const qty=document.createElement('span');
-    qty.className='top-quantity';
-    qty.textContent=
-      new Intl.NumberFormat('de-AT',{
-        maximumFractionDigits:2
-      }).format(item.quantity)+' Stk.';
-
-    row.append(rank,nameWrap,qty);
-    box.append(row);
+    const row=document.createElement('div');row.className='gp-top-tile';
+    const header=document.createElement('div');header.className='gp-top-head';
+    const rank=document.createElement('strong');rank.textContent=(index+1)+'.';
+    const button=document.createElement('button');button.className='top-link';button.textContent=item.name;button.title='Tagesdetails ansehen';button.onclick=()=>openArticleDialog(itemKey(item.name));
+    header.append(rank,button);row.append(header);
+    const qty=document.createElement('strong');qty.className='gp-top-qty';qty.textContent=item.quantity.toLocaleString('de-AT')+' Stück';row.append(qty);
+    const bar=document.createElement('div');bar.className='gp-top-track';const fill=document.createElement('div');fill.style.width=(item.quantity/items[0].quantity*100)+'%';bar.append(fill);row.append(bar);
+    const details=document.createElement('small');details.className='muted';
+    details.textContent='Anteil an erfassten Stückzahlen: '+(100*item.quantity/totalQty).toLocaleString('de-AT',{maximumFractionDigits:1})+' %';
+    row.append(details);
+    const financial=document.createElement('div');financial.className='gp-top-financial';
+    financial.textContent=item.revenueComplete?'Umsatz: '+fmt(item.revenue)+' · Wareneinsatz / DB: noch nicht hinterlegt':'Umsatz / Deckungsbeitrag: Quelldaten fehlen';
+    row.append(financial);
+    const suspicious=monthlyCash.some(doc=>(doc.extracted_data?.sales_items||[]).some(x=>itemKey(x.name)===itemKey(item.name)&&itemWarning(x)));
+    if(suspicious){const warning=document.createElement('small');warning.className='warning-pill';warning.textContent='Menge prüfen';row.append(warning)}
+    grid.append(row);
   });
+  box.append(grid);
 }
 
 /* ARTIKELKONTROLLE UND KORREKTUR */
