@@ -70,7 +70,8 @@ async function renderFixedTiles(){
  let total=0;for(const [key,label] of cats){const items=groups[key];const sum=items.reduce((n,x)=>n+x.amount,0);total+=sum;const tile=document.createElement('div');tile.className='gp-fixed-tile';const small=document.createElement('small');small.textContent=label;const strong=document.createElement('strong');strong.textContent=euro(sum);const info=document.createElement('p');info.textContent=items.length+' Bankpositionen · '+month;tile.append(small,strong,info);if(items.length){const details=document.createElement('details');const summary=document.createElement('summary');summary.textContent='Buchungen ansehen';details.append(summary);for(const x of items){const row=document.createElement('div');row.className='gp-fixed-row';const left=document.createElement('span');left.textContent=x.date+' · '+x.name;const right=document.createElement('b');right.textContent=euro(x.amount);row.append(left,right);details.append(row)}tile.append(details)}root.append(tile)}
  note.textContent='Bankbasierte Fixkosten '+month+': '+euro(total)+' · Bereits bestätigte Positionen werden nicht nochmals addiert. Anzahlungen sind Zahlungsabflüsse, nicht zwingend Monatsaufwand. Lieferantenrechnungen und Personal sind hier nicht enthalten.';
 }
-\nasync function refresh(){
+
+async function refresh(){
  if(!businessId)return;
  try{
  status('Daten werden geladen …');
@@ -103,7 +104,8 @@ async function renderFixedTiles(){
  const forecastLabel=$('forecast')?.previousElementSibling;
  if(forecastLabel)forecastLabel.textContent=provisionalRaika?'Prognose (vorläufig)':'Prognose';
  $('forecastNote').textContent=(provisionalRaika?'VORLÄUFIG: Raika -3.650,20 EUR aus PDF vom 12.10.2026 ist in der Anzeige berücksichtigt, aber noch nicht als bestaetigter Kontostand gespeichert. ':'')+'Stichtag '+today()+' bis '+end+'. Überfällige offene Zahlungen sind enthalten. Fixkosten und Personal werden nicht automatisch doppelt als Zahlungen gebucht. '+(good.length?'Kontostände bitte aktuell halten.':'Noch keine bestätigten Kontostände.');
- await renderFixedTiles();\n await renderAutoMatch();\n for(const x of costs.filter(x=>x.is_recurring))entry('costList',(x.supplier||x.description||'Fixkosten')+' · '+euro(x.gross_amount),(x.category||'')+' · '+(x.due_date||'ohne Fälligkeit'));
+ await renderFixedTiles();
+ await renderAutoMatch();\n for(const x of costs.filter(x=>x.is_recurring))entry('costList',(x.supplier||x.description||'Fixkosten')+' · '+euro(x.gross_amount),(x.category||'')+' · '+(x.due_date||'ohne Fälligkeit'));
  const month=$('personMonth').value||today().slice(0,7);
  const selected=people.filter(x=>String(x.accounting_month||'').startsWith(month));
  const sum=selected.reduce((s,x)=>s+Number(x.gross_salary||0)+Number(x.employer_costs||0),0);
