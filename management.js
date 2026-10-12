@@ -114,7 +114,7 @@ $('loginForm').onsubmit=async ev=>{
  try{await enter()}catch(e){$('loginStatus').textContent=e.message}
 };
 $('logout').onclick=async()=>{await db.auth.signOut();businessId=null;role=null;$('app').classList.add('hidden');$('login').classList.remove('hidden')};
-(async()=>{const r=await db.auth.getSession();if(r.data.session){try{await enter()}catch(e){$('loginStatus').textContent=e.message}}})();
+(async()=>{try{const r=await db.auth.getSession();if(r.error)throw r.error;if(r.data.session){await enter()}else{$('login').classList.remove('hidden')}}catch(e){$('login').classList.remove('hidden');$('loginStatus').textContent='Anmeldung erforderlich: '+e.message}})();
 
 /* Direkter Betriebswechsel ohne Login-Zwischenseite. */
 window.addEventListener('gastropilot:business-change',async e=>{
