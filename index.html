@@ -2931,6 +2931,7 @@ async function loadAll(){
 }
 
 function arrangeDashboard(){
+ if($('gp2Details'))return; // Neue kompakte Ansicht nicht durch alte Sortierung auflösen.
  const page=$('page-dashboard');
  if(!page)return;
  const month=$('month')?.closest('section.card');
