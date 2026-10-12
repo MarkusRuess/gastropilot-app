@@ -16,6 +16,12 @@ function showPage(p){
  document.querySelectorAll('[data-page]').forEach(x=>x.classList.toggle('active',x.dataset.page===p));
 }
 document.querySelectorAll('[data-page]').forEach(x=>x.onclick=()=>showPage(x.dataset.page));
+const requestedSection=new URLSearchParams(window.location.search).get('section');
+if(['liquidity','payments','personnel','finance','control','costs'].includes(requestedSection)){
+ showPage(requestedSection);
+ requestAnimationFrame(()=>document.getElementById('page-'+requestedSection)?.scrollIntoView({block:'start'}));
+}
+
 async function list(table){
  const r=await db.from(table).select('*').eq('business_id',businessId).limit(500);
  if(r.error)throw Error(table+': '+r.error.message);
