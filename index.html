@@ -2675,6 +2675,51 @@ function renderAnalysis(unique){
   }
 }
 
+async function renderBonitAnalysis(month){
+ const {start,end}=monthBounds(month);
+ const [closings,articles]=await Promise.all([
+  db.from('bonit_daily_closings').select('closing_date,gross_amount').eq('business_id',businessId).gte('closing_date',start).lt('closing_date',end).order('closing_date',{ascending:true}),
+  db.from('bonit_article_sales').select('article_name,quantity').eq('business_id',businessId).gte('closing_date',start).lt('closing_date',end).order('closing_date',{ascending:true}).limit(10000)
+ ]);
+ if(closings.error||articles.error){
+  $('dailyTrend').textContent='BONit-Auswertung konnte nicht geladen werden: '+(closings.error||articles.error).message;
+  return;
+ }
+ const days=closings.data||[];
+ const strongest=[...days].filter(x=>Number.isFinite(Number(x.gross_amount))).sort((a,b)=>Number(b.gross_amount)-Number(a.gross_amount))[0];
+ $('bestDay').textContent=strongest?dateLabel(strongest.closing_date):'–';
+ $('bestDayGross').textContent=strongest?euro(Number(strongest.gross_amount)):'–';
+ $('bestCategory').textContent='Noch keine Artikelgruppen-Zuordnung';
+ $('bestCategoryGross').textContent='–';
+ $('analysisCategories').textContent='BONit-Artikelgruppenumsätze sind noch nicht zugeordnet. Keine Schätzung.';
+ const trend=$('dailyTrend');trend.replaceChildren();
+ if(!days.length)trend.textContent='Keine BONit-Tagesabschlüsse für diesen Monat importiert.';
+ for(const day of days){
+  const line=document.createElement('div');line.className='top-item';
+  const label=document.createElement('strong');label.textContent=dateLabel(day.closing_date);
+  const amount=document.createElement('strong');amount.textContent=day.gross_amount==null?'–':euro(Number(day.gross_amount));
+  line.append(label,amount);trend.append(line);
+ }
+ const items=$('analysisItems');items.replaceChildren();items.className='article-tiles';
+ const grouped=new Map();
+ for(const a of articles.data||[]){
+  const name=String(a.article_name||'').trim(),qty=Number(a.quantity);
+  if(!name||!Number.isFinite(qty)||qty<=0)continue;
+  const key=name.toLocaleLowerCase('de-AT');
+  const previous=grouped.get(key);
+  grouped.set(key,{name:previous?.name||name,quantity:(previous?.quantity||0)+qty});
+ }
+ const ranked=[...grouped.values()].sort((a,b)=>b.quantity-a.quantity).slice(0,20);
+ if(!ranked.length)items.textContent='Keine BONit-Artikelmengen für diesen Monat importiert.';
+ ranked.forEach((a,i)=>{
+  const tile=document.createElement('div');tile.className='article-tile';
+  const rank=document.createElement('span');rank.className='article-tile-rank';rank.textContent='#'+(i+1);
+  const name=document.createElement('strong');name.className='article-tile-name';name.textContent=a.name;
+  const qty=document.createElement('span');qty.className='article-tile-detail';qty.textContent=new Intl.NumberFormat('de-AT').format(a.quantity)+' Stück';
+  tile.append(rank,name,qty);items.append(tile);
+ });
+}
+
 /* BONit ist fuer importierte Z-Abschlusstage die fuehrende Quelle.
    Andere Belegtage bleiben separat; keine Doppelzaehlung. */
 async function applyBonitDashboard(month,manualDocs){
@@ -2810,7 +2855,7 @@ async function loadAll(){
     $('analysisMonth').value=month;
     renderAnalysis(isFriedrich?[]:unique);
     // BONit last: legacy analysis must not overwrite the imported article ranking.
-    if(isFriedrich)await applyBonitDashboard(month,[]);
+    if(isFriedrich){await applyBonitDashboard(month,[]);await renderBonitAnalysis(month);}
     if(!isFriedrich)await refreshYoY();
     else { $('yoyMonth').textContent='–'; $('yoyYear').textContent='–'; $('yoyMonthInfo').textContent='Automatischer BONit-Vorjahresvergleich noch nicht verfuegbar'; $('yoyYearInfo').textContent='Automatischer BONit-Vorjahresvergleich noch nicht verfuegbar'; }
 
