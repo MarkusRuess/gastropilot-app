@@ -43,10 +43,17 @@ async function refresh(){
  if(open&&x.due_date&&x.due_date<=end){if(x.entry_type==='inflow')incoming+=remaining;else outgoing+=remaining}
  if(open){entry('paymentList',(x.entry_type==='inflow'?'Eingang: ':'Ausgang: ')+(x.description||'Zahlung')+' · '+euro(remaining),'Fällig '+(x.due_date||'unbekannt'));const btn=document.createElement('button');btn.type='button';btn.className='secondary';btn.textContent='Als bezahlt markieren';btn.onclick=async()=>{if(!confirm('Zahlung wirklich als vollständig bezahlt markieren?'))return;const result=await db.from('cash_flow_entries').update({payment_status:'paid',paid_amount:Number(x.amount),paid_at:today()}).eq('id',x.id).eq('business_id',businessId);if(result.error){status('Nicht gespeichert: '+result.error.message);return}await refresh()};$('paymentList').lastElementChild.append(btn)}
  }
- $('balance').textContent=good.length?euro(balance):'–';
+ const hasRaikaBalance=latest.some(x=>/raika|raiffeisen/i.test(String(x.account_name||'')));
+ const provisionalRaika=businessId==='6a5484d1-daf6-4263-897d-24cdf536aa29'&&!hasRaikaBalance?-3650.20:0;
+ const visibleBalance=balance+provisionalRaika;
+ $('balance').textContent=good.length?euro(visibleBalance):'–';
+ const balanceLabel=$('balance')?.previousElementSibling;
+ if(balanceLabel)balanceLabel.textContent=provisionalRaika?'Bank & Kassa (vorläufig)':'Bank & Kassa';
  $('inflow').textContent=euro(incoming);$('outflow').textContent=euro(outgoing);
- $('forecast').textContent=good.length?euro(balance+incoming-outgoing):'–';
- $('forecastNote').textContent='Stichtag '+today()+' bis '+end+'. Überfällige offene Zahlungen sind enthalten. Fixkosten und Personal werden nicht automatisch doppelt als Zahlungen gebucht. '+(good.length?'Kontostände bitte aktuell halten.':'Noch keine bestätigten Kontostände.');
+ $('forecast').textContent=good.length?euro(visibleBalance+incoming-outgoing):'–';
+ const forecastLabel=$('forecast')?.previousElementSibling;
+ if(forecastLabel)forecastLabel.textContent=provisionalRaika?'Prognose (vorläufig)':'Prognose';
+ $('forecastNote').textContent=(provisionalRaika?'VORLÄUFIG: Raika -3.650,20 EUR aus PDF vom 12.10.2026 ist in der Anzeige berücksichtigt, aber noch nicht als bestaetigter Kontostand gespeichert. ':'')+'Stichtag '+today()+' bis '+end+'. Überfällige offene Zahlungen sind enthalten. Fixkosten und Personal werden nicht automatisch doppelt als Zahlungen gebucht. '+(good.length?'Kontostände bitte aktuell halten.':'Noch keine bestätigten Kontostände.');
  for(const x of costs.filter(x=>x.is_recurring))entry('costList',(x.supplier||x.description||'Fixkosten')+' · '+euro(x.gross_amount),(x.category||'')+' · '+(x.due_date||'ohne Fälligkeit'));
  const month=$('personMonth').value||today().slice(0,7);
  const selected=people.filter(x=>String(x.accounting_month||'').startsWith(month));
