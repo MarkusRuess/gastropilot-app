@@ -351,6 +351,7 @@ html body #app #page-dashboard p{color:#111!important}
   <div class="gp2-tile"><small>Bankkonten gesamt</small><strong id="gp2Bank">–</strong><span class="gp2-foot" id="gp2BankDate">Letzter bestätigter Stand</span></div>
   <div class="gp2-tile"><small>Lieferantenrechnungen</small><strong id="gp2Invoices">–</strong><span class="gp2-foot">Erfasste Rechnungen</span></div>
   <div class="gp2-tile"><small>Top-10-Artikel</small><strong id="gp2Top">–</strong><span class="gp2-foot">Nach Stückzahl · Details darunter</span></div>
+  <div class="gp2-tile"><small>Umsatz vs. Vorjahr</small><strong id="gp2YoY">–</strong><span class="gp2-foot" id="gp2YoYInfo">Vergleich gleicher Zeitraum</span></div>
   <div class="gp2-tile"><small>Personal & Fixkosten</small><strong>Verwaltung ↗</strong><a href="./management.html?section=personnel" class="gp2-foot">Löhne und Kosten öffnen</a></div>
  </div>
  <div class="row"><button type="button" class="secondary" id="gp2CashLink">Tagesabrechnungen →</button><button type="button" class="secondary" id="gp2InvoiceLink">Rechnungen →</button></div>
@@ -3262,6 +3263,37 @@ function gpComparison(current,previous,target,detail,label){
  out.style.color=pct>0?'#188038':pct<0?'#c62828':'#555';
  info.textContent=label+' · '+euro(a.value)+' / '+euro(b.value)+' · '+uniqueDays(current).docs.length+' / '+uniqueDays(previous).docs.length+' erfasste Tage';
 }
+function gp2SetYoY(current,previous,label){
+ const value=$('gp2YoY'),info=$('gp2YoYInfo');if(!value||!info)return;
+ value.style.color='';value.textContent='–';info.textContent=label;
+ if(!current.length||!previous.length){info.textContent='Vorjahresdaten fehlen · '+label;return}
+ const sum=rows=>rows.reduce((n,r)=>n+Number(r.gross_amount||0),0);
+ if(current.some(r=>r.gross_amount===null)||previous.some(r=>r.gross_amount===null)){info.textContent='Unvollständige Umsatzdaten';return}
+ const a=sum(current),b=sum(previous);
+ if(!(b>0)){info.textContent='Kein belastbarer Vorjahreswert';return}
+ const pct=(a/b-1)*100;
+ value.textContent=(pct>0?'▲ ':pct<0?'▼ ':'● ')+(pct>0?'+':'')+pct.toLocaleString('de-AT',{minimumFractionDigits:1,maximumFractionDigits:1})+' %';
+ value.style.color=pct>0?'#188038':pct<0?'#c62828':'#666';
+ info.textContent=label+' · '+euro(a)+' / '+euro(b)+' · '+current.length+'/'+previous.length+' Tage';
+}
+async function gp2RefreshBonitYoY(id,month,start,end,prevStart,prevEnd){
+ const info=$('gp2YoYInfo'),value=$('gp2YoY');if(!info||!value)return;
+ value.textContent='–';value.style.color='';info.textContent='Vorjahresvergleich wird geladen …';
+ const [a,b]=await Promise.all([
+  db.from('bonit_daily_closings').select('closing_date,gross_amount').eq('business_id',id).gte('closing_date',start).lt('closing_date',end).order('closing_date'),
+  db.from('bonit_daily_closings').select('closing_date,gross_amount').eq('business_id',id).gte('closing_date',prevStart).lt('closing_date',prevEnd).order('closing_date')
+ ]);
+ if(id!==businessId||month!==$('month').value)return;
+ if(a.error||b.error){info.textContent='Vorjahresvergleich nicht verfügbar';return}
+ const current=a.data||[],previous=b.data||[];
+ // Für Teilmonate ausschließlich identische Kalendertage vergleichen.
+ const daySet=new Set(current.map(x=>x.closing_date.slice(-2)));
+ const previousMatched=previous.filter(x=>daySet.has(x.closing_date.slice(-2)));
+ if(!current.length||previousMatched.length!==current.length||new Set(previousMatched.map(x=>x.closing_date.slice(-2))).size!==daySet.size){
+  info.textContent='Vorjahresdaten für gleiche Umsatztage fehlen';return;
+ }
+ gp2SetYoY(current,previousMatched,month+' / '+String(Number(month.slice(0,4))-1)+month.slice(4));
+}
 async function refreshYoY(){
  const id=businessId,month=$('month').value;
  $('yoyMonth').textContent='–';$('yoyYear').textContent='–';
@@ -3276,6 +3308,12 @@ async function refreshYoY(){
   const cutoff=month===today.slice(0,7)?gpNextDate(today):bounds.end;
   if(bounds.start>today){$('yoyMonthInfo').textContent='Zukünftiger Monat';$('yoyYearInfo').textContent='Zukünftiger Monat';return}
   const prevStart=gpShiftYear(bounds.start,-1),prevEnd=gpShiftYear(cutoff,-1);
+  if(id==='6a5484d1-daf6-4263-897d-24cdf536aa29'){
+    await gp2RefreshBonitYoY(id,month,bounds.start,cutoff,prevStart,prevEnd);
+  }else{
+    $('gp2YoY').textContent='–';$('gp2YoY').style.color='';
+    $('gp2YoYInfo').textContent='Vergleich aus erfassten Tagesberichten';
+  }
   const fiscalStart=gpFiscalStart(bounds.start,cfg.data);
   const fiscalPrev=gpShiftYear(fiscalStart,-1);
   const [curMonth,oldMonth,curYear,oldYear]=await Promise.all([
@@ -3285,6 +3323,15 @@ async function refreshYoY(){
    allDocs('cash_report',fiscalPrev,prevEnd)
   ]);
   if(id!==businessId||month!==$('month').value)return;
+  if(id!=='6a5484d1-daf6-4263-897d-24cdf536aa29'){
+    const c=sumField(uniqueDays(curMonth).docs,'gross_total'),p=sumField(uniqueDays(oldMonth).docs,'gross_total');
+    if(curMonth.length&&oldMonth.length&&c.complete&&p.complete&&p.value>0){
+      const pct=(c.value/p.value-1)*100;
+      $('gp2YoY').textContent=(pct>0?'▲ ':pct<0?'▼ ':'● ')+(pct>0?'+':'')+pct.toLocaleString('de-AT',{minimumFractionDigits:1,maximumFractionDigits:1})+' %';
+      $('gp2YoY').style.color=pct>0?'#188038':pct<0?'#c62828':'#666';
+      $('gp2YoYInfo').textContent=month+' gegenüber Vorjahr';
+    }else $('gp2YoYInfo').textContent='Vorjahresdaten fehlen';
+  }
   gpComparison(curMonth,oldMonth,'yoyMonth','yoyMonthInfo',bounds.start+' bis '+gpShiftYear(cutoff,0)+' (exklusiv; Vorjahreszeitraum)');
   gpComparison(curYear,oldYear,'yoyYear','yoyYearInfo',fiscalStart+' bis '+cutoff+' (Vorjahreszeitraum)');
  }catch(err){
