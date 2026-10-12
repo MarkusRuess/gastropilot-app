@@ -3276,6 +3276,9 @@ function gp2SetYoY(current,previous,label){
  value.style.color=pct>0?'#188038':pct<0?'#c62828':'#666';
  info.textContent=label+' · '+euro(a)+' / '+euro(b)+' · '+current.length+'/'+previous.length+' Tage';
 }
+// Historische Monatsumsätze laut vom Betreiber übermittelter Jahresumsatzübersicht.
+// Diese Werte sind vollständige Bruttomonate, keine täglichen BONit-Z-Berichte.
+const gp2HistoricalGross=Object.freeze({'2025-10':57274.73,'2025-11':46998.00,'2025-12':67325.00});
 async function gp2RefreshBonitYoY(id,month,start,end,prevStart,prevEnd){
  const info=$('gp2YoYInfo'),value=$('gp2YoY');if(!info||!value)return;
  value.textContent='–';value.style.color='';info.textContent='Vorjahresvergleich wird geladen …';
@@ -3286,6 +3289,26 @@ async function gp2RefreshBonitYoY(id,month,start,end,prevStart,prevEnd){
  if(id!==businessId||month!==$('month').value)return;
  if(a.error||b.error){info.textContent='Vorjahresvergleich nicht verfügbar';return}
  const current=a.data||[],previous=b.data||[];
+ const historic=gp2HistoricalGross[prevStart.slice(0,7)];
+ if(historic&&current.length){
+   const total=current.reduce((sum,r)=>sum+Number(r.gross_amount||0),0);
+   const value=$('gp2YoY'),info=$('gp2YoYInfo');
+   const today=new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Vienna',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
+   const selectedCurrent=month===today.slice(0,7);
+   const latest=current.map(x=>x.closing_date).sort().at(-1);
+   const fullMonthEnd=gpNextDate(latest)===monthBounds(month).end;
+   if(!selectedCurrent&&fullMonthEnd){
+     const pct=(total/historic-1)*100;
+     value.textContent=(pct>0?'▲ ':pct<0?'▼ ':'● ')+(pct>0?'+':'')+pct.toLocaleString('de-AT',{minimumFractionDigits:1,maximumFractionDigits:1})+' %';
+     value.style.color=pct>0?'#188038':pct<0?'#c62828':'#666';
+     info.textContent=month+' / '+prevStart.slice(0,7)+' · '+euro(total)+' / '+euro(historic)+' (ganze Monate)';
+   }else{
+     value.textContent=(total/historic*100).toLocaleString('de-AT',{minimumFractionDigits:1,maximumFractionDigits:1})+' %';
+     value.style.color='#555';
+     info.textContent='Bisher '+euro(total)+' von '+euro(historic)+' Vorjahres-Gesamtmonat · bis '+latest.slice(8)+'.';
+   }
+   return;
+ }
  // Für Teilmonate ausschließlich identische Kalendertage vergleichen.
  const daySet=new Set(current.map(x=>x.closing_date.slice(-2)));
  const previousMatched=previous.filter(x=>daySet.has(x.closing_date.slice(-2)));
