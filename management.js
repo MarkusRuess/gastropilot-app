@@ -28,6 +28,34 @@ async function list(table){
  return r.data||[];
 }
 
+
+async function renderAutoMatch(){
+ const root=$('gpAutoMatch'),note=$('gpAutoMatchNote');if(!root)return;root.replaceChildren();
+ const month=today().slice(0,7);
+ const [closings,banks,sepa]=await Promise.all([
+ db.from('bonit_daily_closings').select('closing_date,card_amount,cash_amount,gross_amount').eq('business_id',businessId).gte('closing_date',month+'-01').order('closing_date'),
+ db.from('bank_transactions').select('id,booking_date,payee,description,amount').eq('business_id',businessId).gte('booking_date',month+'-01').limit(500),
+ db.from('bank_sepa_batch_items').select('bank_transaction_id,amount').eq('business_id',businessId).limit(500)
+ ]);
+ if(closings.error||banks.error||sepa.error){note.textContent='Abgleich noch nicht verfügbar: '+(closings.error||banks.error||sepa.error).message;return;}
+ const daily=new Map();for(const x of closings.data||[]){const key=x.closing_date;const v=daily.get(key)||{card:0,cash:0};v.card+=Number(x.card_amount||0);v.cash+=Number(x.cash_amount||0);daily.set(key,v)}
+ const bank=banks.data||[],items=sepa.data||[];
+ const hobex=bank.filter(x=>Number(x.amount)>0&&/hobex/i.test(x.payee||''));
+ const sepaBatches=bank.filter(x=>Number(x.amount)<0&&/sepa-zahlung/i.test(x.payee||''));
+ const complete=sepaBatches.filter(x=>Math.abs(items.filter(y=>y.bank_transaction_id===x.id).reduce((a,y)=>a+Number(y.amount),0)-Math.abs(Number(x.amount)))<0.011);
+ let matched=0,pending=0,fee=0;
+ for(const x of hobex){const d=String(x.description||'').match(/CARDS\s+(\d{6})-(\d{6})/i);if(!d){pending++;continue}
+ const iso=v=>'20'+v.slice(0,2)+'-'+v.slice(2,4)+'-'+v.slice(4,6);
+ const start=iso(d[1]),end=iso(d[2]);let total=0,count=0;
+ for(const [date,v] of daily)if(date>=start&&date<=end){total+=v.card;count++}
+ const gross=String(x.description||'').match(/TURNOVER\s+([\d.,]+)/i);const declared=gross?Number(gross[1].replace(/\./g,'').replace(',','.')):NaN;
+ if(count&&Number.isFinite(declared)&&Math.abs(total-declared)<0.02){matched++;fee+=declared-Number(x.amount)}else pending++;
+ }
+ const tiles=[['Bonnie-Z-Berichte',daily.size+' Tage','Oktober · eingegangen'],['HOBEX zugeordnet',matched+' / '+hobex.length,'Exakter Abgleich der Kartenumsätze'],['HOBEX offen',pending+' Eingänge','Fehlende Tage oder Abweichungen prüfen'],['SEPA aufgeschlüsselt',complete.length+' / '+sepaBatches.length,'Einzelpositionen entsprechen Sammelbetrag']];
+ for(const [label,value,desc] of tiles){const el=document.createElement('div');el.className='gp-fixed-tile';const a=document.createElement('small');a.textContent=label;const b=document.createElement('strong');b.textContent=value;const c=document.createElement('p');c.textContent=desc;el.append(a,b,c);root.append(el)}
+ note.textContent='Automatische Prüfung bei jedem Laden · '+month+'. Nur exakte HOBEX-Bruttosummen werden als zugeordnet angezeigt. Gebühren aus passenden HOBEX-Eingängen: '+euro(fee)+'. Bareinzahlungen sind kein zusätzlicher Umsatz. Ungeklärte Vorgänge werden nicht automatisch als bezahlt markiert.';
+}
+
 async function renderFixedTiles(){
  const root=$('gpFixedTiles'),note=$('gpFixedNote');if(!root)return;
  root.replaceChildren();const month=today().slice(0,7);
@@ -75,7 +103,7 @@ async function renderFixedTiles(){
  const forecastLabel=$('forecast')?.previousElementSibling;
  if(forecastLabel)forecastLabel.textContent=provisionalRaika?'Prognose (vorläufig)':'Prognose';
  $('forecastNote').textContent=(provisionalRaika?'VORLÄUFIG: Raika -3.650,20 EUR aus PDF vom 12.10.2026 ist in der Anzeige berücksichtigt, aber noch nicht als bestaetigter Kontostand gespeichert. ':'')+'Stichtag '+today()+' bis '+end+'. Überfällige offene Zahlungen sind enthalten. Fixkosten und Personal werden nicht automatisch doppelt als Zahlungen gebucht. '+(good.length?'Kontostände bitte aktuell halten.':'Noch keine bestätigten Kontostände.');
- await renderFixedTiles();\n for(const x of costs.filter(x=>x.is_recurring))entry('costList',(x.supplier||x.description||'Fixkosten')+' · '+euro(x.gross_amount),(x.category||'')+' · '+(x.due_date||'ohne Fälligkeit'));
+ await renderFixedTiles();\n await renderAutoMatch();\n for(const x of costs.filter(x=>x.is_recurring))entry('costList',(x.supplier||x.description||'Fixkosten')+' · '+euro(x.gross_amount),(x.category||'')+' · '+(x.due_date||'ohne Fälligkeit'));
  const month=$('personMonth').value||today().slice(0,7);
  const selected=people.filter(x=>String(x.accounting_month||'').startsWith(month));
  const sum=selected.reduce((s,x)=>s+Number(x.gross_salary||0)+Number(x.employer_costs||0),0);
