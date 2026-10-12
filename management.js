@@ -27,7 +27,22 @@ async function list(table){
  if(r.error)throw Error(table+': '+r.error.message);
  return r.data||[];
 }
-async function refresh(){
+
+async function renderFixedTiles(){
+ const root=$('gpFixedTiles'),note=$('gpFixedNote');if(!root)return;
+ root.replaceChildren();const month=today().slice(0,7);
+ const [tx,confirmed]=await Promise.all([db.from('bank_transactions').select('id,booking_date,payee,description,amount,category').eq('business_id',businessId).gte('booking_date',month+'-01').lt('amount',0).limit(500),db.from('bank_fixed_costs').select('booking_date,payee,amount,category').eq('business_id',businessId).gte('booking_date',month+'-01').limit(500)]);
+ if(tx.error){note.textContent='Bankdaten nicht verfügbar: '+tx.error.message;return;}
+ const cats=[['rent','Miete'],['energy','Strom & Energie'],['insurance','Versicherungen'],['telephone','Telefon & Internet'],['accounting','Steuerberatung'],['payment_processing','Zahlungsanbieter'],['other','Weitere Fixkosten']];
+ const groups=Object.fromEntries(cats.map(([k])=>[k,[]]));
+ const seen=new Set();
+ const pick=x=>{const p=String(x.payee||'').toLowerCase(),c=String(x.category||'').toLowerCase();if(c==='rent'||/immobilien baden/.test(p))return 'rent';if(c==='energy'||/wien energie|evn/.test(p))return 'energy';if(c==='insurance'||/versicherung/.test(p))return 'insurance';if(['telephone','internet','telecom'].includes(c)||/hutchison|easyname/.test(p))return 'telephone';if(c==='accounting'||/steuerberatung/.test(p))return 'accounting';if(c==='payment_processing'||/hobex/.test(p))return 'payment_processing';return null};
+ for(const x of tx.data||[]){const cat=pick(x);if(!cat)continue;const key=[x.booking_date,String(x.payee).toLowerCase(),Math.abs(Number(x.amount)).toFixed(2)].join('|');if(seen.has(key))continue;seen.add(key);groups[cat].push({date:x.booking_date,name:x.payee,amount:Math.abs(Number(x.amount)),source:'Bank'});}
+ for(const x of confirmed.data||[]){const cat=pick(x)||'other';const key=[x.booking_date,String(x.payee).toLowerCase(),Math.abs(Number(x.amount)).toFixed(2)].join('|');if(seen.has(key))continue;seen.add(key);groups[cat].push({date:x.booking_date,name:x.payee,amount:Math.abs(Number(x.amount)),source:'Bestätigt'});}
+ let total=0;for(const [key,label] of cats){const items=groups[key];const sum=items.reduce((n,x)=>n+x.amount,0);total+=sum;const tile=document.createElement('div');tile.className='gp-fixed-tile';const small=document.createElement('small');small.textContent=label;const strong=document.createElement('strong');strong.textContent=euro(sum);const info=document.createElement('p');info.textContent=items.length+' Bankpositionen · '+month;tile.append(small,strong,info);if(items.length){const details=document.createElement('details');const summary=document.createElement('summary');summary.textContent='Buchungen ansehen';details.append(summary);for(const x of items){const row=document.createElement('div');row.className='gp-fixed-row';const left=document.createElement('span');left.textContent=x.date+' · '+x.name;const right=document.createElement('b');right.textContent=euro(x.amount);row.append(left,right);details.append(row)}tile.append(details)}root.append(tile)}
+ note.textContent='Bankbasierte Fixkosten '+month+': '+euro(total)+' · Bereits bestätigte Positionen werden nicht nochmals addiert. Anzahlungen sind Zahlungsabflüsse, nicht zwingend Monatsaufwand. Lieferantenrechnungen und Personal sind hier nicht enthalten.';
+}
+\nasync function refresh(){
  if(!businessId)return;
  try{
  status('Daten werden geladen …');
@@ -60,7 +75,7 @@ async function refresh(){
  const forecastLabel=$('forecast')?.previousElementSibling;
  if(forecastLabel)forecastLabel.textContent=provisionalRaika?'Prognose (vorläufig)':'Prognose';
  $('forecastNote').textContent=(provisionalRaika?'VORLÄUFIG: Raika -3.650,20 EUR aus PDF vom 12.10.2026 ist in der Anzeige berücksichtigt, aber noch nicht als bestaetigter Kontostand gespeichert. ':'')+'Stichtag '+today()+' bis '+end+'. Überfällige offene Zahlungen sind enthalten. Fixkosten und Personal werden nicht automatisch doppelt als Zahlungen gebucht. '+(good.length?'Kontostände bitte aktuell halten.':'Noch keine bestätigten Kontostände.');
- for(const x of costs.filter(x=>x.is_recurring))entry('costList',(x.supplier||x.description||'Fixkosten')+' · '+euro(x.gross_amount),(x.category||'')+' · '+(x.due_date||'ohne Fälligkeit'));
+ await renderFixedTiles();\n for(const x of costs.filter(x=>x.is_recurring))entry('costList',(x.supplier||x.description||'Fixkosten')+' · '+euro(x.gross_amount),(x.category||'')+' · '+(x.due_date||'ohne Fälligkeit'));
  const month=$('personMonth').value||today().slice(0,7);
  const selected=people.filter(x=>String(x.accounting_month||'').startsWith(month));
  const sum=selected.reduce((s,x)=>s+Number(x.gross_salary||0)+Number(x.employer_costs||0),0);
