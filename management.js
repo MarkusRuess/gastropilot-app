@@ -105,7 +105,8 @@ async function refresh(){
  if(forecastLabel)forecastLabel.textContent=provisionalRaika?'Prognose (vorläufig)':'Prognose';
  $('forecastNote').textContent=(provisionalRaika?'VORLÄUFIG: Raika -3.650,20 EUR aus PDF vom 12.10.2026 ist in der Anzeige berücksichtigt, aber noch nicht als bestaetigter Kontostand gespeichert. ':'')+'Stichtag '+today()+' bis '+end+'. Überfällige offene Zahlungen sind enthalten. Fixkosten und Personal werden nicht automatisch doppelt als Zahlungen gebucht. '+(good.length?'Kontostände bitte aktuell halten.':'Noch keine bestätigten Kontostände.');
  await renderFixedTiles();
- await renderAutoMatch();\n for(const x of costs.filter(x=>x.is_recurring))entry('costList',(x.supplier||x.description||'Fixkosten')+' · '+euro(x.gross_amount),(x.category||'')+' · '+(x.due_date||'ohne Fälligkeit'));
+ await renderAutoMatch();
+ for(const x of costs.filter(x=>x.is_recurring))entry('costList',(x.supplier||x.description||'Fixkosten')+' · '+euro(x.gross_amount),(x.category||'')+' · '+(x.due_date||'ohne Fälligkeit'));
  const month=$('personMonth').value||today().slice(0,7);
  const selected=people.filter(x=>String(x.accounting_month||'').startsWith(month));
  const sum=selected.reduce((s,x)=>s+Number(x.gross_salary||0)+Number(x.employer_costs||0),0);
