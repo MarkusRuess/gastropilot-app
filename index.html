@@ -2952,17 +2952,29 @@ async function refreshBankOverview(){
   const month=$('month').value;
   const inMonth=entries.filter(x=>String(x.booking_date||'').startsWith(month));
   status.textContent=entries.length+' Bankbewegungen ab 15.09.2026 · '+inMonth.length+' im Monat '+month+'.';
-  const statementBalances={Volksbank:{amount:4121,date:'2026-10-12'},Raika:{amount:-3650.20,date:'2026-10-12'}};
+  const {data:bankBalances,error:balanceError}=await db.from('cash_accounts')
+    .select('account_name,current_balance,balance_date,created_at')
+    .eq('business_id',businessId).limit(200);
+  const statementBalances={};
+  if(!balanceError)for(const item of bankBalances||[]){
+    const name=/raika|raiffeisen/i.test(item.account_name)?'Raika':/volksbank/i.test(item.account_name)?'Volksbank':null;
+    if(!name)continue;
+    const existing=statementBalances[name];
+    if(!existing||String(item.balance_date||'')>String(existing.date||'')||
+       (String(item.balance_date||'')===String(existing.date||'')&&String(item.created_at||'')>String(existing.created_at||''))){
+      statementBalances[name]={amount:Number(item.current_balance),date:item.balance_date,created_at:item.created_at};
+    }
+  }
   for(const name of ['Volksbank','Raika']){
     const subset=entries.filter(x=>x.account_name===name);
     const tile=document.createElement('div');tile.className='metric';
     const label=document.createElement('small');label.textContent=name;
     const amount=document.createElement('strong');
     const ref=statementBalances[name];
-    amount.textContent=euro(ref.amount);
+    amount.textContent=ref?euro(ref.amount):'–';
     const date=document.createElement('small');
     date.style.display='block';
-    date.textContent='Auszugsstand '+ref.date.split('-').reverse().join('.')+' · '+(name==='Raika'?'vorläufiger PDF-Referenzwert':'zuletzt erfasster Stand');
+    date.textContent=ref?'Kontostand '+String(ref.date||'').split('-').reverse().join('.')+' · Datenbank':'Noch kein Kontostand erfasst';
     const count=document.createElement('small');
     count.style.display='block';count.textContent=subset.length+' importierte Buchungen';
     tile.append(label,amount,date,count);accounts.append(tile);
