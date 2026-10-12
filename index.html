@@ -398,7 +398,7 @@ Alle Artikelgruppen anzeigen →
 <p class="muted" id="bankOverviewStatus" role="status">Bankbuchungen werden geladen …</p>
 <div id="bankOverviewAccounts" class="grid"></div>
 <div id="bankOverviewRows"></div>
-<p class="muted">Nur bereits importierte Bankbewegungen. Fehlende Zeiträume sind nicht verbucht. SEPA-Einzelpositionen werden nicht nochmals als Bankabfluss gezählt.</p>
+<p class="muted">Aktiver Bankzeitraum ab 15.09.2026. Ältere Bankbuchungen bleiben archiviert und werden hier nicht angezeigt. SEPA-Einzelpositionen werden nicht nochmals als Bankabfluss gezählt.</p>
 </section>
 </section>
 
@@ -2971,12 +2971,13 @@ async function refreshBankOverview(){
   const {data,error}=await db.from('bank_transactions')
     .select('account_name,booking_date,payee,description,amount,category')
     .eq('business_id',businessId)
+    .gte('booking_date','2026-09-15')
     .order('booking_date',{ascending:false}).limit(500);
   if(error){status.textContent='Bankbuchungen konnten nicht geladen werden: '+error.message;return}
   const entries=data||[];
   const month=$('month').value;
   const inMonth=entries.filter(x=>String(x.booking_date||'').startsWith(month));
-  status.textContent=entries.length+' importierte Bankbewegungen insgesamt · '+inMonth.length+' im Monat '+month+'.';
+  status.textContent=entries.length+' Bankbewegungen ab 15.09.2026 · '+inMonth.length+' im Monat '+month+'.';
   const statementBalances={Volksbank:{amount:4121,date:'2026-10-12'},Raika:{amount:-3650.20,date:'2026-10-12'}};
   for(const name of ['Volksbank','Raika']){
     const subset=entries.filter(x=>x.account_name===name);
