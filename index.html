@@ -2842,7 +2842,12 @@ function arrangeDashboard(){
  const bank=$('bankOverviewCard');
  if(!month||!top||!quick||!trend||!bank)return;
  // Keep the monthly card intact, but present Top 10 as a separate dashboard block.
- for(const el of [month,top,quick,trend,bank])page.append(el);
+ const title=page.querySelector('.page-title');
+ let cursor=title;
+ for(const el of [month,top,quick,trend,bank]){
+   cursor.after(el);
+   cursor=el;
+ }
  const existing=$('bankDetailsToggle');
  if(!existing){
   const details=document.createElement('details');
