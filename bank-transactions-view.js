@@ -4,6 +4,7 @@ const $=id=>document.getElementById(id);
 const euro=n=>new Intl.NumberFormat('de-AT',{style:'currency',currency:'EUR'}).format(Number(n)||0);
 const fmtDate=s=>s?String(s).slice(8,10)+'.'+String(s).slice(5,7)+'.'+String(s).slice(0,4):'–';
 let bankEntries=[];
+let latestLoad=0;
 const fid='6a5484d1-daf6-4263-897d-24cdf536aa29';
 function render(){
  const target=$('gpBankPayments');target.replaceChildren();
@@ -20,6 +21,7 @@ function render(){
  }
 }
 async function load(){
+ const request=++latestLoad;
  const status=$('gpBankStatus'),tiles=$('gpBankAccounts');status.textContent='Lade Bankdaten …';tiles.replaceChildren();
  const auth=await db.auth.getUser();
  if(auth.error||!auth.data.user){status.textContent='Bitte anmelden, um Bankbewegungen zu sehen.';return}
@@ -30,6 +32,7 @@ async function load(){
   db.from('cash_accounts').select('account_name,current_balance,balance_date,created_at').eq('business_id',fid).limit(200)
  ]);
  if(movements.error){status.textContent='Fehler beim Laden der Bankbewegungen: '+movements.error.message;return}
+ if(request!==latestLoad)return;
  bankEntries=movements.data||[];
  for(const bank of ['Raika','Volksbank']){
   const entries=bankEntries.filter(x=>x.account_name===bank);
