@@ -244,6 +244,7 @@ dialog::backdrop{background:#0f1e2d99}
 #bonitImportLogCard>p.muted:last-child{margin-top:18px;padding-top:12px;border-top:1px solid #eee}
 @media(max-width:540px){#bonitImportLogCard{padding:15px}.bonit-log-row{grid-template-columns:minmax(0,1fr) auto;gap:5px 10px;padding:12px}.bonit-log-date{font-size:13px}.bonit-log-number{grid-column:1;grid-row:2}.bonit-log-amount{grid-column:2;grid-row:1 / span 2;font-size:16px}}
 .gp-monthly-control-btn{display:inline-flex;align-items:center;gap:11px;min-height:48px;margin-top:10px;padding:9px 15px 9px 9px;background:#fff;color:#111;text-decoration:none;border:1px solid #d9d9d9;border-radius:13px;font-size:14px;font-weight:750;box-shadow:0 4px 12px #11111116;transition:transform .18s,background .18s,box-shadow .18s}.gp-monthly-control-btn:hover{background:#fff;color:#111;transform:translateY(-1px);box-shadow:0 7px 17px #11111125}.gp-monthly-control-btn:focus-visible{outline:3px solid #777;outline-offset:3px}.gp-monthly-control-icon{display:grid;place-items:center;width:29px;height:29px;border-radius:9px;background:#f2f2f2;font-size:17px}.gp-monthly-control-arrow{font-size:18px;margin-left:9px;opacity:.8}@media(max-width:440px){.gp-monthly-control-btn{width:100%;justify-content:flex-start}.gp-monthly-control-arrow{margin-left:auto}}
+.recent-invoice-row{display:flex;justify-content:space-between;align-items:center;gap:16px;border:1px solid #e5e5e5;background:#fff;border-radius:12px;padding:14px;margin:8px 0}.recent-invoice-row strong{display:block;font-size:15px}.recent-invoice-row small{display:block;color:#666;font-size:12px;margin-top:4px;overflow-wrap:anywhere}.recent-invoice-amount{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}@media(max-width:480px){.recent-invoice-row{align-items:flex-start;flex-direction:column}.recent-invoice-amount{text-align:left}}
 </style>
 <style id="dashboard-white-final">
 /* Dashboard + selected tile: always white, black typography, no state colors. */
@@ -485,6 +486,9 @@ accept="image/*" capture="environment" class="hidden">
 <h2>Rechnungsarchiv</h2>
 <button id="invoiceRefresh" class="secondary">Aktualisieren</button>
 </div>
+<h3>Zuletzt hochgeladene Rechnungen</h3>
+<p class="muted">Nach Upload-Datum sortiert, unabhängig vom Rechnungsmonat.</p>
+<div id="recentInvoiceUploads" aria-live="polite">Rechnungen werden geladen …</div>
 <details>
 <summary>Rechnungsarchiv durchsuchen</summary>
 <div class="filter-grid">
@@ -3061,6 +3065,25 @@ async function renderBonitCashArchive(){
   }
 }
 
+async function refreshRecentInvoiceUploads(){
+ const box=$('recentInvoiceUploads');if(!box||!businessId)return;
+ const {data,error}=await db.from('documents').select('id,document_date,created_at,supplier,invoice_number,status,extracted_data')
+  .eq('business_id',businessId).eq('document_type','invoice').order('created_at',{ascending:false}).limit(8);
+ box.replaceChildren();
+ if(error){box.textContent='Letzte Rechnungen konnten nicht geladen werden: '+error.message;return;}
+ if(!data?.length){box.textContent='Noch keine Lieferantenrechnung gespeichert.';return;}
+ for(const doc of data){
+  const row=document.createElement('div');row.className='recent-invoice-row';
+  const main=document.createElement('div');main.style.minWidth='0';
+  const name=document.createElement('strong');name.textContent=doc.supplier||'Lieferant unbekannt';
+  const info=document.createElement('small');info.textContent='Rechnung '+(doc.invoice_number||'ohne Nummer')+' · Rechnungsdatum '+dateLabel(doc.document_date);
+  const upload=document.createElement('small');upload.textContent='Hochgeladen: '+stamp(doc.created_at)+' · '+(doc.status==='reviewed'?'Geprüft':doc.status||'Status offen');
+  main.append(name,info,upload);
+  const total=document.createElement('strong');total.className='recent-invoice-amount';
+  const raw=doc.extracted_data?.gross_total;total.textContent=validNumber(raw)?euro(Number(raw)):'Betrag offen';
+  row.append(main,total);box.append(row);
+ }
+}
 async function refreshArchives(){
   if(!businessId)return;
 
@@ -3088,10 +3111,12 @@ async function refreshArchives(){
     if(businessId==='6a5484d1-daf6-4263-897d-24cdf536aa29')await renderBonitCashArchive();
     else renderArchive('cash_report',cash);
     renderArchive('invoice',invoices);
+    await refreshRecentInvoiceUploads();
 
   }catch(e){
     $('cashArchiveInfo').textContent=
       'Archivfehler: '+e.message;
+    $('recentInvoiceUploads').textContent='Rechnungen konnten nicht geladen werden: '+e.message;
   }
 }
 
