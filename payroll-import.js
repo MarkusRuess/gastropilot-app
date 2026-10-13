@@ -221,7 +221,19 @@ async function renderPersonnelMonths(payRows,events,profiles){
   d.append(head,body);staffGrid.append(d);
  }
  const docs=archived.filter(f=>String(f.accounting_month||'').startsWith(key));
- if(docs.length)detail.append(el('p',docs.length+' archivierte Originaldatei(en) für diesen Monat.'));
+ if(docs.length){
+  const title=el('h3','Originaldokumente · '+gpMonths[Number(key.slice(5))-1]+' '+selectedPersonnelYear);title.style='margin-top:22px';detail.append(title);
+  const grid=el('div');grid.style='display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px;margin:10px 0 20px';
+  for(const f of docs){
+   const tile=el('div');tile.style='border:1px solid #dedede;border-radius:12px;padding:14px;background:#fff;display:flex;flex-direction:column;gap:8px;min-width:0';
+   const name=el('strong',f.original_name);name.style='overflow-wrap:anywhere';tile.append(name);
+   const type=el('small',f.document_type==='salary'?'Lohnset':f.document_type==='payment_journal'?'Auszahlungsjournal':f.document_type==='other'?'Weiteres Dokument':f.document_type);type.style='color:#777';tile.append(type);
+   const button=el('button','Original öffnen');button.type='button';button.style='align-self:flex-start;padding:8px 12px;border-radius:9px';
+   button.onclick=async()=>{const x=await db.storage.from('employee-archive').createSignedUrl(f.storage_path,60);if(x.error)msg('Archivfehler: '+x.error.message);else window.open(x.data.signedUrl,'_blank','noopener')};
+   tile.append(button);grid.append(tile);
+  }
+  detail.append(grid);
+}
 }
 async function renderEmployees(){
  const box=$('gpEmployeeCards');if(!box||!member)return;
@@ -291,6 +303,7 @@ $('payrollRead').onclick=async()=>{
  try{
   member=await authMember();await getArchive();
   let saved=0,dupes=0,unresolved=0;
+  let lastImportedMonth=null;
   for(const file of [...selectedFiles]){
    msg('Verarbeite '+file.name);
    try{
@@ -304,7 +317,7 @@ $('payrollRead').onclick=async()=>{
     const journal=/Auszahlungsjournal/i.test(full);
     let kind='other',status='archived',employeeId=null,month=null;
     if(salaries.length){
-     kind='salary';month=salaries[0].month;
+     kind='salary';month=salaries[0].month;if(month)lastImportedMonth=month;
      if(salaries.length!==pages.length||salaries.some(p=>!p.ready)){status='needs_review';unresolved++;output.append(el('p',file.name+': Lohnset enthält '+salaries.length+' Abrechnungen, davon nicht alle eindeutig erkannt. Original archiviert, keine unvollständigen Löhne gespeichert.'))}
      else{
       let rows=[];
@@ -317,13 +330,13 @@ $('payrollRead').onclick=async()=>{
      kind=ev.type;
      if(!ev.ready){status='needs_review';unresolved++;output.append(el('p',file.name+': An-/Abmeldung ohne eindeutigen Namen oder Beschäftigungsdatum; nur archiviert.'))}
      else{const res=await saveEvent(ev);employeeId=res.id;output.append(el('p',file.name+': '+ev.name+' · '+(ev.type==='registration'?'Anmeldung':'Abmeldung')+' '+ev.date+' ('+res.status+')'));if(res.status==='gespeichert')saved++}
-    }else if(journal){kind='payment_journal';const m=full.match(/Auszahlungsjournal\s+(Jänner|Januar|Februar|März|April|Mai|Juni|Juli|August|September|Oktober|November|Dezember)\s+(20\d{2})/i);if(m){const names=['januar','februar','märz','april','mai','juni','juli','august','september','oktober','november','dezember'];month=m[2]+'-'+String(names.indexOf(norm(m[1]))+1).padStart(2,'0')}output.append(el('p',file.name+': Auszahlungsjournal im Archiv (keine doppelte Lohnbuchung).'))}
+    }else if(journal){kind='payment_journal';const m=full.match(/Auszahlungsjournal\s+(Jänner|Januar|Februar|März|April|Mai|Juni|Juli|August|September|Oktober|November|Dezember)\s+(20\d{2})/i);if(m){const names=['januar','februar','märz','april','mai','juni','juli','august','september','oktober','november','dezember'];month=m[2]+'-'+String(names.indexOf(norm(m[1]))+1).padStart(2,'0');if(month)lastImportedMonth=month}output.append(el('p',file.name+': Auszahlungsjournal im Archiv (keine doppelte Lohnbuchung).'))}
     else{status='needs_review';unresolved++;output.append(el('p',file.name+': Dokumenttyp nicht eindeutig; Original archiviert.'))}
     await archiveFile(file,digest,kind,employeeId,month,status);
     archived.push({sha256:digest});
    }catch(err){unresolved++;output.append(el('p',file.name+': NICHT ARCHIVIERT – '+err.message))}
   }
-  selectedFiles=[];renderSelection();await getArchive();await renderEmployees();
+  selectedFiles=[];renderSelection();await getArchive();if(lastImportedMonth){selectedPersonnelYear=Number(lastImportedMonth.slice(0,4));selectedPersonnelMonth=lastImportedMonth;const archiveMonth=$('personMonth');if(archiveMonth){archiveMonth.value=lastImportedMonth;archiveMonth.dispatchEvent(new Event('change'))}}await renderEmployees();
   msg('Fertig: '+saved+' Datensätze gespeichert · '+dupes+' doppelte Dateien übersprungen · '+unresolved+' zur Prüfung/fehlgeschlagen. Archiv unten kontrollieren.');
  }catch(err){msg('Fehler: '+err.message)}finally{button.disabled=false}
 };
