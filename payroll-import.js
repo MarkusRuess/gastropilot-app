@@ -132,12 +132,28 @@ function renderSelection(){
 }
 function renderArchive(){
  const box=$('gpArchiveFiles');if(!box)return;box.replaceChildren();
+ box.style.cssText='display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:12px;margin:14px 0';
+ const grouped=new Map();
  for(const f of archived){
-  const row=el('div');row.style='display:flex;gap:8px;align-items:center;flex-wrap:wrap;border-bottom:1px solid #ddd;padding:8px 0';
-  row.append(el('span',f.original_name+' · '+f.document_type+' · '+f.processing_status));
-  const btn=el('button','Original öffnen');btn.type='button';btn.style='padding:4px 9px';
-  btn.onclick=async()=>{const x=await db.storage.from('employee-archive').createSignedUrl(f.storage_path,60);if(x.error)msg('Archivfehler: '+x.error.message);else window.open(x.data.signedUrl,'_blank','noopener')};
-  row.append(btn);box.append(row);
+  const key=String(f.accounting_month||'').slice(0,7);
+  const month=/^\\d{4}-\\d{2}$/.test(key)?key:'Ohne Monatszuordnung';
+  if(!grouped.has(month))grouped.set(month,[]);grouped.get(month).push(f);
+ }
+ const kinds={salary:'Lohnset',payment_journal:'Auszahlungsjournal',registration:'Anmeldung',deregistration:'Abmeldung',other:'Sonstiges'};
+ for(const [month,files] of [...grouped.entries()].sort((a,b)=>b[0].localeCompare(a[0]))){
+  const tile=el('section');tile.style='border:1px solid #e1d9cd;border-radius:16px;background:#fff;padding:16px;box-shadow:0 3px 12px #241b1008;min-width:0';
+  const title=el('strong',/^\\d{4}-\\d{2}$/.test(month)?gpMonths[Number(month.slice(5))-1]+' '+month.slice(0,4):month);title.style='display:block;font-size:19px;margin-bottom:4px';tile.append(title);
+  const count=el('small',files.length+' Originaldokument'+(files.length===1?'':'e'));count.style='display:block;color:#777;margin-bottom:12px';tile.append(count);
+  for(const f of files){
+   const line=el('div');line.style='border-top:1px solid #eee;padding:11px 0;min-width:0';
+   const label=el('strong',kinds[f.document_type]||f.document_type||'Dokument');label.style='display:block;font-size:13px;color:#7c6548;margin-bottom:4px';line.append(label);
+   const name=el('div',f.original_name);name.style='font-size:13px;overflow-wrap:anywhere;line-height:1.45';line.append(name);
+   const status=el('small',f.processing_status==='archived'?'Archiviert':f.processing_status==='needs_review'?'Prüfung offen':f.processing_status||'');status.style='display:block;color:#777;margin-top:3px';line.append(status);
+   const btn=el('button','Original öffnen');btn.type='button';btn.style='padding:6px 11px;margin-top:8px;font-size:12px;border-radius:9px';
+   btn.onclick=async()=>{const x=await db.storage.from('employee-archive').createSignedUrl(f.storage_path,60);if(x.error)msg('Archivfehler: '+x.error.message);else window.open(x.data.signedUrl,'_blank','noopener')};
+   line.append(btn);tile.append(line);
+  }
+  box.append(tile);
  }
  if(!archived.length)box.append(el('p','Noch keine Dokumente archiviert.'));
 }
