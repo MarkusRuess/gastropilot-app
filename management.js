@@ -112,8 +112,18 @@ async function refresh(){
  const month=$('personMonth').value||today().slice(0,7);
  const selected=people.filter(x=>String(x.accounting_month||'').startsWith(month));
  const sum=selected.reduce((s,x)=>s+Number(x.gross_salary||0)+Number(x.employer_costs||0),0);
- entry('personList','Gesamtkosten '+month+' · '+euro(sum),selected.length+' Einträge; keine automatische Zahlungsbuchung');
- for(const x of selected)entry('personList',x.employee_name+' · '+euro(Number(x.gross_salary||0)+Number(x.employer_costs||0)),'Brutto '+euro(x.gross_salary)+' · DG '+euro(x.employer_costs));
+ const root=$('personList');root.style.cssText='display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:12px;margin:16px 0';
+ const headline=document.createElement('div');headline.style.cssText='grid-column:1/-1;background:#f8f5ef;border:1px solid #e1d9cd;border-radius:16px;padding:18px 20px';
+ const heading=document.createElement('div');heading.style.cssText='color:#75664f;font-size:13px;font-weight:700';heading.textContent='PERSONALKOSTEN · '+new Date(month+'-02T12:00:00').toLocaleDateString('de-AT',{month:'long',year:'numeric'}).toUpperCase();
+ const total=document.createElement('strong');total.style.cssText='display:block;font-size:clamp(24px,3vw,32px);margin:6px 0';total.textContent=euro(sum);
+ const sub=document.createElement('small');sub.textContent=selected.length+' Mitarbeiter-Einträge · keine automatische Zahlungsbuchung';headline.append(heading,total,sub);root.append(headline);
+ for(const x of selected){
+  const card=document.createElement('div');card.style.cssText='background:#fff;border:1px solid #e1d9cd;border-radius:16px;padding:16px;box-shadow:0 3px 12px #241b1008;min-width:0';
+  const name=document.createElement('strong');name.style.cssText='display:block;font-size:16px;margin-bottom:9px;overflow-wrap:anywhere';name.textContent=x.employee_name;
+  const cost=document.createElement('strong');cost.style.cssText='display:block;font-size:23px;margin-bottom:10px';cost.textContent=euro(Number(x.gross_salary||0)+Number(x.employer_costs||0));
+  const details=document.createElement('small');details.style.cssText='color:#666;line-height:1.7';details.textContent='Brutto '+euro(x.gross_salary)+' · Dienstgeberkosten '+euro(x.employer_costs);
+  card.append(name,cost,details);root.append(card);
+ }
  status('Daten geladen. Bitte Einträge vor Entscheidungen mit den Originalbelegen abgleichen.');
  }catch(e){status('Datenfehler: '+e.message)}
 }
