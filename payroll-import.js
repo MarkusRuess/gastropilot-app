@@ -176,7 +176,7 @@ async function renderPersonnelMonths(payRows,events,profiles){
  if(!rows.length){detail.append(el('p','Für diesen Monat sind noch keine Lohnabrechnungen gespeichert. Du kannst die Dokumente unten hochladen.'));return}
  const totals=rows.reduce((a,p)=>({gross:a.gross+Number(p.gross_salary||0),net:a.net+Number(p.net_payable||0),dg:a.dg+Number(p.employer_costs||0),total:a.total+Number(p.total_costs||0)}),{gross:0,net:0,dg:0,total:0});
 
- const journal=key==='2026-09'?{employee:11993.68,ogk:4984.79,tax:890.82,communal:417.61,total:18286.90,source:'Referenz aus dem Auszahlungsjournal September 2026 (bisher nicht als Einzelzahlungen in der Datenbank bestätigt)'}:null;
+ const journal=key==='2026-08'?{employee:11141.73,ogk:4004.88,tax:1232.25,communal:408.11,total:16786.97,source:'Referenz aus dem Auszahlungsjournal August 2026 vom 08.09.2026 · Zahlungsstatus nicht bankbestätigt'}:key==='2026-09'?{employee:11993.68,ogk:4984.79,tax:890.82,communal:417.61,total:18286.90,source:'Referenz aus dem Auszahlungsjournal September 2026 (bisher nicht als Einzelzahlungen in der Datenbank bestätigt)'}:null;
  const summary=el('div');summary.style='display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:9px;margin:12px 0 18px';
  for(const [label,value] of [['Bruttogehälter',totals.gross],['Netto laut Lohnabrechnungen',totals.net],['Zusätzliche Dienstgeberkosten',totals.dg],['Gesamtpersonalaufwand',totals.total]]){
   const tile=el('div');tile.style='border:1px solid #ddd;border-radius:12px;padding:14px';
