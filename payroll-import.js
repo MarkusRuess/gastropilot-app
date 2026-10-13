@@ -200,7 +200,15 @@ async function renderPersonnelMonths(payRows,events,profiles){
  }
  const totals=rows.reduce((a,p)=>({gross:a.gross+Number(p.gross_salary||0),net:a.net+Number(p.net_payable||0),dg:a.dg+Number(p.employer_costs||0),total:a.total+Number(p.total_costs||0)}),{gross:0,net:0,dg:0,total:0});
 
- const journal=key==='2026-07'?{employee:9026.41,ogk:3343.92,tax:700.16,communal:319.70,total:13390.19,source:'Auszahlungsjournal Juli 2026 vom 05.08.2026 · Brot & Wasser RA GmbH · Zahlungsstatus nicht bankbestätigt'}:key==='2026-08'?{employee:11141.73,ogk:4004.88,tax:1232.25,communal:408.11,total:16786.97,source:'Referenz aus dem Auszahlungsjournal August 2026 vom 08.09.2026 · Zahlungsstatus nicht bankbestätigt'}:key==='2026-09'?{employee:11993.68,ogk:4984.79,tax:890.82,communal:417.61,total:18286.90,source:'Referenz aus dem Auszahlungsjournal September 2026 (bisher nicht als Einzelzahlungen in der Datenbank bestätigt)'}:null;
+ const corporationLists={
+ '2026-02':{ogk:3340.24,tax:693.05,communal:314.41,source:'Überweisungsliste Körperschaften Februar 2026 vom 04.03.2026'},
+ '2026-03':{ogk:5251.14,tax:954.76,communal:473.61,source:'Überweisungsliste Körperschaften März 2026 vom 08.04.2026'},
+ '2026-04':{ogk:3533.67,tax:706.40,communal:324.35,source:'Überweisungsliste Körperschaften April 2026 vom 04.05.2026'},
+ '2026-05':{ogk:3842.68,tax:699.37,communal:343.01,source:'Überweisungsliste Körperschaften Mai 2026 vom 02.06.2026'},
+ '2026-06':{ogk:6029.00,tax:1266.70,communal:522.06,source:'Überweisungsliste Körperschaften Juni 2026 vom 07.07.2026'}
+ };
+ const corp=corporationLists[key];
+ const journal=corp?{employee:null,...corp,total:null,source:corp.source+' · keine Bankbestätigung'}:key==='2026-07'?{employee:9026.41,ogk:3343.92,tax:700.16,communal:319.70,total:13390.19,source:'Auszahlungsjournal Juli 2026 vom 05.08.2026 · Brot & Wasser RA GmbH · Zahlungsstatus nicht bankbestätigt'}:key==='2026-08'?{employee:11141.73,ogk:4004.88,tax:1232.25,communal:408.11,total:16786.97,source:'Referenz aus dem Auszahlungsjournal August 2026 vom 08.09.2026 · Zahlungsstatus nicht bankbestätigt'}:key==='2026-09'?{employee:11993.68,ogk:4984.79,tax:890.82,communal:417.61,total:18286.90,source:'Referenz aus dem Auszahlungsjournal September 2026 (bisher nicht als Einzelzahlungen in der Datenbank bestätigt)'}:null;
  const summary=el('div');summary.style='display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:9px;margin:12px 0 18px';
  for(const [label,value] of [['Bruttogehälter',totals.gross],['Netto laut Lohnabrechnungen',totals.net],['Zusätzliche Dienstgeberkosten',totals.dg],['Gesamtpersonalaufwand',totals.total]]){
   const tile=el('div');tile.style='border:1px solid #ddd;border-radius:12px;padding:14px';
@@ -216,7 +224,7 @@ async function renderPersonnelMonths(payRows,events,profiles){
   const tbody=el('tbody');
   for(const [label,value] of [['Auszahlungen an Mitarbeiter',journal.employee],['ÖGK Niederösterreich',journal.ogk],['Finanzamt Österreich',journal.tax],['Kommunalsteuer Baden',journal.communal],['Abgaben an Körperschaften',journal.ogk+journal.tax+journal.communal],['Gesamt laut Auszahlungsjournal',journal.total]]){
    const tr=el('tr');tr.style='border-bottom:1px solid #ddd';
-   const th=el('td',label),td=el('td',eur(value));th.style='padding:10px 6px';td.style='padding:10px 6px;text-align:right;font-weight:700';
+   const th=el('td',label),td=el('td',value==null?'– (kein Auszahlungsjournal)':eur(value));th.style='padding:10px 6px';td.style='padding:10px 6px;text-align:right;font-weight:700';
    tr.append(th,td);tbody.append(tr);
   }
   table.append(tbody);detail.append(table);
