@@ -344,7 +344,7 @@ html body #app #page-dashboard p{color:#111!important}
 <section id="page-dashboard" class="page active">
 <div class="page-title">Dashboard</div>
 <div id="gp2Home" class="gp2-hero">
- <h2>Dein Betrieb auf einen Blick</h2>
+ <h2>Dein Betrieb auf einen Blick <span id="gp2HeroMonth" style="display:inline-block;margin-left:10px;font-size:.72em;font-weight:600;color:#806b4b">Oktober 2026</span></h2>
  <p class="muted">Aktuelle Daten aus den vorhandenen Abrechnungen · fehlende Werte bleiben offen</p>
  <div class="gp2-tiles">
   <div class="gp2-tile"><small>Umsatz · ausgewählter Monat</small><strong id="gp2Gross">–</strong><span class="gp2-foot" id="gp2Days">BONit / Tagesberichte</span></div>
@@ -3464,6 +3464,7 @@ async function enter(){
     parts.find(p=>p.type==='year').value+'-'+
     parts.find(p=>p.type==='month').value;
 
+  $('gp2HeroMonth').textContent=new Intl.DateTimeFormat('de-AT',{month:'long',year:'numeric',timeZone:'Europe/Vienna'}).format(new Date());
   $('month').value=month;
   $('analysisMonth').value=month;
   $('cashArchiveMonth').value=month;
