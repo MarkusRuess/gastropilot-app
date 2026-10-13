@@ -142,25 +142,43 @@ function renderArchive(){
  if(!archived.length)box.append(el('p','Noch keine Dokumente archiviert.'));
 }
 async function renderEmployees(){
- const box=$('gpEmployeeCards');if(!box)return;
+ const box=$('gpEmployeeCards');if(!box||!member)return;
  const [profiles,pay,events]=await Promise.all([
  db.from('employee_profiles').select('id,full_name,employment_status,employment_start,employment_end').eq('business_id',member.business_id).order('full_name'),
- db.from('personnel_costs').select('employee_name,accounting_month,total_costs').eq('business_id',member.business_id),
+ db.from('personnel_costs').select('employee_name,accounting_month,total_costs,gross_salary,employer_costs,net_payable').eq('business_id',member.business_id).order('accounting_month',{ascending:false}),
  db.from('employee_documents').select('employee_id,document_type,effective_date').eq('business_id',member.business_id)
  ]);
  if(profiles.error||pay.error||events.error)throw Error('Mitarbeiterkartei nicht lesbar');
+ const byName=new Map();
+ for(const p of profiles.data)byName.set(norm(p.full_name),{...p,lohn:[]});
+ for(const p of pay.data){
+  const key=norm(p.employee_name);
+  if(!byName.has(key))byName.set(key,{id:null,full_name:p.employee_name,employment_status:'unknown',lohn:[]});
+  byName.get(key).lohn.push(p);
+ }
+ const employees=[...byName.values()].sort((a,b)=>a.full_name.localeCompare(b.full_name,'de'));
  box.replaceChildren();
- for(const p of profiles.data){
-  const tile=el('div');tile.style='border:1px solid #ddd;border-radius:12px;padding:12px;min-width:0';
+ for(const p of employees){
+  const tile=el('div');tile.style='border:1px solid #ddd;border-radius:12px;padding:12px;min-width:0;background:#fff';
   tile.append(el('strong',p.full_name));
-  tile.append(el('p',p.employment_status==='ended'?'Abgemeldet':p.employment_status==='active'?'Angemeldet':'Status nicht bestätigt'));
-  const ds=el('details');ds.append(el('summary','Personalakte ansehen'));
-  for(const e of events.data.filter(x=>x.employee_id===p.id))ds.append(el('p',(e.document_type==='registration'?'Anmeldung':'Abmeldung')+' · '+e.effective_date));
-  for(const x of pay.data.filter(x=>norm(x.employee_name)===norm(p.full_name)))ds.append(el('p','Lohn '+x.accounting_month+' · '+eur(x.total_costs)));
+  const state=el('p',p.employment_status==='ended'?'Abgemeldet':p.employment_status==='active'?'Angemeldet':'Status noch nicht durch An-/Abmeldung bestätigt');state.style='font-size:12px;color:#666;margin:7px 0';tile.append(state);
+  const ds=el('details');ds.append(el('summary','Personalakte · '+p.lohn.length+' Lohnmonate'));
+  const relevantEvents=events.data.filter(x=>x.employee_id===p.id).sort((a,b)=>b.effective_date.localeCompare(a.effective_date));
+  for(const e of relevantEvents)ds.append(el('p',(e.document_type==='registration'?'Anmeldung':'Abmeldung')+' · '+e.effective_date));
+  for(const x of p.lohn){
+   const block=el('p','Lohn '+String(x.accounting_month).slice(0,7)+' · Gesamt '+eur(x.total_costs)+' · Brutto '+eur(x.gross_salary)+' · DG '+eur(x.employer_costs)+(x.net_payable==null?'':' · Netto '+eur(x.net_payable)));
+   block.style='font-size:12px;border-bottom:1px solid #eee;padding-bottom:6px';ds.append(block);
+  }
   for(const f of archived.filter(x=>x.employee_id===p.id))ds.append(el('p','Archiv: '+f.original_name));
   tile.append(ds);box.append(tile);
  }
- if(!profiles.data.length)box.append(el('p','Noch keine Mitarbeiter vorhanden.'));
+ if(!employees.length)box.append(el('p','Noch keine Mitarbeiter vorhanden. Lade Lohnzettel oder An-/Abmeldungen hoch.'));
+ const last=pay.data[0]?.accounting_month;
+ const lastRows=pay.data.filter(x=>x.accounting_month===last);
+ const sum=lastRows.reduce((acc,x)=>acc+Number(x.total_costs||0),0);
+ const set=(id,value)=>{if($(id))$(id).textContent=value};
+ set('gpStaffCount',String(employees.length));set('gpStaffMonth',last?String(last).slice(0,7):'–');
+ set('gpStaffCosts',last?eur(sum):'–');set('gpStaffDocs',String(archived.length));
 }
 $('payrollPdf').addEventListener('change',async()=>{
  const incoming=[...$('payrollPdf').files];for(const f of incoming)if(!selectedFiles.some(x=>x.name===f.name&&x.size===f.size&&x.lastModified===f.lastModified))selectedFiles.push(f);
@@ -210,3 +228,5 @@ $('payrollRead').onclick=async()=>{
  }catch(err){msg('Fehler: '+err.message)}finally{button.disabled=false}
 };
 (async()=>{try{member=await authMember();await getArchive();await renderEmployees();renderSelection()}catch(err){msg('Bitte anmelden und Betrieb auswählen: '+err.message)}})();
+
+window.addEventListener('gastropilot:business-change',async()=>{try{member=await authMember();await getArchive();await renderEmployees();selectedFiles=[];renderSelection()}catch(e){msg('Betriebswechsel: '+e.message)}});
