@@ -353,7 +353,11 @@ html body #app #page-dashboard p{color:#111!important}
   <div class="gp2-tile"><small>Lieferantenrechnungen</small><strong id="gp2Invoices">–</strong><span class="gp2-foot">Erfasste Rechnungen</span></div>
   <button type="button" class="gp2-tile gp2-top-trigger" id="gp2TopTrigger" aria-expanded="false" aria-controls="bonitTopCard"><small>Top-20-Artikel ↗</small><strong id="gp2Top">–</strong><span class="gp2-foot" id="gp2TopHint">Antippen: 20 Artikel als Kacheln öffnen</span></button>
   <div class="gp2-tile"><small>Umsatz vs. Vorjahr</small><strong id="gp2YoY">–</strong><span class="gp2-foot" id="gp2YoYInfo">Vergleich gleicher Zeitraum</span></div>
-  <div class="gp2-tile"><small>Personal & Fixkosten</small><strong>Verwaltung ↗</strong><a href="./management.html?section=personnel" class="gp2-foot">Löhne und Kosten öffnen</a></div>
+  <div class="gp2-tile"><small>Personal &amp; Fixkosten</small><strong>Verwaltung ↗</strong><a href="./management.html?section=personnel" class="gp2-foot">Löhne und Kosten öffnen</a></div>
+  <div class="gp2-tile"><small>Gesamtpersonalkosten</small><strong id="gpOctPersonnel">–</strong><span class="gp2-foot" id="gpOctPersonnelNote">Lohndaten werden geladen</span></div>
+  <div class="gp2-tile"><small>Personalkosten in % vom Umsatz</small><strong id="gpOctRatio">–</strong><span class="gp2-foot">Gesamtpersonalkosten ÷ Monatsumsatz brutto</span></div>
+  <div class="gp2-tile"><small>Bruttogehälter</small><strong id="gpOctGrossSalary">–</strong><span class="gp2-foot">Summe aus den Lohnabrechnungen</span></div>
+  <div class="gp2-tile"><small>Zusätzliche Dienstgeberkosten</small><strong id="gpOctEmployer">–</strong><span class="gp2-foot">Zusätzlich zu den Bruttogehältern</span></div>
  </div>
  <div class="row"><button type="button" class="secondary" id="gp2CashLink">Tagesabrechnungen →</button><button type="button" class="secondary" id="gp2InvoiceLink">Rechnungen →</button></div>
  </div>
@@ -3375,6 +3379,28 @@ async function refreshYoY(){
   $('yoyYearInfo').textContent='Vergleich nicht verfügbar';
  }
 }
+async function refreshOctober2026Personnel(){
+ if(!businessId)return;
+ const ids=['gpOctPersonnel','gpOctRatio','gpOctGrossSalary','gpOctEmployer'];
+ ids.forEach(id=>{if($(id))$(id).textContent='–'});
+ const note=$('gpOctPersonnelNote');
+ if(note)note.textContent='Keine bestätigten Lohndaten';
+ try{
+  const {data,error}=await db.from('personnel_costs').select('gross_salary,employer_costs,total_costs').eq('business_id',businessId).eq('accounting_month','2026-10-01');
+  if(error)throw error;
+  if(!data?.length)return;
+  const sum=k=>data.reduce((a,r)=>a+Number(r[k]||0),0);
+  const euro=n=>n.toLocaleString('de-AT',{style:'currency',currency:'EUR'});
+  const gross=sum('gross_salary'),employer=sum('employer_costs'),costs=sum('total_costs');
+  $('gpOctPersonnel').textContent=euro(costs);
+  $('gpOctGrossSalary').textContent=euro(gross);
+  $('gpOctEmployer').textContent=euro(employer);
+  if(note)note.textContent=data.length+' Lohnabrechnungen · inklusive Dienstgeberkosten';
+  const revenueText=$('gp2Gross')?.textContent||'';
+  const revenue=Number(revenueText.replace(/[^\\d,.-]/g,'').replace(/\\./g,'').replace(',','.'));
+  if(Number.isFinite(revenue)&&revenue>0)$('gpOctRatio').textContent=(costs/revenue*100).toLocaleString('de-AT',{minimumFractionDigits:2,maximumFractionDigits:2})+' %';
+ }catch(e){if(note)note.textContent='Lohndaten nicht verfügbar';console.warn('Oktober-Personalkosten:',e.message)}
+}
 async function refreshSeptember2026(){
  const card=$('gpSeptember2026');
  if(!card||!businessId)return;
@@ -3494,6 +3520,7 @@ async function enter(){
   // Die Anmeldung darf nicht von einer langsamen Monatsauswertung abhängen.
   $('login').classList.add('hidden');
   $('app').classList.remove('hidden');
+  refreshOctober2026Personnel().catch(e=>console.warn('Oktober-Personal:',e.message));
   refreshSeptember2026().catch(e=>console.warn('September-Auswertung:',e.message));
 
   const parts=new Intl.DateTimeFormat('en-CA',{
