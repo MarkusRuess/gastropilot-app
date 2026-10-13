@@ -2912,7 +2912,13 @@ async function loadAll(){
     // BONit last: legacy analysis must not overwrite the imported article ranking.
     if(isFriedrich){await applyBonitDashboard(month,[]);await renderBonitAnalysis(month);}
     if(!isFriedrich)await refreshYoY();
-    else { $('yoyMonth').textContent='–'; $('yoyYear').textContent='–'; $('yoyMonthInfo').textContent='Automatischer BONit-Vorjahresvergleich noch nicht verfuegbar'; $('yoyYearInfo').textContent='Automatischer BONit-Vorjahresvergleich noch nicht verfuegbar'; }
+    else {
+      const bounds=monthBounds(month);
+      const nowParts=new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Vienna',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date());
+      const today=nowParts.find(p=>p.type==='year').value+'-'+nowParts.find(p=>p.type==='month').value+'-'+nowParts.find(p=>p.type==='day').value;
+      const cutoff=month===today.slice(0,7)?gpNextDate(today):bounds.end;
+      await gp2RefreshBonitYoY(businessId,month,bounds.start,cutoff,gpShiftYear(bounds.start,-1),gpShiftYear(cutoff,-1));
+    }
 
     if(!$('cashArchiveMonth').value){
       $('cashArchiveMonth').value=month;
