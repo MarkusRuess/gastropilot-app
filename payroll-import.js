@@ -173,7 +173,15 @@ async function renderPersonnelMonths(payRows,events,profiles){
  if(!selectedPersonnelMonth){detail.append(el('p','Monat auswählen, um Mitarbeiter, Gehälter und vorhandene Dokumente zu sehen.'));return}
  const key=selectedPersonnelMonth,rows=payRows.filter(p=>String(p.accounting_month).startsWith(key));
  const heading=el('h3',gpMonths[Number(key.slice(5))-1]+' '+selectedPersonnelYear);detail.append(heading);
- if(!rows.length){detail.append(el('p','Für diesen Monat sind noch keine Lohnabrechnungen gespeichert. Du kannst die Dokumente unten hochladen.'));return}
+ if(!rows.length){
+  detail.append(el('p','Für diesen Monat sind noch keine Lohnabrechnungen gespeichert. Du kannst die Dokumente unten hochladen.'));
+  const h=el('h3','Auszahlungsjournal & Abgaben · '+gpMonths[Number(key.slice(5))-1]+' '+selectedPersonnelYear);detail.append(h);
+  const t=el('table');t.style='width:100%;border-collapse:collapse';const b=el('tbody');
+  for(const label of ['Auszahlungen an Mitarbeiter','ÖGK Niederösterreich','Finanzamt Österreich','Kommunalsteuer Baden','Abgaben an Körperschaften','Gesamt laut Auszahlungsjournal']){
+   const tr=el('tr');tr.style='border-bottom:1px solid #ddd';const l=el('td',label),v=el('td','–');l.style='padding:10px 6px';v.style='padding:10px 6px;text-align:right;font-weight:700;color:#777';tr.append(l,v);b.append(tr);
+  }
+  t.append(b);detail.append(t);detail.append(el('p','Noch kein geprüftes Auszahlungsjournal für diesen Monat erfasst. Keine Beträge geschätzt.'));return;
+ }
  const totals=rows.reduce((a,p)=>({gross:a.gross+Number(p.gross_salary||0),net:a.net+Number(p.net_payable||0),dg:a.dg+Number(p.employer_costs||0),total:a.total+Number(p.total_costs||0)}),{gross:0,net:0,dg:0,total:0});
 
  const journal=key==='2026-07'?{employee:9026.41,ogk:3343.92,tax:700.16,communal:319.70,total:13390.19,source:'Auszahlungsjournal Juli 2026 vom 05.08.2026 · Brot & Wasser RA GmbH · Zahlungsstatus nicht bankbestätigt'}:key==='2026-08'?{employee:11141.73,ogk:4004.88,tax:1232.25,communal:408.11,total:16786.97,source:'Referenz aus dem Auszahlungsjournal August 2026 vom 08.09.2026 · Zahlungsstatus nicht bankbestätigt'}:key==='2026-09'?{employee:11993.68,ogk:4984.79,tax:890.82,communal:417.61,total:18286.90,source:'Referenz aus dem Auszahlungsjournal September 2026 (bisher nicht als Einzelzahlungen in der Datenbank bestätigt)'}:null;
@@ -198,7 +206,12 @@ async function renderPersonnelMonths(payRows,events,profiles){
   table.append(tbody);detail.append(table);
   const caution=el('p','Die Journalzahlungen dienen der Zahlungsübersicht. Sie werden nicht nochmals zum Gesamtpersonalaufwand addiert.');caution.style='font-size:12px;color:#666';detail.append(caution);
  }else{
-  const note=el('p','Für diesen Monat liegt noch keine geprüfte Aufschlüsselung der Journalzahlungen nach ÖGK, Finanzamt und Kommunalsteuer vor. Nach dem Import wird sie hier angezeigt.');note.style='color:#666';detail.append(note);
+  const note=el('p','Für diesen Monat liegt noch keine geprüfte Aufschlüsselung aus dem Auszahlungsjournal vor. Fehlende Beträge bleiben offen.');note.style='color:#666;font-size:12px';detail.append(note);
+  const table=el('table');table.style='width:100%;border-collapse:collapse';const tbody=el('tbody');
+  for(const label of ['Auszahlungen an Mitarbeiter','ÖGK Niederösterreich','Finanzamt Österreich','Kommunalsteuer Baden','Abgaben an Körperschaften','Gesamt laut Auszahlungsjournal']){
+   const tr=el('tr');tr.style='border-bottom:1px solid #ddd';const th=el('td',label),td=el('td','–');th.style='padding:10px 6px';td.style='padding:10px 6px;text-align:right;font-weight:700;color:#777';tr.append(th,td);tbody.append(tr);
+  }
+  table.append(tbody);detail.append(table);
  }
  const staffTitle=el('h3','Mitarbeiter · Einzelansicht · '+gpMonths[Number(key.slice(5))-1]+' '+selectedPersonnelYear);staffTitle.style='margin-top:20px';detail.append(staffTitle);
  const staffGrid=el('div');staffGrid.style='display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:12px;margin:12px 0 18px';detail.append(staffGrid);
