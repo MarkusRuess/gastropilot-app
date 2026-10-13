@@ -381,6 +381,24 @@ html body #app #page-dashboard p{color:#111!important}
  </div>
 </section>
 
+<section id="gpAugust2026" class="gp2-hero" style="margin:18px 0 20px">
+ <h2>Dein Betrieb auf einen Blick <span style="display:inline-block;margin-left:10px;font-size:.72em;font-weight:600;color:#806b4b">August 2026</span></h2>
+ <p class="muted">Das Friedrich · gespeicherte Lohnabrechnungen · fehlende Umsätze bleiben offen</p>
+ <div class="gp2-tiles">
+  <div class="gp2-tile"><small>Umsatz · ausgewählter Monat</small><strong>–</strong><span class="gp2-foot">Kein geprüfter August-Umsatz erfasst</span></div>
+  <div class="gp2-tile"><small>Ø Umsatz je Umsatztag</small><strong>–</strong><span class="gp2-foot">Keine August-Tagesabschlüsse erfasst</span></div>
+  <div class="gp2-tile"><small>Bankkonten gesamt</small><strong>–</strong><span class="gp2-foot">Kein bestätigter August-Stichtagsstand</span></div>
+  <div class="gp2-tile"><small>Lieferantenrechnungen</small><strong>–</strong><span class="gp2-foot">Kein geprüfter Gesamtwert</span></div>
+  <div class="gp2-tile"><small>Top-20-Artikel</small><strong>–</strong><span class="gp2-foot">Keine bestätigte August-Artikelauswertung</span></div>
+  <div class="gp2-tile"><small>Umsatz vs. Vorjahr</small><strong>–</strong><span class="gp2-foot">Kein geprüfter Monatsvergleich</span></div>
+  <div class="gp2-tile"><small>Personal &amp; Fixkosten</small><strong>Verwaltung ↗</strong><a href="./management.html?section=personnel" class="gp2-foot">Löhne und Kosten öffnen</a></div>
+  <div class="gp2-tile"><small>Gesamtpersonalkosten</small><strong id="gpAugPersonnel">–</strong><span class="gp2-foot" id="gpAugPersonnelNote">Lohndaten werden geladen</span></div>
+  <div class="gp2-tile"><small>Personalkosten in % vom Umsatz</small><strong>–</strong><span class="gp2-foot">Ohne geprüften Umsatz nicht berechenbar</span></div>
+  <div class="gp2-tile"><small>Bruttogehälter</small><strong id="gpAugGrossSalary">–</strong><span class="gp2-foot">Summe aus den Lohnabrechnungen</span></div>
+  <div class="gp2-tile"><small>Zusätzliche Dienstgeberkosten</small><strong id="gpAugEmployer">–</strong><span class="gp2-foot">Zusätzlich zu den Bruttogehältern</span></div>
+ </div>
+</section>
+
 <section class="card">
 <div class="row">
 <h2>Monatsübersicht</h2>
@@ -3401,6 +3419,22 @@ async function refreshOctober2026Personnel(){
   if(Number.isFinite(revenue)&&revenue>0)$('gpOctRatio').textContent=(costs/revenue*100).toLocaleString('de-AT',{minimumFractionDigits:2,maximumFractionDigits:2})+' %';
  }catch(e){if(note)note.textContent='Lohndaten nicht verfügbar';console.warn('Oktober-Personalkosten:',e.message)}
 }
+async function refreshAugust2026(){
+ const card=$('gpAugust2026');if(!card||!businessId)return;
+ const friedrich=businessId==='6a5484d1-daf6-4263-897d-24cdf536aa29';
+ card.style.display=friedrich?'':'none';if(!friedrich)return;
+ try{
+  const {data,error}=await db.from('personnel_costs').select('gross_salary,employer_costs,total_costs').eq('business_id',businessId).eq('accounting_month','2026-08-01');
+  if(error)throw error;
+  if(!data?.length){$('gpAugPersonnelNote').textContent='Keine gespeicherten Lohnabrechnungen';return}
+  const sum=k=>data.reduce((a,v)=>a+Number(v[k]||0),0);
+  const euro=n=>n.toLocaleString('de-AT',{style:'currency',currency:'EUR'});
+  $('gpAugPersonnel').textContent=euro(sum('total_costs'));
+  $('gpAugGrossSalary').textContent=euro(sum('gross_salary'));
+  $('gpAugEmployer').textContent=euro(sum('employer_costs'));
+  $('gpAugPersonnelNote').textContent=data.length+' Lohnabrechnungen · inklusive Dienstgeberkosten';
+ }catch(e){$('gpAugPersonnelNote').textContent='Lohndaten nicht verfügbar';console.warn('August-Personalkosten:',e.message)}
+}
 async function refreshSeptember2026(){
  const card=$('gpSeptember2026');
  if(!card||!businessId)return;
@@ -3522,6 +3556,7 @@ async function enter(){
   $('app').classList.remove('hidden');
   refreshOctober2026Personnel().catch(e=>console.warn('Oktober-Personal:',e.message));
   refreshSeptember2026().catch(e=>console.warn('September-Auswertung:',e.message));
+  refreshAugust2026().catch(e=>console.warn('August-Auswertung:',e.message));
 
   const parts=new Intl.DateTimeFormat('en-CA',{
     timeZone:'Europe/Vienna',
