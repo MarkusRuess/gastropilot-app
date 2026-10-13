@@ -62,7 +62,14 @@
 <h3>Mitarbeiterkartei</h3><p class="muted">Die Kacheln werden aus vorhandenen Lohnabrechnungen und Personalakten aufgebaut. Neue Mitarbeiter erscheinen automatisch.</p><p>Alle Dienstnehmer, Anmeldungen, Abmeldungen und Lohnabrechnungen an einem Ort.</p><div id="gpEmployeeCards" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px"></div>
 <h3>Monatsarchiv &amp; Erfassung</h3><p>PDFs und Fotos werden automatisch verarbeitet und die Originale in einem <strong>geschützten GastroPilot-Archiv</strong> gespeichert. Gleiche Dateien werden erkannt und nicht doppelt abgelegt.</p>
 <details open><summary>PDFs und Fotos hinzufügen</summary>
-<label>Dokumente hinzufügen – beliebig oft nacheinander<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:8px 0"><button type="button" id="gpAddPayrollFiles">+ PDFs oder Fotos hinzufügen</button><span id="gpFileCount">0 Dateien vorgemerkt</span></div><input id="payrollPdf" type="file" multiple accept=".pdf,application/pdf,image/jpeg,image/png,image/webp" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none" aria-label="PDFs und Fotos auswählen"></label>
+<label><div style="font-size:14px;color:#666;margin:8px 0">Mehrere PDFs auf einmal auswählen oder Dateien nacheinander ergänzen. Auch per Drag &amp; Drop.</div>
+<div id="gpPayrollDropZone" role="group" aria-label="PDFs und Fotos hinzufügen" style="border:2px dashed #b7a78c;border-radius:18px;background:#fbf9f5;padding:28px 18px;min-height:175px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center">
+<strong style="font-size:22px">Lohnsets, Journale und An-/Abmeldungen</strong>
+<button type="button" id="gpAddPayrollFiles" style="font-size:19px;font-weight:750;min-height:68px;padding:18px 32px;border-radius:14px;border:2px solid #827052;background:#fff;cursor:pointer;width:min(100%,520px)">+ PDFs oder Fotos auswählen</button>
+<strong id="gpFileCount" style="font-size:17px">0 Dateien vorgemerkt</strong>
+<span style="font-size:13px;color:#666">Dateien hierher ziehen · PDF, JPG, PNG, WEBP · bis 15 MB pro Datei</span>
+</div>
+<input id="payrollPdf" type="file" multiple accept=".pdf,application/pdf,image/jpeg,image/png,image/webp" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none" aria-label="PDFs und Fotos auswählen"></label>
 <p><strong>Ausgewählte Dateien (nebeneinander):</strong></p><div id="gpSelectedFiles" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:8px"></div>
 <button type="button" id="payrollRead">Alle Dateien verarbeiten und im Archiv speichern</button>
 <p id="payrollStatus" class="muted" aria-live="polite"></p>
@@ -90,6 +97,6 @@ document.querySelectorAll('#app .nav button[data-page]').forEach(button=>{
 </script>
 <script type="module" src="./management-workflows.js?v=1"></script><script type="module" src="./management.js?v=20261013-archive-tiles2"></script>
 <script type="module" src="./bank-import.js"></script><script type="module" src="./bank-transactions-view.js?v=20261012-1402"></script>
-<script type="module" src="./payroll-import.js?v=20261013-staffcards2"></script>
+<script type="module" src="./payroll-import.js?v=20261013-upload-large1"></script>
 <script type="module" src="./salary-reconcile.js"></script>
 <script type="module" src="./bank-costs.js"></script><script type="module" src="./finance.js"></script><script type="module" src="./control.js"></script><script type="module" src="./cost-ratios.js"></script><script type="module" src="./chief-development.js?v=1"></script><script src="./photo-preview.js?v=ocr-1" defer></script></body></html>
