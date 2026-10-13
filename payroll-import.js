@@ -141,6 +141,54 @@ function renderArchive(){
  }
  if(!archived.length)box.append(el('p','Noch keine Dokumente archiviert.'));
 }
+
+let selectedPersonnelYear=2026,selectedPersonnelMonth=null;
+const gpMonths=['Jänner','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+async function renderPersonnelMonths(payRows,events,profiles){
+ const yearsBox=$('gpPersonnelYears'),monthsBox=$('gpPersonnelMonths'),detail=$('gpPersonnelMonthDetail');
+ if(!yearsBox||!monthsBox||!detail)return;
+ const availableYears=new Set([2026]);
+ for(const p of payRows){const y=Number(String(p.accounting_month).slice(0,4));if(y>=2026)availableYears.add(y)}
+ const years=[...availableYears].sort((a,b)=>b-a);
+ if(!years.includes(selectedPersonnelYear))selectedPersonnelYear=years[0];
+ yearsBox.replaceChildren();
+ for(const y of years){
+  const btn=el('button',String(y));btn.type='button';btn.style='padding:9px 20px;border-radius:10px;'+(selectedPersonnelYear===y?'border:2px solid currentColor;font-weight:800':'');
+  btn.onclick=()=>{selectedPersonnelYear=y;selectedPersonnelMonth=null;renderPersonnelMonths(payRows,events,profiles)};
+  yearsBox.append(btn);
+ }
+ monthsBox.replaceChildren();
+ for(let i=0;i<12;i++){
+  const key=selectedPersonnelYear+'-'+String(i+1).padStart(2,'0');
+  const rows=payRows.filter(p=>String(p.accounting_month).startsWith(key));
+  const total=rows.reduce((a,p)=>a+Number(p.total_costs||0),0);
+  const btn=el('button');btn.type='button';btn.style='text-align:left;padding:12px;border-radius:11px;min-height:80px;display:flex;flex-direction:column;gap:4px;'+(selectedPersonnelMonth===key?'border:2px solid currentColor':'');
+  const name=el('strong',gpMonths[i]);const count=el('small',rows.length?rows.length+' Mitarbeiter':'Noch keine Löhne');
+  btn.append(name,count);
+  if(rows.length)btn.append(el('strong',eur(total)));
+  btn.onclick=()=>{selectedPersonnelMonth=selectedPersonnelMonth===key?null:key;renderPersonnelMonths(payRows,events,profiles)};
+  monthsBox.append(btn);
+ }
+ detail.replaceChildren();
+ if(!selectedPersonnelMonth){detail.append(el('p','Monat auswählen, um Mitarbeiter, Gehälter und vorhandene Dokumente zu sehen.'));return}
+ const key=selectedPersonnelMonth,rows=payRows.filter(p=>String(p.accounting_month).startsWith(key));
+ const heading=el('h3',gpMonths[Number(key.slice(5))-1]+' '+selectedPersonnelYear);detail.append(heading);
+ if(!rows.length){detail.append(el('p','Für diesen Monat sind noch keine Lohnabrechnungen gespeichert. Du kannst die Dokumente unten hochladen.'));return}
+ const totals=rows.reduce((a,p)=>({gross:a.gross+Number(p.gross_salary||0),net:a.net+Number(p.net_payable||0),dg:a.dg+Number(p.employer_costs||0),total:a.total+Number(p.total_costs||0)}),{gross:0,net:0,dg:0,total:0});
+ const summary=el('div');summary.style='display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin-bottom:12px';
+ for(const [label,value] of [['Bruttogehälter',totals.gross],['Nettoauszahlungen',totals.net],['Zusätzliche DG-Kosten',totals.dg],['Gesamtaufwand',totals.total]]){
+  const tile=el('div');tile.style='border:1px solid #ddd;border-radius:10px;padding:10px';tile.append(el('small',label),el('div',eur(value)));summary.append(tile)
+ }
+ detail.append(summary);
+ for(const p of rows){
+  const d=el('details');d.style='border:1px solid #ddd;border-radius:10px;padding:12px;margin:7px 0';
+  const head=el('summary',p.employee_name+' · '+gpMonths[Number(key.slice(5))-1]+' '+selectedPersonnelYear);head.style='font-weight:700;cursor:pointer';
+  d.append(head,el('p','Abrechnungsmonat: '+key+' · Brutto: '+eur(p.gross_salary)+' · Netto: '+(p.net_payable==null?'nicht erfasst':eur(p.net_payable))+' · zusätzliche Dienstgeberkosten: '+eur(p.employer_costs)+' · Gesamtaufwand: '+eur(p.total_costs)));
+  detail.append(d);
+ }
+ const docs=archived.filter(f=>String(f.accounting_month||'').startsWith(key));
+ if(docs.length)detail.append(el('p',docs.length+' archivierte Originaldatei(en) für diesen Monat.'));
+}
 async function renderEmployees(){
  const box=$('gpEmployeeCards');if(!box||!member)return;
  const [profiles,pay,events]=await Promise.all([
@@ -179,6 +227,7 @@ async function renderEmployees(){
  const set=(id,value)=>{if($(id))$(id).textContent=value};
  set('gpStaffCount',String(employees.length));set('gpStaffMonth',last?String(last).slice(0,7):'–');
  set('gpStaffCosts',last?eur(sum):'–');set('gpStaffDocs',String(archived.length));
+ await renderPersonnelMonths(pay.data,events.data,profiles.data);
 }
 $('payrollPdf').addEventListener('change',async()=>{
  const incoming=[...$('payrollPdf').files];for(const f of incoming)if(!selectedFiles.some(x=>x.name===f.name&&x.size===f.size&&x.lastModified===f.lastModified))selectedFiles.push(f);
