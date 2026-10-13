@@ -4,17 +4,32 @@ const $=id=>document.getElementById(id);
 const fmt=n=>new Intl.NumberFormat('de-AT',{style:'currency',currency:'EUR'}).format(n);
 const clean=s=>String(s||'').replace(/\s+/g,' ').trim();
 const money=s=>{if(!s)return null;let v=String(s).replace(/[^\d,.-]/g,'');if(v.includes(','))v=v.replace(/\./g,'').replace(',','.');else if((v.match(/\./g)||[]).length>1)v=v.replace(/\./g,'');let n=Number(v);return Number.isFinite(n)&&n>=0&&n<1000000?Math.round(n*100)/100:null};
-const numberPattern='([0-9]{1,3}(?:\\\\.[0-9]{3})*,[0-9]{2}|[0-9]+,[0-9]{2}|[0-9]+\\\\.[0-9]{2})';
-function amountAfter(text,labels){for(const label of labels){const re=new RegExp('(?:^|\\\\n)[^\\\\n]{0,30}'+label+'[^\\\\n]{0,45}?\\\\s*[:=]?\\\\s*'+numberPattern+'(?:\\\\s|$)','im');const m=text.match(re);if(m){const n=money(m[1]);if(n!==null)return n}}return null}
+const amountToken='(?:[0-9]{1,3}(?:\\.[0-9]{3})*,[0-9]{2}|[0-9]+,[0-9]{2}|[0-9]+\\.[0-9]{2})';
+function amountAfter(text,labels){
+ const rows=text.split(/\n/);
+ for(const label of labels){
+  const re=new RegExp(label,'i');
+  for(let i=0;i<rows.length;i++){
+   if(!re.test(rows[i]))continue;
+   const row=rows[i];
+   const found=[...row.matchAll(new RegExp(amountToken,'g'))].map(x=>money(x[0])).filter(x=>x!==null);
+   if(found.length===1)return found[0];
+   const next=(rows[i+1]||'').trim();
+   const single=next.match(new RegExp('^'+amountToken+'$'));
+   if(single)return money(single[0]);
+  }
+ }
+ return null;
+}
 function parse(text,filename){
  const monthMatch=text.match(/(?:Abrechnungsmonat|Lohn\s*\/\s*Gehaltsabrechnung|Abrechnung(?:smonat)?)[^\n]{0,35}?(J[aä]nner|Januar|Februar|März|Maerz|April|Mai|Juni|Juli|August|September|Oktober|November|Dezember)\s*(20\d{2})/i)||text.match(/(?:Abrechnungsmonat|Abrechnung)[^\n]{0,20}?(20\d{2})[-./](0?[1-9]|1[0-2])/i);
  const months={jänner:1,januar:1,februar:2,märz:3,maerz:3,april:4,mai:5,juni:6,juli:7,august:8,september:9,oktober:10,november:11,dezember:12};
  let month=null;if(monthMatch){if(months[monthMatch[1]?.toLowerCase()])month=monthMatch[2]+'-'+String(months[monthMatch[1].toLowerCase()]).padStart(2,'0');else if(/^20\d{2}$/.test(monthMatch[1]))month=monthMatch[1]+'-'+monthMatch[2].padStart(2,'0')}
  const nameMatch=text.match(/(?:Dienstnehmer(?:in)?|Mitarbeiter(?:in)?|Arbeitnehmer(?:in)?|Name)\s*[:：]\s*([^\n]{4,65})/i)||text.match(/(?:SV-Nr\.?[^\n]*?Person\s*:\s*[^\n]*?\d+\s+)([^\n]{4,65})/i);
  let name=nameMatch?clean(nameMatch[1]).replace(/\s+(?:SV-Nr|Personalnummer|Eintritt).*$/i,''):null;
- const gross=amountAfter(text,['Bruttobez[uü]ge','Bruttolohn','Bruttogehalt','Gesamtbrutto','Brutto\s*gesamt']);
- const net=amountAfter(text,['Netto-?Auszahlungsbetrag','Auszahlungsbetrag','Netto-?Bezug','Netto-?Lohn','Netto-?Gehalt']);
- const employer=amountAfter(text,['zus[aä]tzliche\s+Dienstgeberkosten','Dienstgeberkosten','DG-?Kosten','Lohnnebenkosten']);
+ const gross=amountAfter(text,['Gesamtbrutto','Bruttobez[uü]ge','Bruttolohn','Bruttogehalt','Brutto\\s*gesamt','Summe\\s+Brutto']);
+ const net=amountAfter(text,['Netto-?Auszahlungsbetrag','Auszahlungsbetrag','Netto-?Bezug','Netto-?Lohn','Netto-?Gehalt','Netto\\s+gesamt']);
+ const employer=amountAfter(text,['zus[aä]tzliche\\s+Dienstgeberkosten','Dienstgeberkosten','DG-?Kosten','Lohnnebenkosten','DG-?Anteil','Dienstgeberanteil']);
  return {filename,month,name,gross,net,employer,ready:!!month&&!!name&&gross!==null&&net!==null&&employer!==null,text};
 }
 async function pdfText(file){const pdfjs=await import('https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/build/pdf.min.mjs');pdfjs.GlobalWorkerOptions.workerSrc='https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/build/pdf.worker.min.mjs';const doc=await pdfjs.getDocument({data:new Uint8Array(await file.arrayBuffer())}).promise;if(doc.numPages>20)throw Error('PDF mit mehr als 20 Seiten');let out=[];for(let p=1;p<=doc.numPages;p++){const page=await doc.getPage(p),items=(await page.getTextContent()).items;let lines=[],line='',prev=null;for(const item of items){let y=Math.round(item.transform?.[5]||0);if(prev!==null&&Math.abs(prev-y)>3){lines.push(line);line=''}line+=(line?' ':'')+(item.str||'');prev=y}if(line)lines.push(line);out.push(lines.join('\n'))}return out.join('\n')}
@@ -104,8 +119,8 @@ $('payrollRead').onclick=async()=>{
   for(let i=0;i<files.length;i++){
    const file=files[i];$('payrollStatus').textContent='Datei '+(i+1)+' von '+files.length+' wird verarbeitet: '+file.name;
    try{
-    const extracted=await extract(file);const event=eventFromText(extracted);if(event){if(!event.name||!event.date){blocked++;result.append(line(file.name,'An-/Abmeldung erkannt, aber Name oder Datum nicht eindeutig. Nicht gespeichert.'));continue}const stored=await saveEvent(member.business_id,event,file.name);result.append(line(file.name,(stored?'Gespeichert: ':'Bereits vorhanden: ')+(event.kind==='registration'?'Anmeldung':'Abmeldung')+' · '+event.name+' · '+event.date));if(stored)saved++;else duplicates++;continue}const parsed=parse(extracted,file.name);
-    if(!parsed.ready){blocked++;let missing=['Monat','Name','Brutto','Netto','Dienstgeberkosten'].filter((_,i)=>[parsed.month,parsed.name,parsed.gross,parsed.net,parsed.employer][i]===null||[parsed.month,parsed.name,parsed.gross,parsed.net,parsed.employer][i]==='');result.append(line(file.name,'Nicht gespeichert: nicht eindeutig erkannt: '+missing.join(', ')+'. Keine Beträge werden geschätzt.'));continue}
+    const extracted=await extract(file);const event=eventFromText(extracted);if(event){if(!event.name||!event.date){blocked++;result.append(line(file.name,'An-/Abmeldung erkannt, aber Name oder Datum nicht eindeutig. Nicht gespeichert.'));continue}const stored=await saveEvent(member.business_id,event,file.name);result.append(line(file.name,(stored?'Gespeichert: ':'Bereits vorhanden: ')+(event.kind==='registration'?'Anmeldung':'Abmeldung')+' · '+event.name+' · '+event.date));if(stored)saved++;else duplicates++;continue}const pages=extracted.split(/\\n--- SEITE ---\\n/);if(pages.length>1){result.append(line(file.name,'Mehrseitige Abrechnung erkannt ('+pages.length+' Seiten). Eine sichere Zuordnung der Summen zu einzelnen Dienstnehmern ist noch nicht möglich. Nicht gespeichert.'));blocked++;continue}const parsed=parse(extracted,file.name);
+    if(!parsed.ready){blocked++;let missing=['Monat','Name','Brutto','Netto','Dienstgeberkosten'].filter((_,i)=>[parsed.month,parsed.name,parsed.gross,parsed.net,parsed.employer][i]===null||[parsed.month,parsed.name,parsed.gross,parsed.net,parsed.employer][i]==='');result.append(line(file.name,'Nicht gespeichert: nicht eindeutig erkannt: '+missing.join(', ')+'. Die Datei bleibt lokal; bitte eine einzelne Abrechnung mit klaren Summen verwenden. Keine Beträge werden geschätzt.'));continue}
     const existing=await db.from('personnel_costs').select('id').eq('business_id',member.business_id).eq('accounting_month',parsed.month+'-01').ilike('employee_name',parsed.name);
     if(existing.error)throw existing.error;
     if(existing.data?.length){duplicates++;result.append(line(file.name,'Bereits vorhanden: '+parsed.name+' · '+parsed.month+' – nicht doppelt gespeichert.'));continue}
