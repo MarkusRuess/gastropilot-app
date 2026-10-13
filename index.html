@@ -262,6 +262,7 @@ dialog::backdrop{background:#0f1e2d99}
 #bonitTopCard #top10{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
 #bonitTopCard #top10 .top-item{border:1px solid #e4e4e4;border-radius:12px;padding:11px;min-width:0;margin:0}
 @media(max-width:680px){.gp2-tiles{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.gp2-tile{padding:12px;min-height:116px}#bonitTopCard #top10{grid-template-columns:1fr}}
+.gp2-top-trigger{width:100%;text-align:left;color:inherit;font:inherit;cursor:pointer;display:flex;flex-direction:column;align-items:flex-start}.gp2-top-trigger:hover{border-color:#888;background:#fafafa}.gp2-top-trigger:focus-visible{outline:3px solid #444;outline-offset:3px}#bonitTopCard[hidden]{display:none!important}
 </style>
 <style id="dashboard-white-final">
 /* Dashboard + selected tile: always white, black typography, no state colors. */
@@ -350,7 +351,7 @@ html body #app #page-dashboard p{color:#111!important}
   <div class="gp2-tile"><small>Ø Umsatz je Umsatztag</small><strong id="gp2Average">–</strong><span class="gp2-foot">Nur erfasste Tage</span></div>
   <div class="gp2-tile"><small>Bankkonten gesamt</small><strong id="gp2Bank">–</strong><span class="gp2-foot" id="gp2BankDate">Letzter bestätigter Stand</span></div>
   <div class="gp2-tile"><small>Lieferantenrechnungen</small><strong id="gp2Invoices">–</strong><span class="gp2-foot">Erfasste Rechnungen</span></div>
-  <div class="gp2-tile"><small>Top-10-Artikel</small><strong id="gp2Top">–</strong><span class="gp2-foot">Nach Stückzahl · Details darunter</span></div>
+  <button type="button" class="gp2-tile gp2-top-trigger" id="gp2TopTrigger" aria-expanded="false" aria-controls="bonitTopCard"><small>Top-20-Artikel ↗</small><strong id="gp2Top">–</strong><span class="gp2-foot" id="gp2TopHint">Antippen: 20 Artikel als Kacheln öffnen</span></button>
   <div class="gp2-tile"><small>Umsatz vs. Vorjahr</small><strong id="gp2YoY">–</strong><span class="gp2-foot" id="gp2YoYInfo">Vergleich gleicher Zeitraum</span></div>
   <div class="gp2-tile"><small>Personal & Fixkosten</small><strong>Verwaltung ↗</strong><a href="./management.html?section=personnel" class="gp2-foot">Löhne und Kosten öffnen</a></div>
  </div>
@@ -408,8 +409,8 @@ Alle Artikelgruppen anzeigen →
 <button class="secondary" id="goAnalysis">Weitere Auswertungen</button>
 </div>
 </section>
-<section class="card" id="bonitTopCard">
-<div class="row"><h3 style="margin:0">Top 10 Artikel · BONit</h3><small id="bonitTopMonth" class="muted"></small></div>
+<section class="card" id="bonitTopCard" hidden>
+<div class="row"><h3 style="margin:0">Top 20 Artikel · BONit</h3><small id="bonitTopMonth" class="muted"></small></div>
 <p class="muted">Bestseller nach Stückzahl · mit Umsatz- und Deckungsbeitragsprüfung, soweit Quelldaten vorhanden</p>
 <div id="top10"></div>
 </section>
@@ -935,7 +936,7 @@ function itemWarning(item){
 
 function renderTop10(docs){
   const box=$('top10');box.replaceChildren();
-  const all=aggregateItems(docs),items=all.slice(0,10);
+  const all=aggregateItems(docs),items=all.slice(0,20);
   if(!items.length){box.textContent='Noch keine Artikelmengen gespeichert.';return}
   const totalQty=all.reduce((sum,x)=>sum+x.quantity,0);
   const fmt=n=>new Intl.NumberFormat('de-AT',{style:'currency',currency:'EUR'}).format(n);
@@ -2862,7 +2863,7 @@ async function applyBonitDashboard(month,manualDocs){
       const prior=grouped.get(key);
       grouped.set(key,{name:prior?.name||name,quantity:(prior?.quantity||0)+quantity});
     }
-    const ranked=[...grouped.values()].sort((a,b)=>b.quantity-a.quantity||a.name.localeCompare(b.name,'de-AT')).slice(0,10);
+    const ranked=[...grouped.values()].sort((a,b)=>b.quantity-a.quantity||a.name.localeCompare(b.name,'de-AT')) .slice(0,20);
     if(!ranked.length)top.textContent='Keine gueltigen Artikelmengen vorhanden.';
     for(let i=0;i<ranked.length;i++){
       const item=ranked[i];
@@ -2979,11 +2980,12 @@ arrangeDashboard();
  const sync=()=>{
   copy('gross','gp2Gross');copy('average','gp2Average');copy('invoices','gp2Invoices');
   const d=$('days')?.textContent||'–';$('gp2Days').textContent=d+' erfasste Umsatztage';
-  const first=$('top10')?.querySelector('.top-item');$('gp2Top').textContent=first?(first.textContent||'').trim().slice(0,65):'–';
+  const first=$('top10')?.querySelector('.top-item');const name=first?.querySelector('div')?.textContent||'–';$('gp2Top').textContent=name;
  };
  const obs=new MutationObserver(sync);
  for(const id of ['gross','average','invoices','days','top10'])if($(id))obs.observe($(id),{subtree:true,childList:true,characterData:true});
  sync();
+ const topTrigger=$('gp2TopTrigger');if(topTrigger&&top){topTrigger.onclick=()=>{const opening=top.hidden;top.hidden=!opening;topTrigger.setAttribute('aria-expanded',String(opening));$('gp2TopHint').textContent=opening?'Antippen: Top 20 wieder schließen':'Antippen: 20 Artikel als Kacheln öffnen';if(opening)top.scrollIntoView({behavior:'smooth',block:'start'});};}
  $('gp2CashLink').onclick=()=>document.querySelector('[data-page="cash"]')?.click();
  $('gp2InvoiceLink').onclick=()=>document.querySelector('[data-page="invoice"]')?.click();
 })();
