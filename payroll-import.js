@@ -175,11 +175,32 @@ async function renderPersonnelMonths(payRows,events,profiles){
  const heading=el('h3',gpMonths[Number(key.slice(5))-1]+' '+selectedPersonnelYear);detail.append(heading);
  if(!rows.length){detail.append(el('p','Für diesen Monat sind noch keine Lohnabrechnungen gespeichert. Du kannst die Dokumente unten hochladen.'));return}
  const totals=rows.reduce((a,p)=>({gross:a.gross+Number(p.gross_salary||0),net:a.net+Number(p.net_payable||0),dg:a.dg+Number(p.employer_costs||0),total:a.total+Number(p.total_costs||0)}),{gross:0,net:0,dg:0,total:0});
- const summary=el('div');summary.style='display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin-bottom:12px';
- for(const [label,value] of [['Bruttogehälter',totals.gross],['Nettoauszahlungen',totals.net],['Zusätzliche DG-Kosten',totals.dg],['Gesamtaufwand',totals.total]]){
-  const tile=el('div');tile.style='border:1px solid #ddd;border-radius:10px;padding:10px';tile.append(el('small',label),el('div',eur(value)));summary.append(tile)
+
+ const journal=key==='2026-09'?{employee:11993.68,ogk:4984.79,tax:890.82,communal:417.61,total:18286.90,source:'Referenz aus dem Auszahlungsjournal September 2026 (bisher nicht als Einzelzahlungen in der Datenbank bestätigt)'}:null;
+ const summary=el('div');summary.style='display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:9px;margin:12px 0 18px';
+ for(const [label,value] of [['Bruttogehälter',totals.gross],['Netto laut Lohnabrechnungen',totals.net],['Zusätzliche Dienstgeberkosten',totals.dg],['Gesamtpersonalaufwand',totals.total]]){
+  const tile=el('div');tile.style='border:1px solid #ddd;border-radius:12px;padding:14px';
+  const caption=el('div',label);caption.style='font-size:12px;color:#666';
+  const number=el('strong',eur(value));number.style='display:block;font-size:20px;margin-top:6px';
+  tile.append(caption,number);summary.append(tile);
  }
  detail.append(summary);
+ const jTitle=el('h3','Auszahlungsjournal & Abgaben · '+gpMonths[Number(key.slice(5))-1]+' '+selectedPersonnelYear);detail.append(jTitle);
+ if(journal){
+  const note=el('p',journal.source);note.style='font-size:12px;color:#666';detail.append(note);
+  const table=el('table');table.style='width:100%;border-collapse:collapse';
+  const tbody=el('tbody');
+  for(const [label,value] of [['Auszahlungen an Mitarbeiter',journal.employee],['ÖGK Niederösterreich',journal.ogk],['Finanzamt Österreich',journal.tax],['Kommunalsteuer Baden',journal.communal],['Abgaben an Körperschaften',journal.ogk+journal.tax+journal.communal],['Gesamt laut Auszahlungsjournal',journal.total]]){
+   const tr=el('tr');tr.style='border-bottom:1px solid #ddd';
+   const th=el('td',label),td=el('td',eur(value));th.style='padding:10px 6px';td.style='padding:10px 6px;text-align:right;font-weight:700';
+   tr.append(th,td);tbody.append(tr);
+  }
+  table.append(tbody);detail.append(table);
+  const caution=el('p','Die Journalzahlungen dienen der Zahlungsübersicht. Sie werden nicht nochmals zum Gesamtpersonalaufwand addiert.');caution.style='font-size:12px;color:#666';detail.append(caution);
+ }else{
+  const note=el('p','Für diesen Monat liegt noch keine geprüfte Aufschlüsselung der Journalzahlungen nach ÖGK, Finanzamt und Kommunalsteuer vor. Nach dem Import wird sie hier angezeigt.');note.style='color:#666';detail.append(note);
+ }
+ const staffTitle=el('h3','Mitarbeiter · Einzelansicht · '+gpMonths[Number(key.slice(5))-1]+' '+selectedPersonnelYear);staffTitle.style='margin-top:20px';detail.append(staffTitle);
  for(const p of rows){
   const d=el('details');d.style='border:1px solid #ddd;border-radius:10px;padding:12px;margin:7px 0';
   const head=el('summary',p.employee_name+' · '+gpMonths[Number(key.slice(5))-1]+' '+selectedPersonnelYear);head.style='font-weight:700;cursor:pointer';
