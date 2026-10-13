@@ -3490,10 +3490,11 @@ async function enter(){
     (member.businesses?.name||'Das Friedrich')+
     ' · '+role;
   showBusinessDashboard(member.businesses?.name||'Betrieb');
-  await refreshSeptember2026();
 
+  // Die Anmeldung darf nicht von einer langsamen Monatsauswertung abhängen.
   $('login').classList.add('hidden');
   $('app').classList.remove('hidden');
+  refreshSeptember2026().catch(e=>console.warn('September-Auswertung:',e.message));
 
   const parts=new Intl.DateTimeFormat('en-CA',{
     timeZone:'Europe/Vienna',
