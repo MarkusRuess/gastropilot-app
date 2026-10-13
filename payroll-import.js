@@ -10,6 +10,7 @@ let selectedFiles=[];
 let member=null;
 let archived=[];
 const selectedHashes=new WeakMap();
+$('gpAddPayrollFiles')?.addEventListener('click',()=>$('payrollPdf').click());
 const msg=t=>{$('payrollStatus').textContent=t};
 const el=(tag,txt)=>{const e=document.createElement(tag);if(txt!==undefined)e.textContent=txt;return e};
 function amountOnLine(lines,pattern){
@@ -120,6 +121,7 @@ async function archiveFile(file,digest,kind,employeeId=null,month=null,status='a
  if(record.error&&record.error.code!=='23505')throw record.error;
 }
 function renderSelection(){
+ const count=$('gpFileCount');if(count)count.textContent=selectedFiles.length+' Datei'+(selectedFiles.length===1?'':'en')+' vorgemerkt – weitere jederzeit hinzufügen';
  const box=$('gpSelectedFiles');box.replaceChildren();
  for(const file of selectedFiles){
   const tile=el('div');tile.style='display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:8px;border:1px solid #ddd;border-radius:9px';
