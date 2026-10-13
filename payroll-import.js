@@ -263,11 +263,28 @@ async function renderEmployees(){
  set('gpStaffCosts',last?eur(sum):'–');set('gpStaffDocs',String(archived.length));
  await renderPersonnelMonths(pay.data,events.data,profiles.data);
 }
+async function queuePayrollFiles(incoming){
+ let added=0,duplicates=0,tooLarge=0;
+ for(const f of incoming){
+  if(!(/\.pdf$/i.test(f.name)||/^image\/(jpeg|png|webp)$/i.test(f.type))){msg('Nicht unterstützt: '+f.name+' (PDF, JPG, PNG oder WEBP verwenden)');continue}
+  if(f.size>15*1024*1024){tooLarge++;continue}
+  if(selectedFiles.some(x=>x.name===f.name&&x.size===f.size&&x.lastModified===f.lastModified)){duplicates++;continue}
+  selectedFiles.push(f);added++;
+ }
+ renderSelection();
+ msg(added+' Datei(en) hinzugefügt · '+selectedFiles.length+' insgesamt vorgemerkt'+(duplicates?' · '+duplicates+' bereits ausgewählt':'')+(tooLarge?' · '+tooLarge+' über 15 MB (bitte verkleinern)':''));
+ for(const f of incoming){if(!selectedFiles.includes(f))continue;try{selectedHashes.set(f,await hash(f));renderSelection()}catch(e){}}
+}
 $('payrollPdf').addEventListener('change',async()=>{
- const incoming=[...$('payrollPdf').files];for(const f of incoming)if(!selectedFiles.some(x=>x.name===f.name&&x.size===f.size&&x.lastModified===f.lastModified))selectedFiles.push(f);
- $('payrollPdf').value='';renderSelection();
- for(const f of incoming){try{selectedHashes.set(f,await hash(f));renderSelection()}catch(e){/* Hash wird beim Verarbeiten erneut geprüft */}}
+ const incoming=[...$('payrollPdf').files];$('payrollPdf').value='';
+ await queuePayrollFiles(incoming);
 });
+const dropZone=$('gpPayrollDropZone');
+if(dropZone){
+ for(const name of ['dragenter','dragover'])dropZone.addEventListener(name,e=>{e.preventDefault();dropZone.style.background='#f0e8d9';dropZone.style.borderColor='#806747'});
+ for(const name of ['dragleave','drop'])dropZone.addEventListener(name,e=>{e.preventDefault();dropZone.style.background='#fbf9f5';dropZone.style.borderColor='#b7a78c'});
+ dropZone.addEventListener('drop',async e=>{const files=[...e.dataTransfer.files];if(files.length)await queuePayrollFiles(files)});
+}
 $('payrollRead').onclick=async()=>{
  if(!selectedFiles.length)return msg('Bitte zuerst Dateien auswählen.');
  const button=$('payrollRead');button.disabled=true;const output=$('payrollResults');output.replaceChildren();
