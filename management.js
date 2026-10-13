@@ -107,6 +107,8 @@ async function refresh(){
  await renderFixedTiles();
  await renderAutoMatch();
  for(const x of costs.filter(x=>x.is_recurring))entry('costList',(x.supplier||x.description||'Fixkosten')+' · '+euro(x.gross_amount),(x.category||'')+' · '+(x.due_date||'ohne Fälligkeit'));
+ const archiveMonths=[...new Set(people.map(x=>String(x.accounting_month||'').slice(0,7)).filter(x=>/^\\d{4}-\\d{2}$/.test(x)))].sort().reverse();
+ const monthButtons=$('gpArchiveMonthButtons');if(monthButtons){monthButtons.replaceChildren();for(const m of archiveMonths){const btn=document.createElement('button');btn.type='button';btn.textContent=new Date(m+'-02T12:00:00').toLocaleDateString('de-AT',{month:'long',year:'numeric'});btn.style.cssText='padding:8px 14px;border-radius:10px;'+($('personMonth').value===m?'font-weight:700;border:2px solid currentColor':'');btn.onclick=()=>{$('personMonth').value=m;refresh()};monthButtons.append(btn)}}
  const month=$('personMonth').value||today().slice(0,7);
  const selected=people.filter(x=>String(x.accounting_month||'').startsWith(month));
  const sum=selected.reduce((s,x)=>s+Number(x.gross_salary||0)+Number(x.employer_costs||0),0);
@@ -155,7 +157,7 @@ async function enter(){
  businessId=member.business_id;role=member.role;window.GastroPilotBusiness.render(m.data,member.business_id);
  $('business').textContent=(member.businesses?.name||'Das Friedrich')+' · Inhaber';
  $('login').classList.add('hidden');$('app').classList.remove('hidden');
- $('personMonth').value='2026-09';$('personForm').elements.accounting_month.value='2026-09';
+ $('personMonth').value='2026-08';$('personForm').elements.accounting_month.value='2026-08';
  for(const id of ['accountForm','costForm','paymentForm'])$(id).elements[id==='accountForm'?'balance_date':'due_date'].value=today();
  await refresh();
 }
