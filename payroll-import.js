@@ -201,11 +201,24 @@ async function renderPersonnelMonths(payRows,events,profiles){
   const note=el('p','Für diesen Monat liegt noch keine geprüfte Aufschlüsselung der Journalzahlungen nach ÖGK, Finanzamt und Kommunalsteuer vor. Nach dem Import wird sie hier angezeigt.');note.style='color:#666';detail.append(note);
  }
  const staffTitle=el('h3','Mitarbeiter · Einzelansicht · '+gpMonths[Number(key.slice(5))-1]+' '+selectedPersonnelYear);staffTitle.style='margin-top:20px';detail.append(staffTitle);
+ const staffGrid=el('div');staffGrid.style='display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:12px;margin:12px 0 18px';detail.append(staffGrid);
  for(const p of rows){
-  const d=el('details');d.style='border:1px solid #ddd;border-radius:10px;padding:12px;margin:7px 0';
-  const head=el('summary',p.employee_name+' · '+gpMonths[Number(key.slice(5))-1]+' '+selectedPersonnelYear);head.style='font-weight:700;cursor:pointer';
-  d.append(head,el('p','Abrechnungsmonat: '+key+' · Brutto: '+eur(p.gross_salary)+' · Netto: '+(p.net_payable==null?'nicht erfasst':eur(p.net_payable))+' · zusätzliche Dienstgeberkosten: '+eur(p.employer_costs)+' · Gesamtaufwand: '+eur(p.total_costs)));
-  detail.append(d);
+  const d=el('details');d.style='border:1px solid #e4e0da;border-radius:14px;padding:0;background:#fff;min-width:0;overflow:hidden';
+  const head=el('summary');head.style='display:flex;align-items:center;gap:12px;padding:15px;cursor:pointer;list-style:none;font-weight:700;min-height:72px';
+  const initials=clean(p.employee_name).split(' ').map(x=>x[0]||'').slice(0,2).join('').toUpperCase();
+  const avatar=el('span',initials);avatar.style='display:inline-flex;align-items:center;justify-content:center;flex:0 0 42px;width:42px;height:42px;border-radius:50%;background:#f5ede0;color:#805e30;font-size:13px';
+  const label=el('span');label.style='display:flex;flex-direction:column;gap:4px;min-width:0';
+  const name=el('span',p.employee_name);name.style='overflow-wrap:anywhere';
+  const month=el('small',gpMonths[Number(key.slice(5))-1]+' '+selectedPersonnelYear);month.style='color:#777;font-weight:400';
+  label.append(name,month);
+  const arrow=el('span','›');arrow.style='margin-left:auto;font-size:23px;color:#777';
+  head.append(avatar,label,arrow);
+  const body=el('div');body.style='padding:0 15px 15px;font-size:13px;line-height:1.8';
+  for(const [k,v] of [['Brutto',eur(p.gross_salary)],['Netto',p.net_payable==null?'Nicht erfasst':eur(p.net_payable)],['Zusätzliche DG-Kosten',eur(p.employer_costs)],['Gesamtaufwand',eur(p.total_costs)]]){
+   const row=el('div');row.style='display:flex;justify-content:space-between;gap:10px;border-top:1px solid #eee;padding:5px 0';
+   row.append(el('span',k),el('strong',v));body.append(row);
+  }
+  d.append(head,body);staffGrid.append(d);
  }
  const docs=archived.filter(f=>String(f.accounting_month||'').startsWith(key));
  if(docs.length)detail.append(el('p',docs.length+' archivierte Originaldatei(en) für diesen Monat.'));
