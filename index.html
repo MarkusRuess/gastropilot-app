@@ -385,7 +385,7 @@ html body #app #page-dashboard p{color:#111!important}
  <h2>Dein Betrieb auf einen Blick <span style="display:inline-block;margin-left:10px;font-size:.72em;font-weight:600;color:#806b4b">August 2026</span></h2>
  <p class="muted">Das Friedrich · gespeicherte Lohnabrechnungen · fehlende Umsätze bleiben offen</p>
  <div class="gp2-tiles">
-  <div class="gp2-tile"><small>Umsatz · ausgewählter Monat</small><strong>–</strong><span class="gp2-foot">Kein geprüfter August-Umsatz erfasst</span></div>
+  <div class="gp2-tile"><small>Umsatz · ausgewählter Monat</small><strong>47.123,80 €</strong><span class="gp2-foot">Offizieller August-Umsatz laut Betriebsunterlagen</span></div>
   <div class="gp2-tile"><small>Ø Umsatz je Umsatztag</small><strong>–</strong><span class="gp2-foot">Keine August-Tagesabschlüsse erfasst</span></div>
   <div class="gp2-tile"><small>Bankkonten gesamt</small><strong>–</strong><span class="gp2-foot">Kein bestätigter August-Stichtagsstand</span></div>
   <div class="gp2-tile"><small>Lieferantenrechnungen</small><strong>–</strong><span class="gp2-foot">Kein geprüfter Gesamtwert</span></div>
@@ -393,7 +393,7 @@ html body #app #page-dashboard p{color:#111!important}
   <div class="gp2-tile"><small>Umsatz vs. Vorjahr</small><strong>–</strong><span class="gp2-foot">Kein geprüfter Monatsvergleich</span></div>
   <div class="gp2-tile"><small>Personal &amp; Fixkosten</small><strong>Verwaltung ↗</strong><a href="./management.html?section=personnel" class="gp2-foot">Löhne und Kosten öffnen</a></div>
   <div class="gp2-tile"><small>Gesamtpersonalkosten</small><strong id="gpAugPersonnel">–</strong><span class="gp2-foot" id="gpAugPersonnelNote">Lohndaten werden geladen</span></div>
-  <div class="gp2-tile"><small>Personalkosten in % vom Umsatz</small><strong>–</strong><span class="gp2-foot">Ohne geprüften Umsatz nicht berechenbar</span></div>
+  <div class="gp2-tile"><small>Personalkosten in % vom Umsatz</small><strong id="gpAugRatio">–</strong><span class="gp2-foot">Gesamtpersonalkosten ÷ 47.123,80 € brutto</span></div>
   <div class="gp2-tile"><small>Bruttogehälter</small><strong id="gpAugGrossSalary">–</strong><span class="gp2-foot">Summe aus den Lohnabrechnungen</span></div>
   <div class="gp2-tile"><small>Zusätzliche Dienstgeberkosten</small><strong id="gpAugEmployer">–</strong><span class="gp2-foot">Zusätzlich zu den Bruttogehältern</span></div>
  </div>
@@ -3432,6 +3432,7 @@ async function refreshAugust2026(){
   $('gpAugPersonnel').textContent=euro(sum('total_costs'));
   $('gpAugGrossSalary').textContent=euro(sum('gross_salary'));
   $('gpAugEmployer').textContent=euro(sum('employer_costs'));
+  $('gpAugRatio').textContent=(sum('total_costs')/47123.80*100).toLocaleString('de-AT',{minimumFractionDigits:2,maximumFractionDigits:2})+' %';
   $('gpAugPersonnelNote').textContent=data.length+' Lohnabrechnungen · inklusive Dienstgeberkosten';
  }catch(e){$('gpAugPersonnelNote').textContent='Lohndaten nicht verfügbar';console.warn('August-Personalkosten:',e.message)}
 }
