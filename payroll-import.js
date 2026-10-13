@@ -270,7 +270,23 @@ async function renderEmployees(){
   tile.append(el('strong',p.full_name));
   const state=el('p',p.employment_status==='ended'?'Abgemeldet':p.employment_status==='active'?'Angemeldet':'Status noch nicht durch An-/Abmeldung bestätigt');state.style='font-size:12px;color:#666;margin:7px 0';tile.append(state);
   const ds=el('details');ds.style='margin-top:10px';
-  const summary=el('summary','Personalakte · '+p.lohn.length+' Lohnmonate');summary.style='cursor:pointer;font-weight:700;padding:9px 0';ds.append(summary);
+  const summary=el('summary');summary.style='cursor:pointer;font-weight:700;padding:9px 0;list-style-position:inside';
+  const head=el('span','Personalakte · '+p.lohn.length+' Lohnmonate');summary.append(head);
+  const currentYear=String(new Date().getFullYear());
+  const thisYear=p.lohn.filter(x=>String(x.accounting_month).slice(0,4)===currentYear);
+  const latest=thisYear.length?thisYear.reduce((a,b)=>String(a.accounting_month)>String(b.accounting_month)?a:b):null;
+  if(latest){
+   const month=String(latest.accounting_month).slice(0,7),mi=Number(month.slice(5));
+   const label=mi>=1&&mi<=12?gpMonths[mi-1]+' '+currentYear:month;
+   const figures=el('span');figures.style='display:inline-flex;gap:10px;flex-wrap:wrap;margin-left:12px;vertical-align:middle;font-size:12px;font-weight:500';
+   for(const [k,v] of [['Aktuell '+label,''],['Brutto',eur(latest.gross_salary)],['Netto',latest.net_payable==null?'nicht erfasst':eur(latest.net_payable)]]){
+    const chip=el('span',v?k+': '+v:k);chip.style='display:inline-block;padding:5px 9px;border:1px solid #e4dbcf;border-radius:9px;background:#faf8f4;white-space:nowrap';figures.append(chip);
+   }
+   summary.append(figures);
+  }else{
+   const note=el('span',' · '+currentYear+': noch kein Lohnmonat');note.style='font-size:12px;font-weight:400;color:#777';summary.append(note);
+  }
+  ds.append(summary);
   const relevantEvents=events.data.filter(x=>x.employee_id===p.id).sort((a,b)=>b.effective_date.localeCompare(a.effective_date));
   if(relevantEvents.length){
    const eventsGrid=el('div');eventsGrid.style='display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,170px),1fr));gap:8px;margin:10px 0';
