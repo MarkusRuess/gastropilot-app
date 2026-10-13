@@ -4,8 +4,8 @@ const $=id=>document.getElementById(id);
 const fmt=n=>new Intl.NumberFormat('de-AT',{style:'currency',currency:'EUR'}).format(n);
 const clean=s=>String(s||'').replace(/\\s+/g,' ').trim();
 const money=s=>{if(!s)return null;let v=String(s).replace(/[^\\d,.-]/g,'');if(v.includes(','))v=v.replace(/\\./g,'').replace(',','.');else if((v.match(/\\./g)||[]).length>1)v=v.replace(/\\./g,'');let n=Number(v);return Number.isFinite(n)&&n>=0&&n<1000000?Math.round(n*100)/100:null};
-const numberPattern='([0-9]{1,3}(?:\\.[0-9]{3})*,[0-9]{2}|[0-9]+,[0-9]{2}|[0-9]+\\.[0-9]{2})';
-function amountAfter(text,labels){for(const label of labels){const re=new RegExp('(?:^|\\n)[^\\n]{0,30}'+label+'[^\\n]{0,45}?\\s*[:=]?\\s*'+numberPattern+'(?:\\s|$)','im');const m=text.match(re);if(m){const n=money(m[1]);if(n!==null)return n}}return null}
+const numberPattern='([0-9]{1,3}(?:\\\\.[0-9]{3})*,[0-9]{2}|[0-9]+,[0-9]{2}|[0-9]+\\\\.[0-9]{2})';
+function amountAfter(text,labels){for(const label of labels){const re=new RegExp('(?:^|\\\\n)[^\\\\n]{0,30}'+label+'[^\\\\n]{0,45}?\\\\s*[:=]?\\\\s*'+numberPattern+'(?:\\\\s|$)','im');const m=text.match(re);if(m){const n=money(m[1]);if(n!==null)return n}}return null}
 function parse(text,filename){
  const monthMatch=text.match(/(?:Abrechnungsmonat|Lohn\\s*\\/\\s*Gehaltsabrechnung|Abrechnung(?:smonat)?)[^\\n]{0,35}?(J[aä]nner|Januar|Februar|März|Maerz|April|Mai|Juni|Juli|August|September|Oktober|November|Dezember)\\s*(20\\d{2})/i)||text.match(/(?:Abrechnungsmonat|Abrechnung)[^\\n]{0,20}?(20\\d{2})[-./](0?[1-9]|1[0-2])/i);
  const months={jänner:1,januar:1,februar:2,märz:3,maerz:3,april:4,mai:5,juni:6,juli:7,august:8,september:9,oktober:10,november:11,dezember:12};
