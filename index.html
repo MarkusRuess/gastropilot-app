@@ -3284,13 +3284,16 @@ const gp2HistoricalGross=Object.freeze({'2025-10':57274.73,'2025-11':46998.00,'2
 async function gp2RefreshBonitYoY(id,month,start,end,prevStart,prevEnd){
  const info=$('gp2YoYInfo'),value=$('gp2YoY');if(!info||!value)return;
  value.textContent='–';value.style.color='';info.textContent='Vergleich wird geladen …';
- const [cur,old]=await Promise.all([
+ const [bonit,handCurrent,old]=await Promise.all([
  db.from('bonit_daily_closings').select('closing_date,gross_amount').eq('business_id',id).gte('closing_date',start).lt('closing_date',end).order('closing_date'),
+ db.from('handcash_daily_sales').select('sales_date,gross_amount,business_day').eq('business_id',id).gte('sales_date',start).lt('sales_date',end).order('business_day'),
  db.from('handcash_daily_sales').select('sales_date,gross_amount,business_day').eq('business_id',id).gte('sales_date',prevStart.slice(0,7)+'-01').lt('sales_date',gpShiftYear(monthBounds(month).end,-1)).order('business_day')
  ]);
  if(id!==businessId||month!==$('month').value)return;
- if(cur.error||old.error){info.textContent='Vergleichsdaten nicht verfügbar';return}
- const current=cur.data||[],history=old.data||[],n=new Set(current.map(r=>r.closing_date)).size;
+ if(bonit.error||handCurrent.error||old.error){info.textContent='Vergleichsdaten nicht verfügbar';return}
+ const bonitRows=bonit.data||[],handRows=handCurrent.data||[],history=old.data||[];
+ const current=bonitRows.length?bonitRows:handRows;
+ const n=new Set(current.map(r=>r.closing_date||r.sales_date)).size;
  if(!n||history.length<n){info.textContent='Vorjahres-Tageswerte fehlen';return}
  const sum=rows=>rows.reduce((total,row)=>total+Number(row.gross_amount||0),0);
  const a=sum(current),b=sum(history.slice(0,n));
@@ -3298,7 +3301,7 @@ async function gp2RefreshBonitYoY(id,month,start,end,prevStart,prevEnd){
  const pct=(a/b-1)*100,diff=a-b;
  value.textContent=(pct<0?'▼ ':pct>0?'▲ ':'● ')+(pct>0?'+':'')+pct.toLocaleString('de-AT',{minimumFractionDigits:2,maximumFractionDigits:2})+' %';
  value.style.color=pct<0?'#c62828':pct>0?'#188038':'#666';
- info.textContent=n+' Umsatztage vs. '+n+' Vorjahrestage · '+euro(a)+' / '+euro(b)+' · '+euro(diff);
+ info.textContent=n+' Umsatztage vs. '+n+' Vorjahrestage · '+euro(a)+' / '+euro(b)+' · '+(diff>0?'+':'')+euro(diff);
 }
 async function refreshYoY(){
  const id=businessId,month=$('month').value;
