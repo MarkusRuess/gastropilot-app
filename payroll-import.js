@@ -269,14 +269,37 @@ async function renderEmployees(){
   const tile=el('div');tile.style='border:1px solid #ddd;border-radius:12px;padding:12px;min-width:0;background:#fff';
   tile.append(el('strong',p.full_name));
   const state=el('p',p.employment_status==='ended'?'Abgemeldet':p.employment_status==='active'?'Angemeldet':'Status noch nicht durch An-/Abmeldung bestätigt');state.style='font-size:12px;color:#666;margin:7px 0';tile.append(state);
-  const ds=el('details');ds.append(el('summary','Personalakte · '+p.lohn.length+' Lohnmonate'));
+  const ds=el('details');ds.style='margin-top:10px';
+  const summary=el('summary','Personalakte · '+p.lohn.length+' Lohnmonate');summary.style='cursor:pointer;font-weight:700;padding:9px 0';ds.append(summary);
   const relevantEvents=events.data.filter(x=>x.employee_id===p.id).sort((a,b)=>b.effective_date.localeCompare(a.effective_date));
-  for(const e of relevantEvents)ds.append(el('p',(e.document_type==='registration'?'Anmeldung':'Abmeldung')+' · '+e.effective_date));
-  for(const x of p.lohn){
-   const block=el('p','Lohn '+String(x.accounting_month).slice(0,7)+' · Gesamt '+eur(x.total_costs)+' · Brutto '+eur(x.gross_salary)+' · DG '+eur(x.employer_costs)+(x.net_payable==null?'':' · Netto '+eur(x.net_payable)));
-   block.style='font-size:12px;border-bottom:1px solid #eee;padding-bottom:6px';ds.append(block);
+  if(relevantEvents.length){
+   const eventsGrid=el('div');eventsGrid.style='display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,170px),1fr));gap:8px;margin:10px 0';
+   for(const e of relevantEvents){
+    const card=el('div');card.style='border:1px solid #e1d9cd;border-radius:12px;padding:10px;background:#faf8f4';
+    card.append(el('strong',e.document_type==='registration'?'Anmeldung':'Abmeldung'),el('div',e.effective_date));eventsGrid.append(card);
+   }
+   ds.append(eventsGrid);
   }
-  for(const f of archived.filter(x=>x.employee_id===p.id))ds.append(el('p','Archiv: '+f.original_name));
+  const monthsGrid=el('div');monthsGrid.style='display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr));gap:10px;margin:12px 0';
+  for(const x of p.lohn){
+   const monthKey=String(x.accounting_month).slice(0,7);
+   const monthNumber=Number(monthKey.slice(5));
+   const label=monthNumber>=1&&monthNumber<=12?gpMonths[monthNumber-1]+' '+monthKey.slice(0,4):monthKey;
+   const card=el('div');card.style='border:1px solid #ded8cf;border-radius:14px;background:#fff;padding:13px;min-width:0;box-shadow:0 2px 9px #241b1008';
+   const title=el('strong',label);title.style='display:block;font-size:14px;margin-bottom:8px';card.append(title);
+   for(const [caption,value] of [['Gesamtaufwand',eur(x.total_costs)],['Brutto',eur(x.gross_salary)],['DG-Kosten',eur(x.employer_costs)],['Netto',x.net_payable==null?'Nicht erfasst':eur(x.net_payable)]]){
+    const line=el('div');line.style='display:flex;justify-content:space-between;gap:8px;padding:5px 0;border-top:1px solid #eee;font-size:12px;flex-wrap:wrap';
+    const key=el('span',caption);key.style='color:#777';const val=el('strong',value);line.append(key,val);card.append(line);
+   }
+   monthsGrid.append(card);
+  }
+  ds.append(monthsGrid);
+  const originals=archived.filter(x=>x.employee_id===p.id);
+  if(originals.length){
+   const filesGrid=el('div');filesGrid.style='display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr));gap:8px;margin:10px 0';
+   for(const f of originals){const card=el('div',f.original_name);card.style='overflow-wrap:anywhere;border:1px solid #eee;border-radius:10px;padding:10px;font-size:12px';filesGrid.append(card)}
+   ds.append(filesGrid);
+  }
   tile.append(ds);box.append(tile);
  }
  if(!employees.length)box.append(el('p','Noch keine Mitarbeiter vorhanden. Lade Lohnzettel oder An-/Abmeldungen hoch.'));
