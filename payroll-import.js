@@ -136,13 +136,13 @@ function renderArchive(){
  const grouped=new Map();
  for(const f of archived){
   const key=String(f.accounting_month||'').slice(0,7);
-  const month=/^\\d{4}-\\d{2}$/.test(key)?key:'Ohne Monatszuordnung';
+  const month=/^\d{4}-\d{2}$/.test(key)?key:'Ohne Monatszuordnung';
   if(!grouped.has(month))grouped.set(month,[]);grouped.get(month).push(f);
  }
  const kinds={salary:'Lohnset',payment_journal:'Auszahlungsjournal',registration:'Anmeldung',deregistration:'Abmeldung',other:'Sonstiges'};
  for(const [month,files] of [...grouped.entries()].sort((a,b)=>b[0].localeCompare(a[0]))){
   const tile=el('section');tile.style='border:1px solid #e1d9cd;border-radius:16px;background:#fff;padding:16px;box-shadow:0 3px 12px #241b1008;min-width:0';
-  const title=el('strong',/^\\d{4}-\\d{2}$/.test(month)?gpMonths[Number(month.slice(5))-1]+' '+month.slice(0,4):month);title.style='display:block;font-size:19px;margin-bottom:4px';tile.append(title);
+  const title=el('strong',/^\d{4}-\d{2}$/.test(month)?gpMonths[Number(month.slice(5))-1]+' '+month.slice(0,4):month);title.style='display:block;font-size:19px;margin-bottom:4px';tile.append(title);
   const count=el('small',files.length+' Originaldokument'+(files.length===1?'':'e'));count.style='display:block;color:#777;margin-bottom:12px';tile.append(count);
   for(const f of files){
    const line=el('div');line.style='border-top:1px solid #eee;padding:11px 0;min-width:0';
