@@ -9,6 +9,7 @@ const amount=/\b\d{1,3}(?:\.\d{3})*,\d{2}\b|\b\d+,\d{2}\b/g;
 let selectedFiles=[];
 let member=null;
 let archived=[];
+const selectedHashes=new WeakMap();
 const msg=t=>{$('payrollStatus').textContent=t};
 const el=(tag,txt)=>{const e=document.createElement(tag);if(txt!==undefined)e.textContent=txt;return e};
 function amountOnLine(lines,pattern){
@@ -122,7 +123,7 @@ function renderSelection(){
  const box=$('gpSelectedFiles');box.replaceChildren();
  for(const file of selectedFiles){
   const tile=el('div');tile.style='display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:8px;border:1px solid #ddd;border-radius:9px';
-  tile.append(el('span','📄 '+file.name+' · '+Math.round(file.size/1024)+' KB'));
+  const digest=selectedHashes.get(file);const already=digest&&archived.some(x=>x.sha256===digest);const queued=digest&&selectedFiles.some(x=>x!==file&&selectedHashes.get(x)===digest&&selectedFiles.indexOf(x)<selectedFiles.indexOf(file));tile.append(el('span','📄 '+file.name+' · '+Math.round(file.size/1024)+' KB'+(already?' · BEREITS IM ARCHIV':queued?' · DOPPELT AUSGEWÄHLT':'')));
   const del=el('button','Entfernen');del.type='button';del.style='padding:4px 9px';del.onclick=()=>{selectedFiles=selectedFiles.filter(x=>x!==file);renderSelection()};tile.append(del);box.append(tile);
  }
  if(!selectedFiles.length)box.append(el('p','Noch keine Dateien ausgewählt.'));
@@ -159,9 +160,10 @@ async function renderEmployees(){
  }
  if(!profiles.data.length)box.append(el('p','Noch keine Mitarbeiter vorhanden.'));
 }
-$('payrollPdf').addEventListener('change',()=>{
+$('payrollPdf').addEventListener('change',async()=>{
  const incoming=[...$('payrollPdf').files];for(const f of incoming)if(!selectedFiles.some(x=>x.name===f.name&&x.size===f.size&&x.lastModified===f.lastModified))selectedFiles.push(f);
  $('payrollPdf').value='';renderSelection();
+ for(const f of incoming){try{selectedHashes.set(f,await hash(f));renderSelection()}catch(e){/* Hash wird beim Verarbeiten erneut geprüft */}}
 });
 $('payrollRead').onclick=async()=>{
  if(!selectedFiles.length)return msg('Bitte zuerst Dateien auswählen.');
