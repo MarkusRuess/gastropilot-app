@@ -3283,41 +3283,22 @@ function gp2SetYoY(current,previous,label){
 const gp2HistoricalGross=Object.freeze({'2025-10':57274.73,'2025-11':46998.00,'2025-12':67325.00});
 async function gp2RefreshBonitYoY(id,month,start,end,prevStart,prevEnd){
  const info=$('gp2YoYInfo'),value=$('gp2YoY');if(!info||!value)return;
- value.textContent='–';value.style.color='';info.textContent='Vorjahresvergleich wird geladen …';
- const [a,b]=await Promise.all([
-  db.from('bonit_daily_closings').select('closing_date,gross_amount').eq('business_id',id).gte('closing_date',start).lt('closing_date',end).order('closing_date'),
-  db.from('bonit_daily_closings').select('closing_date,gross_amount').eq('business_id',id).gte('closing_date',prevStart).lt('closing_date',prevEnd).order('closing_date')
+ value.textContent='–';value.style.color='';info.textContent='Vergleich wird geladen …';
+ const [cur,old]=await Promise.all([
+ db.from('bonit_daily_closings').select('closing_date,gross_amount').eq('business_id',id).gte('closing_date',start).lt('closing_date',end).order('closing_date'),
+ db.from('handcash_daily_sales').select('sales_date,gross_amount,business_day').eq('business_id',id).gte('sales_date',prevStart.slice(0,7)+'-01').lt('sales_date',gpShiftYear(monthBounds(month).end,-1)).order('business_day')
  ]);
  if(id!==businessId||month!==$('month').value)return;
- if(a.error||b.error){info.textContent='Vorjahresvergleich nicht verfügbar';return}
- const current=a.data||[],previous=b.data||[];
- const historic=gp2HistoricalGross[prevStart.slice(0,7)];
- if(historic&&current.length){
-   const total=current.reduce((sum,r)=>sum+Number(r.gross_amount||0),0);
-   const value=$('gp2YoY'),info=$('gp2YoYInfo');
-   const today=new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Vienna',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
-   const selectedCurrent=month===today.slice(0,7);
-   const latest=current.map(x=>x.closing_date).sort().at(-1);
-   const fullMonthEnd=gpNextDate(latest)===monthBounds(month).end;
-   if(!selectedCurrent&&fullMonthEnd){
-     const pct=(total/historic-1)*100;
-     value.textContent=(pct>0?'▲ ':pct<0?'▼ ':'● ')+(pct>0?'+':'')+pct.toLocaleString('de-AT',{minimumFractionDigits:1,maximumFractionDigits:1})+' %';
-     value.style.color=pct>0?'#188038':pct<0?'#c62828':'#666';
-     info.textContent=month+' / '+prevStart.slice(0,7)+' · '+euro(total)+' / '+euro(historic)+' (ganze Monate)';
-   }else{
-     value.textContent=(total/historic*100).toLocaleString('de-AT',{minimumFractionDigits:1,maximumFractionDigits:1})+' %';
-     value.style.color='#555';
-     info.textContent='Bisher '+euro(total)+' von '+euro(historic)+' Vorjahres-Gesamtmonat · bis '+latest.slice(8)+'.';
-   }
-   return;
- }
- // Für Teilmonate ausschließlich identische Kalendertage vergleichen.
- const daySet=new Set(current.map(x=>x.closing_date.slice(-2)));
- const previousMatched=previous.filter(x=>daySet.has(x.closing_date.slice(-2)));
- if(!current.length||previousMatched.length!==current.length||new Set(previousMatched.map(x=>x.closing_date.slice(-2))).size!==daySet.size){
-  info.textContent='Vorjahresdaten für gleiche Umsatztage fehlen';return;
- }
- gp2SetYoY(current,previousMatched,month+' / '+String(Number(month.slice(0,4))-1)+month.slice(4));
+ if(cur.error||old.error){info.textContent='Vergleichsdaten nicht verfügbar';return}
+ const current=cur.data||[],history=old.data||[],n=new Set(current.map(r=>r.closing_date)).size;
+ if(!n||history.length<n){info.textContent='Vorjahres-Tageswerte fehlen';return}
+ const sum=rows=>rows.reduce((total,row)=>total+Number(row.gross_amount||0),0);
+ const a=sum(current),b=sum(history.slice(0,n));
+ if(!(b>0)){info.textContent='Vorjahresumsatz fehlt';return}
+ const pct=(a/b-1)*100,diff=a-b;
+ value.textContent=(pct<0?'▼ ':pct>0?'▲ ':'● ')+(pct>0?'+':'')+pct.toLocaleString('de-AT',{minimumFractionDigits:2,maximumFractionDigits:2})+' %';
+ value.style.color=pct<0?'#c62828':pct>0?'#188038':'#666';
+ info.textContent=n+' Umsatztage vs. '+n+' Vorjahrestage · '+euro(a)+' / '+euro(b)+' · '+euro(diff);
 }
 async function refreshYoY(){
  const id=businessId,month=$('month').value;
