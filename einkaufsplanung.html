@@ -14,6 +14,7 @@ const products=[
 {name:'illy Classico Kaffee',pattern:/espresso|melange|cappuc|verlängerter|cafe latte|kaffee laté/i,portion:.008,pack:6,unit:'VPE à 6 kg',loss:.05,coffee:true},
 {name:'Villacher Bier',pattern:/villacher.*bier/i,portion:.33,pack:50,unit:'Fässer à 50 l',loss:.05},
 {name:'Freixenet Rosé',pattern:/freixenet/i,portion:.1,pack:.75,unit:'Flaschen à 0,75 l',loss:.03},
+{name:'Prosecco Valdobbiadene',pattern:/prosecco\s*valdobbiadene|proseccovaldobbiadene/i,portion:.1,pack:.75,unit:'Flaschen à 0,75 l (vorläufig)',loss:.03},
 {name:'Weißer Spritzer',pattern:/weisser spritzer|weißer spritzer/i,portion:.125,pack:1,unit:'Flaschen à 1 l Weißwein',loss:.03}
 ];
 const $=id=>document.getElementById(id), fmt=n=>new Intl.NumberFormat('de-AT',{maximumFractionDigits:1}).format(n);
