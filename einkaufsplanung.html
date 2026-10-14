@@ -30,6 +30,14 @@ const products=[
 {name:'Aumann Harterberg',pattern:/aumann.*harterberg/i,portion:.125,pack:.75,unit:'Flaschen à 0,75 l (vorläufig)',loss:.03,wine:true},
 {name:'Neumeister Grauburgunder',pattern:/grauburgunder.*neumeister/i,portion:.125,pack:.75,unit:'Flaschen à 0,75 l (vorläufig)',loss:.03,wine:true}
 ];
+const milkRecipes=[
+{pattern:/^melange$/i,liters:.12},
+{pattern:/^cappuc?c?ino$/i,liters:.12},
+{pattern:/^(cafe latte|kaffee laté|kaffee latte)$/i,liters:.25},
+{pattern:/kleiner brauner/i,liters:.02},
+{pattern:/espresso macchiato/i,liters:.02},
+{pattern:/chai latte/i,liters:.25}
+];
 const $=id=>document.getElementById(id), fmt=n=>new Intl.NumberFormat('de-AT',{maximumFractionDigits:1}).format(n);
 function weekdays(y,m){let n=new Date(y,m,0).getDate(),count=0;for(let d=1;d<=n;d++){let w=new Date(y,m-1,d).getDay();if(w!==0)count++}return count}
 async function load(){
@@ -49,6 +57,17 @@ async function load(){
  for(const r of rows){let name=(r.article_name||'Unbekannt').trim(),qty=Number(r.quantity)||0;totals.set(name,(totals.get(name)||0)+qty)}
  const top=[...totals].sort((a,b)=>b[1]-a[1]).slice(0,20);
  for(const [name,qty] of top){const tr=document.createElement('tr');for(const value of [name,fmt(qty),fmt(qty*factor)]){let td=document.createElement('td');td.textContent=value;tr.append(td)}$('ranking').append(tr)}
+ const milkLiters=rows.reduce((sum,r)=>{const recipe=milkRecipes.find(x=>x.pattern.test((r.article_name||'').trim()));return sum+(recipe?(Number(r.quantity)||0)*recipe.liters:0)},0);
+ const milkForecast=milkLiters*factor/(1-.05),milkPacks=Math.ceil(milkForecast);
+ const milkTile=document.createElement('div');milkTile.className='tile';
+ const milkTitle=document.createElement('b');milkTitle.textContent='Milch · Kaffeegetränke';milkTile.append(milkTitle);
+ const milkBig=document.createElement('strong');milkBig.textContent=milkPacks+' Packungen à 1 l';milkTile.append(milkBig);
+ const milkDetails=document.createElement('p');milkDetails.className='muted';milkDetails.textContent=`${fmt(milkLiters)} l Rezeptverbrauch erfasst · ${fmt(milkForecast)} l Monatsprognose inkl. 5 % Verlust · Rezeptmengen vorläufig`;milkTile.append(milkDetails);
+ const milkLabel=document.createElement('label');milkLabel.textContent='Bereits verfügbar (1-l-Packungen)';milkTile.append(milkLabel);
+ const milkInput=document.createElement('input');milkInput.type='number';milkInput.min='0';milkInput.step='1';milkInput.value='0';milkTile.append(milkInput);
+ const milkResult=document.createElement('p');milkResult.style.fontWeight='700';milkTile.append(milkResult);
+ const milkCalc=()=>{milkResult.textContent='Rechnerisch noch zu beschaffen: '+Math.max(0,milkPacks-Math.max(0,Number(milkInput.value)||0))+' Packungen à 1 l';};
+ milkInput.addEventListener('input',milkCalc);milkCalc();$('items').append(milkTile);
  for(const p of products){
  const matched=rows.filter(r=>p.pattern.test(r.article_name||''));
  const qty=matched.reduce((sum,r)=>sum+(Number(r.quantity)||0),0);
