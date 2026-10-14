@@ -15,7 +15,20 @@ const products=[
 {name:'Villacher Bier',pattern:/villacher.*bier/i,portion:.33,pack:50,unit:'Fässer à 50 l',loss:.05},
 {name:'Freixenet Rosé',pattern:/freixenet/i,portion:.1,pack:.75,unit:'Flaschen à 0,75 l',loss:.03},
 {name:'Prosecco Valdobbiadene',pattern:/prosecco\s*valdobbiadene|proseccovaldobbiadene/i,portion:.1,pack:.75,unit:'Flaschen à 0,75 l (vorläufig)',loss:.03},
-{name:'Weißer Spritzer',pattern:/weisser spritzer|weißer spritzer/i,portion:.125,pack:1,unit:'Flaschen à 1 l Weißwein',loss:.03}
+{name:'Weißer Spritzer',pattern:/weisser spritzer|weißer spritzer/i,portion:.125,pack:1,unit:'Flaschen à 1 l Weißwein',loss:.03},
+{name:'Pfaffl Grüner Veltliner',pattern:/pfaffl.*grüner veltliner/i,portion:.125,pack:.75,unit:'Flaschen à 0,75 l (vorläufig)',loss:.03,wine:true},
+{name:'Gross Gelber Muskateller',pattern:/gross.*gelber muskateller/i,portion:.125,pack:.75,unit:'Flaschen à 0,75 l (vorläufig)',loss:.03,wine:true},
+{name:'Tschermonegg Sauvignon Blanc',pattern:/tschermonegg.*sauvignon/i,portion:.125,pack:.75,unit:'Flaschen à 0,75 l (vorläufig)',loss:.03,wine:true},
+{name:'Mayer Gemischter Satz',pattern:/mayer.*gemischter satz/i,portion:.125,pack:.75,unit:'Flaschen à 0,75 l (vorläufig)',loss:.03,wine:true},
+{name:'Hauswein Grüner Veltliner',pattern:/hauswein.*grüner veltliner/i,portion:.125,pack:.75,unit:'Flaschen à 0,75 l (vorläufig)',loss:.03,wine:true},
+{name:'Alphart Rotgipfler',pattern:/rotgipfler.*alphart/i,portion:.125,pack:.75,unit:'Flaschen à 0,75 l (vorläufig)',loss:.03,wine:true},
+{name:'Steiner Rosé',pattern:/christian steiner.*rose|christtian steiner.*rose/i,portion:.125,pack:.75,unit:'Flaschen à 0,75 l (vorläufig)',loss:.03,wine:true},
+{name:'IBY Blaufränkisch',pattern:/iby.*blaufränkisch/i,portion:.125,pack:.75,unit:'Flaschen à 0,75 l (vorläufig)',loss:.03,wine:true},
+{name:'Gisperg Chardonnay',pattern:/chardaonnay gisperg|gisperg chardonnay|chardonnay gisperg/i,portion:.125,pack:.75,unit:'Flaschen à 0,75 l (vorläufig)',loss:.03,wine:true},
+{name:'Alphart Neuburger',pattern:/alphart.*neuburger/i,portion:.125,pack:.75,unit:'Flaschen à 0,75 l (vorläufig)',loss:.03,wine:true},
+{name:'Keringer Heideboden',pattern:/keringer.*heideboden/i,portion:.125,pack:.75,unit:'Flaschen à 0,75 l (vorläufig)',loss:.03,wine:true},
+{name:'Aumann Harterberg',pattern:/aumann.*harterberg/i,portion:.125,pack:.75,unit:'Flaschen à 0,75 l (vorläufig)',loss:.03,wine:true},
+{name:'Neumeister Grauburgunder',pattern:/grauburgunder.*neumeister/i,portion:.125,pack:.75,unit:'Flaschen à 0,75 l (vorläufig)',loss:.03,wine:true}
 ];
 const $=id=>document.getElementById(id), fmt=n=>new Intl.NumberFormat('de-AT',{maximumFractionDigits:1}).format(n);
 function weekdays(y,m){let n=new Date(y,m,0).getDate(),count=0;for(let d=1;d<=n;d++){let w=new Date(y,m-1,d).getDay();if(w!==0)count++}return count}
@@ -37,12 +50,14 @@ async function load(){
  const top=[...totals].sort((a,b)=>b[1]-a[1]).slice(0,20);
  for(const [name,qty] of top){const tr=document.createElement('tr');for(const value of [name,fmt(qty),fmt(qty*factor)]){let td=document.createElement('td');td.textContent=value;tr.append(td)}$('ranking').append(tr)}
  for(const p of products){
- const qty=rows.filter(r=>p.pattern.test(r.article_name||'')).reduce((sum,r)=>sum+(Number(r.quantity)||0),0);
- const forecast=qty*factor,liters=forecast*p.portion/(1-p.loss),packs=Math.ceil(liters/p.pack);
+ const matched=rows.filter(r=>p.pattern.test(r.article_name||''));
+ const qty=matched.reduce((sum,r)=>sum+(Number(r.quantity)||0),0);
+ const volume=matched.reduce((sum,r)=>sum+(Number(r.quantity)||0)*(p.wine && /0[,.]75\s*l/i.test(r.article_name||'') ? .75 : p.portion),0);
+ const forecast=qty*factor,liters=volume*factor/(1-p.loss),packs=Math.ceil(liters/p.pack);
  const tile=document.createElement('div');tile.className='tile';
  const title=document.createElement('b');title.textContent=p.name;tile.append(title);
  const big=document.createElement('strong');big.textContent=packs+' '+p.unit;tile.append(big);
- const details=document.createElement('p');details.className='muted';details.textContent=p.coffee?`${fmt(qty)} Kaffeegetränke · ${fmt(forecast)} prognostiziert · ${fmt(liters)} kg inkl. ${fmt(p.loss*100)} % Mahlverlust · vorläufig 8 g je Bezug (Doppelbezüge noch nicht separat)`: `${fmt(qty)} verkauft · ${fmt(forecast)} prognostiziert · ${fmt(liters)} l inkl. ${fmt(p.loss*100)} % Verlust`;tile.append(details);
+ const details=document.createElement('p');details.className='muted';details.textContent=p.wine?`${fmt(qty)} verkaufte Positionen (Achterl und ganze Flaschen) · ${fmt(liters)} l prognostiziert inkl. ${fmt(p.loss*100)} % Verlust · Gebinde vorläufig` : p.coffee?`${fmt(qty)} Kaffeegetränke · ${fmt(forecast)} prognostiziert · ${fmt(liters)} kg inkl. ${fmt(p.loss*100)} % Mahlverlust · vorläufig 8 g je Bezug (Doppelbezüge noch nicht separat)`: `${fmt(qty)} verkauft · ${fmt(forecast)} prognostiziert · ${fmt(liters)} l inkl. ${fmt(p.loss*100)} % Verlust`;tile.append(details);
  const label=document.createElement('label');label.textContent='Bereits verfügbar (Gebinde)';tile.append(label);
  const inp=document.createElement('input');inp.type='number';inp.min='0';inp.step='1';inp.value='0';tile.append(inp);
  const result=document.createElement('p');result.style.fontWeight='700';tile.append(result);
