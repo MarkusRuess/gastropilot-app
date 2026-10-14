@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>GastroPilot · Einkaufsplanung</title>
+<style>
+:root{font-family:system-ui,-apple-system,sans-serif;color:#171717;background:#f6f6f6}*{box-sizing:border-box}body{margin:0}header{background:#151515;color:white;padding:18px}main{max-width:980px;margin:auto;padding:14px}h1{font-size:23px;margin:0 0 6px}a{color:inherit}.panel{background:white;border:1px solid #ddd;border-radius:14px;padding:15px;margin:12px 0}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}.tile{background:#fafafa;border:1px solid #e3e3e3;border-radius:12px;padding:12px}.tile strong{display:block;font-size:24px;margin:7px 0}.muted{color:#666;font-size:13px}label{font-size:13px;display:block;margin-bottom:5px}input{width:100%;padding:9px;border:1px solid #ccc;border-radius:8px;font-size:16px}button{padding:10px 14px;background:#151515;color:white;border:0;border-radius:9px;cursor:pointer}table{border-collapse:collapse;width:100%;font-size:13px}th,td{padding:10px 6px;border-bottom:1px solid #ddd;text-align:left}th:last-child,td:last-child{text-align:right}.scroll{overflow-x:auto}.warn{color:#975700}.error{color:#b00020}@media(max-width:550px){main{padding:9px}.panel{padding:12px}h1{font-size:20px}}
+</style></head><body><header><h1>GastroPilot · Einkaufsplanung</h1><a href="./index.html">← Dashboard</a></header><main>
+<div class="panel"><label for="month">Auswertungsmonat</label><input id="month" type="month" value="2026-10"><p class="muted" id="status">Lade BONit-Daten …</p></div>
+<div class="panel"><h2>Gebinde & Schankverlust</h2><div class="grid" id="items"></div><p class="muted">Prognose auf Basis der erfassten Verkaufstage, hochgerechnet auf Montag bis Samstag. Lagerbestände werden nur lokal für diese Berechnung eingegeben und nicht gespeichert. Prognosen sind keine Bestellungen.</p></div>
+<div class="panel"><h2>Top 20 · Artikel nach Menge</h2><div class="scroll"><table><thead><tr><th>Artikel</th><th>Verkauft</th><th>Prognose</th></tr></thead><tbody id="ranking"></tbody></table></div></div>
+</main><script type="module">
+import {createClient} from 'https://esm.sh/@supabase/supabase-js@2';
+const db=createClient('https://sjnwfwcpgwsavygewwzb.supabase.co','sb_publishable__tucXG-IQGUhibMqMSUzCw_5RnH_sbQ');
+const business='6a5484d1-daf6-4263-897d-24cdf536aa29';
+const products=[
+{name:'Villacher Bier',pattern:/villacher.*bier/i,portion:.33,pack:50,unit:'Fässer à 50 l',loss:.05},
+{name:'Freixenet Rosé',pattern:/freixenet/i,portion:.1,pack:.75,unit:'Flaschen à 0,75 l',loss:.03},
+{name:'Weißer Spritzer',pattern:/weisser spritzer|weißer spritzer/i,portion:.125,pack:1,unit:'Flaschen à 1 l Weißwein',loss:.03}
+];
+const $=id=>document.getElementById(id), fmt=n=>new Intl.NumberFormat('de-AT',{maximumFractionDigits:1}).format(n);
+function weekdays(y,m){let n=new Date(y,m,0).getDate(),count=0;for(let d=1;d<=n;d++){let w=new Date(y,m-1,d).getDay();if(w!==0)count++}return count}
+async function load(){
+ $('status').textContent='Lade Artikelverkäufe …';$('items').replaceChildren();$('ranking').replaceChildren();
+ const [y,m]=$('month').value.split('-').map(Number);if(!y||!m)return;
+ const start=`${y}-${String(m).padStart(2,'0')}-01`,end=new Date(Date.UTC(y,m,1)).toISOString().slice(0,10);
+ const {data:{session}}=await db.auth.getSession();if(!session){$('status').textContent='Bitte zuerst im Dashboard anmelden.';return}
+ let rows=[],err=null;
+ for(let offset=0;offset<30000;offset+=1000){
+ const r=await db.from('bonit_article_sales').select('article_name,quantity,closing_date').eq('business_id',business).gte('closing_date',start).lt('closing_date',end).order('closing_date',{ascending:true}).order('source_key',{ascending:true}).range(offset,offset+999);
+ if(r.error){err=r.error;break}rows.push(...(r.data||[]));if((r.data||[]).length<1000)break;
+ }
+ if(err){$('status').textContent='Ladefehler: '+err.message;return}
+ const days=new Set(rows.map(r=>r.closing_date)).size,monthDays=weekdays(y,m),factor=days?monthDays/days:0;
+ $('status').textContent=`${rows.length} Artikelpositionen · ${days} erfasste Tage · ${monthDays} geplante Öffnungstage (Mo–Sa) · Hochrechnungsfaktor ${fmt(factor)}. Fehlende Importtage können die Prognose verzerren.`;
+ const totals=new Map();
+ for(const r of rows){let name=(r.article_name||'Unbekannt').trim(),qty=Number(r.quantity)||0;totals.set(name,(totals.get(name)||0)+qty)}
+ const top=[...totals].sort((a,b)=>b[1]-a[1]).slice(0,20);
+ for(const [name,qty] of top){const tr=document.createElement('tr');for(const value of [name,fmt(qty),fmt(qty*factor)]){let td=document.createElement('td');td.textContent=value;tr.append(td)}$('ranking').append(tr)}
+ for(const p of products){
+ const qty=rows.filter(r=>p.pattern.test(r.article_name||'')).reduce((sum,r)=>sum+(Number(r.quantity)||0),0);
+ const forecast=qty*factor,liters=forecast*p.portion/(1-p.loss),packs=Math.ceil(liters/p.pack);
+ const tile=document.createElement('div');tile.className='tile';
+ const title=document.createElement('b');title.textContent=p.name;tile.append(title);
+ const big=document.createElement('strong');big.textContent=packs+' '+p.unit;tile.append(big);
+ const details=document.createElement('p');details.className='muted';details.textContent=`${fmt(qty)} verkauft · ${fmt(forecast)} prognostiziert · ${fmt(liters)} l inkl. ${fmt(p.loss*100)} % Verlust`;tile.append(details);
+ const label=document.createElement('label');label.textContent='Bereits verfügbar (Gebinde)';tile.append(label);
+ const inp=document.createElement('input');inp.type='number';inp.min='0';inp.step='1';inp.value='0';tile.append(inp);
+ const result=document.createElement('p');result.style.fontWeight='700';tile.append(result);
+ const recalc=()=>{const stock=Math.max(0,Number(inp.value)||0);result.textContent='Rechnerisch noch zu beschaffen: '+Math.max(0,packs-stock)+' '+p.unit;};
+ inp.addEventListener('input',recalc);recalc();$('items').append(tile);
+ }
+}
+$('month').addEventListener('change',load);load();
+</script></body></html>
