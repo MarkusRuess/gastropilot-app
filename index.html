@@ -1815,6 +1815,47 @@ function makeField(label,key,value,type='text'){
 
 /* BELEGPRÜFUNG */
 
+const gpCostNames={food:'Lebensmittel / Wareneinsatz',beverage:'Getränke / Wareneinsatz',cleaning:'Reinigung / Hygiene',consumables:'Verbrauchsmaterial',packaging:'Verpackungen',equipment:'Betriebsausstattung',other:'Sonstige Kosten',unknown:'Ungeklärt'};
+function gpSuggestCost(name){
+ const n=String(name||'').toLowerCase();
+ if(/reiniger|spül|waschmittel|desinf|putz|schwamm|seife|hygiene/.test(n))return 'cleaning';
+ if(/serviett|toilettenpapier|küchenrolle|papierhandtuch|müllsack|handschuh/.test(n))return 'consumables';
+ if(/becher|deckel|verpack|karton|tragetasche|folie|einweg/.test(n))return 'packaging';
+ if(/wein|bier|wasser|limonade|saft|cola|tonic|sirup|prosecco|sekt|kaffee/.test(n))return 'beverage';
+ if(/milch|butter|eier|mehl|zucker|käse|brot|fleisch|wurst|schinken|obst|gemüse|tomate|salat|schokolade|nudel|reis/.test(n))return 'food';
+ return 'unknown';
+}
+function gpInvoiceItemEditor(host,doc){
+ const section=document.createElement('section');section.className='gp-invoice-items';
+ const heading=document.createElement('h3');heading.textContent='Einkaufsartikel & Kostenstellen';section.append(heading);
+ const note=document.createElement('p');note.className='muted';note.textContent='Automatische Vorschläge bitte prüfen. Unbekannte Artikel werden nicht als Wareneinsatz gezählt.';section.append(note);
+ const items=Array.isArray(doc.purchase_items)&&doc.purchase_items.length?doc.purchase_items:doc.sales_items||[];
+ for(const item of items){
+  const line=document.createElement('div');line.className='gp-item-line';line.style.cssText='display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:8px 0;padding:8px;border:1px solid #ddd;border-radius:8px';
+  const name=document.createElement('input');name.className='gp-item-name';name.value=item.name||'';name.placeholder='Artikel';
+  const qty=document.createElement('input');qty.className='gp-item-qty';qty.type='number';qty.min='0';qty.step='any';qty.placeholder='Menge';qty.value=item.quantity??'';
+  const net=document.createElement('input');net.className='gp-item-net';net.type='number';net.min='0';net.step='0.01';net.placeholder='Netto €';net.value=item.net??'';
+  const cat=document.createElement('select');cat.className='gp-item-category';
+  for(const [key,label] of Object.entries(gpCostNames)){const option=document.createElement('option');option.value=key;option.textContent=label;cat.append(option);}
+  cat.value=gpCostNames[item.category]?item.category:gpSuggestCost(item.name);
+  for(const [label,control] of [['Artikel',name],['Menge',qty],['Netto €',net],['Kostenstelle',cat]]){const wrap=document.createElement('label');wrap.textContent=label;wrap.append(control);line.append(wrap);}
+  section.append(line);
+ }
+ if(!items.length){const p=document.createElement('p');p.textContent='Keine Artikel erkannt – Rechnung wird ohne geschätzte Artikelbeträge gespeichert.';section.append(p);}
+ host.append(section);
+}
+function gpCollectInvoiceItems(host){
+ const out=[];
+ for(const line of host.querySelectorAll('.gp-item-line')){
+  const name=line.querySelector('.gp-item-name').value.trim();if(!name)continue;
+  const qty=line.querySelector('.gp-item-qty').value,net=line.querySelector('.gp-item-net').value;
+  const quantity=qty===''?null:Number(qty),amount=net===''?null:Number(net);
+  if((quantity!==null&&(!Number.isFinite(quantity)||quantity<0))||(amount!==null&&(!Number.isFinite(amount)||amount<0)))throw Error('Ungültige Artikelmenge oder Nettobetrag');
+  out.push({name,quantity,net:amount,category:line.querySelector('.gp-item-category').value});
+ }
+ return out;
+}
+
 function renderResults(kind){
   const id=kindId(kind);
   const target=$(id+'Results');
@@ -1988,6 +2029,8 @@ function renderResults(kind){
       categoryEditor(extra,doc);
     }
 
+    if(kind==='invoice')gpInvoiceItemEditor(extra,doc);
+
     const raw=document.createElement('details');
     const rawSummary=document.createElement('summary');
     rawSummary.textContent=
@@ -2130,6 +2173,12 @@ async function saveResult(
       if(data?.length){
         throw Error('Rechnung bereits vorhanden.');
       }
+    }
+
+    if(kind==='invoice'){
+      reviewed.purchase_items=gpCollectInvoiceItems(box);
+      reviewed.cost_allocation_status=reviewed.purchase_items.some(x=>x.net===null||x.category==='unknown')?'partial':'reviewed';
+      reviewed.supplier_account=String(reviewed.supplier||'').trim();
     }
 
     // Originale nur dann eindeutig zuordnen, wenn der Scan genau einen Beleg ergibt.
