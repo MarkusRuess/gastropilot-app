@@ -1915,6 +1915,21 @@ function renderResults(kind){
     }
 
     body.append(grid);
+    if(kind==='invoice'){
+      const field=grid.querySelector('[data-key="supplier"]');
+      const warning=document.createElement('p');
+      warning.className='status';
+      warning.style.cssText='border:2px solid #b91c1c;padding:10px;font-weight:bold';
+      const update=()=>{
+        const v=String(field?.value||'').trim();
+        const bad=!v||/^(unbekannt|lieferant unbekannt|unknown|nicht erkannt|nicht bekannt|-)$/i.test(v);
+        warning.hidden=!bad;
+        warning.textContent=bad?'Lieferant unbekannt: Bitte Lieferant vor dem Speichern korrigieren.':'';
+      };
+      field?.addEventListener('input',update);
+      update();
+      body.append(warning);
+    }
 
     const msg=document.createElement('div');
     msg.className='status hidden';
@@ -2122,6 +2137,14 @@ async function saveResult(
       }else{
         reviewed[key]=numeric(val,key);
       }
+    }
+
+    if(kind==='invoice'){
+      const supplier=String(reviewed.supplier||'').trim();
+      if(!supplier||/^(unbekannt|lieferant unbekannt|unknown|nicht erkannt|nicht bekannt|-)$/i.test(supplier)){
+        throw Error('Lieferant unbekannt. Bitte Lieferant auf der Rechnung prüfen und eintragen.');
+      }
+      reviewed.supplier=supplier;
     }
 
     if(reviewed.gross_total===null){
