@@ -3424,7 +3424,8 @@ async function gp2RefreshPreviousMonth(month){
  const label='01.–'+String(n).padStart(2,'0')+'. · '+month+' / '+previous;
  if(!a.count||!b.count){info.textContent=label+' · Vergleichsdaten fehlen';return;}
  info.textContent=label+' · '+a.count+' / '+b.count+' erfasste Tage · '+euro(a.total)+' / '+euro(b.total);
- if(a.count!==b.count){value.textContent='Unvollständig';return;}
+ const missing=[];for(let day=1;day<=n;day++){const suffix='-'+String(day).padStart(2,'0');if(current.has(month+suffix)!==prior.has(previous+suffix))missing.push(day);}
+ if(a.count!==b.count||missing.length){value.textContent='Unvollständig';info.textContent+=' · Unterschiedliche erfasste Kalendertage';return;}
  if(b.total<=0){value.textContent='–';return;}
  const pct=(a.total/b.total-1)*100;
  value.textContent=(pct>0?'▲ +':pct<0?'▼ ':'● ')+pct.toLocaleString('de-AT',{minimumFractionDigits:1,maximumFractionDigits:1})+' %';
