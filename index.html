@@ -357,7 +357,7 @@ html body #app #page-dashboard p{color:#111!important}
  <h2>Dein Betrieb auf einen Blick <span id="gp2HeroMonth" style="display:inline-block;margin-left:10px;font-size:.72em;font-weight:600;color:#806b4b">Oktober 2026</span></h2>
  <p class="muted">Aktuelle Daten aus den vorhandenen Abrechnungen · fehlende Werte bleiben offen</p>
  <div class="gp2-tiles">
-  <div class="gp2-tile"><small>Umsatz · ausgewählter Monat</small><strong id="gp2Gross">–</strong><span class="gp2-foot" id="gp2Days">BONit / Tagesberichte</span></div>
+  <div class="gp2-tile"><small>Umsatz · ausgewählter Monat</small><strong id="gp2Gross">–</strong><span class="gp2-foot" id="gp2Days">Tagesabschlüsse werden gezählt</span><span class="gp2-foot" id="gp2LastClosing">Letzter Tagesabschluss: –</span></div>
   <div class="gp2-tile"><small>Ø Umsatz je Umsatztag</small><strong id="gp2Average">–</strong><span class="gp2-foot">Nur erfasste Tage</span></div>
   <div class="gp2-tile"><small>Bankkonten gesamt</small><strong id="gp2Bank">–</strong><span class="gp2-foot" id="gp2BankDate">Letzter bestätigter Stand</span></div>
   <div class="gp2-tile"><small>Lieferantenrechnungen</small><strong id="gp2Invoices">–</strong><span class="gp2-foot">Erfasste Rechnungen</span></div>
@@ -2939,6 +2939,8 @@ async function applyBonitDashboard(month,manualDocs){
   const receipts=aggregate(bonit,'receipt_count','receipt_count');
   const dayCount=bonitDates.size+extra.length;
   $('days').textContent=String(dayCount);
+  const lastClosing=[...bonitDates,...extra.map(d=>d.document_date)].sort().at(-1);
+  if($('gp2LastClosing'))$('gp2LastClosing').textContent='Letzter Tagesabschluss: '+(lastClosing?dateLabel(lastClosing):'–');
   $('gross').textContent=gross===null?'–':euro(gross);
   $('net').textContent=net===null?'–':euro(net);
   $('vat').textContent=gross!==null&&net!==null?euro(gross-net):'–';
@@ -3118,7 +3120,7 @@ arrangeDashboard();
  const copy=(from,to)=>{const source=$(from),target=$(to);if(!source||!target)return;target.textContent=source.textContent||'–';};
  const sync=()=>{
   copy('gross','gp2Gross');copy('average','gp2Average');copy('invoices','gp2Invoices');
-  const d=$('days')?.textContent||'–';$('gp2Days').textContent=d+' erfasste Umsatztage';
+  const d=$('days')?.textContent||'–';$('gp2Days').textContent=d+' Tagesabschlüsse · Summe aller erfassten Tage';
   const first=$('top10')?.querySelector('.top-item');const name=first?.querySelector('div')?.textContent||'–';$('gp2Top').textContent=name;
  };
  const obs=new MutationObserver(sync);
