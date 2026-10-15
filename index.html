@@ -2970,7 +2970,7 @@ async function applyBonitDashboard(month,manualDocs){
   let articleError=null;
   for(let offset=0;offset<20000;offset+=1000){
     const response=await db.from('bonit_article_sales')
-      .select('article_name,quantity').eq('business_id',businessId)
+      .select('closing_date,article_name,quantity').eq('business_id',businessId)
       .gte('closing_date',start).lt('closing_date',end)
       .order('closing_date',{ascending:true}).order('article_name',{ascending:true})
       .range(offset,offset+999);
@@ -2978,23 +2978,24 @@ async function applyBonitDashboard(month,manualDocs){
     allArticles.push(...(response.data||[]));
     if(!response.data||response.data.length<1000)break;
   }
-  if(articleError){top.textContent='BONit-Artikeldaten konnten nicht geladen werden: '+articleError.message}
-  else if(!allArticles.length){top.textContent='Noch keine BONit-Artikel fuer diesen Monat vorhanden.'}
+  if(articleError){top.textContent='BONit-Artikeldaten konnten nicht geladen werden: '+articleError.message;}
   else {
-    const grouped=new Map();
-    for(const item of allArticles){
-      const name=String(item.article_name||'').trim();
-      const quantity=Number(item.quantity);
-      if(!name||!Number.isFinite(quantity)||quantity<=0)continue;
-      const key=name.toLocaleLowerCase('de-AT');
-      const prior=grouped.get(key);
+    const grouped=new Map(),articleDates=new Set(allArticles.map(x=>x.closing_date).filter(Boolean));
+    const add=(name,quantity)=>{
+      name=String(name||'').trim();quantity=Number(quantity);
+      if(!name||!Number.isFinite(quantity)||quantity<=0)return;
+      const key=name.toLocaleLowerCase('de-AT'),prior=grouped.get(key);
       grouped.set(key,{name:prior?.name||name,quantity:(prior?.quantity||0)+quantity});
+    };
+    for(const item of allArticles)add(item.article_name,item.quantity);
+    for(const doc of uniqueDays(manualDocs||[]).docs){
+      if(articleDates.has(doc.document_date))continue;
+      for(const item of doc.extracted_data?.sales_items||[])add(item.name,item.quantity);
     }
-    const ranked=[...grouped.values()].sort((a,b)=>b.quantity-a.quantity||a.name.localeCompare(b.name,'de-AT')) .slice(0,20);
-    if(!ranked.length)top.textContent='Keine gueltigen Artikelmengen vorhanden.';
+    const ranked=[...grouped.values()].sort((a,b)=>b.quantity-a.quantity||a.name.localeCompare(b.name,'de-AT')).slice(0,20);
+    if(!ranked.length)top.textContent='Noch keine Artikelmengen aus BONit oder manuellen Tagesabschlüssen vorhanden.';
     for(let i=0;i<ranked.length;i++){
-      const item=ranked[i];
-      const tile=document.createElement('div');tile.className='top-item';
+      const item=ranked[i],tile=document.createElement('div');tile.className='top-item';
       const rank=document.createElement('span');rank.className='top-rank';rank.textContent=(i+1)+'.';
       const name=document.createElement('div');name.textContent=item.name;name.style.overflowWrap='anywhere';
       const qty=document.createElement('span');qty.className='top-quantity';
