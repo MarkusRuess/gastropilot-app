@@ -318,6 +318,13 @@ html body #app #page-dashboard p{color:#111!important}
 </section>
 
 <div id="app" class="hidden">
+<section class="card" id="gpCashUploadQuick" style="padding:12px;margin-bottom:12px;background:#fff;color:#111;border:1px solid #dedede">
+<h2 style="font-size:18px;margin:0 0 8px;color:#111">📷 Tagesabrechnung hochladen</h2>
+<p style="font-size:13px;color:#444;margin:0 0 10px">BONit-Z-Bericht als Foto oder PDF erfassen und vor dem Speichern prüfen.</p>
+<div style="display:flex;flex-wrap:wrap;gap:8px">
+<button type="button" id="gpUploadCamera" style="flex:1;min-width:125px;background:#111;color:#fff;border-radius:10px;padding:12px">📷 Kamera</button>
+<button type="button" id="gpUploadFile" style="flex:1;min-width:125px;background:#fff;color:#111;border:1px solid #aaa;border-radius:10px;padding:12px">📄 Foto / PDF</button>
+</div></section>
 <section class="card" id="gpShoppingTopCard" style="padding:12px;margin-bottom:12px"><a href="./einkaufsplanung.html" style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;border-radius:13px;background:#fff;color:#111;border:1px solid #d8d8d8;text-decoration:none;min-height:76px"><span style="display:block;min-width:0"><strong style="display:block;font-size:17px;line-height:1.35">🛒 Wareneinkaufsplanung</strong><small style="display:block;color:#444;font-size:12px;margin-top:5px;line-height:1.4">BONit · Einkaufsgebinde · Lagerbestand · Bestellprognose</small></span><span aria-hidden="true" style="font-size:23px;flex-shrink:0">↗</span></a></section>
 
 
@@ -492,12 +499,12 @@ Alle Artikelgruppen anzeigen →
 <h2>Neue Tagesabrechnung erfassen</h2>
 <p class="muted">
 Mehrere Fotos derselben Tagesabrechnung gemeinsam auswählen.
-Maximal 12 Bilder.
+Maximal 12 Bilder oder PDF-Seiten.
 </p>
 
 <label>Fotos auswählen
 <input id="cashFiles" type="file"
-accept="image/jpeg,image/png,image/webp" multiple>
+accept="image/jpeg,image/png,image/webp,application/pdf" multiple>
 </label>
 
 <button id="cashCamera" class="secondary">Foto aufnehmen</button>
@@ -1586,6 +1593,10 @@ function renderFiles(kind){
 
   $(id+'Scan').disabled=locked||!s.files.length;
 }
+
+// Dashboard-Schnellzugriff: bestehende Kamera-/PDF-Prüfung öffnen.
+$('gpUploadCamera').onclick=()=>{switchPage('cash');$('cashCameraInput').click();};
+$('gpUploadFile').onclick=()=>{switchPage('cash');$('cashFiles').click();};
 
 for(const kind of ['cash_report','invoice']){
   const id=kindId(kind);
@@ -3463,7 +3474,7 @@ async function refreshSeptember2026(){
 function showBusinessDashboard(name){
  const friedrich=businessId==='6a5484d1-daf6-4263-897d-24cdf536aa29';
  // Friedrich uses imported BONit Z closings exclusively; keep form for other businesses.
- $('cashCapture').style.display=friedrich?'none':'';
+ $('cashCapture').style.display='';
  $('headerBusiness').textContent=name;
  document.title='GastroPilot · '+name;
  for(const id of ['revenueTrendCard','quickYearCard']){
