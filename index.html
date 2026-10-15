@@ -3465,8 +3465,8 @@ async function gp2RefreshPreviousMonth(month){
  const current=new Map(),prior=new Map();
  for(const r of currentResult.data||[]){const n=Number(r.gross_amount);if(Number.isFinite(n))current.set(r.closing_date,(current.get(r.closing_date)||0)+n);}
  for(const r of manualResult.data||[]){if(current.has(r.document_date))continue;const n=Number(r.extracted_data?.gross_total);if(Number.isFinite(n)&&n>=0)current.set(r.document_date,n);}
- const source=(priorResult.data||[]).length?priorResult.data||[]:handResult.data||[];
- for(const r of source){const date=r.closing_date||r.sales_date,n=Number(r.gross_amount);if(date&&Number.isFinite(n))prior.set(date,(prior.get(date)||0)+n);}
+ for(const r of handResult.data||[]){const n=Number(r.gross_amount);if(r.sales_date&&Number.isFinite(n))prior.set(r.sales_date,n);}
+ for(const r of priorResult.data||[]){const n=Number(r.gross_amount);if(r.closing_date&&Number.isFinite(n))prior.set(r.closing_date,n);} // BONit overrides handcash for the same date
  const days=[...current.keys()].map(d=>Number(d.slice(-2)));
  if(!days.length){info.textContent='Noch keine BONit-Tagesabschlüsse';return;}
  const n=Math.min(Math.max(...days),maxPrevDay);
@@ -3476,7 +3476,7 @@ async function gp2RefreshPreviousMonth(month){
  if(!a.count||!b.count){info.textContent=label+' · Vergleichsdaten fehlen';return;}
  info.textContent=label+' · '+a.count+' / '+b.count+' erfasste Tage · '+euro(a.total)+' / '+euro(b.total);
  const missing=[];for(let day=1;day<=n;day++){const suffix='-'+String(day).padStart(2,'0');if(current.has(month+suffix)!==prior.has(previous+suffix))missing.push(day);}
- if(a.count!==b.count||missing.length){value.textContent='Unvollständig';info.textContent+=' · Unterschiedliche erfasste Kalendertage';return;}
+ if(a.count!==b.count||missing.length){info.textContent+=' · Hinweis: unterschiedliche erfasste Kalendertage (Vergleich nicht taggleich)';}
  if(b.total<=0){value.textContent='–';return;}
  const pct=(a.total/b.total-1)*100;
  value.textContent=(pct>0?'▲ +':pct<0?'▼ ':'● ')+pct.toLocaleString('de-AT',{minimumFractionDigits:1,maximumFractionDigits:1})+' %';
