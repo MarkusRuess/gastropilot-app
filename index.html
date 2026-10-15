@@ -362,6 +362,7 @@ html body #app #page-dashboard p{color:#111!important}
   <div class="gp2-tile"><small>Bankkonten gesamt</small><strong id="gp2Bank">–</strong><span class="gp2-foot" id="gp2BankDate">Letzter bestätigter Stand</span></div>
   <div class="gp2-tile"><small>Lieferantenrechnungen</small><strong id="gp2Invoices">–</strong><span class="gp2-foot">Erfasste Rechnungen</span></div>
   <button type="button" class="gp2-tile gp2-top-trigger" id="gp2TopTrigger" aria-expanded="false" aria-controls="bonitTopCard"><small>Top-20-Artikel ↗</small><strong id="gp2Top">–</strong><span class="gp2-foot" id="gp2TopHint">Antippen: 20 Artikel als Kacheln öffnen</span></button>
+  <div class="gp2-tile" style="border:2px solid #222"><small>Oktober vs. September · gleiche Kalendertage</small><strong id="gp2PrevMonth">–</strong><span class="gp2-foot" id="gp2PrevMonthInfo">Wird anhand der erfassten Tagesabschlüsse berechnet</span></div>
   <div class="gp2-tile"><small>Umsatz vs. Vorjahr</small><strong id="gp2YoY">–</strong><span class="gp2-foot" id="gp2YoYInfo">Vergleich gleicher Zeitraum</span></div>
   <div class="gp2-tile"><small>Personal &amp; Fixkosten</small><strong>Verwaltung ↗</strong><a href="./management.html?section=personnel" class="gp2-foot">Löhne und Kosten öffnen</a></div>
   <button type="button" class="gp2-tile gp2-top-trigger" id="gp2UploadTile" style="background:#fff;color:#111;border:2px solid #111;text-align:left;cursor:pointer"><small>📷 Tagesabrechnung hochladen ↗</small><strong style="color:#111">Kamera / PDF</strong><span class="gp2-foot" style="color:#333">Jetzt Z-Bericht auswählen und prüfen</span></button>
@@ -3018,7 +3019,7 @@ async function loadAll(){
     $('analysisMonth').value=month;
     renderAnalysis(isFriedrich?[]:unique);
     // BONit last: legacy analysis must not overwrite the imported article ranking.
-    if(isFriedrich){await applyBonitDashboard(month,[]);await renderBonitAnalysis(month);}
+    if(isFriedrich){await applyBonitDashboard(month,[]);await gp2RefreshPreviousMonth(month);await renderBonitAnalysis(month);}
     if(!isFriedrich)await refreshYoY();
     else {
       const bounds=monthBounds(month);
@@ -3395,6 +3396,40 @@ function gp2SetYoY(current,previous,label){
 // Historische Monatsumsätze laut vom Betreiber übermittelter Jahresumsatzübersicht.
 // Diese Werte sind vollständige Bruttomonate, keine täglichen BONit-Z-Berichte.
 const gp2HistoricalGross=Object.freeze({'2025-10':57274.73,'2025-11':46998.00,'2025-12':67325.00});
+async function gp2RefreshPreviousMonth(month){
+ const value=$('gp2PrevMonth'),info=$('gp2PrevMonthInfo');if(!value||!info)return;
+ value.textContent='–';value.style.color='';info.textContent='Vergleich wird geladen …';
+ if(businessId!=='6a5484d1-daf6-4263-897d-24cdf536aa29'){info.textContent='Nur für Das Friedrich';return;}
+ const id=businessId;
+ const [year,m]=month.split('-').map(Number);
+ const previous=new Date(Date.UTC(year,m-2,1)).toISOString().slice(0,7);
+ const lastDay=new Date(Date.UTC(year,m,0)).getUTCDate();
+ const maxPrevDay=new Date(Date.UTC(year,m-1,0)).getUTCDate();
+ const [currentResult,priorResult,handResult]=await Promise.all([
+ db.from('bonit_daily_closings').select('closing_date,gross_amount').eq('business_id',id).gte('closing_date',month+'-01').lte('closing_date',month+'-'+String(lastDay).padStart(2,'0')),
+ db.from('bonit_daily_closings').select('closing_date,gross_amount').eq('business_id',id).gte('closing_date',previous+'-01').lt('closing_date',month+'-01'),
+ db.from('handcash_daily_sales').select('sales_date,gross_amount').eq('business_id',id).gte('sales_date',previous+'-01').lt('sales_date',month+'-01')
+ ]);
+ if(id!==businessId||month!==$('month').value)return;
+ if(currentResult.error||priorResult.error||handResult.error){info.textContent='Tagesdaten konnten nicht geladen werden';return;}
+ const current=new Map(),prior=new Map();
+ for(const r of currentResult.data||[]){const n=Number(r.gross_amount);if(Number.isFinite(n))current.set(r.closing_date,(current.get(r.closing_date)||0)+n);}
+ const source=(priorResult.data||[]).length?priorResult.data||[]:handResult.data||[];
+ for(const r of source){const date=r.closing_date||r.sales_date,n=Number(r.gross_amount);if(date&&Number.isFinite(n))prior.set(date,(prior.get(date)||0)+n);}
+ const days=[...current.keys()].map(d=>Number(d.slice(-2)));
+ if(!days.length){info.textContent='Noch keine BONit-Tagesabschlüsse';return;}
+ const n=Math.min(Math.max(...days),maxPrevDay);
+ const sum=(map,prefix)=>{let total=0,count=0;for(let day=1;day<=n;day++){const key=prefix+'-'+String(day).padStart(2,'0');if(map.has(key)){total+=map.get(key);count++;}}return {total,count};};
+ const a=sum(current,month),b=sum(prior,previous);
+ const label='01.–'+String(n).padStart(2,'0')+'. · '+month+' / '+previous;
+ if(!a.count||!b.count){info.textContent=label+' · Vergleichsdaten fehlen';return;}
+ info.textContent=label+' · '+a.count+' / '+b.count+' erfasste Tage · '+euro(a.total)+' / '+euro(b.total);
+ if(a.count!==b.count){value.textContent='Unvollständig';return;}
+ if(b.total<=0){value.textContent='–';return;}
+ const pct=(a.total/b.total-1)*100;
+ value.textContent=(pct>0?'▲ +':pct<0?'▼ ':'● ')+pct.toLocaleString('de-AT',{minimumFractionDigits:1,maximumFractionDigits:1})+' %';
+ value.style.color=pct>0?'#188038':pct<0?'#c62828':'#555';
+}
 async function gp2RefreshBonitYoY(id,month,start,end,prevStart,prevEnd){
  const info=$('gp2YoYInfo'),value=$('gp2YoY');if(!info||!value)return;
  value.textContent='–';value.style.color='';info.textContent='Vergleich wird geladen …';
