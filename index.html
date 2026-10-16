@@ -3067,7 +3067,7 @@ async function applyBonitDashboard(month,manualDocs){
       qty.textContent=new Intl.NumberFormat('de-AT',{maximumFractionDigits:2}).format(item.quantity)+' Stk.';
       name.className='top-item-name';
       const revenue=document.createElement('small');revenue.className='muted';
-      revenue.style.display='block';const monthGross=days.reduce((sum,d)=>sum+(Number(d.gross_amount)||0),0);revenue.textContent=item.known?(euro(item.revenue)+' · '+(monthGross?new Intl.NumberFormat('de-AT',{maximumFractionDigits:2}).format(item.revenue/monthGross*100)+' % vom Monatsumsatz':'–')+(item.missing?' · Teilbetrag, '+item.missing+' Position(en) ohne Umsatz':' · belegte Artikelumsätze')):'Umsatz: nicht erfasst · Anteil: –';
+      revenue.style.display='block';const monthGross=Number(gross)||0;revenue.textContent=item.known?(euro(item.revenue)+' · '+(monthGross?new Intl.NumberFormat('de-AT',{maximumFractionDigits:2}).format(item.revenue/monthGross*100)+' % vom Monatsumsatz':'–')+(item.missing?' · Teilbetrag, '+item.missing+' Position(en) ohne Umsatz':' · belegte Artikelumsätze')):'Umsatz: nicht erfasst · Anteil: –';
       const content=document.createElement('div');content.append(name,qty,revenue);
       tile.append(rank,content);top.append(tile);
     }
