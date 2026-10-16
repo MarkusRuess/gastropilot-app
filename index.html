@@ -2915,15 +2915,26 @@ async function renderBonitAnalysis(month,manualDocs=[]){
   row.append(title,value);categoryBox.append(row);
  }
  const note=document.createElement('p');note.className='muted';note.textContent='Vorläufige Artikelgruppen nach Produktnamen, aus BONit und '+manualArticleDays+' manuell erfassten Artikeltagen. Pro Datum werden vorhandene BONit-Artikeldaten bevorzugt. Keine Artikelumsatzwerte.';categoryBox.append(note);
- const ranked=[...grouped.values()].sort((a,b)=>b.quantity-a.quantity).slice(0,20);
- if(!ranked.length)items.textContent='Keine BONit-Artikelmengen für diesen Monat importiert.';
- ranked.forEach((a,i)=>{
-  const tile=document.createElement('div');tile.className='article-tile';
-  const rank=document.createElement('span');rank.className='article-tile-rank';rank.textContent='#'+(i+1);
-  const name=document.createElement('strong');name.className='article-tile-name';name.textContent=a.name;
-  const qty=document.createElement('span');qty.className='article-tile-detail';qty.textContent=new Intl.NumberFormat('de-AT').format(a.quantity)+' Stück';
-  tile.append(rank,name,qty);items.append(tile);
- });
+ // Beide Top-20-Ansichten verwenden dieselbe vollständig paginierte BONit-Auswertung.
+ // BONit enthält hier bislang nur Artikelmengen, keine belegten Artikelumsätze.
+ const source=$('top10');
+ const sourceTiles=source?[...source.querySelectorAll('.top-item')]:[];
+ if(!sourceTiles.length){
+   items.textContent='Noch keine vollständige BONit-Artikelliste verfügbar.';
+ }else{
+   for(const original of sourceTiles){
+     const tile=document.createElement('div');tile.className='article-tile';
+     const rank=document.createElement('span');rank.className='article-tile-rank';
+     rank.textContent='#'+original.querySelector('.top-rank')?.textContent?.replace('.','');
+     const name=document.createElement('strong');name.className='article-tile-name';
+     name.textContent=original.querySelector('.top-item-name')?.textContent||original.children[1]?.textContent||'';
+     const detail=document.createElement('span');detail.className='article-tile-detail';
+     detail.textContent=original.querySelector('.top-quantity')?.textContent||'';
+     const revenue=document.createElement('span');revenue.className='muted';
+     revenue.textContent='Artikelumsatz: – · Umsatzanteil: – (BONit-Beträge fehlen)';
+     tile.append(rank,name,detail,revenue);items.append(tile);
+   }
+ }
 }
 
 /* BONit ist fuer importierte Z-Abschlusstage die fuehrende Quelle.
@@ -3054,7 +3065,11 @@ async function applyBonitDashboard(month,manualDocs){
       const name=document.createElement('div');name.textContent=item.name;name.style.overflowWrap='anywhere';
       const qty=document.createElement('span');qty.className='top-quantity';
       qty.textContent=new Intl.NumberFormat('de-AT',{maximumFractionDigits:2}).format(item.quantity)+' Stk.';
-      tile.append(rank,name,qty);top.append(tile);
+      name.className='top-item-name';
+      const revenue=document.createElement('small');revenue.className='muted';
+      revenue.style.display='block';revenue.textContent='Artikelumsatz: – · Umsatzanteil: – (BONit-Beträge fehlen)';
+      const content=document.createElement('div');content.append(name,qty,revenue);
+      tile.append(rank,content);top.append(tile);
     }
   }
   $('dashboardNote').textContent='BONit: '+bonitDates.size+' Tage · manuell ergänzte Tage: '+extra.length+' · je Kalendertag nur eine Umsatzquelle.';
