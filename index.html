@@ -2682,10 +2682,15 @@ function updateDashboard(unique,invoices,duplicates){
 
   const payment=paymentMonthStatus(unique);
 
-  if($('gp2ReceiptAvg'))$('gp2ReceiptAvg').textContent=gross!==null&&receipts>0?euro(gross/receipts):'–';
-  if($('gp2ReceiptCount'))$('gp2ReceiptCount').textContent=receipts===null?'Rechnungsanzahl unvollständig':new Intl.NumberFormat('de-AT').format(receipts)+' Rechnungen';
-  if($('gp2Payments'))$('gp2Payments').textContent=cash!==null&&card!==null?euro(cash)+' / '+euro(card):'Daten unvollständig';
-  if($('gp2Net'))$('gp2Net').textContent=net===null?'–':euro(net);
+  const receiptTotal=unique.length&&bons.complete?bons.value:null;
+  const grossTotal=unique.length&&gross.complete?gross.value:null;
+  const cashAmount=unique.length&&bar.complete?bar.value:null;
+  const cardAmount=unique.length&&card.complete?card.value:null;
+  const netAmount=unique.length&&net.complete?net.value:null;
+  if($('gp2ReceiptAvg'))$('gp2ReceiptAvg').textContent=grossTotal!==null&&receiptTotal>0?euro(grossTotal/receiptTotal):'–';
+  if($('gp2ReceiptCount'))$('gp2ReceiptCount').textContent=receiptTotal===null?'Rechnungsanzahl unvollständig':new Intl.NumberFormat('de-AT').format(receiptTotal)+' Rechnungen';
+  if($('gp2Payments'))$('gp2Payments').textContent=cashAmount!==null&&cardAmount!==null?euro(cashAmount)+' / '+euro(cardAmount):'Daten unvollständig';
+  if($('gp2Net'))$('gp2Net').textContent=netAmount===null?'–':euro(netAmount);
   $('paymentCheck').textContent=payment.label;
   $('paymentCheck').className=paymentClass(payment.status);
 
