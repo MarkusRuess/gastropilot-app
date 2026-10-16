@@ -268,6 +268,11 @@ dialog::backdrop{background:#0f1e2d99}
 #gp2Bottom20{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
 #gp2Bottom20 .top-item{display:flex;justify-content:space-between;gap:8px;padding:10px;border:1px solid #ddd;border-radius:10px;font-size:13px}
 @media(max-width:680px){#gp2Bottom20{grid-template-columns:1fr}}
+/* Mobile: Artikelgruppen immer lesbar, ohne überlagerte Beträge. */
+#gp2ArticleGroups .top-item{display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;gap:14px!important;align-items:center!important;width:100%!important;min-width:0!important}
+#gp2ArticleGroups .top-item>div{min-width:0!important;overflow-wrap:anywhere!important;white-space:normal!important}
+#gp2ArticleGroups .top-item>strong{position:static!important;float:none!important;min-width:max-content!important;white-space:nowrap!important;text-align:right!important}
+@media(max-width:390px){#gp2ArticleGroups .top-item{gap:8px!important}#gp2ArticleGroups .top-item>strong{font-size:15px!important}}
 </style>
 <style id="dashboard-white-final">
 /* Dashboard + selected tile: always white, black typography, no state colors. */
@@ -3007,6 +3012,8 @@ async function applyBonitDashboard(month,manualDocs){
   $('otherTotal').textContent='–';
   $('receiptCount').textContent=receipts===null?'–':new Intl.NumberFormat('de-AT').format(receipts);
   $('averageReceipt').textContent=gross!==null&&receipts>0?euro(gross/receipts):'–';
+  if($('gp2ReceiptAvg'))$('gp2ReceiptAvg').textContent=gross!==null&&receipts>0?euro(gross/receipts):'–';
+  if($('gp2ReceiptCount'))$('gp2ReceiptCount').textContent=receipts===null?'Rechnungsanzahl unvollständig':new Intl.NumberFormat('de-AT').format(receipts)+' Rechnungen';
   $('receiptsPerDay').textContent=receipts!==null&&dayCount?new Intl.NumberFormat('de-AT',{maximumFractionDigits:1}).format(receipts/dayCount):'–';
   $('paymentCheck').textContent=gross!==null&&cash!==null&&card!==null&&Math.abs(gross-cash-card)<0.02?'Abgeglichen':'Pruefung offen';
   $('paymentCheck').className='';
@@ -3585,6 +3592,7 @@ async function gp2RefreshBonitYoY(id,month,start,end,prevStart,prevEnd){
  if(id!==businessId||month!==$('month').value)return;
  if(bonit.error||handCurrent.error||old.error){info.textContent='Vergleichsdaten nicht verfügbar';return}
  const bonitRows=bonit.data||[],handRows=handCurrent.data||[],history=old.data||[];
+ // BONit-Vorjahresvergleich ist nur für die vorhandenen BONit-Tage, nicht den vollen Monatsstand.
  const current=bonitRows.length?bonitRows:handRows;
  const n=new Set(current.map(r=>r.closing_date||r.sales_date)).size;
  if(!n||history.length<n){info.textContent='Vorjahres-Tageswerte fehlen';return}
@@ -3594,7 +3602,7 @@ async function gp2RefreshBonitYoY(id,month,start,end,prevStart,prevEnd){
  const pct=(a/b-1)*100,diff=a-b;
  value.textContent=(pct<0?'▼ ':pct>0?'▲ ':'● ')+(pct>0?'+':'')+pct.toLocaleString('de-AT',{minimumFractionDigits:2,maximumFractionDigits:2})+' %';
  value.style.color=pct<0?'#c62828':pct>0?'#188038':'#666';
- info.textContent=n+' Umsatztage vs. '+n+' Vorjahrestage · '+euro(a)+' / '+euro(b)+' · '+(diff>0?'+':'')+euro(diff);
+ info.textContent='Teilvergleich: '+n+' BONit-Tage vs. '+n+' Vorjahrestage (ohne manuelle Ergänzungen) · '+euro(a)+' / '+euro(b)+' · '+(diff>0?'+':'')+euro(diff);
 }
 async function refreshYoY(){
  const id=businessId,month=$('month').value;
