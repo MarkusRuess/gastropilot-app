@@ -358,6 +358,7 @@ html body #app #page-dashboard p{color:#111!important}
  <p class="muted">Aktuelle Daten aus den vorhandenen Abrechnungen · fehlende Werte bleiben offen</p>
  <div class="gp2-tiles">
   <div class="gp2-tile"><small>Umsatz · ausgewählter Monat</small><strong id="gp2Gross">–</strong><span class="gp2-foot" id="gp2Days">Tagesabschlüsse werden gezählt</span><span class="gp2-foot" id="gp2LastClosing">Letzter Tagesabschluss: –</span></div>
+  <div class="gp2-tile"><small>Umsatz netto · ausgewählter Monat</small><strong id="gp2Net">–</strong><span class="gp2-foot" id="gp2NetFoot">Nur geprüfte Nettowerte</span></div>
   <div class="gp2-tile"><small>Ø Umsatz je Umsatztag</small><strong id="gp2Average">–</strong><span class="gp2-foot">Nur erfasste Tage</span></div>
   <div class="gp2-tile"><small>Bankkonten gesamt</small><strong id="gp2Bank">–</strong><span class="gp2-foot" id="gp2BankDate">Letzter bestätigter Stand</span></div>
   <div class="gp2-tile"><small>Lieferantenrechnungen</small><strong id="gp2Invoices">–</strong><span class="gp2-foot">Erfasste Rechnungen</span></div>
@@ -2956,7 +2957,28 @@ async function applyBonitDashboard(month,manualDocs){
       ?vals.reduce((a,b)=>a+b,0):null;
   };
   const gross=aggregate(bonit,'gross_amount','gross_total');
-  const net=aggregate(bonit,'net_amount','net_total');
+  // BONit ist die Umsatzquelle; bei fehlendem Netto darf ein bereits
+  // gespeicherter Z-Bericht desselben Datums ergänzen, sofern Brutto übereinstimmt.
+  const manualNetByDate=new Map(uniqueDays(manualDocs||[]).docs.map(d=>[d.document_date,d]));
+  const validNet=(grossValue,netValue)=>{
+    const g=numeric(grossValue),n=numeric(netValue);
+    return g!==null&&n!==null&&Number.isFinite(g)&&Number.isFinite(n)&&g>=0&&n>=0&&n<=g&&
+      (g===0||n>=g/1.21);
+  };
+  const netEntries=[
+    ...bonit.map(r=>{
+      let value=r.net_amount;
+      if(!validNet(r.gross_amount,value)){
+        const doc=manualNetByDate.get(r.closing_date);
+        value=doc&&Math.abs(Number(doc.extracted_data?.gross_total)-Number(r.gross_amount))<0.03
+          ?doc.extracted_data?.net_total:null;
+      }
+      return {gross:r.gross_amount,net:value};
+    }),
+    ...extra.map(d=>({gross:d.extracted_data?.gross_total,net:d.extracted_data?.net_total}))
+  ];
+  const netComplete=netEntries.length>0&&netEntries.every(x=>validNet(x.gross,x.net));
+  const net=netComplete?netEntries.reduce((sum,x)=>sum+Number(x.net),0):null;
   const cash=aggregate(bonit,'cash_amount','cash_total');
   const card=aggregate(bonit,'card_amount','card_total');
   const receipts=aggregate(bonit,'receipt_count','receipt_count');
@@ -2966,6 +2988,8 @@ async function applyBonitDashboard(month,manualDocs){
   if($('gp2LastClosing'))$('gp2LastClosing').textContent='Letzter Tagesabschluss: '+(lastClosing?dateLabel(lastClosing):'–');
   $('gross').textContent=gross===null?'–':euro(gross);
   $('net').textContent=net===null?'–':euro(net);
+  if($('gp2Net'))$('gp2Net').textContent=net===null?'–':euro(net);
+  if($('gp2NetFoot'))$('gp2NetFoot').textContent=netComplete?'Nettowerte aus '+netEntries.length+' Tagesabrechnungen':'Nettowerte unvollständig · Prüfung erforderlich';
   $('vat').textContent=gross!==null&&net!==null?euro(gross-net):'–';
   // Verified BONit original aggregate report, Z 1827-1835, 01-10 October 2026.
   // Use only for this exact imported closing set; never extrapolate to new dates.
