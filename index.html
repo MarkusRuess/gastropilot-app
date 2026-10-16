@@ -3001,6 +3001,26 @@ async function applyBonitDashboard(month,manualDocs){
   const cash=aggregate(bonit,'cash_amount','cash_total');
   const card=aggregate(bonit,'card_amount','card_total');
   const receipts=aggregate(bonit,'receipt_count','receipt_count');
+  // BONit-Originaldaten bleiben sichtbar, auch wenn manuelle Tage noch Felder vermissen lassen.
+  // Nettoangaben aus manuellen Scans nur verwenden, wenn sie plausibel sind.
+  const validNet=(grossValue,netValue)=>{
+    const g=numeric(grossValue),n=numeric(netValue);
+    return g!==null&&n!==null&&Number.isFinite(g)&&Number.isFinite(n)&&g>=0&&n>=0&&n<=g&&
+      (g===0||n<g-0.01);
+  };
+  const paymentRows=[
+    ...bonit.map(x=>({gross:numeric(x.gross_amount),cash:numeric(x.cash_amount),card:numeric(x.card_amount)})),
+    ...extra.map(x=>({gross:manualValue(x,'gross_total'),cash:manualValue(x,'cash_total'),card:manualValue(x,'card_total')}))
+  ].filter(x=>x.cash!==null&&x.card!==null&&x.gross!==null&&
+    Number.isFinite(x.cash)&&Number.isFinite(x.card)&&Number.isFinite(x.gross)&&
+    Math.abs(x.cash+x.card-x.gross)<0.03);
+  const paymentCash=paymentRows.reduce((a,x)=>a+x.cash,0);
+  const paymentCard=paymentRows.reduce((a,x)=>a+x.card,0);
+  const netRows=[
+    ...bonit.map(x=>({gross:x.gross_amount,net:x.net_amount})),
+    ...extra.map(x=>({gross:x.extracted_data?.gross_total,net:x.extracted_data?.net_total}))
+  ].filter(x=>validNet(x.gross,x.net));
+  const verifiedNet=netRows.reduce((a,x)=>a+Number(x.net),0);
   const dayCount=bonitDates.size+extra.length;
   $('days').textContent=String(dayCount);
   const lastClosing=[...bonitDates,...extra.map(d=>d.document_date)].sort().at(-1);
@@ -3019,6 +3039,21 @@ async function applyBonitDashboard(month,manualDocs){
     $('vat').textContent=euro(2613.42);
   }
 
+  // Diese BONit-Kacheln überschreiben die zuvor aus manuellen Dokumenten erzeugten Leerwerte.
+  if($('gp2Payments')){
+    $('gp2Payments').textContent=paymentRows.length?euro(paymentCash)+' / '+euro(paymentCard):'–';
+    const foot=$('gp2Payments').nextElementSibling;
+    if(foot)foot.textContent=paymentRows.length?
+      (paymentRows.length===dayCount?'Bar / Unbar · '+dayCount+' Tage':'Teilauswertung: '+paymentRows.length+' von '+dayCount+' Tagen · Bar / Unbar'):
+      'Keine vollständig abgestimmten Bar-/Kartendaten';
+  }
+  if($('gp2Net')){
+    $('gp2Net').textContent=netRows.length?euro(verifiedNet):'–';
+    const foot=$('gp2Net').nextElementSibling;
+    if(foot)foot.textContent=netRows.length?
+      (netRows.length===dayCount?'Netto aus '+dayCount+' Tagen':'Teilauswertung: '+netRows.length+' von '+dayCount+' Tagen · nur plausible Nettowerte'):
+      'Nettowerte noch nicht vollständig geprüft';
+  }
   $('average').textContent=gross!==null&&dayCount?euro(gross/dayCount):'–';
   $('cashTotal').textContent=cash===null?'–':euro(cash);
   $('cardTotal').textContent=card===null?'–':euro(card);
