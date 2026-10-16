@@ -2839,7 +2839,7 @@ async function renderBonitAnalysis(month,manualDocs=[]){
  const {start,end}=monthBounds(month);
  const [closings,articles]=await Promise.all([
   db.from('bonit_daily_closings').select('closing_date,gross_amount').eq('business_id',businessId).gte('closing_date',start).lt('closing_date',end).order('closing_date',{ascending:true}),
-  db.from('bonit_article_sales').select('closing_date,article_name,quantity').eq('business_id',businessId).gte('closing_date',start).lt('closing_date',end).order('closing_date',{ascending:true}).limit(10000)
+  db.from('bonit_article_sales').select('closing_date,article_name,quantity,gross_amount').eq('business_id',businessId).gte('closing_date',start).lt('closing_date',end).order('closing_date',{ascending:true}).limit(10000)
  ]);
  if(closings.error||articles.error){
   $('dailyTrend').textContent='BONit-Auswertung konnte nicht geladen werden: '+(closings.error||articles.error).message;
@@ -2931,7 +2931,7 @@ async function renderBonitAnalysis(month,manualDocs=[]){
      const detail=document.createElement('span');detail.className='article-tile-detail';
      detail.textContent=original.querySelector('.top-quantity')?.textContent||'';
      const revenue=document.createElement('span');revenue.className='muted';
-     revenue.textContent='Artikelumsatz: – · Umsatzanteil: – (BONit-Beträge fehlen)';
+     revenue.textContent=original.querySelector('small.muted')?.textContent||'Artikelumsatz nicht erfasst';
      tile.append(rank,name,detail,revenue);items.append(tile);
    }
  }
@@ -3042,19 +3042,19 @@ async function applyBonitDashboard(month,manualDocs){
   if(articleError){top.textContent='BONit-Artikeldaten konnten nicht geladen werden: '+articleError.message;if(status)status.textContent='Artikelimport fehlgeschlagen';}
   else {
     const grouped=new Map(),articleDates=new Set(allArticles.map(x=>x.closing_date).filter(Boolean));
-    const add=(name,quantity)=>{
+    const add=(name,quantity,amount=null)=>{
       name=String(name||'').trim();quantity=Number(quantity);
       if(!name||!Number.isFinite(quantity)||quantity<=0)return;
       const key=name.toLocaleLowerCase('de-AT'),prior=grouped.get(key);
-      grouped.set(key,{name:prior?.name||name,quantity:(prior?.quantity||0)+quantity});
+      grouped.set(key,{name:prior?.name||name,quantity:(prior?.quantity||0)+quantity,revenue:(prior?.revenue||0)+(amount===null?0:Number(amount)),known:(prior?.known||0)+(amount===null?0:1),missing:(prior?.missing||0)+(amount===null?1:0)});
     };
-    for(const item of allArticles)add(item.article_name,item.quantity);
+    for(const item of allArticles)add(item.article_name,item.quantity,item.gross_amount);
     let manualAdded=0;const articleDays=new Set(articleDates);
     for(const doc of uniqueDays(manualDocs||[]).docs){
       if(articleDates.has(doc.document_date))continue;
       const entries=doc.extracted_data?.sales_items||[];
       if(entries.length){manualAdded++;articleDays.add(doc.document_date);}
-      for(const item of entries)add(item.name,item.quantity);
+      for(const item of entries)add(item.name,item.quantity,item.gross_amount??item.total_amount??null);
     }
     if(status){const latest=[...articleDays].sort().at(-1);status.textContent=latest?'Artikeldaten bis '+dateLabel(latest)+' · BONit '+articleDates.size+' Tage · manuell ergänzt '+manualAdded+' Tage':'Noch keine Artikeldaten für diesen Monat';}
     const ranked=[...grouped.values()].sort((a,b)=>b.quantity-a.quantity||a.name.localeCompare(b.name,'de-AT')).slice(0,20);
@@ -3067,7 +3067,7 @@ async function applyBonitDashboard(month,manualDocs){
       qty.textContent=new Intl.NumberFormat('de-AT',{maximumFractionDigits:2}).format(item.quantity)+' Stk.';
       name.className='top-item-name';
       const revenue=document.createElement('small');revenue.className='muted';
-      revenue.style.display='block';revenue.textContent='Artikelumsatz: – · Umsatzanteil: – (BONit-Beträge fehlen)';
+      revenue.style.display='block';const monthGross=days.reduce((sum,d)=>sum+(Number(d.gross_amount)||0),0);revenue.textContent=item.known?(euro(item.revenue)+' · '+(monthGross?new Intl.NumberFormat('de-AT',{maximumFractionDigits:2}).format(item.revenue/monthGross*100)+' % vom Monatsumsatz':'–')+(item.missing?' · Teilbetrag, '+item.missing+' Position(en) ohne Umsatz':' · belegte Artikelumsätze')):'Umsatz: nicht erfasst · Anteil: –';
       const content=document.createElement('div');content.append(name,qty,revenue);
       tile.append(rank,content);top.append(tile);
     }
