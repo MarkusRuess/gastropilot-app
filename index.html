@@ -3639,25 +3639,48 @@ async function gp2RefreshPreviousMonth(month){
 async function gp2RefreshBonitYoY(id,month,start,end,prevStart,prevEnd){
  const info=$('gp2YoYInfo'),value=$('gp2YoY');if(!info||!value)return;
  value.textContent='–';value.style.color='';info.textContent='Vergleich wird geladen …';
- const [bonit,handCurrent,old]=await Promise.all([
- db.from('bonit_daily_closings').select('closing_date,gross_amount').eq('business_id',id).gte('closing_date',start).lt('closing_date',end).order('closing_date'),
- db.from('handcash_daily_sales').select('sales_date,gross_amount,business_day').eq('business_id',id).gte('sales_date',start).lt('sales_date',end).order('business_day'),
- db.from('handcash_daily_sales').select('sales_date,gross_amount,business_day').eq('business_id',id).gte('sales_date',prevStart.slice(0,7)+'-01').lt('sales_date',gpShiftYear(monthBounds(month).end,-1)).order('business_day')
+ const oldMonthStart=prevStart.slice(0,7)+'-01';
+ const oldMonthEnd=gpShiftYear(monthBounds(month).end,-1);
+ const [bonit,handCurrent,old,manualCurrent]=await Promise.all([
+  db.from('bonit_daily_closings').select('closing_date,gross_amount').eq('business_id',id).gte('closing_date',start).lt('closing_date',end),
+  db.from('handcash_daily_sales').select('sales_date,gross_amount').eq('business_id',id).gte('sales_date',start).lt('sales_date',end),
+  db.from('handcash_daily_sales').select('sales_date,gross_amount').eq('business_id',id).gte('sales_date',oldMonthStart).lt('sales_date',oldMonthEnd),
+  db.from('documents').select('document_date,extracted_data,document_type').eq('business_id',id).eq('document_type','cash_report').gte('document_date',start).lt('document_date',end)
  ]);
  if(id!==businessId||month!==$('month').value)return;
- if(bonit.error||handCurrent.error||old.error){info.textContent='Vergleichsdaten nicht verfügbar';return}
- const bonitRows=bonit.data||[],handRows=handCurrent.data||[],history=old.data||[];
- // BONit-Vorjahresvergleich ist nur für die vorhandenen BONit-Tage, nicht den vollen Monatsstand.
- const current=bonitRows.length?bonitRows:handRows;
- const n=new Set(current.map(r=>r.closing_date||r.sales_date)).size;
- if(!n||history.length<n){info.textContent='Vorjahres-Tageswerte fehlen';return}
- const sum=rows=>rows.reduce((total,row)=>total+Number(row.gross_amount||0),0);
- const a=sum(current),b=sum(history.slice(0,n));
- if(!(b>0)){info.textContent='Vorjahresumsatz fehlt';return}
+ if(bonit.error||handCurrent.error||old.error||manualCurrent.error){info.textContent='Vergleichsdaten nicht verfügbar';return}
+ const currentByDate=new Map();
+ for(const r of handCurrent.data||[]){
+  const v=Number(r.gross_amount);if(r.sales_date&&Number.isFinite(v)&&v>0)currentByDate.set(r.sales_date,v);
+ }
+ for(const r of manualCurrent.data||[]){
+  const d=r.document_date;
+  const v=Number(r.extracted_data?.gross_total??r.extracted_data?.total_gross??NaN);
+  if(d&&Number.isFinite(v)&&v>0&&!currentByDate.has(d))currentByDate.set(d,v);
+ }
+ // BONit-Abschlüsse haben immer Vorrang; identische Tage niemals doppelt zählen.
+ for(const r of bonit.data||[]){
+  const v=Number(r.gross_amount);
+  if(r.closing_date&&Number.isFinite(v)&&v>0)currentByDate.set(r.closing_date,v);
+ }
+ const n=currentByDate.size;
+ if(!n){info.textContent='Noch keine aktuellen Umsatzdaten';return}
+ const a=[...currentByDate.values()].reduce((sum,v)=>sum+v,0);
+ const historyByDate=new Map();
+ for(const r of old.data||[]){
+  const v=Number(r.gross_amount);
+  if(r.sales_date&&Number.isFinite(v)&&v>0)historyByDate.set(r.sales_date,v);
+ }
+ const history=[...historyByDate.entries()].sort((a,b)=>a[0].localeCompare(b[0]));
+ if(!history.length){info.textContent='Oktober-Vorjahresumsatz fehlt';return}
+ const exact=history.length>=n;
+ const oldTotal=history.reduce((sum,r)=>sum+r[1],0);
+ const b=exact?history.slice(0,n).reduce((sum,r)=>sum+r[1],0):oldTotal/history.length*n;
+ if(!(b>0))return;
  const pct=(a/b-1)*100,diff=a-b;
  value.textContent=(pct<0?'▼ ':pct>0?'▲ ':'● ')+(pct>0?'+':'')+pct.toLocaleString('de-AT',{minimumFractionDigits:2,maximumFractionDigits:2})+' %';
  value.style.color=pct<0?'#c62828':pct>0?'#188038':'#666';
- info.textContent='Teilvergleich: '+n+' BONit-Tage vs. '+n+' Vorjahrestage (ohne manuelle Ergänzungen) · '+euro(a)+' / '+euro(b)+' · '+(diff>0?'+':'')+euro(diff);
+ info.textContent=(exact?'Vergleich erfasster Tage: ':'Durchschnittsvergleich (Vorjahr hochgerechnet): ')+n+' aktuelle Tage vs. '+(exact?n+' Vorjahrestage':history.length+' Vorjahres-Abrechnungstage · Ø '+euro(oldTotal/history.length)+' × '+n)+' · '+euro(a)+' / '+euro(b)+' · '+(diff>0?'+':'')+euro(diff);
 }
 async function refreshYoY(){
  const id=businessId,month=$('month').value;
