@@ -273,6 +273,17 @@ dialog::backdrop{background:#0f1e2d99}
 #gp2ArticleGroups .top-item>div{min-width:0!important;overflow-wrap:anywhere!important;white-space:normal!important}
 #gp2ArticleGroups .top-item>strong{position:static!important;float:none!important;min-width:max-content!important;white-space:nowrap!important;text-align:right!important}
 @media(max-width:390px){#gp2ArticleGroups .top-item{gap:8px!important}#gp2ArticleGroups .top-item>strong{font-size:15px!important}}
+
+/* BONit Top 20: kompakte Karten, Kennzahlen nebeneinander */
+#bonitTopCard #top10.gp-top-grid{display:block}
+#bonitTopCard .gp-top-compact{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+#bonitTopCard .gp-top-compact .gp-top-tile{padding:9px 11px;border-radius:10px}
+#bonitTopCard .gp-top-compact .gp-top-head{gap:7px;align-items:baseline}
+#bonitTopCard .gp-top-compact .top-link{font-size:13px;line-height:1.3;text-align:left}
+#bonitTopCard .gp-top-stats{display:flex;gap:5px 12px;align-items:baseline;flex-wrap:wrap;margin-top:5px;font-size:11px;color:#555;font-variant-numeric:tabular-nums}
+#bonitTopCard .gp-top-stats strong{font-size:12px;color:#111;white-space:nowrap}
+#bonitTopCard .gp-top-stats span{white-space:nowrap}
+@media(max-width:680px){#bonitTopCard .gp-top-compact{grid-template-columns:1fr}}
 </style>
 <style id="dashboard-white-final">
 /* Dashboard + selected tile: always white, black typography, no state colors. */
@@ -1012,27 +1023,27 @@ function renderTop10(docs){
   const box=$('top10');box.replaceChildren();
   const all=aggregateItems(docs),items=all.slice(0,20);
   if(!items.length){box.textContent='Noch keine Artikelmengen gespeichert.';return}
-  const totalQty=all.reduce((sum,x)=>sum+x.quantity,0);
   const fmt=n=>new Intl.NumberFormat('de-AT',{style:'currency',currency:'EUR'}).format(n);
+  const grossValues=docs.map(d=>d.extracted_data?.gross_total??d.gross_total);
+  const completeGross=grossValues.length>0&&grossValues.every(v=>v!==null&&v!==undefined&&v!==''&&Number.isFinite(Number(v)));
+  const monthGross=completeGross?grossValues.reduce((sum,v)=>sum+Number(v),0):null;
   const intro=document.createElement('p');intro.className='muted';
-  intro.textContent='Rangliste nach verkaufter Menge · '+totalQty.toLocaleString('de-AT')+' erfasste Artikel-Einheiten. Umsatz, Wareneinsatz und Deckungsbeitrag nur bei vollständigen Quelldaten.';
+  intro.textContent='Automatisch aus BONit importierte Artikelmengen. Umsatz und Umsatzanteil nur bei vollständigen Quelldaten.';
   box.append(intro);
-  const grid=document.createElement('div');grid.className='gp-top-grid';
+  const grid=document.createElement('div');grid.className='gp-top-grid gp-top-compact';
   items.forEach((item,index)=>{
     const row=document.createElement('div');row.className='gp-top-tile';
     const header=document.createElement('div');header.className='gp-top-head';
     const rank=document.createElement('strong');rank.textContent=(index+1)+'.';
     const button=document.createElement('button');button.className='top-link';button.textContent=item.name;button.title='Tagesdetails ansehen';button.onclick=()=>openArticleDialog(itemKey(item.name));
     header.append(rank,button);row.append(header);
-    const qty=document.createElement('strong');qty.className='gp-top-qty';qty.textContent=item.quantity.toLocaleString('de-AT')+' Stück';row.append(qty);
-    const bar=document.createElement('div');bar.className='gp-top-track';const fill=document.createElement('div');fill.style.width=(item.quantity/items[0].quantity*100)+'%';bar.append(fill);row.append(bar);
-    const details=document.createElement('small');details.className='muted';
-    details.textContent='Anteil an erfassten Stückzahlen: '+(100*item.quantity/totalQty).toLocaleString('de-AT',{maximumFractionDigits:1})+' %';
-    row.append(details);
-    const financial=document.createElement('div');financial.className='gp-top-financial';
-    financial.textContent=item.revenueComplete?'Umsatz: '+fmt(item.revenue)+' · Wareneinsatz / DB: noch nicht hinterlegt':'Umsatz / Deckungsbeitrag: Quelldaten fehlen';
-    row.append(financial);
-    const suspicious=monthlyCash.some(doc=>(doc.extracted_data?.sales_items||[]).some(x=>itemKey(x.name)===itemKey(item.name)&&itemWarning(x)));
+    const stats=document.createElement('div');stats.className='gp-top-stats';
+    const qty=document.createElement('strong');qty.textContent=item.quantity.toLocaleString('de-AT')+' Stk.';
+    const revenue=document.createElement('span');revenue.textContent='Umsatz: '+(item.revenueComplete?fmt(item.revenue):'–');
+    const share=document.createElement('span');
+    share.textContent='Anteil: '+(item.revenueComplete&&monthGross!==null&&monthGross>0?(100*item.revenue/monthGross).toLocaleString('de-AT',{minimumFractionDigits:2,maximumFractionDigits:2})+' %':'–');
+    stats.append(qty,revenue,share);row.append(stats);
+    const suspicious=docs.some(doc=>(doc.extracted_data?.sales_items||[]).some(x=>itemKey(x.name)===itemKey(item.name)&&itemWarning(x)));
     if(suspicious){const warning=document.createElement('small');warning.className='warning-pill';warning.textContent='Menge prüfen';row.append(warning)}
     grid.append(row);
   });
