@@ -2957,7 +2957,7 @@ async function applyBonitDashboard(month,manualDocs){
     .select('closing_date,z_number,gross_amount,net_amount,cash_amount,card_amount,receipt_count')
     .eq('business_id',businessId).gte('closing_date',start).lt('closing_date',end)
     .order('closing_date',{ascending:true});
-  if(error){$('dashboardNote').textContent+=' BONit-Abfrage fehlgeschlagen: '+error.message;return}
+  if(error){$('dashboardNote').textContent='BONit-Abfrage fehlgeschlagen: '+error.message;$('gp2Days').textContent='BONit-Abfrage fehlgeschlagen: '+error.message;return}
   if(!bonit?.length&&!manualDocs?.length){$('days').textContent='0';$('gross').textContent='–';$('dashboardNote').textContent='Noch keine Tagesabschlüsse für diesen Monat vorhanden.';return;}
   // Remove legacy manual-only dashboard blocks for Friedrich.
   for(const id of ['paymentDailySummary','openPaymentCheck','categoryTotals','showAllCategories']){
@@ -3132,9 +3132,6 @@ async function loadAll(){
     // BONit-Monatszahlen dürfen nicht verschwinden, wenn das Belegarchiv
     // oder eine Lieferantenabfrage vorübergehend nicht erreichbar ist.
     const isFriedrich=businessId==='6a5484d1-daf6-4263-897d-24cdf536aa29';
-    if(isFriedrich){
-      await applyBonitDashboard(month,[]);
-    }
     const [cashResult,invoicesResult]=await Promise.allSettled([
       allDocs('cash_report',start,end),
       allDocs('invoice',start,end)
@@ -3151,14 +3148,19 @@ async function loadAll(){
     const {docs:unique,duplicates}=uniqueDays(cash);
 
     if(isFriedrich){
-      updateDashboard([],invoices,0);
+      // BONit hat Vorrang: keine leeren manuellen Kennzahlen darüber schreiben.
+      $('invoices').textContent=String(invoices.length);
+      $('expenses').textContent=invoices.length&&sumField(invoices,'net_total').complete?euro(sumField(invoices,'net_total').value):'–';
     }else{
       updateDashboard(unique,invoices,duplicates);
     }
     $('analysisMonth').value=month;
     renderAnalysis(isFriedrich?[]:unique);
     // BONit last: legacy analysis must not overwrite the imported article ranking.
-    if(isFriedrich){await applyBonitDashboard(month,unique);await Promise.allSettled([gp2RefreshPreviousMonth(month),renderBonitAnalysis(month,unique)]);}
+    if(isFriedrich){
+      await applyBonitDashboard(month,unique);
+      await Promise.allSettled([gp2RefreshPreviousMonth(month),renderBonitAnalysis(month,unique)]);
+    }
     if(!isFriedrich)await refreshYoY();
     else {
       const bounds=monthBounds(month);
@@ -3181,8 +3183,8 @@ async function loadAll(){
     await refreshBankOverview();
 
   }catch(e){
-    $('dashboardNote').textContent=
-      'Fehler beim Laden: '+e.message;
+    $('dashboardNote').textContent='Fehler beim Laden: '+e.message;
+    if($('gp2Days'))$('gp2Days').textContent='Ladefehler: '+e.message;
   }
 }
 
