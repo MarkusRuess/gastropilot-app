@@ -3069,7 +3069,9 @@ async function applyBonitDashboard(month,manualDocs){
     const groupMap=new Map(),covered=new Set();
     const canonical=['Alkoholfreie Getränke','Bier','Wein','Spirituosen','Kaffee Tee','Judith und die Torten','Brötchen','Schaumweine','Baguette','Speisen'];
     const addGroup=(name,value)=>{
-      name=String(name||'').trim();value=Number(value);
+      name=String(name||'').trim().replace(/^\d+\s+/,'').replace(/\s*\(\d+[,.]\d+%\)$/,'');
+      if(name==='Baquette')name='Baguette';
+      value=Number(value);
       if(!name||!Number.isFinite(value))return;
       const match=canonical.find(x=>x.toLocaleLowerCase('de-AT')===name.toLocaleLowerCase('de-AT'))||name;
       groupMap.set(match,(groupMap.get(match)||0)+value);
