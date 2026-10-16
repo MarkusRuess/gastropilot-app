@@ -3031,7 +3031,7 @@ async function applyBonitDashboard(month,manualDocs){
   const status=$('gp2TopDataStatus');if(status)status.textContent='Artikeldaten werden geprüft …';
   for(let offset=0;offset<20000;offset+=1000){
     const response=await db.from('bonit_article_sales')
-      .select('closing_date,article_name,quantity').eq('business_id',businessId)
+      .select('closing_date,article_name,quantity,gross_amount').eq('business_id',businessId)
       .gte('closing_date',start).lt('closing_date',end)
       .order('closing_date',{ascending:true}).order('article_name',{ascending:true})
       .range(offset,offset+999);
