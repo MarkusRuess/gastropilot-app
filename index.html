@@ -263,6 +263,11 @@ dialog::backdrop{background:#0f1e2d99}
 #bonitTopCard #top10 .top-item{border:1px solid #e4e4e4;border-radius:12px;padding:11px;min-width:0;margin:0}
 @media(max-width:680px){.gp2-tiles{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.gp2-tile{padding:12px;min-height:116px}#bonitTopCard #top10{grid-template-columns:1fr}}
 .gp2-top-trigger{width:100%;text-align:left;color:inherit;font:inherit;cursor:pointer;display:flex;flex-direction:column;align-items:flex-start}.gp2-top-trigger:hover{border-color:#888;background:#fafafa}.gp2-top-trigger:focus-visible{outline:3px solid #444;outline-offset:3px}#bonitTopCard[hidden]{display:none!important}
+#gp2Home .gp2-tiles>.gp2-tile:first-child{grid-column:1/-1;background:#f5f4f1;border:2px solid #242424}
+#gp2Home .gp2-tiles>.gp2-tile:first-child strong{font-size:clamp(28px,5vw,38px)}
+#gp2Bottom20{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+#gp2Bottom20 .top-item{display:flex;justify-content:space-between;gap:8px;padding:10px;border:1px solid #ddd;border-radius:10px;font-size:13px}
+@media(max-width:680px){#gp2Bottom20{grid-template-columns:1fr}}
 </style>
 <style id="dashboard-white-final">
 /* Dashboard + selected tile: always white, black typography, no state colors. */
@@ -357,16 +362,16 @@ html body #app #page-dashboard p{color:#111!important}
  <h2>Dein Betrieb auf einen Blick <span id="gp2HeroMonth" style="display:inline-block;margin-left:10px;font-size:.72em;font-weight:600;color:#806b4b">Oktober 2026</span></h2>
  <p class="muted">Aktuelle Daten aus den vorhandenen Abrechnungen · fehlende Werte bleiben offen</p>
  <div class="gp2-tiles">
-  <div class="gp2-tile"><small>Umsatz · ausgewählter Monat</small><strong id="gp2Gross">–</strong><span class="gp2-foot" id="gp2Days">Tagesabschlüsse werden gezählt</span><span class="gp2-foot" id="gp2LastClosing">Letzter Tagesabschluss: –</span></div>
-  <div class="gp2-tile"><small>Ø Rechnungsbon</small><strong id="gp2ReceiptAvg">–</strong><span class="gp2-foot" id="gp2ReceiptCount">Rechnungen: –</span></div>
+  <div class="gp2-tile"><small>GESAMTUMSATZ BRUTTO</small><strong id="gp2Gross">–</strong><span class="gp2-foot" id="gp2Days">Tagesabschlüsse werden gezählt</span><span class="gp2-foot" id="gp2LastClosing">Letzter Tagesabschluss: –</span></div>
+  <div class="gp2-tile"><small>Ø TAGESUMSATZ</small><strong id="gp2Average">–</strong><span class="gp2-foot">Nur erfasste Tage</span></div>
+  <div class="gp2-tile"><small>Ø RECHNUNGSBON</small><strong id="gp2ReceiptAvg">–</strong><span class="gp2-foot" id="gp2ReceiptCount">Rechnungen: –</span></div>
+  <div class="gp2-tile"><small>VORJAHRESVERGLEICH</small><strong id="gp2YoY">–</strong><span class="gp2-foot" id="gp2YoYInfo">Vergleich gleicher Zeitraum</span></div>
+  <button type="button" class="gp2-tile gp2-top-trigger" id="gp2TopTrigger" aria-expanded="false" aria-controls="bonitTopCard"><small>TOP 20 RENNER ↗</small><strong id="gp2Top">–</strong><span class="gp2-foot" id="gp2TopHint">Antippen: 20 Artikel als Kacheln öffnen</span><span class="gp2-foot" id="gp2TopDataStatus">Artikel-Datenstand wird geladen …</span></button>
   <div class="gp2-tile"><small>Bar / Unbar</small><strong id="gp2Payments">–</strong><span class="gp2-foot">Unbar = Bankomat- und Kreditkarte</span></div>
   <div class="gp2-tile"><small>Umsatz netto</small><strong id="gp2Net">–</strong><span class="gp2-foot">Nur bei vollständigen Nettodaten</span></div>
-  <div class="gp2-tile"><small>Ø Umsatz je Umsatztag</small><strong id="gp2Average">–</strong><span class="gp2-foot">Nur erfasste Tage</span></div>
   <div class="gp2-tile"><small>Bankkonten gesamt</small><strong id="gp2Bank">–</strong><span class="gp2-foot" id="gp2BankDate">Letzter bestätigter Stand</span></div>
   <div class="gp2-tile"><small>Lieferantenrechnungen</small><strong id="gp2Invoices">–</strong><span class="gp2-foot">Erfasste Rechnungen</span></div>
-  <button type="button" class="gp2-tile gp2-top-trigger" id="gp2TopTrigger" aria-expanded="false" aria-controls="bonitTopCard"><small>Top-20-Artikel ↗</small><strong id="gp2Top">–</strong><span class="gp2-foot" id="gp2TopHint">Antippen: 20 Artikel als Kacheln öffnen</span><span class="gp2-foot" id="gp2TopDataStatus">Artikel-Datenstand wird geladen …</span></button>
   <div class="gp2-tile" style="border:2px solid #222"><small>Oktober vs. September · gleiche Kalendertage</small><strong id="gp2PrevMonth">–</strong><span class="gp2-foot" id="gp2PrevMonthInfo">Wird anhand der erfassten Tagesabschlüsse berechnet</span></div>
-  <div class="gp2-tile"><small>Umsatz vs. Vorjahr</small><strong id="gp2YoY">–</strong><span class="gp2-foot" id="gp2YoYInfo">Vergleich gleicher Zeitraum</span></div>
   <div class="gp2-tile"><small>Personal &amp; Fixkosten</small><strong>Verwaltung ↗</strong><a href="./management.html?section=personnel" class="gp2-foot">Löhne und Kosten öffnen</a></div>
   <button type="button" class="gp2-tile gp2-top-trigger" id="gp2UploadTile" style="background:#fff;color:#111;border:2px solid #111;text-align:left;cursor:pointer"><small>📷 Tagesabrechnung hochladen ↗</small><strong style="color:#111">Kamera / PDF</strong><span class="gp2-foot" style="color:#333">Jetzt Z-Bericht auswählen und prüfen</span></button>
   <div class="gp2-tile"><small>Gesamtpersonalkosten</small><strong id="gpOctPersonnel">–</strong><span class="gp2-foot" id="gpOctPersonnelNote">Lohndaten werden geladen</span></div>
@@ -470,6 +475,9 @@ Alle Artikelgruppen anzeigen →
 <div class="row"><h3 style="margin:0">Top 20 Artikel · BONit</h3><small id="bonitTopMonth" class="muted"></small></div>
 <p class="muted">Bestseller nach Stückzahl · mit Umsatz- und Deckungsbeitragsprüfung, soweit Quelldaten vorhanden</p>
 <div id="top10"></div>
+<h3 style="margin-top:20px">20 schwächste verkaufte Artikel · Penner</h3>
+<p class="muted">Nach Stückzahl unter den tatsächlich verkauften Artikeln. Artikel mit null Verkäufen sind ohne vollständigen Artikelstamm nicht erkennbar.</p>
+<div id="gp2Bottom20" class="gp2-bottom-list"></div>
 </section>
 <section class="card" id="gpPersonnelRatioCard" style="margin-bottom:14px"><div class="row"><h2 style="font-size:18px;margin:0">Personalkostenquote</h2><small id="gpPersonnelRatioMonth" class="muted">Abrechnungsmonat</small></div><div class="grid" style="margin-top:12px"><div class="metric"><small>Personalkosten / Umsatz</small><strong id="gpPersonnelRatioPercent">–</strong><small id="gpPersonnelRatioBasis">Daten werden geladen</small></div><div class="metric"><small>Personalkosten inkl. Dienstgeberkosten</small><strong id="gpPersonnelRatioCosts">–</strong><small id="gpPersonnelRatioRevenue">Umsatzbasis: –</small></div></div><p id="gpPersonnelRatioHint" class="muted" style="margin:9px 0 0"></p></section>
 <section class="card" id="quickYearCard" style="margin-bottom:14px"><div class="row"><h2 style="margin:0;font-size:18px">Umsätze auf einen Blick</h2><a href="./bonit-dashboard.html" style="font-size:13px;color:#111;font-weight:700">Alle Jahresvergleiche ↗</a></div><div class="grid" style="margin-top:12px"><div class="metric"><small>September 2026 · vorläufig</small><strong>47.117,00 €</strong><small>Friedrich-Aufzeichnungen · nicht BONit-abgeglichen</small></div><div class="metric"><small>Oktober 2026 · 1.–10.</small><strong id="quickOctGross">18.415,70 €</strong><small id="quickOctNote">9 originale Z-Abschlüsse</small></div><div class="metric"><small>Ø Bon Oktober · 1.–10.</small><strong id="quickOctAvg">17,83 €</strong><small>1.033 Rechnungen</small></div><div class="metric"><small>2025 / 2026</small><strong id="quickYearCoverage">Vergleichen ↗</strong><small>Jahres- und Monatskacheln</small></div></div><div class="navigation" style="margin:12px 0 0;gap:8px"><a href="./bonit-dashboard.html" style="text-decoration:none;text-align:center;padding:13px 5px;border:1px solid #ddd;border-radius:10px;color:#111;font-weight:700;font-size:13px">Monatsvergleich ↗</a><a href="./bonit-dashboard.html" style="text-decoration:none;text-align:center;padding:13px 5px;border:1px solid #ddd;border-radius:10px;color:#111;font-weight:700;font-size:13px">Geschäftsjahre ↗</a></div></section>
@@ -3029,7 +3037,18 @@ async function applyBonitDashboard(month,manualDocs){
       for(const item of entries)add(item.name,item.quantity);
     }
     if(status){const latest=[...articleDays].sort().at(-1);status.textContent=latest?'Artikeldaten bis '+dateLabel(latest)+' · BONit '+articleDates.size+' Tage · manuell ergänzt '+manualAdded+' Tage':'Noch keine Artikeldaten für diesen Monat';}
-    const ranked=[...grouped.values()].sort((a,b)=>b.quantity-a.quantity||a.name.localeCompare(b.name,'de-AT')).slice(0,20);
+    const allRanked=[...grouped.values()].sort((a,b)=>b.quantity-a.quantity||a.name.localeCompare(b.name,'de-AT'));
+    const ranked=allRanked.slice(0,20);
+    const bottom=$('gp2Bottom20');if(bottom){
+      bottom.replaceChildren();
+      for(const item of [...allRanked].sort((a,b)=>a.quantity-b.quantity||a.name.localeCompare(b.name,'de-AT')).slice(0,20)){
+        const tile=document.createElement('div');tile.className='top-item';
+        const name=document.createElement('div');name.textContent=item.name;name.style.overflowWrap='anywhere';
+        const qty=document.createElement('span');qty.className='top-quantity';qty.textContent=new Intl.NumberFormat('de-AT',{maximumFractionDigits:2}).format(item.quantity)+' Stk.';
+        tile.append(name,qty);bottom.append(tile);
+      }
+      if(!allRanked.length)bottom.textContent='Noch keine Artikeldaten vorhanden.';
+    }
     if(!ranked.length)top.textContent='Noch keine Artikelmengen aus BONit oder manuellen Tagesabschlüssen vorhanden.';
     for(let i=0;i<ranked.length;i++){
       const item=ranked[i],tile=document.createElement('div');tile.className='top-item';
