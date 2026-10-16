@@ -358,6 +358,9 @@ html body #app #page-dashboard p{color:#111!important}
  <p class="muted">Aktuelle Daten aus den vorhandenen Abrechnungen · fehlende Werte bleiben offen</p>
  <div class="gp2-tiles">
   <div class="gp2-tile"><small>Umsatz · ausgewählter Monat</small><strong id="gp2Gross">–</strong><span class="gp2-foot" id="gp2Days">Tagesabschlüsse werden gezählt</span><span class="gp2-foot" id="gp2LastClosing">Letzter Tagesabschluss: –</span></div>
+  <div class="gp2-tile"><small>Ø Rechnungsbon</small><strong id="gp2ReceiptAvg">–</strong><span class="gp2-foot" id="gp2ReceiptCount">Rechnungen: –</span></div>
+  <div class="gp2-tile"><small>Bar / Unbar</small><strong id="gp2Payments">–</strong><span class="gp2-foot">Unbar = Bankomat- und Kreditkarte</span></div>
+  <div class="gp2-tile"><small>Umsatz netto</small><strong id="gp2Net">–</strong><span class="gp2-foot">Nur bei vollständigen Nettodaten</span></div>
   <div class="gp2-tile"><small>Ø Umsatz je Umsatztag</small><strong id="gp2Average">–</strong><span class="gp2-foot">Nur erfasste Tage</span></div>
   <div class="gp2-tile"><small>Bankkonten gesamt</small><strong id="gp2Bank">–</strong><span class="gp2-foot" id="gp2BankDate">Letzter bestätigter Stand</span></div>
   <div class="gp2-tile"><small>Lieferantenrechnungen</small><strong id="gp2Invoices">–</strong><span class="gp2-foot">Erfasste Rechnungen</span></div>
@@ -2668,6 +2671,10 @@ function updateDashboard(unique,invoices,duplicates){
 
   const payment=paymentMonthStatus(unique);
 
+  if($('gp2ReceiptAvg'))$('gp2ReceiptAvg').textContent=gross!==null&&receipts>0?euro(gross/receipts):'–';
+  if($('gp2ReceiptCount'))$('gp2ReceiptCount').textContent=receipts===null?'Rechnungsanzahl unvollständig':new Intl.NumberFormat('de-AT').format(receipts)+' Rechnungen';
+  if($('gp2Payments'))$('gp2Payments').textContent=cash!==null&&card!==null?euro(cash)+' / '+euro(card):'Daten unvollständig';
+  if($('gp2Net'))$('gp2Net').textContent=net===null?'–':euro(net);
   $('paymentCheck').textContent=payment.label;
   $('paymentCheck').className=paymentClass(payment.status);
 
