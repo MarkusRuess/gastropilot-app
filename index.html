@@ -798,7 +798,7 @@ function switchPage(page){
     x.classList.toggle('active',active);
     x.setAttribute('aria-current',active?'page':'false');
   });
-  // Der ausgewählte Bereich beginnt direkt unter der Kopfzeile,
+  // Beim Öffnen der Auswertungen die aktuelle Monatsrangliste neu laden.\n  // Keine zwischengespeicherten Top-20-Werte anzeigen.\n  if(page==='analysis' && businessId==='6a5484d1-daf6-4263-897d-24cdf536aa29'){\n    loadAll().catch(err=>{\n      const el=document.getElementById('analysisItems');\n      if(el)el.textContent='Top 20 konnten nicht aktualisiert werden: '+err.message;\n    });\n  }\n  // Der ausgewählte Bereich beginnt direkt unter der Kopfzeile,
   // statt erst weiter unten auf der bisherigen Scrollposition.
   requestAnimationFrame(()=>{
     const top=target.getBoundingClientRect().top+window.scrollY-12;
