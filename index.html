@@ -3124,17 +3124,27 @@ async function loadAll(){
   const {start,end}=monthBounds(month);
 
   try{
-    const [cash,invoices]=await Promise.all([
+    // BONit-Monatszahlen dürfen nicht verschwinden, wenn das Belegarchiv
+    // oder eine Lieferantenabfrage vorübergehend nicht erreichbar ist.
+    const isFriedrich=businessId==='6a5484d1-daf6-4263-897d-24cdf536aa29';
+    if(isFriedrich){
+      await applyBonitDashboard(month,[]);
+    }
+    const [cashResult,invoicesResult]=await Promise.allSettled([
       allDocs('cash_report',start,end),
       allDocs('invoice',start,end)
     ]);
+    const cash=cashResult.status==='fulfilled'?cashResult.value:[];
+    const invoices=invoicesResult.status==='fulfilled'?invoicesResult.value:[];
+    if(cashResult.status==='rejected'||invoicesResult.status==='rejected'){
+      $('dashboardNote').textContent='BONit-Umsätze geladen; das Belegarchiv ist teilweise nicht erreichbar.';
+    }
 
     monthlyCash=cash;
     monthlyInvoices=invoices;
 
     const {docs:unique,duplicates}=uniqueDays(cash);
 
-    const isFriedrich=businessId==='6a5484d1-daf6-4263-897d-24cdf536aa29';
     if(isFriedrich){
       updateDashboard([],invoices,0);
     }else{
@@ -3143,7 +3153,7 @@ async function loadAll(){
     $('analysisMonth').value=month;
     renderAnalysis(isFriedrich?[]:unique);
     // BONit last: legacy analysis must not overwrite the imported article ranking.
-    if(isFriedrich){await applyBonitDashboard(month,unique);await gp2RefreshPreviousMonth(month);await renderBonitAnalysis(month,unique);}
+    if(isFriedrich){await applyBonitDashboard(month,unique);await Promise.allSettled([gp2RefreshPreviousMonth(month),renderBonitAnalysis(month,unique)]);}
     if(!isFriedrich)await refreshYoY();
     else {
       const bounds=monthBounds(month);
