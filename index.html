@@ -478,6 +478,9 @@ Alle Artikelgruppen anzeigen →
 <h3 style="margin-top:20px">20 schwächste verkaufte Artikel · Penner</h3>
 <p class="muted">Nach Stückzahl unter den tatsächlich verkauften Artikeln. Artikel mit null Verkäufen sind ohne vollständigen Artikelstamm nicht erkennbar.</p>
 <div id="gp2Bottom20" class="gp2-bottom-list"></div>
+<h3>Artikelgruppenstatistik · BONit</h3>
+<p class="muted" id="gp2GroupCoverage">Artikelgruppen werden geladen …</p>
+<div id="gp2ArticleGroups" class="gp2-bottom-list"></div>
 </section>
 <section class="card" id="gpPersonnelRatioCard" style="margin-bottom:14px"><div class="row"><h2 style="font-size:18px;margin:0">Personalkostenquote</h2><small id="gpPersonnelRatioMonth" class="muted">Abrechnungsmonat</small></div><div class="grid" style="margin-top:12px"><div class="metric"><small>Personalkosten / Umsatz</small><strong id="gpPersonnelRatioPercent">–</strong><small id="gpPersonnelRatioBasis">Daten werden geladen</small></div><div class="metric"><small>Personalkosten inkl. Dienstgeberkosten</small><strong id="gpPersonnelRatioCosts">–</strong><small id="gpPersonnelRatioRevenue">Umsatzbasis: –</small></div></div><p id="gpPersonnelRatioHint" class="muted" style="margin:9px 0 0"></p></section>
 <section class="card" id="quickYearCard" style="margin-bottom:14px"><div class="row"><h2 style="margin:0;font-size:18px">Umsätze auf einen Blick</h2><a href="./bonit-dashboard.html" style="font-size:13px;color:#111;font-weight:700">Alle Jahresvergleiche ↗</a></div><div class="grid" style="margin-top:12px"><div class="metric"><small>September 2026 · vorläufig</small><strong>47.117,00 €</strong><small>Friedrich-Aufzeichnungen · nicht BONit-abgeglichen</small></div><div class="metric"><small>Oktober 2026 · 1.–10.</small><strong id="quickOctGross">18.415,70 €</strong><small id="quickOctNote">9 originale Z-Abschlüsse</small></div><div class="metric"><small>Ø Bon Oktober · 1.–10.</small><strong id="quickOctAvg">17,83 €</strong><small>1.033 Rechnungen</small></div><div class="metric"><small>2025 / 2026</small><strong id="quickYearCoverage">Vergleichen ↗</strong><small>Jahres- und Monatskacheln</small></div></div><div class="navigation" style="margin:12px 0 0;gap:8px"><a href="./bonit-dashboard.html" style="text-decoration:none;text-align:center;padding:13px 5px;border:1px solid #ddd;border-radius:10px;color:#111;font-weight:700;font-size:13px">Monatsvergleich ↗</a><a href="./bonit-dashboard.html" style="text-decoration:none;text-align:center;padding:13px 5px;border:1px solid #ddd;border-radius:10px;color:#111;font-weight:700;font-size:13px">Geschäftsjahre ↗</a></div></section>
@@ -3058,6 +3061,50 @@ async function applyBonitDashboard(month,manualDocs){
       qty.textContent=new Intl.NumberFormat('de-AT',{maximumFractionDigits:2}).format(item.quantity)+' Stk.';
       tile.append(rank,name,qty);top.append(tile);
     }
+  }
+  // BONit-Artikelgruppenstatistik: nur vorhandene Original-Z-Gruppen, keine Hochrechnung.
+  const groupsTarget=$('gp2ArticleGroups'),groupCoverage=$('gp2GroupCoverage');
+  if(groupsTarget&&groupCoverage){
+    groupsTarget.replaceChildren();
+    const groupMap=new Map(),covered=new Set();
+    const canonical=['Alkoholfreie Getränke','Bier','Wein','Spirituosen','Kaffee Tee','Judith und die Torten','Brötchen','Schaumweine','Baguette','Speisen'];
+    const addGroup=(name,value)=>{
+      name=String(name||'').trim();value=Number(value);
+      if(!name||!Number.isFinite(value))return;
+      const match=canonical.find(x=>x.toLocaleLowerCase('de-AT')===name.toLocaleLowerCase('de-AT'))||name;
+      groupMap.set(match,(groupMap.get(match)||0)+value);
+    };
+    const {data:groupClosings,error:groupError}=await db.from('bonit_daily_closings').select('closing_date,raw_data')
+      .eq('business_id',businessId).gte('closing_date',start).lt('closing_date',end);
+    if(!groupError){
+      for(const c of groupClosings||[]){
+        const g=c.raw_data?.article_groups;
+        if(g&&typeof g==='object'&&!Array.isArray(g)){
+          covered.add(c.closing_date);
+          for(const [name,value] of Object.entries(g))addGroup(name,value);
+        }
+      }
+    }
+    for(const doc of uniqueDays(manualDocs||[]).docs){
+      if(covered.has(doc.document_date))continue;
+      const g=doc.extracted_data?.category_sales;
+      if(!g)continue;
+      if(Array.isArray(g)){
+        for(const x of g)addGroup(x.name||x.category||x.group,x.gross_total??x.gross??x.amount);
+      }else if(typeof g==='object'){
+        for(const [name,value] of Object.entries(g))addGroup(name,value);
+      }else continue;
+      covered.add(doc.document_date);
+    }
+    groupCoverage.textContent=groupError?'BONit-Artikelgruppen konnten nicht geladen werden.':'Artikelgruppen: '+covered.size+' von '+dayCount+' Umsatztagen · nur vorhandene Originalwerte, keine Hochrechnung.';
+    for(const name of [...canonical,...[...groupMap.keys()].filter(x=>!canonical.includes(x))]){
+      if(!groupMap.has(name))continue;
+      const tile=document.createElement('div');tile.className='top-item';
+      const label=document.createElement('div');label.textContent=name;
+      const value=document.createElement('strong');value.textContent=euro(groupMap.get(name));
+      tile.append(label,value);groupsTarget.append(tile);
+    }
+    if(!groupMap.size)groupsTarget.textContent='Noch keine Artikelgruppenstatistik gespeichert.';
   }
   $('dashboardNote').textContent='BONit: '+bonitDates.size+' Tage · manuell ergänzte Tage: '+extra.length+' · je Kalendertag nur eine Umsatzquelle.';
   const last=$('last');
