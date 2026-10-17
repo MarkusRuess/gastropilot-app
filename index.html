@@ -171,6 +171,7 @@ async function refresh(){renderAugust();
  tile(E('operating'),'Frühwarnung',(M?M.net:net)===null?'Nettoumsatz unvollständig':personnelCost!==null&&personnelCost/(M?M.net:net)>.35?'Personalquote über 35 %':'Datenlage prüfen');
  E('hours').textContent=M?(isSep?'September: stärkste Stunde 19:00–19:59 mit 5.071,20 €.':'August: stärkste Stunde 22:00–22:59 mit 4.999,60 €.'):'Stundenumsätze sind in den vorhandenen Tagesdaten noch nicht zuverlässig normalisiert. Keine geschätzten Stoßzeiten.';
  E('costs').replaceChildren();
+ if(isAug||isSep){const b=isAug?[23954.76,58.47]:[22393.57,55.36];tile(E('costs'),'Nach Personal verbleibend',EUR(b[0]));tile(E('costs'),'Anteil nach Personal',b[1].toFixed(2).replace('.',',')+' %');}
  for(const [label,value] of [
  ['Personal · erfasst',EUR(personnelCost)],
  ['Personalquote (Ziel 35 %)',personnelCost!==null&&(M?M.net:net)>0?(100*personnelCost/(M?M.net:net)).toFixed(1)+' %':'–'],
