@@ -392,7 +392,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
   <div class="gp2-tile"><small>Personal &amp; Fixkosten</small><strong>Verwaltung ↗</strong><a href="./management.html?section=personnel" class="gp2-foot">Löhne und Kosten öffnen</a></div>
   <button type="button" class="gp2-tile gp2-top-trigger" id="gp2UploadTile" style="background:#fff;color:#111;border:2px solid #111;text-align:left;cursor:pointer"><small>📷 Zentraler Dokumenteneingang ↗</small><strong style="color:#111">Foto / PDF</strong><span class="gp2-foot" style="color:#333">Alle Belegarten · Erkennung &amp; Kontrolle</span></button>
   <div class="gp2-tile"><small>Gesamtpersonalkosten</small><strong id="gpOctPersonnel">–</strong><span class="gp2-foot" id="gpOctPersonnelNote">Lohndaten werden geladen</span></div>
-  <div class="gp2-tile"><small>Personalkosten in % vom Umsatz</small><strong id="gpOctRatio">–</strong><span class="gp2-foot">Gesamtpersonalkosten ÷ Monatsumsatz brutto</span></div>
+  <div class="gp2-tile"><small>Personalkosten in % vom Umsatz</small><strong id="gpOctRatio">–</strong><span class="gp2-foot">Gesamtpersonalkosten ÷ Monatsumsatz netto · Ziel ≤ 35 %</span></div>
   <div class="gp2-tile"><small>Bruttogehälter</small><strong id="gpOctGrossSalary">–</strong><span class="gp2-foot">Summe aus den Lohnabrechnungen</span></div>
   <div class="gp2-tile"><small>Zusätzliche Dienstgeberkosten</small><strong id="gpOctEmployer">–</strong><span class="gp2-foot">Zusätzlich zu den Bruttogehältern</span></div>
  </div>
@@ -3630,7 +3630,7 @@ async function refreshOctober2026Personnel(){
   $('gpOctGrossSalary').textContent=euro(gross);
   $('gpOctEmployer').textContent=euro(employer);
   if(note)note.textContent=data.length+' Lohnabrechnungen · inklusive Dienstgeberkosten';
-  const revenueText=$('gp2Gross')?.textContent||'';
+  const revenueText=$('gp2Net')?.textContent||'';
   const revenue=Number(revenueText.replace(/[^\\d,.-]/g,'').replace(/\\./g,'').replace(',','.'));
   if(Number.isFinite(revenue)&&revenue>0)$('gpOctRatio').textContent=(costs/revenue*100).toLocaleString('de-AT',{minimumFractionDigits:2,maximumFractionDigits:2})+' %';
  }catch(e){if(note)note.textContent='Lohndaten nicht verfügbar';console.warn('Oktober-Personalkosten:',e.message)}
