@@ -353,6 +353,30 @@ html body #app #page-dashboard p{color:#111!important}
 <button type="button" id="gpUploadCamera" style="flex:1;min-width:125px;background:#111;color:#fff;border-radius:10px;padding:12px">📷 Kamera</button>
 <button type="button" id="gpUploadFile" style="flex:1;min-width:125px;background:#fff;color:#111;border:1px solid #aaa;border-radius:10px;padding:12px">📄 Foto / PDF</button>
 </div></section>
+<section class="card hidden" id="gpUnifiedPanel" style="border:2px solid #222;margin:12px 0"><h2>📷 Ein Upload für alle Dokumente</h2><p class="muted">Foto oder PDF auswählen. Wir zeigen zuerst die erkannte Dokumentart. Nichts wird automatisch verbucht.</p><div style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" id="gpUnifiedCamera">📷 Foto</button><button type="button" id="gpUnifiedChoose" class="secondary">📄 PDF / Datei</button></div><input type="file" id="gpUnifiedFiles" accept="image/*,application/pdf" multiple class="hidden"><input type="file" id="gpUnifiedPhoto" accept="image/*" capture="environment" class="hidden"><div id="gpUnifiedReview" class="status" role="status" style="margin-top:12px">Noch kein Dokument ausgewählt.</div><p class="muted">Bei Rechnungen ist die Freigabe „Offen“ oder „Bezahlt“ zwingend. Noch nicht unterstützte Dokumentarten werden nicht gespeichert.</p></section>
+<script src="./document-intake.js"></script>
+<script>
+(function(){
+function byId(id){return document.getElementById(id);}
+function setup(){
+const choose=byId('gpUnifiedChoose'),camera=byId('gpUnifiedCamera'),files=byId('gpUnifiedFiles'),photo=byId('gpUnifiedPhoto'),review=byId('gpUnifiedReview');
+if(!choose||!camera||!files||!photo||!review)return;
+choose.addEventListener('click',()=>files.click());camera.addEventListener('click',()=>photo.click());
+function show(list){
+const arr=Array.from(list||[]);review.replaceChildren();
+if(!arr.length){review.textContent='Keine Datei ausgewählt.';return;}
+for(const f of arr){
+const line=document.createElement('div');line.style.margin='8px 0';const name=document.createElement('strong');name.textContent=f.name;line.appendChild(name);
+const result=window.GastroPilotDocumentIntake?.classifyDocument({filename:f.name});
+const detail=document.createElement('p');detail.style.margin='4px 0';detail.textContent=result?.type!=='unknown'?'Möglicher Dokumenttyp (Dateiname): '+window.GastroPilotDocumentIntake.TYPES[result.type]+' · Inhalt noch nicht geprüft':'Dokumenttyp wird erst nach Inhaltsanalyse zuverlässig erkannt.';
+line.appendChild(detail);const warning=document.createElement('small');warning.textContent='Nicht verarbeitet oder gespeichert. Sichere Inhaltsauslesung und Freigabe noch in Entwicklung.';line.appendChild(warning);review.appendChild(line);
+}
+}
+files.addEventListener('change',()=>{show(files.files);files.value='';});photo.addEventListener('change',()=>{show(photo.files);photo.value='';});
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setup);else setup();
+})();
+</script>
 <div id="gp2Home" class="gp2-hero">
  <h2>Dein Betrieb auf einen Blick <span id="gp2HeroMonth" style="display:inline-block;margin-left:10px;font-size:.72em;font-weight:600;color:#806b4b">Oktober 2026</span></h2>
  <p class="muted">Aktuelle Daten aus den vorhandenen Abrechnungen · fehlende Werte bleiben offen</p>
@@ -366,7 +390,7 @@ html body #app #page-dashboard p{color:#111!important}
   <div class="gp2-tile" style="border:2px solid #222"><small>Oktober vs. September · gleiche Kalendertage</small><strong id="gp2PrevMonth">–</strong><span class="gp2-foot" id="gp2PrevMonthInfo">Wird anhand der erfassten Tagesabschlüsse berechnet</span></div>
   <div class="gp2-tile"><small>Umsatz vs. Vorjahr</small><strong id="gp2YoY">–</strong><span class="gp2-foot" id="gp2YoYInfo">Vergleich gleicher Zeitraum</span></div>
   <div class="gp2-tile"><small>Personal &amp; Fixkosten</small><strong>Verwaltung ↗</strong><a href="./management.html?section=personnel" class="gp2-foot">Löhne und Kosten öffnen</a></div>
-  <button type="button" class="gp2-tile gp2-top-trigger" id="gp2UploadTile" style="background:#fff;color:#111;border:2px solid #111;text-align:left;cursor:pointer"><small>📷 Tagesabrechnung hochladen ↗</small><strong style="color:#111">Kamera / PDF</strong><span class="gp2-foot" style="color:#333">Jetzt Z-Bericht auswählen und prüfen</span></button>
+  <button type="button" class="gp2-tile gp2-top-trigger" id="gp2UploadTile" style="background:#fff;color:#111;border:2px solid #111;text-align:left;cursor:pointer"><small>📷 Zentraler Dokumenteneingang ↗</small><strong style="color:#111">Foto / PDF</strong><span class="gp2-foot" style="color:#333">Alle Belegarten · Erkennung &amp; Kontrolle</span></button>
   <div class="gp2-tile"><small>Gesamtpersonalkosten</small><strong id="gpOctPersonnel">–</strong><span class="gp2-foot" id="gpOctPersonnelNote">Lohndaten werden geladen</span></div>
   <div class="gp2-tile"><small>Personalkosten in % vom Umsatz</small><strong id="gpOctRatio">–</strong><span class="gp2-foot">Gesamtpersonalkosten ÷ Monatsumsatz brutto</span></div>
   <div class="gp2-tile"><small>Bruttogehälter</small><strong id="gpOctGrossSalary">–</strong><span class="gp2-foot">Summe aus den Lohnabrechnungen</span></div>
@@ -1599,7 +1623,7 @@ function renderFiles(kind){
 }
 
 // Dashboard-Schnellzugriff: bestehende Kamera-/PDF-Prüfung öffnen.
-$('gp2UploadTile').onclick=()=>{switchPage('cash');$('cashFiles').click();};
+$('gp2UploadTile').onclick=()=>{const p=$('gpUnifiedPanel');if(p){p.classList.remove('hidden');p.scrollIntoView({behavior:'smooth',block:'center'});}else{switchPage('cash');$('cashFiles').click();}};
 $('gpUploadCamera').onclick=()=>{switchPage('cash');$('cashCameraInput').click();};
 $('gpUploadFile').onclick=()=>{switchPage('cash');$('cashFiles').click();};
 
