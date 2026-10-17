@@ -40,6 +40,15 @@ for(const [label,key] of [['10 % brutto','g10'],['10 % netto','n10'],['20 % brut
  addText(tile,'b',taxFull?eur([...taxByDay.values()].reduce((t,x)=>t+x[key],0)):'–');
 }
 el('taxNote').textContent=taxFull?'10 % und 20 % aus den abgeglichenen Originalbelegen.':taxByDay.size+' von '+rows.length+' Tagen mit stimmiger Steueraufteilung; '+taxInvalid.length+' widersprüchliche Belege. Fehlende Monatswerte werden nicht geschätzt.';
+if(!taxFull&&rows.length){
+ const detail=addText(el('taxTiles'),'div','','tile');
+ addText(detail,'small','Steuerwerte pro geprüftem BONit-Tag');
+ const checked=[...taxByDay.entries()].filter(([day])=>byDate.has(day));
+ addText(detail,'b',checked.length+' / '+rows.length);
+ for(const [day,a] of checked.sort((a,b)=>a[0].localeCompare(b[0]))){
+   addText(detail,'p',date(day)+': 10 % '+eur(a.g10)+' · 20 % '+eur(a.g20),'muted');
+ }
+}
 el('metrics').replaceChildren();for(const [label,value] of metrics){const tile=addText(el('metrics'),'div','','tile');addText(tile,'small',label);addText(tile,'b',value);}
 el('coverage').replaceChildren();addText(el('coverage'),'p',bonit.length+' BONit-Tagesabschlüsse · '+archive.size+' unterschiedliche Archivtage · '+extra+' Archivtage zusätzlich berücksichtigt.');
 const warnings=rows.filter(r=>!r.verified||r.net===null||r.gross===null||r.paid===null);if(warnings.length)addText(el('coverage'),'p',warnings.length+' Tag(e) mit offenen Prüfwerten. Fehlende Nettowerte und bezahlte Bonanzahlen werden nicht geschätzt.','warn');
