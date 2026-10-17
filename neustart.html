@@ -18,39 +18,45 @@ function addText(parent,tag,value,cls){const e=document.createElement(tag);e.tex
 function sumComplete(rows,key){const values=rows.map(x=>num(x[key]));return values.every(x=>x!==null&&Number.isFinite(x))?values.reduce((a,b)=>a+b,0):null;}
 function paidCount(row){const p=num(row.paid_receipt_count);if(Number.isInteger(p)&&p>=0)return p;const c=num(row.receipt_count),z=num(row.zero_receipt_count);return Number.isInteger(c)&&Number.isInteger(z)&&c>=z&&z>=0?c-z:null;}
 async function load(){el('status').textContent='Daten werden geladen …';const month=el('month').value,[y,m]=month.split('-').map(Number),start=month+'-01',end=(m===12?y+1:y)+'-'+String(m===12?1:m+1).padStart(2,'0')+'-01';
-try{const [bonit,docs,articles]=await Promise.all([fetchAll('bonit_daily_closings','closing_date,gross_amount,net_amount,cash_amount,card_amount,receipt_count',start,end),fetchAll('documents','id,document_date,document_type,created_at,status,extracted_data',start,end),articleRows(start,end)]);
-const byDate=new Map();for(const r of bonit){byDate.set(r.closing_date,{date:r.closing_date,source:'BONit',gross:num(r.gross_amount),net:num(r.net_amount),cash:num(r.cash_amount),card:num(r.card_amount),receipts:num(r.receipt_count),paid:paidCount(r),verified:true});}
+try{const [bonit,docs,articles]=await Promise.all([fetchAll('bonit_daily_closings','closing_date,gross_amount,net_amount,cash_amount,card_amount,receipt_count,raw_data',start,end),fetchAll('documents','id,document_date,document_type,created_at,status,extracted_data',start,end),articleRows(start,end)]);
+const byDate=new Map();for(const r of bonit){byDate.set(r.closing_date,{date:r.closing_date,source:'BONit',gross:num(r.gross_amount),net:num(r.net_amount),cash:num(r.cash_amount),card:num(r.card_amount),receipts:num(r.receipt_count),paid:paidCount(r),raw:r.raw_data||{},verified:true});}
 const archive=new Map();for(const d of docs.filter(x=>x.document_type==='cash_report')){const old=archive.get(d.document_date);if(!old||String(d.created_at)>String(old.created_at))archive.set(d.document_date,d);}
 let extra=0;for(const [day,d] of archive){if(byDate.has(day))continue;const x=d.extracted_data||{};byDate.set(day,{date:day,source:'Archiv',gross:num(x.gross_total),net:num(x.net_total),cash:num(x.cash_total),card:num(x.card_total),receipts:num(x.receipt_count),paid:paidCount(x),verified:d.status==='reviewed'&&!x.needs_review});extra++;}
-const rows=[...byDate.values()].sort((a,b)=>a.date.localeCompare(b.date));const gross=sumComplete(rows,'gross'),net=sumComplete(rows,'net'),cash=sumComplete(rows,'cash'),card=sumComplete(rows,'card'),paid=sumComplete(rows,'paid');const metrics=[['Bruttoumsatz',eur(gross)],['Nettoumsatz',eur(net)],['Bar',eur(cash)],['Karte',eur(card)],['Umsatztage',String(rows.length)],['Bezahlte Rechnungen',paid===null?'Prüfung offen':String(paid)],['Ø Bon',gross!==null&&paid>0?eur(gross/paid):'Prüfung offen'],['Archiv-Ergänzungen',String(extra)]];
-const taxByDay=new Map(),taxInvalid=[];
-for(const [day,d] of archive){
- const x=d.extracted_data||{},v=x.vat_breakdown;
- if(!v)continue;
- const ten=v['10']||v['10%']||v['10.0'],twenty=v['20']||v['20%']||v['20.0'];
- if(!ten||!twenty)continue;
- const a={g10:num(ten.gross),n10:num(ten.net),g20:num(twenty.gross),n20:num(twenty.net)};
- if(Object.values(a).some(z=>z===null||!Number.isFinite(z))||Math.abs(a.g10+a.g20-num(x.gross_total))>0.03||Math.abs(a.n10+a.n20-num(x.net_total))>0.03){taxInvalid.push(day);continue;}
- taxByDay.set(day,a);
-}
-const taxFull=rows.length>0&&rows.every(d=>taxByDay.has(d.date));
-el('taxTiles').replaceChildren();
-for(const [label,key] of [['10 % brutto','g10'],['10 % netto','n10'],['20 % brutto','g20'],['20 % netto','n20']]){
- const tile=addText(el('taxTiles'),'div','','tile');addText(tile,'small',label);
- addText(tile,'b',taxFull?eur([...taxByDay.values()].reduce((t,x)=>t+x[key],0)):'–');
-}
-el('taxNote').textContent=taxFull?'10 % und 20 % aus den abgeglichenen Originalbelegen.':taxByDay.size+' von '+rows.length+' Tagen mit stimmiger Steueraufteilung; '+taxInvalid.length+' widersprüchliche Belege. Fehlende Monatswerte werden nicht geschätzt.';
-if(!taxFull&&rows.length){
- const detail=addText(el('taxTiles'),'div','','tile');
- addText(detail,'small','Steuerwerte pro geprüftem BONit-Tag');
- const checked=[...taxByDay.entries()].filter(([day])=>byDate.has(day));
- addText(detail,'b',checked.length+' / '+rows.length);
- for(const [day,a] of checked.sort((a,b)=>a[0].localeCompare(b[0]))){
-   addText(detail,'p',date(day)+': 10 % '+eur(a.g10)+' · 20 % '+eur(a.g20),'muted');
+const rows=[...byDate.values()].sort((a,b)=>a.date.localeCompare(b.date));const gross=sumComplete(rows,'gross'),net=sumComplete(rows,'net'),cash=sumComplete(rows,'cash'),card=sumComplete(rows,'card'),paid=sumComplete(rows,'paid');const metrics=[['Bruttoumsatz',eur(gross)],['Nettoumsatz',eur(net)],['Bar',eur(cash)],['Karte',eur(card)],['Umsatztage',String(rows.length)],['Bezahlte Rechnungen',paid===null?'Prüfung offen':String(paid)],['Ø Bon',gross!==null&&paid>0?eur(gross/paid):'Prüfung offen'],['Archiv-Ergänzungen',String(extra)],['USt Lieferantenrechnungen',eur(invoiceVat)]];
+function checkedTax(raw,grossTotal,netTotal){
+ const groups={};
+ if(Array.isArray(raw?.vat_breakdown)){
+  for(const row of raw.vat_breakdown){const rate=num(row.rate);if(rate===10||rate===20)groups[rate]={gross:num(row.gross),net:num(row.net),tax:num(row.vat??row.tax)};}
+ }else if(raw?.vat_breakdown&&typeof raw.vat_breakdown==='object'){
+  const v=raw.vat_breakdown;for(const rate of [10,20]){const row=v[String(rate)]||v[rate+'%']||v[rate+'.0'];if(row)groups[rate]={gross:num(row.gross),net:num(row.net),tax:num(row.vat??row.tax)};}
  }
+ if(!groups[10]||!groups[20]){
+  const direct={10:{gross:num(raw?.vat_10_gross),net:num(raw?.vat_10_net),tax:num(raw?.vat_10_tax)},20:{gross:num(raw?.vat_20_gross),net:num(raw?.vat_20_net),tax:num(raw?.vat_20_tax)}};
+  if(Object.values(direct).every(g=>g.gross!==null&&g.net!==null))Object.assign(groups,direct);
+ }
+ if(!groups[10]||!groups[20])return null;
+ const a={g10:groups[10].gross,n10:groups[10].net,t10:groups[10].tax??(groups[10].gross-groups[10].net),g20:groups[20].gross,n20:groups[20].net,t20:groups[20].tax??(groups[20].gross-groups[20].net)};
+ if(Object.values(a).some(z=>z===null||!Number.isFinite(z)))return null;
+ if(grossTotal===null||netTotal===null||Math.abs(a.g10+a.g20-grossTotal)>0.03||Math.abs(a.n10+a.n20-netTotal)>0.03||Math.abs(a.t10+a.t20-(grossTotal-netTotal))>0.03||Math.abs(a.g10-a.n10-a.t10)>0.03||Math.abs(a.g20-a.n20-a.t20)>0.03)return null;
+ return a;
 }
+const taxByDay=new Map(),taxInvalid=[];
+for(const r of bonit){const day=r.closing_date,t=checkedTax(r.raw_data||{},num(r.gross_amount),num(r.net_amount));if(t)taxByDay.set(day,t);else if(r.raw_data?.vat_breakdown||r.raw_data?.vat_10_gross!=null||r.raw_data?.vat_20_gross!=null)taxInvalid.push(day);}
+for(const [day,d] of archive){
+ if(taxByDay.has(day)||bonit.some(r=>r.closing_date===day))continue;
+ const x=d.extracted_data||{},t=checkedTax(x,num(x.gross_total),num(x.net_total));if(t)taxByDay.set(day,t);else if(x.vat_breakdown)taxInvalid.push(day);
+}
+const verifiedDays=[...taxByDay.keys()].filter(day=>byDate.has(day)),invoiceDocs=docs.filter(d=>d.document_type==='invoice'),validInvoices=invoiceDocs.filter(d=>{const x=d.extracted_data||{},v=num(x.vat_total),g=num(x.gross_total),n=num(x.net_total);return v!==null&&g!==null&&n!==null&&Number.isFinite(v)&&Math.abs(g-n-v)<=0.03;}),invoiceVat=validInvoices.reduce((sum,d)=>sum+num(d.extracted_data.vat_total),0);
+el('taxTiles').replaceChildren();
+for(const [label,key] of [['10 % brutto','g10'],['10 % netto','n10'],['10 % Steuer','t10'],['20 % brutto','g20'],['20 % netto','n20'],['20 % Steuer','t20']]){
+ const tile=addText(el('taxTiles'),'div','','tile');addText(tile,'small',label);
+ addText(tile,'b',verifiedDays.length?eur(verifiedDays.reduce((sum,day)=>sum+taxByDay.get(day)[key],0)):'–');
+}
+const taxCoverage=verifiedDays.length+' von '+rows.length+' Tagen geprüft';
+el('taxNote').textContent=taxCoverage+' · Summen umfassen nur abgeglichene BONit-/Archivtage; fehlende oder widersprüchliche Tageswerte werden nicht geschätzt.';
 el('metrics').replaceChildren();for(const [label,value] of metrics){const tile=addText(el('metrics'),'div','','tile');addText(tile,'small',label);addText(tile,'b',value);}
 el('coverage').replaceChildren();addText(el('coverage'),'p',bonit.length+' BONit-Tagesabschlüsse · '+archive.size+' unterschiedliche Archivtage · '+extra+' Archivtage zusätzlich berücksichtigt.');
+addText(el('coverage'),'p',validInvoices.length+' von '+invoiceDocs.length+' Lieferantenrechnungen mit rechnerisch stimmiger USt · '+eur(invoiceVat)+' erfasste Rechnungs-USt.'+(taxInvalid.length?' '+taxInvalid.length+' Steuerdatensatz/-datensätze widersprüchlich.':''),'muted');
 const warnings=rows.filter(r=>!r.verified||r.net===null||r.gross===null||r.paid===null);if(warnings.length)addText(el('coverage'),'p',warnings.length+' Tag(e) mit offenen Prüfwerten. Fehlende Nettowerte und bezahlte Bonanzahlen werden nicht geschätzt.','warn');
 el('days').replaceChildren();for(const r of rows){const tr=addText(el('days'),'tr','');for(const [v,c] of [[date(r.date),''],[r.source,r.source==='Archiv'?'warn':'ok'],[eur(r.gross),'num'],[eur(r.net),'num'],[r.receipts===null?'–':String(r.receipts),'num'],[r.gross!==null&&r.paid>0?eur(r.gross/r.paid):'–','num']])addText(tr,'td',v,c);}
 const articleDates=new Set(articles.map(x=>x.closing_date)),groups=new Map();function add(name,qty,revenue){const n=String(name||'').trim(),q=num(qty);if(!n||q===null||q<=0)return;const key=n.toLocaleLowerCase('de-AT'),old=groups.get(key)||{name:n,qty:0,revenue:0,known:0,missing:0};old.qty+=q;const v=num(revenue);if(v===null)old.missing++;else{old.revenue+=v;old.known++;}groups.set(key,old);}
