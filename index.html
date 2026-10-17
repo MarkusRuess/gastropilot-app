@@ -34,7 +34,7 @@ period_start:'2026-09-01',period_end:'2026-09-30',z_number:65,days:27,receipts:2
 gross:47117,net:40450.62,cash:31302.10,noncash:15814.90,card:15676.60,vouchers:138.30,
 tax:[{rate:0,gross:170,net:170,vat:0},{rate:10,gross:15287.20,net:13897.45,vat:1389.75},{rate:20,gross:31659.80,net:26383.17,vat:5276.63}],
 categories:[['Alkoholfreie Getränke',4227.70],['Bier',3957.60],['Wein',13136.70],['Spirituosen',1122.30],['Kaffee Tee',4954.90],['Sonstige Erlöse 20 %',27],['Sonstige Erlöse 10 %',38],['Gutschein 0 %',170],['Judith und die Torten',5125.50],['Brötchen',3445.80],['Schaumweine',4233.60],['Baguette',3567.20],['Speisen',3110.70]],
-hours:[['00',63.30],['01',0],['02',0],['03',0],['04',0],['05',0],['06',0],['07',0],['08',0],['09',0],['10',115.30],['11',1547.50],['12',3279.30],['13',3134.80],['14',2847.40],['15',3126.90],['16',3818.40],['17',3450.10],['18',3850.60],['19',3929.30],['20',5071.20],['21',4879.30],['22',4106.70],['23',3150.20]],
+hours:[['00',63.30],['01',0],['02',0],['03',0],['04',0],['05',0],['06',0],['07',0],['08',0],['09',115.30],['10',1547.50],['11',3279.30],['12',3134.80],['13',2847.40],['14',3126.90],['15',3818.40],['16',3450.10],['17',3850.60],['18',3929.30],['19',5071.20],['20',4879.30],['21',4106.70],['22',3150.20],['23',746.70]],
 tables:[['1 Geschäft',3739.30],['2',1489.10],['3',280.50],['4',1683.10],['5',982.50],['6',889.30],['7 Bar',264.30],['8',1937],['9',2724.80],['10',3855.70],['11',4853.50],['12',2934.10],['13',1957.40],['14',2084.70],['15',1257.40],['16',1421.80],['17',2737.50],['18',2949.20],['19',1799.30],['21 Aussen Tisch weiss',1971.40],['23',907.70],['24',2368.30],['25',751],['26',1278.10]],
 items:[['2000','Villacher 0,3l Bier',781,4.80,3748.80],['3020','1 Glas Prosecco Valdobbiadene 0,1l',364,5.50,2002],['3018','Weisser Spritzer Grüner Veltliner 0,25l',437,4.50,1966.50],['3042','Aperol Spritzer',282,6.90,1945.80],['292','Lachs Baguette 1Stück',358,5.20,1861.60],['3022','1 Glas Sparkling Rose Freixenet Italien 0,1l',277,5.80,1606.60],['1400','Espresso klein',477,3.10,1478.70],['318','Roast Beef Baguette 1Stück',252,5.20,1310.40],['215','Schinken Baguette 1Stück',257,4.50,1156.50],['1410','Cappuccino',180,3.90,702],['1519','Crodino',120,6.90,828],['3050','1/8 Pfaffl Grüner Veltliner',128,5.90,755.20],['4024','Sarti Spritzer',137,6.90,945.30],['1404','Melange',228,3.90,889.20],['1403','Verlängerter',207,3.90,807.30],['204','Ei Aufstrich Brötchen',245,3.20,784],['2001','Campari Spritz',99,6.90,683.10],['3057','Sommerspritzer / Eis / Zitrone Glas 0,25l',198,4.80,950.40],['3039','Torten und diverse Artikel',1,90,90],['9010','Gutschein',1,100,100],['9010','Gutschein',1,70,70]]
 };
@@ -135,9 +135,9 @@ async function refresh(){renderAugust();
  const accountDates=accountRows.map(x=>x.balance_date).filter(Boolean),balanceDate=accountDates.length?accountDates.sort().at(-1):null;
  E('operating').replaceChildren();
  tile(E('operating'),'Erfasste Artikelzeilen',String(M?M.items.length:articles.length));
- tile(E('operating'),'Stoßzeiten',M?(isSep?'20:00–20:59':'22:00–22:59'):'Stundendaten prüfen');
+ tile(E('operating'),'Stoßzeiten',M?(isSep?'19:00–19:59':'22:00–22:59'):'Stundendaten prüfen');
  tile(E('operating'),'Frühwarnung',(M?M.net:net)===null?'Nettoumsatz unvollständig':personnelCost!==null&&personnelCost/(M?M.net:net)>.35?'Personalquote über 35 %':'Datenlage prüfen');
- E('hours').textContent=M?(isSep?'September: stärkste Stunde 20:00–20:59 mit 5.071,20 €.':'August: stärkste Stunde 22:00–22:59 mit 4.999,60 €.'):'Stundenumsätze sind in den vorhandenen Tagesdaten noch nicht zuverlässig normalisiert. Keine geschätzten Stoßzeiten.';
+ E('hours').textContent=M?(isSep?'September: stärkste Stunde 19:00–19:59 mit 5.071,20 €.':'August: stärkste Stunde 22:00–22:59 mit 4.999,60 €.'):'Stundenumsätze sind in den vorhandenen Tagesdaten noch nicht zuverlässig normalisiert. Keine geschätzten Stoßzeiten.';
  E('costs').replaceChildren();
  for(const [label,value] of [
  ['Personal · erfasst',EUR(personnelCost)],
