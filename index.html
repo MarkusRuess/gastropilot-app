@@ -5,7 +5,7 @@
 <div id="app" class="hidden"><div class="row"><h2>Dein Betrieb auf einen Blick</h2><input id="month" type="month"><button id="refresh">Aktualisieren</button><button id="logout">Abmelden</button></div><p id="summary" class="muted">Lade Archiv …</p>
 <section class="card"><h2>📷 Ein Upload · alle Fotos und PDF</h2><p class="muted">BONit, Lieferantenrechnung und sonstige Belege. Keine Auswahl der Belegart nötig. Alles bleibt auf dieser Seite.</p><div class="row"><button id="camera" type="button">Kamera öffnen</button><button id="fileButton" type="button">Foto / PDF auswählen</button></div><input id="cameraInput" class="hidden" type="file" accept="image/*" capture="environment"><input id="fileInput" class="hidden" type="file" accept="image/jpeg,image/png,image/webp,application/pdf" multiple><div id="fileQueue" class="muted"></div><button id="confirmUpload" type="button" disabled>Fotos / PDF bestätigen und auswerten</button><button id="clearUpload" type="button" disabled>Auswahl leeren</button><p id="uploadStatus" class="status muted">Bereit.</p><div id="review"></div></section>
 <section class="card"><h2>Umsatz · Original BONit</h2><div class="grid" id="sales"></div><h3>10 % und 20 % direkt unter Bruttoumsatz</h3><div class="grid" id="tax"></div><p id="taxNote" class="muted"></p></section>
-<section class="card"><h2>Artikel & Preise · Stoßzeiten</h2><p class="muted">Artikelmengen, Verkaufspreise und Stundenverteilung werden aus den gespeicherten BONit-Originaldaten ausgewertet, soweit diese Felder vorliegen.</p><div class="grid" id="operating"></div></section><section class="card"><h2>Personal · Wareneinsatz · Liquidität · Ergebnis</h2><div class="grid" id="costs"></div><p class="muted">Personalziel 35 % und Wareneinsatzziel 26 % vom Nettoumsatz. Fehlende Belege bleiben offen – keine Schätzungen.</p></section>
+<section class="card"><h2>Artikel & Preise · Stoßzeiten</h2><p class="muted">Artikelmengen, Verkaufspreise und Stundenverteilung werden aus den gespeicherten BONit-Originaldaten ausgewertet, soweit diese Felder vorliegen.</p><div class="grid" id="operating"></div><h3>Umsatz nach Stunden</h3><div id="hours" class="muted">Keine verifizierten Stundenwerte im Archiv.</div></section><section class="card"><h2>Personal · Wareneinsatz · Liquidität · Ergebnis</h2><div class="grid" id="costs"></div><p class="muted">Personalziel 35 % und Wareneinsatzziel 26 % vom Nettoumsatz. Fehlende Belege bleiben offen – keine Schätzungen.</p></section>
 <section class="card"><h2>Originalabrechnungen und Tagesumsätze</h2><div class="scroll"><table><thead><tr><th>Datum</th><th>Quelle</th><th class="num">Brutto</th><th class="num">Netto</th><th class="num">Bar</th><th class="num">Karte</th><th class="num">Bons</th></tr></thead><tbody id="days"></tbody></table></div></section>
 <section class="card"><h2>Artikelranking</h2><div class="scroll"><table><thead><tr><th>Artikel</th><th class="num">Menge</th><th class="num">Umsatz</th></tr></thead><tbody id="articles"></tbody></table></div></section>
 <section class="card"><h2>Dokumentenarchiv</h2><div id="archive"></div></section></div></main>
@@ -26,7 +26,15 @@ function vat(x){const v=x?.vat_breakdown;if(!v)return null;const a=Array.isArray
 async function refresh(){
  const [start,end]=dateRange();E('summary').textContent='Archiv wird abgeglichen …';
  try{
- const [bonit,docs]=await Promise.all([query('bonit_daily_closings','closing_date,gross_amount,net_amount,cash_amount,card_amount,receipt_count,raw_data',start,end),query('documents','id,document_date,document_type,created_at,status,extracted_data,supplier,invoice_number',start,end)]);
+ const [bonit,docs,articles,personnel,expenses,accounts,bankFixed]=await Promise.all([
+ query('bonit_daily_closings','closing_date,gross_amount,net_amount,cash_amount,card_amount,receipt_count,raw_data',start,end),
+ query('documents','id,document_date,document_type,created_at,status,extracted_data,supplier,invoice_number',start,end),
+ query('bonit_article_sales','closing_date,article_number,article_name,quantity,gross_amount,raw_data',start,end),
+ db.from('personnel_costs').select('accounting_month,total_costs').eq('business_id',BID).eq('accounting_month',start),
+ db.from('expenses').select('expense_date,category,net_amount,gross_amount,document_id').eq('business_id',BID).gte('expense_date',start).lt('expense_date',end),
+ db.from('cash_accounts').select('account_name,account_type,current_balance,balance_date').eq('business_id',BID),
+ db.from('bank_fixed_costs').select('booking_date,amount,category').eq('business_id',BID).gte('booking_date',start).lt('booking_date',end)
+ ]);for(const x of [personnel,expenses,accounts,bankFixed])if(x.error)throw x.error;
  const archive=new Map();for(const d of docs.filter(d=>d.document_type==='cash_report')){const prev=archive.get(d.document_date);if(!prev||prev.created_at<d.created_at)archive.set(d.document_date,d);}
  const rows=new Map();for(const r of bonit){rows.set(r.closing_date,{date:r.closing_date,source:'BONit',gross:N(r.gross_amount),net:N(r.net_amount),cash:N(r.cash_amount),card:N(r.card_amount),receipts:N(r.receipt_count),paid:paidCount(r.raw_data),raw:r.raw_data});}
  for(const [day,d] of archive){if(rows.has(day))continue;const x=d.extracted_data||{};rows.set(day,{date:day,source:'Archiv',gross:N(x.gross_total),net:N(x.net_total),cash:N(x.cash_total),card:N(x.card_total),receipts:N(x.receipt_count),paid:paidCount(x),raw:x});}
@@ -35,9 +43,32 @@ async function refresh(){
  const taxRows=[];for(const d of daily){const x=archive.get(d.date)?.extracted_data||{};const z=vat(x);if(z&&Math.abs(z.g10+z.g20-d.gross)<.03)taxRows.push(z);}
  E('tax').replaceChildren();for(const [label,key] of [['10 % brutto','g10'],['10 % netto','n10'],['20 % brutto','g20'],['20 % netto','n20']])tile(E('tax'),label,taxRows.length===daily.length&&daily.length?EUR(taxRows.reduce((a,x)=>a+x[key],0)):'–');
  E('taxNote').textContent=taxRows.length+' von '+daily.length+' Tagesabrechnungen mit vollständig abgeglichenen 10/20-%-Werten. Fehlende Werte werden nicht ergänzt.';
- E('operating').replaceChildren();for(const [a,b] of [['Artikel & Preise',itemsPendingLabel()],['Stoßzeiten','Original-Stundenwerte prüfen'],['Frühwarnungen','Prüfung offen']])tile(E('operating'),a,b);E('costs').replaceChildren();for(const [a,b] of [['Personalkosten','–'],['Personalquote (Ziel 35 %)','–'],['Wareneinsatz (Ziel 26 %)','–'],['Fixkosten','–'],['Ergebnis','–'],['Liquidität','–'],['Lieferantenrechnungen',String(docs.filter(d=>d.document_type==='invoice').length)]])tile(E('costs'),a,b);
+ const personnelRows=personnel.data||[],expenseRows=expenses.data||[],accountRows=accounts.data||[],fixedRows=bankFixed.data||[];
+ const personnelCost=personnelRows.length&&personnelRows.every(x=>N(x.total_costs)!==null)?personnelRows.reduce((a,x)=>a+N(x.total_costs),0):null;
+ const foodDrink=expenseRows.filter(x=>['food','drinks','beverages'].includes(String(x.category||'').toLowerCase()));
+ const purchaseCost=foodDrink.length&&foodDrink.every(x=>N(x.net_amount)!==null)?foodDrink.reduce((a,x)=>a+N(x.net_amount),0):null;
+ const fixedCost=fixedRows.length&&fixedRows.every(x=>N(x.amount)!==null)?fixedRows.reduce((a,x)=>a+Math.abs(N(x.amount)),0):null;
+ const bankBalance=accountRows.length&&accountRows.every(x=>N(x.current_balance)!==null)?accountRows.reduce((a,x)=>a+N(x.current_balance),0):null;
+ const currentMonth=E('month').value;
+ const accountDates=accountRows.map(x=>x.balance_date).filter(Boolean),balanceDate=accountDates.length?accountDates.sort().at(-1):null;
+ E('operating').replaceChildren();
+ tile(E('operating'),'Erfasste Artikelzeilen',String(articles.length));
+ tile(E('operating'),'Stoßzeiten','Stundendaten prüfen');
+ tile(E('operating'),'Frühwarnung',net===null?'Nettoumsatz unvollständig':personnelCost!==null&&personnelCost/net>.35?'Personalquote über 35 %':'Datenlage prüfen');
+ E('hours').textContent='Stundenumsätze sind in den vorhandenen Tagesdaten noch nicht zuverlässig normalisiert. Keine geschätzten Stoßzeiten.';
+ E('costs').replaceChildren();
+ for(const [label,value] of [
+ ['Personal · erfasst',EUR(personnelCost)],
+ ['Personalquote (Ziel 35 %)',personnelCost!==null&&net>0?(100*personnelCost/net).toFixed(1)+' %':'–'],
+ ['Einkäufe Speisen/Getränke · erfasst',EUR(purchaseCost)],
+ ['Wareneinsatzquote (Ziel 26 %)','Inventur/Verbrauch fehlt'],
+ ['Bank-Fixkosten · erfasst',EUR(fixedCost)],
+ ['Ergebnis','Unvollständige Kostenbasis'],
+ ['Bankkonten · Stand '+(balanceDate?D(balanceDate):'offen'),EUR(bankBalance)],
+ ['Lieferantenrechnungen',String(docs.filter(d=>d.document_type==='invoice').length)]
+ ])tile(E('costs'),label,value);
  E('days').replaceChildren();for(const d of daily){const tr=E('days').insertRow();for(const [v,n] of [[D(d.date),false],[d.source,false],[EUR(d.gross),true],[EUR(d.net),true],[EUR(d.cash),true],[EUR(d.card),true],[d.receipts??'–',true]])cell(tr,v,n);}
- const items=new Map();for(const d of daily){const data=d.raw||{};const a=Array.isArray(data.sales_items)?data.sales_items:Array.isArray(data.items)?data.items:[];for(const x of a){const name=x.name||x.article_name;if(!name)continue;const old=items.get(name)||{qty:0,gross:0,known:true};old.qty+=Number(x.quantity||0);const amount=N(x.gross??x.gross_total);if(amount===null)old.known=false;else old.gross+=amount;items.set(name,old);}}
+ const items=new Map();for(const x of articles){const name=(x.article_number?x.article_number+' · ':'')+(x.article_name||'Unbenannt');const old=items.get(name)||{qty:0,gross:0,known:true};const qty=N(x.quantity);if(qty!==null)old.qty+=qty;const amount=N(x.gross_amount);if(amount===null)old.known=false;else old.gross+=amount;items.set(name,old);}
  E('articles').replaceChildren();for(const [name,x] of [...items].sort((a,b)=>b[1].qty-a[1].qty).slice(0,30)){const tr=E('articles').insertRow();cell(tr,name);cell(tr,String(x.qty),true);cell(tr,x.known?EUR(x.gross):'–',true);}
  E('archive').replaceChildren();for(const d of docs.sort((a,b)=>b.document_date.localeCompare(a.document_date)).slice(0,50)){const p=document.createElement('p');p.className='muted';p.textContent=D(d.document_date)+' · '+(d.document_type==='cash_report'?'BONit / Kassa':d.document_type==='invoice'?'Lieferantenrechnung':d.document_type)+' · '+(d.supplier||'')+' · '+(d.status||'');E('archive').append(p);}
  E('summary').textContent=daily.length+' Umsatztage · '+docs.length+' archivierte Dokumente · BONit vor Archiv, keine Doppelzählung.';
