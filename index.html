@@ -354,6 +354,7 @@ html body #app #page-dashboard p{color:#111!important}
 <button type="button" id="gpUploadCamera" style="flex:1;min-width:125px;background:#111;color:#fff;border-radius:10px;padding:12px">📷 Kamera</button>
 <button type="button" id="gpUploadFile" style="flex:1;min-width:125px;background:#fff;color:#111;border:1px solid #aaa;border-radius:10px;padding:12px">📄 Foto / PDF</button>
 </div></section>
+<section class="card" id="gpUnifiedIntake" style="border:2px solid #333;margin:12px 0"><h2>📷 Kamera / PDF · Ein Dokumenteneingang</h2><p class="muted">Foto aufnehmen oder PDF hochladen. GastroPilot erkennt Tagesabschluss oder Lieferantenrechnung und öffnet die bestehende Belegprüfung. Originalarchiv bleibt erhalten.</p><div class="row"><button type="button" id="gpAutoCamera">Kamera öffnen</button><button type="button" id="gpAutoPdf">Foto / PDF auswählen</button></div><input id="gpAutoCameraInput" type="file" accept="image/*" capture="environment" class="hidden"><input id="gpAutoFileInput" type="file" accept="image/jpeg,image/png,image/webp,application/pdf" class="hidden"><div id="gpAutoStatus" class="status" role="status">Bereit</div></section>
 <div id="gp2Home" class="gp2-hero">
  <h2>Dein Betrieb auf einen Blick <span id="gp2HeroMonth" style="display:inline-block;margin-left:10px;font-size:.72em;font-weight:600;color:#806b4b">Oktober 2026</span></h2>
  <p class="muted">Aktuelle Daten aus den vorhandenen Abrechnungen · fehlende Werte bleiben offen</p>
@@ -1604,6 +1605,38 @@ $('gp2UploadTile').onclick=()=>{switchPage('cash');$('cashFiles').click();};
 $('gpUploadCamera').onclick=()=>{switchPage('cash');$('cashCameraInput').click();};
 $('gpUploadFile').onclick=()=>{switchPage('cash');$('cashFiles').click();};
 
+// Unified camera/PDF intake: detect document type using the existing authenticated
+// analyzer, then route to the existing review and original-file archive workflow.
+async function gpAutoIntake(file){
+ if(!file||locked||!businessId)return;
+ const status=$('gpAutoStatus');
+ if(!['image/jpeg','image/png','image/webp','application/pdf'].includes(file.type)){status.textContent='Nur Fotos oder PDF möglich.';return;}
+ if(file.size>20*1024*1024){status.textContent='Datei über 20 MB. Bitte verkleinern.';return;}
+ locked=true;
+ status.textContent='Dokument wird erkannt …';
+ try{
+  const blobs=file.type==='application/pdf'?await pdfImages(file):[await imageBlob(file)];
+  const images=[];
+  for(const blob of blobs)images.push({image_base64:await base64(blob),mime_type:'image/jpeg'});
+  const {data,error}=await db.functions.invoke('analyze-receipt',{body:{business_id:businessId,mode:'auto',images}});
+  if(error)throw error;
+  if(!data?.documents?.length)throw Error(data?.error||'Kein Dokument erkannt');
+  const kinds=new Set(data.documents.map(d=>d.document_type));
+  if(kinds.size!==1||![...kinds].every(k=>k==='cash_report'||k==='invoice'))throw Error('Dokumenttyp nicht eindeutig. Bitte Tagesabschluss oder Rechnung im bisherigen Upload getrennt auswählen.');
+  const kind=[...kinds][0],other=kind==='invoice'?'cash_report':'invoice';
+  clearFiles(kind);
+  addFiles(kind,[file]);
+  state[kind].results=data.documents;
+  renderResults(kind);
+  switchPage(kind==='invoice'?'invoice':'cash');
+  message(kindId(kind)+'Status',data.documents.length+' Beleg(e) erkannt. Werte prüfen und speichern.');
+  status.textContent='Erkannt: '+(kind==='invoice'?'Lieferantenrechnung':'BONit-Tagesabschluss')+' · Belegprüfung geöffnet.';
+ }catch(e){status.textContent='Erkennung fehlgeschlagen: '+e.message;}
+ finally{locked=false;renderFiles('cash_report');renderFiles('invoice');}
+}
+$('gpAutoCamera').onclick=()=>$('gpAutoCameraInput').click();
+$('gpAutoPdf').onclick=()=>$('gpAutoFileInput').click();
+for(const id of ['gpAutoCameraInput','gpAutoFileInput'])$(id).onchange=e=>{const file=e.target.files?.[0];e.target.value='';gpAutoIntake(file);};
 for(const kind of ['cash_report','invoice']){
   const id=kindId(kind);
 
