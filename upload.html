@@ -435,6 +435,7 @@ html body #app #page-dashboard p{color:#111!important}
 <div class="metric"><small>Ø Bonwert brutto</small><strong id="averageReceipt">–</strong></div>
 <div class="metric"><small>Ø Bons je Umsatztag</small><strong id="receiptsPerDay">–</strong></div>
 <div class="metric"><small>Ausgaben netto (Rechnungen)</small><strong id="expenses">–</strong></div>
+<div class="metric"><small>USt auf Lieferantenrechnungen</small><strong id="invoiceVat">–</strong></div>
 <div class="metric"><small>Einnahmen – Ausgaben netto</small><strong id="balance">–</strong></div>
 </div>
 
@@ -2681,6 +2682,10 @@ function updateDashboard(unique,invoices,duplicates){
   const other=sumField(unique,'other_payments_total');
   const bons=sumField(unique,'receipt_count');
   const expense=sumField(invoices,'net_total');
+  const invoiceVat=sumField(invoices,'vat_total');
+  const invoiceVatKnown=invoices.filter(d=>
+    validNumber(d.extracted_data?.vat_total)
+  ).length;
 
   $('gross').textContent=
     unique.length&&gross.complete?euro(gross.value):'–';
@@ -2740,6 +2745,10 @@ function updateDashboard(unique,invoices,duplicates){
     invoices.length&&expense.complete?
       euro(expense.value):'–';
 
+  $('invoiceVat').textContent=
+    invoices.length&&invoiceVatKnown>0?
+      euro(invoiceVat.value):'–';
+
   $('balance').textContent=
     unique.length&&net.complete&&
     invoices.length&&expense.complete?
@@ -2765,6 +2774,13 @@ function updateDashboard(unique,invoices,duplicates){
     );
   }else if(!expense.complete){
     notes.push('Rechnungs-Nettoangaben unvollständig.');
+  }
+
+  if(invoices.length&&invoiceVatKnown<invoices.length){
+    notes.push(
+      'USt-Wert nur bei '+invoiceVatKnown+' von '+
+      invoices.length+' Lieferantenrechnungen erfasst.'
+    );
   }
 
   if(unique.length&&!bons.complete){
