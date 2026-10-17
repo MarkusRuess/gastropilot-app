@@ -1637,6 +1637,28 @@ async function gpAutoIntake(file){
 $('gpAutoCamera').onclick=()=>$('gpAutoCameraInput').click();
 $('gpAutoPdf').onclick=()=>$('gpAutoFileInput').click();
 for(const id of ['gpAutoCameraInput','gpAutoFileInput'])$(id).onchange=e=>{const file=e.target.files?.[0];e.target.value='';gpAutoIntake(file);};
+// Receive the single upload tile selection from the main dashboard.
+(async()=>{
+ try{
+  const raw=sessionStorage.getItem('gp-pending-upload');
+  if(!raw)return;
+  sessionStorage.removeItem('gp-pending-upload');
+  const item=JSON.parse(raw);
+  const response=await fetch(item.data);
+  const blob=await response.blob();
+  const file=new File([blob],item.name,{type:item.type});
+  const status=$('gpAutoStatus');
+  status.textContent='Datei übernommen: '+file.name+'. Anmeldung wird geprüft …';
+  const waitForLogin=async()=>{
+   for(let attempt=0;attempt<50;attempt++){
+    if(businessId){await gpAutoIntake(file);return;}
+    await new Promise(resolve=>setTimeout(resolve,250));
+   }
+   status.textContent='Bitte anmelden. Anschließend Datei erneut auswählen.';
+  };
+  waitForLogin();
+ }catch(e){$('gpAutoStatus').textContent='Übernahme fehlgeschlagen: '+e.message;}
+})();
 for(const kind of ['cash_report','invoice']){
   const id=kindId(kind);
 
