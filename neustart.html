@@ -22,7 +22,7 @@ try{const [bonit,docs,articles]=await Promise.all([fetchAll('bonit_daily_closing
 const byDate=new Map();for(const r of bonit){byDate.set(r.closing_date,{date:r.closing_date,source:'BONit',gross:num(r.gross_amount),net:num(r.net_amount),cash:num(r.cash_amount),card:num(r.card_amount),receipts:num(r.receipt_count),paid:paidCount(r),raw:r.raw_data||{},verified:true});}
 const archive=new Map();for(const d of docs.filter(x=>x.document_type==='cash_report')){const old=archive.get(d.document_date);if(!old||String(d.created_at)>String(old.created_at))archive.set(d.document_date,d);}
 let extra=0;for(const [day,d] of archive){if(byDate.has(day))continue;const x=d.extracted_data||{};byDate.set(day,{date:day,source:'Archiv',gross:num(x.gross_total),net:num(x.net_total),cash:num(x.cash_total),card:num(x.card_total),receipts:num(x.receipt_count),paid:paidCount(x),verified:d.status==='reviewed'&&!x.needs_review});extra++;}
-const rows=[...byDate.values()].sort((a,b)=>a.date.localeCompare(b.date));const gross=sumComplete(rows,'gross'),net=sumComplete(rows,'net'),cash=sumComplete(rows,'cash'),card=sumComplete(rows,'card'),paid=sumComplete(rows,'paid');const metrics=[['Bruttoumsatz',eur(gross)],['Nettoumsatz',eur(net)],['Bar',eur(cash)],['Karte',eur(card)],['Umsatztage',String(rows.length)],['Bezahlte Rechnungen',paid===null?'Prüfung offen':String(paid)],['Ø Bon',gross!==null&&paid>0?eur(gross/paid):'Prüfung offen'],['Archiv-Ergänzungen',String(extra)],['USt Lieferantenrechnungen',eur(invoiceVat)]];
+const rows=[...byDate.values()].sort((a,b)=>a.date.localeCompare(b.date));const gross=sumComplete(rows,'gross'),net=sumComplete(rows,'net'),cash=sumComplete(rows,'cash'),card=sumComplete(rows,'card'),paid=sumComplete(rows,'paid');const metrics=[['Bruttoumsatz',eur(gross)],['Nettoumsatz',eur(net)],['Bar',eur(cash)],['Karte',eur(card)],['Umsatztage',String(rows.length)],['Bezahlte Rechnungen',paid===null?'Prüfung offen':String(paid)],['Ø Bon',gross!==null&&paid>0?eur(gross/paid):'Prüfung offen'],['Archiv-Ergänzungen',String(extra)]];
 function checkedTax(raw,grossTotal,netTotal){
  const groups={};
  if(Array.isArray(raw?.vat_breakdown)){
@@ -47,6 +47,7 @@ for(const [day,d] of archive){
  const x=d.extracted_data||{},t=checkedTax(x,num(x.gross_total),num(x.net_total));if(t)taxByDay.set(day,t);else if(x.vat_breakdown)taxInvalid.push(day);
 }
 const verifiedDays=[...taxByDay.keys()].filter(day=>byDate.has(day)),invoiceDocs=docs.filter(d=>d.document_type==='invoice'),validInvoices=invoiceDocs.filter(d=>{const x=d.extracted_data||{},v=num(x.vat_total),g=num(x.gross_total),n=num(x.net_total);return v!==null&&g!==null&&n!==null&&Number.isFinite(v)&&Math.abs(g-n-v)<=0.03;}),invoiceVat=validInvoices.reduce((sum,d)=>sum+num(d.extracted_data.vat_total),0);
+metrics.push(['USt Lieferantenrechnungen',eur(invoiceVat)]);
 el('taxTiles').replaceChildren();
 for(const [label,key] of [['10 % brutto','g10'],['10 % netto','n10'],['10 % Steuer','t10'],['20 % brutto','g20'],['20 % netto','n20'],['20 % Steuer','t20']]){
  const tile=addText(el('taxTiles'),'div','','tile');addText(tile,'small',label);
