@@ -3020,7 +3020,15 @@ async function applyBonitDashboard(month,manualDocs){
   const dayCount=bonitDates.size+extra.length;
   $('days').textContent=String(dayCount);
   const lastClosing=[...bonitDates,...extra.map(d=>d.document_date)].sort().at(-1);
-  if($('gp2LastClosing'))$('gp2LastClosing').textContent='Letzter Tagesabschluss: '+(lastClosing?dateLabel(lastClosing):'–');
+  if($('gp2LastClosing')){
+    const importedLast=[...bonitDates].sort().at(-1);
+    const archiveOnly=extra.map(d=>d.document_date).sort();
+    const latestArchive=archiveOnly.at(-1);
+    const info=['Letzter Tagesabschluss: '+(lastClosing?dateLabel(lastClosing):'–')];
+    if(latestArchive)info.push('Archiv ergänzt '+archiveOnly.length+' Tag(e) ohne BONit-Tabelleneintrag (bis '+dateLabel(latestArchive)+')');
+    if(importedLast&&latestArchive&&latestArchive>importedLast)info.push('BONit-Import noch nicht vollständig synchronisiert');
+    $('gp2LastClosing').textContent=info.join(' · ');
+  }
   $('gross').textContent=gross===null?'–':euro(gross);
   $('net').textContent=net===null?'–':euro(net);
   if($('gp2Net'))$('gp2Net').textContent=net===null?'–':euro(net);
@@ -3049,7 +3057,7 @@ async function applyBonitDashboard(month,manualDocs){
     ?[...bonit.map(r=>Number.isFinite(Number(r.paid_receipt_count))?Number(r.paid_receipt_count):null),
        ...extra.map(d=>Number.isFinite(Number(d.extracted_data?.paid_receipt_count))?Number(d.extracted_data.paid_receipt_count):null)]
     :[];
-  const hasVerifiedPaidCount=paidReceiptCount.length>0&&paidReceiptCount.every(n=>n!==null&&n>=0);
+  const hasVerifiedPaidCount=paidReceiptCount.length>0&&paidReceiptCount.every(n=>n!==null&&Number.isInteger(n)&&n>=0);
   const paidReceipts=hasVerifiedPaidCount?paidReceiptCount.reduce((a,b)=>a+b,0):null;
   $('averageReceipt').textContent=gross!==null&&paidReceipts>0?euro(gross/paidReceipts):'–';
   $('averageReceipt').title=hasVerifiedPaidCount?'Bruttoumsatz geteilt durch bezahlte Rechnungen':'Bezahlte Rechnungsanzahl noch nicht vollständig aus BONit übernommen; 0-Euro-Personalbons ausgeschlossen';
