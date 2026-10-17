@@ -2570,8 +2570,50 @@ function renderArchive(kind,docs){
       }else{
         const note=document.createElement('p');
         note.className='muted';
-        note.textContent='Kein Original-PDF/Foto archiviert (älterer Beleg).';
+        note.textContent='Kein Original-PDF/Foto archiviert.';
         detail.append(note);
+        const picker=document.createElement('input');
+        picker.type='file';
+        picker.accept='.pdf,.jpg,.jpeg,.png,.webp,application/pdf,image/jpeg,image/png,image/webp';
+        picker.hidden=true;
+        const attach=document.createElement('button');
+        attach.type='button';
+        attach.className='secondary';
+        attach.textContent='Original nachträglich hinzufügen';
+        const attachStatus=document.createElement('span');
+        attachStatus.className='muted';
+        attachStatus.style.marginLeft='8px';
+        attach.onclick=()=>picker.click();
+        picker.onchange=async()=>{
+          const file=picker.files?.[0];
+          picker.value='';
+          if(!file)return;
+          attach.disabled=true;
+          attachStatus.textContent=' Original wird gespeichert …';
+          let path=null,persisted=false;
+          try{
+            if(!user||!businessId)throw Error('Bitte anmelden und erneut versuchen.');
+            if(file.size>20*1024*1024)throw Error('Datei zu groß (maximal 20 MB).');
+            const ext=({'application/pdf':'pdf','image/jpeg':'jpg','image/png':'png','image/webp':'webp'})[file.type];
+            if(!ext)throw Error('Nur PDF, JPG, PNG oder WEBP werden unterstützt.');
+            path=businessId+'/'+crypto.randomUUID()+'.'+ext;
+            const uploaded=await db.storage.from('invoice-originals').upload(path,file,{contentType:file.type,upsert:false});
+            if(uploaded.error)throw Error('Originaldatei nicht gespeichert: '+uploaded.error.message);
+            const updated={...(entry.extracted_data||{}),original_files:[...(Array.isArray(entry.extracted_data?.original_files)?entry.extracted_data.original_files:[]),path]};
+            const {data,error}=await db.from('documents').update({storage_path:path,extracted_data:updated})
+              .eq('id',entry.id).eq('business_id',businessId).eq('document_type','invoice').is('storage_path',null).select('id').maybeSingle();
+            if(error)throw error;
+            if(!data)throw Error('Rechnung wurde inzwischen geändert. Bitte aktualisieren und erneut versuchen.');
+            persisted=true;path=null;entry.storage_path=updated.original_files.at(-1);entry.extracted_data=updated;
+            attachStatus.textContent=' Original gespeichert.';
+            try{await loadAll();}catch(refreshError){attachStatus.textContent=' Original gespeichert. Bitte aktualisieren, falls die Ansicht noch nicht erneuert wurde.';}
+          }catch(err){
+            if(path&&!persisted)await db.storage.from('invoice-originals').remove([path]);
+            attachStatus.textContent=(persisted?' Original gespeichert; Ansicht konnte nicht aktualisiert werden. ':' Fehler: ')+err.message;
+            if(!persisted)attach.disabled=false;
+          }
+        };
+        detail.append(picker,attach,attachStatus);
       }
     }
 
