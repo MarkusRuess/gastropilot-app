@@ -184,7 +184,13 @@ async function refresh(){renderAugust();
  E('tax').replaceChildren();for(const [label,key] of [['10 % brutto','g10'],['10 % netto','n10'],['20 % brutto','g20'],['20 % netto','n20']])tile(E('tax'),label,M?EUR(({g10:M.tax.find(x=>x.rate===10).gross,n10:M.tax.find(x=>x.rate===10).net,g20:M.tax.find(x=>x.rate===20).gross,n20:M.tax.find(x=>x.rate===20).net})[key]):taxRows.length===daily.length&&daily.length?EUR(taxRows.reduce((a,x)=>a+x[key],0)):'–');
  E('taxNote').textContent=M?'BONit Monatsabschluss Z '+M.z_number+' · Steuergruppen aus Original.':taxRows.length+' von '+daily.length+' Tagesabrechnungen mit vollständig abgeglichenen 10/20-%-Werten. Fehlende Werte werden nicht ergänzt.';
  const personnelRows=personnel.data||[],expenseRows=expenses.data||[],accountRows=accounts.data||[],fixedRows=bankFixed.data||[];
- const personnelCost=personnelRows.length&&personnelRows.every(x=>N(x.total_costs)!==null)?personnelRows.reduce((a,x)=>a+N(x.total_costs),0):null;
+ const octoberEstimate=E('month').value==='2026-10';
+ let personnelCost=personnelRows.length&&personnelRows.every(x=>N(x.total_costs)!==null)?personnelRows.reduce((a,x)=>a+N(x.total_costs),0):null;
+ if(octoberEstimate){
+  const {data:augPersonnel,error:augPersonnelError}=await db.from('personnel_costs').select('total_costs').eq('business_id',BID).eq('accounting_month','2026-08-01');
+  if(augPersonnelError)throw augPersonnelError;
+  personnelCost=augPersonnel?.length&&augPersonnel.every(x=>N(x.total_costs)!==null)?augPersonnel.reduce((a,x)=>a+N(x.total_costs),0):null;
+ }
  const foodDrink=expenseRows.filter(x=>['food','drinks','beverages'].includes(String(x.category||'').toLowerCase()));
  const purchaseCost=foodDrink.length&&foodDrink.every(x=>N(x.net_amount)!==null)?foodDrink.reduce((a,x)=>a+N(x.net_amount),0):null;
  const fixedCost=fixedRows.length&&fixedRows.every(x=>N(x.amount)!==null)?fixedRows.reduce((a,x)=>a+Math.abs(N(x.amount)),0):null;
@@ -200,8 +206,8 @@ async function refresh(){renderAugust();
  E('costs').replaceChildren();
  if(isAug||isSep){const b=isAug?[23954.76,58.47]:[22393.57,55.36];tile(E('costs'),'Nach Personal verbleibend',EUR(b[0]));tile(E('costs'),'Anteil nach Personal',b[1].toFixed(2).replace('.',',')+' %');}
  for(const [label,value] of [
- ['Personal · erfasst',EUR(personnelCost)],
- ['Personalquote (Ziel 35 %)',personnelCost!==null&&(M?M.net:net)>0?(100*personnelCost/(M?M.net:net)).toFixed(1)+' %':'–'],
+ [octoberEstimate?'Personal · August-Basis (Plan Oktober)':'Personal · erfasst',EUR(personnelCost)],
+ [octoberEstimate?'Personalquote · August-Basis (Plan)':'Personalquote (Ziel 35 %)',personnelCost!==null&&(M?M.net:net)>0?(100*personnelCost/(M?M.net:net)).toFixed(1)+' %':'–'],
  ['Einkäufe Speisen/Getränke · erfasst',EUR(purchaseCost)],
  ['Wareneinsatzquote (Ziel 26 %)','Inventur/Verbrauch fehlt'],
  ['Bank-Fixkosten · erfasst',EUR(fixedCost)],
