@@ -199,19 +199,42 @@ async function autoArchive(doc,sourceFile){
   if(error)throw error;if(x.supplier&&x.invoice_number&&data?.length)return 'bereits vorhanden';
   x.payment_status='ungeklaert';x.payment_method=null;
  }
- const ext=sourceFile.type==='application/pdf'?'pdf':sourceFile.type==='image/png'?'png':sourceFile.type==='image/webp'?'webp':'jpg';
- const path=BID+'/'+crypto.randomUUID()+'.'+ext;
- const upload=await db.storage.from('invoice-originals').upload(path,sourceFile,{contentType:sourceFile.type,upsert:false});
- if(upload.error)throw Error('Originaldatei: '+upload.error.message);
- x.original_files=[path];x.import_method='automatic';x.needs_review=!!x.needs_review;
- const {error}=await db.from('documents').insert({business_id:BID,uploaded_by:user.id,document_type:kind,document_date:x.date,supplier:kind==='invoice'?x.supplier:null,invoice_number:kind==='invoice'?x.invoice_number:null,storage_path:path,status:x.needs_review?'auto_review':'auto_imported',extracted_data:x});
- if(error){await db.storage.from('invoice-originals').remove([path]);throw error;}
+ const originals=Array.isArray(sourceFile)?sourceFile:[sourceFile],paths=[];
+ try{
+  for(const original of originals){
+   const ext=original.type==='application/pdf'?'pdf':original.type==='image/png'?'png':original.type==='image/webp'?'webp':'jpg';
+   const path=BID+'/'+crypto.randomUUID()+'.'+ext;
+   const upload=await db.storage.from('invoice-originals').upload(path,original,{contentType:original.type,upsert:false});
+   if(upload.error)throw Error('Originaldatei: '+upload.error.message);
+   paths.push(path);
+  }
+  x.original_files=paths;x.original_page_count=originals.length;x.import_method='automatic';x.needs_review=!!x.needs_review;
+  const {error}=await db.from('documents').insert({business_id:BID,uploaded_by:user.id,document_type:kind,document_date:x.date,supplier:kind==='invoice'?x.supplier:null,invoice_number:kind==='invoice'?x.invoice_number:null,storage_path:paths[0],status:x.needs_review?'auto_review':'auto_imported',extracted_data:x});
+  if(error)throw error;
+ }catch(e){if(paths.length)await db.storage.from('invoice-originals').remove(paths);throw e;}
  return 'gespeichert';
 }
 async function process(){
  if(busy||!queue.length)return;if(!user){E('uploadStatus').textContent='Bitte anmelden.';return;}
  busy=true;drawQueue();E('review').replaceChildren();const files=[...queue];let saved=0,duplicate=0,failed=0;const errors=[];
  try{
+  // Mehrseitige Fotos in EINEM Upload zuerst als zusammenhängenden BONit-Abschluss lesen.
+  // Nur wenn eindeutig ein Monats-/Tagesabschluss erkannt wird, gemeinsam archivieren.
+  if(files.length>1&&files.every(f=>f.type.startsWith('image/'))){
+   try{
+    E('uploadStatus').textContent=files.length+' Fotos werden als zusammenhängender Abschluss erkannt …';
+    const images=[];for(const file of files)images.push({image_base64:await b64(file),mime_type:file.type});
+    const {data,error}=await db.functions.invoke('analyze-receipt',{body:{business_id:BID,mode:'auto',images}});
+    if(error)throw error;if(data?.error)throw Error(data.error);
+    if(data?.documents?.length===1&&['monthly_report','cash_report'].includes(data.documents[0].document_type)){
+     const outcome=await autoArchive(data.documents[0],files);
+     if(outcome==='bereits vorhanden')duplicate++;else saved++;
+     queue=queue.filter(f=>!files.includes(f));
+     E('uploadStatus').textContent=files.length+' Seiten als EIN BONit-Abschluss '+(outcome==='bereits vorhanden'?'bereits vorhanden':'archiviert')+'.';
+     await refresh();await loadWholeArchive();return;
+    }
+   }catch(e){errors.push('Gemeinsame Seitenerkennung: '+(e.message||String(e))+' · Einzelverarbeitung wird versucht.');}
+  }
   for(const file of files){
    E('uploadStatus').textContent='Automatische Verarbeitung '+(saved+duplicate+failed+1)+'/'+files.length+': '+file.name;
    try{
@@ -227,7 +250,7 @@ async function process(){
   }
   E('uploadStatus').textContent=saved+' automatisch archiviert · '+duplicate+' bereits vorhanden · '+failed+' zur Prüfung. Rechnungen ohne belegten Zahlungsstatus bleiben „ungeklärt“.';
   for(const msg of errors){const p=document.createElement('p');p.className='warning';p.textContent=msg;E('review').append(p);}
-  if(saved)await refresh();
+  if(saved){await refresh();await loadWholeArchive();}
  }finally{busy=false;drawQueue();}
 }
 function review(doc,sourceFile){const wrap=document.createElement('div');wrap.className='review';wrap.dataset.sourceFile=sourceFile.name;const h=document.createElement('h3');h.textContent=doc.document_type==='cash_report'?'BONit / Tagesabschluss':doc.document_type==='monthly_report'?'BONit / Monatsabschluss':doc.document_type==='invoice'?'Lieferantenrechnung':'Dokumenttyp prüfen';wrap.append(h);const source=document.createElement('p');source.className='muted';source.textContent='Original: '+sourceFile.name;wrap.append(source);const grid=document.createElement('div');grid.className='field';wrap.append(grid);field(grid,doc.document_type==='monthly_report'?'Monatsende':'Datum','date',doc.date,'date');if(doc.document_type==='monthly_report'){field(grid,'Zeitraum von','period_start',doc.period_start,'date');field(grid,'Zeitraum bis','period_end',doc.period_end,'date');}field(grid,'Brutto','gross_total',doc.gross_total,'number');field(grid,'Netto','net_total',doc.net_total,'number');field(grid,'Umsatzsteuer','vat_total',doc.vat_total,'number');if(['cash_report','monthly_report'].includes(doc.document_type)){field(grid,'Bar','cash_total',doc.cash_total,'number');field(grid,'Karte','card_total',doc.card_total,'number');field(grid,'Bonanzahl','receipt_count',doc.receipt_count,'number');}else{field(grid,'Lieferant','supplier',doc.supplier);field(grid,'Rechnungsnummer','invoice_number',doc.invoice_number);const label=document.createElement('label');label.textContent='Zahlungsstatus';const select=document.createElement('select');select.dataset.key='payment_status';for(const v of ['','offen','bezahlt']){const opt=document.createElement('option');opt.value=v;opt.textContent=v||'Bitte auswählen';select.append(opt);}label.append(select);grid.append(label);const pay=document.createElement('label');pay.textContent='Zahlungsart (bei bezahlt)';const method=document.createElement('select');method.dataset.key='payment_method';for(const v of ['','bar','bankueberweisung','karte']){const opt=document.createElement('option');opt.value=v;opt.textContent=v||'Bitte auswählen';method.append(opt);}pay.append(method);grid.append(pay);}
