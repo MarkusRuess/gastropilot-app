@@ -3042,7 +3042,17 @@ async function applyBonitDashboard(month,manualDocs){
   $('cardTotal').textContent=card===null?'–':euro(card);
   $('otherTotal').textContent='–';
   $('receiptCount').textContent=receipts===null?'–':new Intl.NumberFormat('de-AT').format(receipts);
-  $('averageReceipt').textContent=gross!==null&&receipts>0?euro(gross/receipts):'–';
+  // BONit receipt_count can include 0-Euro personnel receipts.
+  // Never label gross / all receipts as the verified average paid receipt.
+  // Prefer explicitly stored paid receipt counts when supplied by original source.
+  const paidReceiptCount=bonit.length+extra.length>0
+    ?[...bonit.map(r=>Number.isFinite(Number(r.paid_receipt_count))?Number(r.paid_receipt_count):null),
+       ...extra.map(d=>Number.isFinite(Number(d.extracted_data?.paid_receipt_count))?Number(d.extracted_data.paid_receipt_count):null)]
+    :[];
+  const hasVerifiedPaidCount=paidReceiptCount.length>0&&paidReceiptCount.every(n=>n!==null&&n>=0);
+  const paidReceipts=hasVerifiedPaidCount?paidReceiptCount.reduce((a,b)=>a+b,0):null;
+  $('averageReceipt').textContent=gross!==null&&paidReceipts>0?euro(gross/paidReceipts):'–';
+  $('averageReceipt').title=hasVerifiedPaidCount?'Bruttoumsatz geteilt durch bezahlte Rechnungen':'Bezahlte Rechnungsanzahl noch nicht vollständig aus BONit übernommen; 0-Euro-Personalbons ausgeschlossen';
   $('receiptsPerDay').textContent=receipts!==null&&dayCount?new Intl.NumberFormat('de-AT',{maximumFractionDigits:1}).format(receipts/dayCount):'–';
   $('paymentCheck').textContent=gross!==null&&cash!==null&&card!==null&&Math.abs(gross-cash-card)<0.02?'Abgeglichen':'Pruefung offen';
   $('paymentCheck').className='';
