@@ -99,21 +99,21 @@ function drawQueue(){E('fileQueue').replaceChildren();const heading=document.cre
 async function autoArchive(doc,sourceFile){
  const x={...doc},kind=x.document_type;
  if(!['cash_report','monthly_report','invoice'].includes(kind))throw Error('Dokumenttyp nicht sicher erkannt');
- if(!/^\d{4}-\d{2}-\d{2}$/.test(x.date||''))throw Error('Datum nicht sicher erkannt');
- if(!Number.isFinite(N(x.gross_total)))throw Error('Bruttobetrag fehlt');
- if(N(x.net_total)!==null&&N(x.vat_total)!==null&&Math.abs(N(x.net_total)+N(x.vat_total)-N(x.gross_total))>.03)throw Error('Brutto, Netto und Steuer stimmen nicht überein');
+ if(!/^\d{4}-\d{2}-\d{2}$/.test(x.date||'')){x.date=new Date().toLocaleDateString('en-CA',{timeZone:'Europe/Vienna'});x.needs_review=true;x.import_warning='Belegdatum unklar; Erfassungsdatum als vorläufiges Archivdatum.';}
+ if(N(x.gross_total)===null){x.needs_review=true;x.import_warning='Bruttobetrag noch nicht erkannt; Originaldatei archiviert, keine Umsatzverbuchung.';}
+ if(N(x.gross_total)!==null&&N(x.net_total)!==null&&N(x.vat_total)!==null&&Math.abs(N(x.net_total)+N(x.vat_total)-N(x.gross_total))>.03){x.needs_review=true;x.import_warning='Brutto, Netto und Steuer weichen ab; nicht für Umsatzberechnung freigegeben.';}
  if(kind==='monthly_report'){
-  if(!/^\d{4}-\d{2}-\d{2}$/.test(x.period_start||'')||!/^\d{4}-\d{2}-\d{2}$/.test(x.period_end||'')||x.period_start>x.period_end)throw Error('Monatszeitraum nicht eindeutig erkannt');
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(x.period_start||'')||!/^\d{4}-\d{2}-\d{2}$/.test(x.period_end||'')||x.period_start>x.period_end){x.needs_review=true;x.import_warning='Monatszeitraum nicht eindeutig erkannt; Original archiviert, noch nicht in Monatsumsatz übernommen.';}
   const {data,error}=await db.from('documents').select('id,extracted_data').eq('business_id',BID).eq('document_type','monthly_report').eq('document_date',x.date).limit(100);
   if(error)throw error;
-  if(data?.some(d=>d.extracted_data?.period_start===x.period_start&&d.extracted_data?.period_end===x.period_end))return 'bereits vorhanden';
+  if(x.period_start&&x.period_end&&data?.some(d=>d.extracted_data?.period_start===x.period_start&&d.extracted_data?.period_end===x.period_end))return 'bereits vorhanden';
  }else if(kind==='cash_report'){
   const {data,error}=await db.from('documents').select('id').eq('business_id',BID).eq('document_type','cash_report').eq('document_date',x.date).limit(1);
   if(error)throw error;if(data?.length)return 'bereits vorhanden';
  }else{
-  if(!x.supplier||!x.invoice_number)throw Error('Lieferant oder Rechnungsnummer nicht eindeutig');
+  if(!x.supplier||!x.invoice_number){x.needs_review=true;x.import_warning='Lieferant oder Rechnungsnummer unvollständig; Original archiviert.';}
   const {data,error}=await db.from('documents').select('id').eq('business_id',BID).eq('document_type','invoice').eq('supplier',x.supplier).eq('invoice_number',x.invoice_number).limit(1);
-  if(error)throw error;if(data?.length)return 'bereits vorhanden';
+  if(error)throw error;if(x.supplier&&x.invoice_number&&data?.length)return 'bereits vorhanden';
   x.payment_status='ungeklaert';x.payment_method=null;
  }
  const ext=sourceFile.type==='application/pdf'?'pdf':sourceFile.type==='image/png'?'png':sourceFile.type==='image/webp'?'webp':'jpg';
