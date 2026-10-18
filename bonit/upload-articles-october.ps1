@@ -1,5 +1,5 @@
 # GastroPilot BONit: Artikelumsätze aus dem aktuellen vollständigen Export importieren
-# Liest alle vorhandenen Datenzeilen ohne festes Monats- oder Z-Beleg-Datum.
+# Alle Datenzeilen werden verarbeitet; kein festes Monats- oder Z-Beleg-Datum.
 $ErrorActionPreference='Stop'
 $root='C:\GastroPilot\Export'
 $name='Artikelums'+[char]0x00E4+'tze.csv'
@@ -15,7 +15,13 @@ $batch=New-Object 'System.Collections.Generic.List[object]'
 $seen=New-Object 'System.Collections.Generic.HashSet[string]'
 $total=0
 function Find-Column([string[]]$headers,[string[]]$aliases){
- foreach($alias in $aliases){foreach($header in $headers){if($header.Trim().TrimStart([char]0xFEFF) -ieq $alias){return $header}}}
+ foreach($alias in $aliases){foreach($header in $headers){if($header -ieq $alias){return $header}}}
+ return $null
+}
+function Get-Field($row,[string]$column){
+ if(!$column){return $null}
+ $property=$row.PSObject.Properties[$column]
+ if($property){return $property.Value}
  return $null
 }
 function Parse-Number([string]$value,[string]$label){
@@ -39,7 +45,7 @@ $matched=0
 try {
  $headerLine=$reader.ReadLine()
  if(!$headerLine){throw 'Artikeldatei ist leer'}
- $headers=$headerLine -split "`t"
+ $headers=@(($headerLine -split "`t") | ForEach-Object {$_.Trim().TrimStart([char]0xFEFF)})
  $dateCol=Find-Column $headers @('Datum','DatumDurchfuehrung','Buchungsdatum')
  $zCol=Find-Column $headers @('TagAbNr','ZAbNr','ZNummer','Abschlussnummer')
  $idCol=Find-Column $headers @('ID','ArtikelID','PositionsID')
@@ -48,37 +54,42 @@ try {
  $nameCol=Find-Column $headers @('Bezeichnung','Artikelname','Name')
  $grossCol=Find-Column $headers @('Bruttobetrag','Gesamtbrutto','UmsatzBrutto','Brutto','SummeBrutto','BetragBrutto','Gesamtbetrag','Summe','Umsatz','Betrag')
  $unitCol=Find-Column $headers @('EinzelpreisBrutto','VerkaufspreisBrutto','PreisBrutto','Einzelpreis','Verkaufspreis','Preis','UnitPrice')
- $missing=@();foreach($pair in @(@('Datum',$dateCol),@('Z-Beleg',$zCol),@('Positions-ID',$idCol),@('Menge',$qtyCol),@('Artikelname',$nameCol))){if(!$pair[1]){$missing+=$pair[0]}}
+ $missing=@()
+ if(!$dateCol){$missing+='Datum'}
+ if(!$zCol){$missing+='Z-Beleg'}
+ if(!$idCol){$missing+='Positions-ID'}
+ if(!$qtyCol){$missing+='Menge'}
+ if(!$nameCol){$missing+='Artikelname'}
  if($missing.Count){throw "BONit-Spalten fehlen: $($missing -join ', '). Gefundene Spalten: $($headers -join ' | ')"}
  if(!$grossCol -and !$unitCol){throw "Keine Umsatz- oder Bruttopreisspalte gefunden. Gefundene Spalten: $($headers -join ' | ')"}
  Write-Host "Datei: $($file.FullName)"
- Write-Host "Lese alle Datenzeilen; Datumsspalte '$dateCol', Umsatzspalte '$grossCol', Preisfallback '$unitCol'."
+ Write-Host "Lese alle Datenzeilen; Datum '$dateCol', Umsatz '$grossCol', Preisfallback '$unitCol'."
  while(($line=$reader.ReadLine()) -ne $null){
   $lines++
   if([string]::IsNullOrWhiteSpace($line)){continue}
   if(($lines % 100000) -eq 0){Write-Host "Gelesen: $lines Zeilen; importbereit: $matched; gespeichert/aktualisiert: $total"}
   $item=$line | ConvertFrom-Csv -Header $headers -Delimiter "`t"
-  $id=[string]$item.$idCol
+  $id=[string](Get-Field $item $idCol)
   if([string]::IsNullOrWhiteSpace($id)){continue}
-  $dateText=[string]$item.$dateCol
+  $dateText=[string](Get-Field $item $dateCol)
   $parsedDate=[datetime]::MinValue
   if(-not [datetime]::TryParse($dateText,$culture,[Globalization.DateTimeStyles]::AllowWhiteSpaces,[ref]$parsedDate)){throw "Ungültiges Datum in Zeile $lines: $dateText"}
   $day=$parsedDate.ToString('yyyy-MM-dd')
-  $z=[string]$item.$zCol
-  if($z -notmatch '^d{1,15}$'){throw "Ungültige Z-Abschlussnummer in Zeile $lines: $z"}
-  $quantity=Parse-Number ([string]$item.$qtyCol) $qtyCol
+  $z=[string](Get-Field $item $zCol)
+  if($z -notmatch '^\d{1,15}$'){throw "Ungültige Z-Abschlussnummer in Zeile $lines: $z"}
+  $quantity=Parse-Number ([string](Get-Field $item $qtyCol)) $qtyCol
   if($null -eq $quantity -or $quantity -eq 0){continue}
   $unitPrice=$null
-  if($unitCol){$unitPrice=Parse-Number ([string]$item.$unitCol) $unitCol}
+  if($unitCol){$unitPrice=Parse-Number ([string](Get-Field $item $unitCol)) $unitCol}
   $gross=$null
-  if($grossCol){$gross=Parse-Number ([string]$item.$grossCol) $grossCol}
+  if($grossCol){$gross=Parse-Number ([string](Get-Field $item $grossCol)) $grossCol}
   if($null -eq $gross -and $null -ne $unitPrice){$gross=[math]::Round($quantity*$unitPrice,2)}
-  if($null -eq $gross){throw "Bruttoumsatz fehlt in Zeile $lines (ID $id); kein Upload dieses Datensatzes."}
+  if($null -eq $gross){throw "Bruttoumsatz fehlt in Zeile $lines (ID $id); Import an dieser Stelle gestoppt."}
   $source='bonit-article-'+$id
   if(!$seen.Add($source)){continue}
   $batch.Add([pscustomobject]@{
    source_key=$source;closing_date=$day;z_number=$z
-   article_number=[string]$item.$pluCol;article_name=[string]$item.$nameCol
+   article_number=[string](Get-Field $item $pluCol);article_name=[string](Get-Field $item $nameCol)
    quantity=$quantity;gross_amount=$gross;unit_price=$unitPrice
   })
   $matched++
