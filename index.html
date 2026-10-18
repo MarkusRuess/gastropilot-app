@@ -58,10 +58,43 @@ h2{font-size:17px;margin:10px 0}h3{font-size:14px}table{width:100%;border-collap
  #app details.compactFold{border-top:1px solid #e5eaf0;margin-top:7px}
  #app details.compactFold>summary{cursor:pointer;font-size:12px;font-weight:700;padding:9px 2px;color:#21435a}
 }
+</style>
+<style>
+.visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+#app>.row{align-items:flex-start}
+.month-overview{width:min(100%,420px);padding:11px 13px;border:1px solid #b9d7d2;border-radius:12px;background:#f5fbf9;box-shadow:0 2px 8px #173c4810}
+.month-overview-head{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.month-overview-head small{display:block;font-size:10px;color:#56716c;line-height:1.3}
+#monthOverviewTitle{display:block;font-size:16px;line-height:1.4;color:#134e45}
+.month-controls{display:flex;align-items:center;gap:4px}
+.month-controls button{padding:3px 7px;min-width:27px;min-height:32px;font-size:20px;line-height:1;background:#dfeee9;color:#164e45;border-color:#c7ddd6}
+.month-input-label{margin:0}
+#monthOverview input[type=month]{width:135px;font-size:12px;padding:6px;min-height:32px}
+.month-overview-stats{display:grid;grid-template-columns:1.2fr .8fr 1fr;gap:7px;margin-top:9px}
+.month-overview-stats>div{min-width:0;padding:6px 7px;border-radius:7px;background:white;border:1px solid #e1ebe7}
+.month-overview-stats small{display:block;color:#647975;font-size:10px;line-height:1.3}
+.month-overview-stats strong{display:block;font-size:14px;line-height:1.6;font-variant-numeric:tabular-nums}
+#monthCalendar{margin-top:7px;border-top:1px solid #dce9e4}
+#monthCalendar>summary{padding:7px 0 0;font-size:11px;font-weight:650;color:#285e54;cursor:pointer}
+.month-calendar-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;margin-top:8px}
+.month-weekday{text-align:center;font-size:10px;font-weight:650;color:#637a73;padding:2px}
+.month-day{min-width:0;min-height:43px;padding:4px 2px;border:1px solid #deebe5;background:#fff;color:#50675f;border-radius:6px;text-align:center;box-shadow:none;font-variant-numeric:tabular-nums}
+.month-day strong{display:block;font-size:11px;line-height:1.3}
+.month-day small{display:block;font-size:9px;font-weight:550;line-height:1.6;white-space:nowrap;letter-spacing:-.2px}
+.month-day.has-sales{background:#dcefe6;color:#0d5442;border-color:#b9dccc}
+.month-day.selected{outline:2px solid #087f70;outline-offset:0}
+.month-day.today{border:2px solid #087f70}
+.month-day:focus-visible{outline:2px solid #173c50;outline-offset:1px}
+.month-calendar-note{font-size:9px;color:#61776e;margin:6px 0 0}
+.month-day-detail{margin-top:7px;padding:7px 8px;background:white;border-radius:7px;font-size:11px}
+.month-day-detail:empty{display:none}
+.month-day-detail strong{display:block;margin-bottom:4px}
+.month-day-detail-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:3px 10px;font-variant-numeric:tabular-nums}
+@media(max-width:680px){.month-overview{width:100%;padding:9px 10px}.month-overview-head{gap:5px}#monthOverviewTitle{font-size:15px}.month-controls{gap:3px}#monthOverview input[type=month]{width:126px}.month-overview-stats strong{font-size:13px}.month-overview-stats{gap:5px}#app>.row{gap:7px}#app>.row>button{padding:7px 10px;font-size:12px}}
 </style></head><body>
 <header><strong>GastroPilot</strong><small>Dein Lokal. Deine Zahlen. Dein Überblick.</small></header>
 <main><section id="login" class="card"><h2>Anmelden</h2><form id="loginForm"><label>E-Mail<input id="email" type="email" autocomplete="username" required></label><label>Passwort<input id="password" type="password" autocomplete="current-password" required></label><button>Anmelden</button></form><p id="loginMsg" class="status"></p></section>
-<div id="app" class="hidden"><div class="row"><h2>Das Friedrich · Betriebssteuerung</h2><input id="month" type="month"><button id="refresh">Aktualisieren</button><button id="logout">Abmelden</button></div><p id="summary" class="muted">Lade Archiv …</p><div class="grid" id="quickKpis"></div><nav id="quickNav" class="quickNav"><button type="button" data-target="monthlyReference">Monat</button><button type="button" data-target="intake">Upload</button><button type="button" data-target="financeSection">Finanzen</button><button type="button" data-target="centralArchive">Archiv</button></nav>
+<div id="app" class="hidden"><div class="row"><h2>Das Friedrich · Betriebssteuerung</h2><div id="monthOverview" class="month-overview" role="region" aria-label="Monatsübersicht"><div class="month-overview-head"><div><small>Monatsübersicht</small><strong id="monthOverviewTitle">Monat auswählen</strong></div><div class="month-controls"><button id="monthPrev" type="button" aria-label="Vorheriger Monat">‹</button><label class="month-input-label"><span class="visually-hidden">Monat auswählen</span><input id="month" type="month" aria-label="Monat auswählen"></label><button id="monthNext" type="button" aria-label="Nächster Monat">›</button></div></div><div id="monthOverviewStats" class="month-overview-stats"></div><details id="monthCalendar"><summary>Tagesübersicht</summary><div id="monthCalendarGrid" class="month-calendar-grid" aria-label="Kalender des ausgewählten Monats"></div><div id="monthDayDetail" class="month-day-detail" aria-live="polite"></div><p class="month-calendar-note">Beträge brutto in € · — = kein Tagesabschluss erfasst</p></details></div><button id="refresh">Aktualisieren</button><button id="logout">Abmelden</button></div><p id="summary" class="muted">Lade Archiv …</p><div class="grid" id="quickKpis"></div><nav id="quickNav" class="quickNav"><button type="button" data-target="monthlyReference">Monat</button><button type="button" data-target="intake">Upload</button><button type="button" data-target="financeSection">Finanzen</button><button type="button" data-target="centralArchive">Archiv</button></nav>
 <section class="card" id="intake"><h2>📷 Ein zentraler Eingang für ALLE Unterlagen</h2><p class="section-intro">Kassenabschlüsse, BONit, Lieferantenrechnungen, Personalunterlagen und andere Dokumente. Fotos nacheinander aufnehmen oder bis zu 12 Fotos/PDF-Dateien gemeinsam auswählen. <strong>Ein Klick auf „Automatisch erkennen & speichern“ genügt. Keine einzelnen Speicherbestätigungen. Unklare Dokumente werden zur Prüfung gemeldet.</strong></p><div class="row upload-actions"><button id="camera" type="button">📷 Foto aufnehmen</button><button id="fileButton" type="button">📄 Fotos / PDF auswählen</button></div><input id="cameraInput" class="hidden" type="file" accept="image/*" capture="environment"><input id="fileInput" class="hidden" type="file" accept="image/jpeg,image/png,image/webp,application/pdf" multiple><div id="fileQueue" class="muted"></div><div class="row"><button id="confirmUpload" type="button" disabled>Automatisch erkennen & speichern</button><button id="clearUpload" type="button" disabled>Auswahl leeren</button></div><p id="uploadStatus" class="status muted">Fotos sammeln und anschließend einmal auf „Automatisch erkennen & speichern“ klicken.</p><div id="review"></div></section>
 <section class="card" id="monthlyReference"><h2 id="monthlyTitle">BONit Monatsabschluss</h2><p class="muted">BONit Periodischer Abschluss · Monatsreferenz, keine Addition zu Tagesumsätzen.</p><div class="grid" id="augKpis"></div><h3>Artikelgruppen · Bruttoumsatz und Anteil</h3><div class="scroll"><table><thead><tr><th>Artikelgruppe</th><th class="num">Brutto</th><th class="num">Anteil</th></tr></thead><tbody id="augGroups"></tbody></table></div><h3>Stundenumsätze</h3><div id="augHours" class="scroll"></div><h3>Artikel · Menge, Einzelpreis, Umsatz</h3><p class="muted">Auszug der eindeutig lesbaren Artikelzeilen. Weitere Artikel aus dem Original werden schrittweise ergänzt; keine erfundenen Positionen.</p><div class="scroll"><table><thead><tr><th>Artikel</th><th class="num">Menge</th><th class="num">Preis</th><th class="num">Brutto</th></tr></thead><tbody id="augItems"></tbody></table></div><h3>Tischumsätze</h3><div class="scroll"><table><thead><tr><th>Tisch</th><th class="num">Brutto</th></tr></thead><tbody id="augTables"></tbody></table></div></section><section class="card"><h2>Umsatz · Original BONit</h2><div class="grid" id="sales"></div><h3>10 % und 20 % direkt unter Bruttoumsatz</h3><div class="grid" id="tax"></div><p id="taxNote" class="muted"></p></section>
 <section class="card"><h2>Artikel & Preise · Stoßzeiten</h2><p class="muted">Artikelmengen, Verkaufspreise und Stundenverteilung werden aus den gespeicherten BONit-Originaldaten ausgewertet, soweit diese Felder vorliegen.</p><div class="grid" id="operating"></div><h3>Umsatz nach Stunden</h3><div id="hours" class="muted">Keine verifizierten Stundenwerte im Archiv.</div></section><section class="card" id="financeSection"><h2>Personal · Wareneinsatz · Liquidität · Ergebnis</h2><div class="grid" id="costs"></div><h3>Vom Nettoumsatz zum Ergebnis</h3><div id="resultBridge" class="resultBridge"></div><p id="resultCaution" class="muted"></p><p class="muted">Personalziel 35 % und Wareneinsatzziel 26 % vom Nettoumsatz. Fehlende Belege bleiben offen – keine Schätzungen.</p></section>
@@ -189,6 +222,43 @@ async function repairStoredTaxes(documents) {
  }
 }
 
+
+let monthSelectedDay = null;
+function renderMonthOverview(daily,monthly=null) {
+ const period=E('month').value;if(!/^\d{4}-\d{2}$/.test(period))return;
+ const [year,month]=period.split('-').map(Number);
+ E('monthOverviewTitle').textContent=new Intl.DateTimeFormat('de-AT',{month:'long',year:'numeric',timeZone:'UTC'}).format(new Date(Date.UTC(year,month-1,1)));
+ const gross=monthly?monthly.gross:sum(daily,'gross'),days=monthly?monthly.days:daily.length;
+ E('monthOverviewStats').replaceChildren();
+ for(const [label,value] of [['Umsatz brutto',EUR(gross)],['Erfasste Tage',String(days)],['Ø pro Tag',gross!==null&&days?EUR(gross/days):'–']]){
+  const box=document.createElement('div'),small=document.createElement('small'),strong=document.createElement('strong');small.textContent=label;strong.textContent=value;box.append(small,strong);E('monthOverviewStats').append(box);
+ }
+ const grid=E('monthCalendarGrid');grid.replaceChildren();E('monthDayDetail').replaceChildren();
+ for(const name of ['Mo','Di','Mi','Do','Fr','Sa','So']){const label=document.createElement('div');label.className='month-weekday';label.textContent=name;grid.append(label);}
+ const offset=(new Date(Date.UTC(year,month-1,1)).getUTCDay()+6)%7;
+ for(let i=0;i<offset;i++)grid.append(document.createElement('span'));
+ const byDay=new Map(daily.map(d=>[d.date,d]));
+ const today=new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Vienna',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
+ const dayCount=new Date(Date.UTC(year,month,0)).getUTCDate();
+ const select=(day,button)=>{
+  monthSelectedDay=day;for(const b of grid.querySelectorAll('button')){b.classList.toggle('selected',b===button);b.setAttribute('aria-pressed',String(b===button));}
+  const row=byDay.get(day),box=E('monthDayDetail');box.replaceChildren();const title=document.createElement('strong');title.textContent=D(day);box.append(title);
+  if(!row){const note=document.createElement('span');note.textContent='Kein Tagesabschluss erfasst.';box.append(note);return;}
+  const values=document.createElement('div');values.className='month-day-detail-grid';
+  for(const [label,value] of [['Brutto',EUR(row.gross)],['Netto',EUR(row.net)],['Bar',EUR(row.cash)],['Karte',EUR(row.card)],['Bons',row.receipts===null?'–':String(row.receipts)],['Quelle',row.source]]){const span=document.createElement('span');span.textContent=label+': '+value;values.append(span);}box.append(values);
+ };
+ for(let day=1;day<=dayCount;day++){
+  const date=period+'-'+String(day).padStart(2,'0'),row=byDay.get(date),button=document.createElement('button');button.type='button';button.className='month-day'+(row?' has-sales':'')+(date===today?' today':'');button.setAttribute('aria-pressed','false');
+  button.setAttribute('aria-label',D(date)+(row?', Bruttoumsatz '+EUR(row.gross):', kein Tagesabschluss erfasst'));
+  const number=document.createElement('strong'),value=document.createElement('small');number.textContent=String(day);value.textContent=row&&row.gross!==null?new Intl.NumberFormat('de-AT',{minimumFractionDigits:2,maximumFractionDigits:2}).format(row.gross):'—';button.title=row?EUR(row.gross):'Kein Tagesabschluss erfasst';button.append(number,value);button.onclick=()=>select(date,button);grid.append(button);
+  if(monthSelectedDay===date)select(date,button);
+ }
+}
+function moveOverviewMonth(delta){
+ const [year,month]=E('month').value.split('-').map(Number);if(!year||!month)return;
+ const target=new Date(Date.UTC(year,month-1+delta,1));E('month').value=target.toISOString().slice(0,7);monthSelectedDay=null;void refresh();
+}
+
 async function refresh(){renderAugust();
  const [start,end]=dateRange();E('summary').textContent='Archiv wird abgeglichen …';
  try{
@@ -205,7 +275,7 @@ async function refresh(){renderAugust();
  const rows=new Map();for(const r of bonit){rows.set(r.closing_date,{date:r.closing_date,source:'BONit',gross:N(r.gross_amount),net:N(r.net_amount),cash:N(r.cash_amount),card:N(r.card_amount),receipts:N(r.receipt_count),paid:paidCount(r.raw_data),raw:r.raw_data});}
  for(const [day,d] of archive){if(rows.has(day))continue;const x=d.extracted_data||{};rows.set(day,{date:day,source:'Archiv',gross:N(x.gross_total),net:N(x.net_total),cash:N(x.cash_total),card:N(x.card_total),receipts:N(x.receipt_count),paid:paidCount(x),raw:x});}
  const daily=[...rows.values()].sort((a,b)=>a.date.localeCompare(b.date)),gross=sum(daily,'gross'),net=sum(daily,'net'),cash=sum(daily,'cash'),card=sum(daily,'card');
- const paid=sum(daily,'paid');const recordedReceipts=sum(daily,'receipts');const isAug=E('month').value==='2026-08';const isSep=E('month').value==='2026-09';const M=isSep?SEP26:isAug?AUG26:null;const verifiedFirstPeriod=daily.filter(x=>x.date>='2026-10-01'&&x.date<='2026-10-10');const firstGross=sum(verifiedFirstPeriod,'gross');const firstPeriodMatch=E('month').value==='2026-10'&&verifiedFirstPeriod.length===9&&firstGross!==null&&Math.abs(firstGross-18415.70)<.03;const partial=firstPeriodMatch&&paid===null;E('sales').replaceChildren();for(const [a,b] of [['Bruttoumsatz',EUR(M?M.gross:gross)],['Nettoumsatz',EUR(M?M.net:net)],['Bar',EUR(M?M.cash:cash)],['Karte',EUR(M?M.card:card)],['Tage',String(M?M.days:daily.length)],['Erfasste Bons',isAug?String(AUG26.receipts):recordedReceipts!==null?String(recordedReceipts):'–'],['Bezahlte Bons',isAug?String(AUG26.paid_receipts):paid!==null?String(paid):partial?'1.020 (01.–10.10.)':'Prüfung offen'],['Ø Bon',M?EUR(M.gross/M.paid_receipts):paid>0&&gross!==null?EUR(gross/paid):partial?'18,05 € (01.–10.10.)':'Prüfung offen']])tile(E('sales'),a,b);
+ const paid=sum(daily,'paid');const recordedReceipts=sum(daily,'receipts');const isAug=E('month').value==='2026-08';const isSep=E('month').value==='2026-09';const M=isSep?SEP26:isAug?AUG26:null;renderMonthOverview(daily,M);const verifiedFirstPeriod=daily.filter(x=>x.date>='2026-10-01'&&x.date<='2026-10-10');const firstGross=sum(verifiedFirstPeriod,'gross');const firstPeriodMatch=E('month').value==='2026-10'&&verifiedFirstPeriod.length===9&&firstGross!==null&&Math.abs(firstGross-18415.70)<.03;const partial=firstPeriodMatch&&paid===null;E('sales').replaceChildren();for(const [a,b] of [['Bruttoumsatz',EUR(M?M.gross:gross)],['Nettoumsatz',EUR(M?M.net:net)],['Bar',EUR(M?M.cash:cash)],['Karte',EUR(M?M.card:card)],['Tage',String(M?M.days:daily.length)],['Erfasste Bons',isAug?String(AUG26.receipts):recordedReceipts!==null?String(recordedReceipts):'–'],['Bezahlte Bons',isAug?String(AUG26.paid_receipts):paid!==null?String(paid):partial?'1.020 (01.–10.10.)':'Prüfung offen'],['Ø Bon',M?EUR(M.gross/M.paid_receipts):paid>0&&gross!==null?EUR(gross/paid):partial?'18,05 € (01.–10.10.)':'Prüfung offen']])tile(E('sales'),a,b);
  const taxRows=[];for(const d of daily){const x=archive.get(d.date)?.extracted_data||{};const z=vat(x)||vat({...d.raw,gross_total:d.gross,net_total:d.net});if(z&&Math.abs(z.g10+z.g20-d.gross)<.03)taxRows.push(z);}
  E('tax').replaceChildren();for(const [label,key] of [['10 % brutto','g10'],['10 % netto','n10'],['20 % brutto','g20'],['20 % netto','n20']])tile(E('tax'),label,M?EUR(({g10:M.tax.find(x=>x.rate===10).gross,n10:M.tax.find(x=>x.rate===10).net,g20:M.tax.find(x=>x.rate===20).gross,n20:M.tax.find(x=>x.rate===20).net})[key]):taxRows.length?EUR(taxRows.reduce((a,x)=>a+x[key],0)):'–');
  E('taxNote').textContent=M?'BONit Monatsabschluss Z '+M.z_number+' · Steuergruppen aus Original.':taxRows.length+' von '+daily.length+' Tagesabrechnungen mit vollständig abgeglichenen 10/20-%-Werten. Angezeigt ist die Summe der geprüften Tage; fehlende Werte werden nicht ergänzt.';
@@ -341,5 +411,5 @@ for(const b of document.querySelectorAll('#quickNav button'))b.onclick=()=>showM
 const cardTables=()=>{document.querySelectorAll('#app table').forEach(table=>{const labels=[...table.querySelectorAll('thead th')].map(x=>x.textContent.trim());table.querySelectorAll('tbody tr').forEach(tr=>{[...tr.children].forEach((td,i)=>{if(!td.dataset.label)td.dataset.label=labels[i]||'';});});});};
 const cardObserver=new MutationObserver(cardTables);
 document.querySelectorAll('#app tbody').forEach(el=>cardObserver.observe(el,{childList:true,subtree:true}));
-cardTables();E('refresh').onclick=async()=>{await refresh();await loadWholeArchive();};E('month').onchange=refresh;E('logout').onclick=async()=>{await db.auth.signOut();user=null;E('app').classList.add('hidden');E('login').classList.remove('hidden');};enter().catch(e=>E('loginMsg').textContent='Anmeldung: '+e.message);
+cardTables();E('refresh').onclick=async()=>{await refresh();await loadWholeArchive();};E('month').onchange=()=>{monthSelectedDay=null;void refresh();};E('monthPrev').onclick=()=>moveOverviewMonth(-1);E('monthNext').onclick=()=>moveOverviewMonth(1);E('logout').onclick=async()=>{await db.auth.signOut();user=null;E('app').classList.add('hidden');E('login').classList.remove('hidden');};enter().catch(e=>E('loginMsg').textContent='Anmeldung: '+e.message);
 </script><script>setTimeout(()=>{const f=document.getElementById('loginForm'),m=document.getElementById('loginMsg');if(f&&!f.onsubmit&&m)m.textContent='Die Anwendung konnte nicht geladen werden. Bitte Seite neu laden. Falls diese Meldung bleibt, ist die Programm-Bibliothek blockiert.'},4500);window.addEventListener('error',e=>{const m=document.getElementById('loginMsg');if(m)m.textContent='Ladefehler: '+e.message});window.addEventListener('unhandledrejection',e=>{const m=document.getElementById('loginMsg');if(m)m.textContent='Verbindungsfehler: '+(e.reason?.message||String(e.reason))});</script></body></html>
