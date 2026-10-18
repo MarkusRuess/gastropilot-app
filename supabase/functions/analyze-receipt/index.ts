@@ -394,6 +394,26 @@ Deno.serve(async (req) => {
       }, 500);
     }
 
+
+    if(savedDocument && body.mode==="paid_receipts"){
+      const prompt='Lies ausschließlich die Zahlarten und Anzahl Rechnungen aus dem BONit-Original. Bar und Kreditkarte sind BEZAHLTE Rechnungen. Personal/Einladung mit 0 ist kostenlos. Teilbetrag bar NICHT als zusätzlichen Bon zählen. Kein Schätzen. Liefere JSON mit date,gross_total,receipt_count,cash_count,card_count,free_count,printed_payment_lines:[{label,count,amount}]. Die Summe cash_count+card_count+free_count muss der Anzahl Rechnungen entsprechen. Erwartetes Datum '+savedDocument.document_date+'.';
+      const result=await fetch("https://api.openai.com/v1/chat/completions",{method:"POST",headers:{"Authorization":"Bearer "+apiKey,"Content-Type":"application/json"},body:JSON.stringify({model:"gpt-4.1-2025-04-14",temperature:0,response_format:{type:"json_object"},messages:[{role:"user",content:[{type:"text",text:prompt},...images.map(image=>({type:"image_url",image_url:{url:"data:"+image.mime_type+";base64,"+image.image_base64}}))]}]})});
+      if(!result.ok)return json({error:"Bonzahlen konnten nicht gelesen werden"},502);
+      const model=await result.json();const read=JSON.parse(model.choices[0].message.content);
+      const counts=[read.receipt_count,read.cash_count,read.card_count,read.free_count];
+      if(counts.some(x=>!Number.isInteger(x)||x<0)||read.cash_count+read.card_count+read.free_count!==read.receipt_count||read.receipt_count!==savedDocument.extracted_data.receipt_count||read.date!==savedDocument.document_date||Math.abs(read.gross_total-savedDocument.extracted_data.gross_total)>.02)return json({error:"Bonzahlen nicht vollständig mit Originalsumme abgeglichen"},422);
+      const lines=read.printed_payment_lines||[];
+      const cashLine=lines.find(x=>/bar/i.test(x.label)&&!/teil/i.test(x.label)),cardLine=lines.find(x=>/kredit|karte/i.test(x.label)),freeLine=lines.find(x=>/personal|einladung/i.test(x.label));
+      if(!cashLine||!cardLine||!freeLine||cashLine.count!==read.cash_count||cardLine.count!==read.card_count||freeLine.count!==read.free_count||Math.abs(cashLine.amount+cardLine.amount-read.gross_total)>.02)return json({error:"Gedruckte Zahlarten nicht eindeutig"},422);
+      const patch={paid_receipt_count:read.cash_count+read.card_count,free_receipt_count:read.free_count,payment_methods:{cash:{count:read.cash_count},card:{count:read.card_count}},receipt_count_verification:{version:1,verified:true,method:"original_payment_rows",printed_payment_lines:lines,checked_at:new Date().toISOString()}};
+      const updated=await supabase.from("documents").update({extracted_data:{...savedDocument.extracted_data,...patch}}).eq("id",savedDocument.id).eq("business_id",businessId);
+      if(updated.error)return json({error:"Bonzahlen konnten nicht gespeichert werden"},500);
+      const closings=await supabase.from("bonit_daily_closings").select("id,raw_data").eq("business_id",businessId).eq("closing_date",savedDocument.document_date);
+      if(closings.error)return json({error:"Tagesabschluss konnte nicht abgeglichen werden"},500);
+      for(const closing of closings.data||[]){const sync=await supabase.from("bonit_daily_closings").update({raw_data:{...closing.raw_data,...patch}}).eq("id",closing.id).eq("business_id",businessId);if(sync.error)return json({error:"Tagesabschluss konnte nicht aktualisiert werden"},500);}
+      return json({documents:[{...savedDocument.extracted_data,...patch}],updated:true});
+    }
+
     const instructions = `
 Du bist ein äußerst präziser Beleganalyst für
 einen österreichischen Gastronomiebetrieb.
