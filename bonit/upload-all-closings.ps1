@@ -20,8 +20,8 @@ function SendRows {
  $body=@{type='closings';rows=@($rows.ToArray())}|ConvertTo-Json -Depth 5 -Compress
  $result=Invoke-RestMethod -Method Post -Uri $url -Headers @{'x-bonit-device-token'=$token} -ContentType 'application/json; charset=utf-8' -Body ([Text.Encoding]::UTF8.GetBytes($body)) -TimeoutSec 90
  if($result.ok -eq $false){throw ('Server meldet Fehler: '+($result|ConvertTo-Json -Compress))}
- $script:count+=$rows.Count
- Write-Host "Uebertragene Tagesabschluesse: $script:count"
+ $script:count += [int]$result.accepted
+ Write-Host "Neu gespeicherte Tagesabschluesse: $script:count"
  $rows.Clear()
 }
 Import-Csv -LiteralPath $file.FullName -Delimiter "`t" -Encoding Default | ForEach-Object {
@@ -33,4 +33,4 @@ Import-Csv -LiteralPath $file.FullName -Delimiter "`t" -Encoding Default | ForEa
  if($rows.Count -ge 200){SendRows}
 }
 SendRows
-Write-Host "FERTIG: $count historische BONit-Tagesabschluesse uebertragen."
+Write-Host "FERTIG: $count neue historische BONit-Tagesabschluesse gespeichert. Bereits vorhandene Abschluesse wurden nicht ueberschrieben."
