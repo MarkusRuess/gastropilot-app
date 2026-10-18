@@ -107,6 +107,76 @@ h2{font-size:17px;margin:10px 0}h3{font-size:14px}table{width:100%;border-collap
 import {createClient} from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 const db=createClient('https://sjnwfwcpgwsavygewwzb.supabase.co','sb_publishable__tucXG-IQGUhibMqMSUzCw_5RnH_sbQ');
 const BID='6a5484d1-daf6-4263-897d-24cdf536aa29',E=id=>document.getElementById(id),N=v=>v==null||v===''?null:Number(v),EUR=v=>v==null||!Number.isFinite(v)?'–':new Intl.NumberFormat('de-AT',{style:'currency',currency:'EUR'}).format(v),D=v=>v?.split('-').reverse().join('.')||'–';
+let user=null,busy=false,selected=null,queue=[];
+const parts=new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Vienna',year:'numeric',month:'2-digit'}).formatToParts(new Date());E('month').value=parts.find(x=>x.type==='year').value+'-'+parts.find(x=>x.type==='month').value;
+function tile(target,label,value){const box=document.createElement('div');box.className='tile';const a=document.createElement('small');a.textContent=label;const b=document.createElement('b');b.textContent=value;box.append(a,b);target.append(box);}
+function sum(rows,key){return rows.length&&rows.every(x=>Number.isFinite(x[key]))?rows.reduce((a,x)=>a+x[key],0):null;}
+function paidCount(raw){if(!raw||typeof raw!=='object')return null;for(const k of ['paid_receipt_count','paid_receipts','paidReceiptCount','paidReceipts','receipts_paid','paid_bons']){const v=N(raw[k]);if(Number.isInteger(v)&&v>=0)return v;}const p=raw.payment_methods||raw.payments||raw.payment_breakdown;if(p&&typeof p==='object'){const c=N(p.cash?.count??p.cash?.receipts??p.bar?.count),k=N(p.card?.count??p.card?.receipts??p.karte?.count);if(c!==null&&k!==null)return c+k;}return null;}
+function itemsPendingLabel(){return 'Archivdaten prüfen';}
+function cell(row,value,number=false){const td=row.insertCell();td.textContent=value;td.className=number?'num':'';}
+function dateRange(){const start=E('month').value+'-01',end=new Date(start+'T12:00:00');end.setMonth(end.getMonth()+1);return [start,end.getFullYear()+'-'+String(end.getMonth()+1).padStart(2,'0')+'-01'];}
+async function query(table,fields,start,end){let all=[];for(let offset=0;offset<10000;offset+=1000){const key=table==='documents'?'document_date':'closing_date';const {data,error}=await db.from(table).select(fields).eq('business_id',BID).gte(key,start).lt(key,end).range(offset,offset+999);if(error)throw error;all.push(...data);if(data.length<1000)break;}return all;}
+function vat(x){const v=x?.vat_breakdown||x?.tax_breakdown||((x?.vat_10_gross!==undefined&&x?.vat_20_gross!==undefined)?[{rate:10,gross:x.vat_10_gross,net:x.vat_10_net},{rate:20,gross:x.vat_20_gross,net:x.vat_20_net}]:null);if(!v)return null;const a=Array.isArray(v)?v.find(t=>Number(t.rate)===10):v['10']||v['10%'];const b=Array.isArray(v)?v.find(t=>Number(t.rate)===20):v['20']||v['20%'];if(!a||!b)return null;const z={g10:N(a.gross),n10:N(a.net),g20:N(b.gross),n20:N(b.net)};if(Object.values(z).some(v=>v===null))return null;if(Math.abs(z.g10+z.g20-N(x.gross_total))>.03||Math.abs(z.n10+z.n20-N(x.net_total))>.03)return null;return z;}
+function showMobilePanel(id){
+ const monthView=id==='monthlyReference'||id==='salesSection';
+ for(const b of document.querySelectorAll('#quickNav button'))b.classList.toggle('active',b.dataset.target===id||(monthView&&b.dataset.target==='monthlyReference'));
+ for(const el of document.querySelectorAll('#app section.card'))el.classList.toggle('mobileHidden',monthView?!['monthlyReference','salesSection'].includes(el.id):el.id!==id);
+ const target=E(monthView?'salesSection':id);const disclosure=E(id+'Disclosure');if(disclosure)disclosure.open=true;
+ if(target)target.scrollIntoView({behavior:'smooth',block:'start'});
+}
+let archiveData=[];
+async function loadWholeArchive(){
+ E('archiveState').textContent='Alle Bereiche werden geladen …';
+ try{
+  const specs=[
+   ['bonit','bonit_daily_closings','id,closing_date,z_number,gross_amount'],
+   ['invoice','documents','id,document_date,document_type,supplier,invoice_number,status,extracted_data'],
+   ['bank','bank_transactions','id,booking_date,payee,description,amount,match_status,account_name'],
+   ['personnel','personnel_costs','id,accounting_month,employee_name,total_costs,payment_status'],
+   ['expense','expenses','id,expense_date,supplier,description,net_amount,gross_amount,payment_status'],
+   ['personnel','employee_archive_files','id,created_at,original_name,accounting_month,processing_status']
+  ];
+  const results=await Promise.all(specs.map(async([type,table,fields])=>{
+   let all=[],from=0;for(let page=0;page<20;page++){
+    const q=await db.from(table).select(fields).eq('business_id',BID).range(from,from+999);
+    if(q.error)throw Error(table+': '+q.error.message);all.push(...(q.data||[]));if((q.data||[]).length<1000)break;from+=1000;
+   }return {type,table,rows:all};
+  }));
+  archiveData=[];for(const {type,table,rows} of results)for(const x of rows){
+   if(table==='documents'){
+    const kind=x.document_type==='invoice'?'invoice':'bonit';
+    archiveData.push({type:kind,date:x.document_date||'',name:kind==='invoice'?(x.supplier||'Lieferant')+' · '+(x.invoice_number||'ohne Nummer'):'BONit '+(x.document_type||'Beleg'),amount:N(x.extracted_data?.gross_total),status:x.status||'archiviert'});
+   }else if(table==='bonit_daily_closings')archiveData.push({type:'bonit',date:x.closing_date,name:'BONit Tagesabschluss Z '+(x.z_number||'–'),amount:N(x.gross_amount),status:'Original'});
+   else if(table==='bank_transactions')archiveData.push({type:'bank',date:x.booking_date,name:(x.account_name||'Bank')+' · '+(x.payee||x.description||'Buchung'),amount:N(x.amount),status:x.match_status||'nicht zugeordnet'});
+   else if(table==='personnel_costs')archiveData.push({type:'personnel',date:x.accounting_month,name:'Personalkosten · '+(x.employee_name||'Mitarbeiter'),amount:N(x.total_costs),status:x.payment_status||'erfasst'});
+   else if(table==='employee_archive_files')archiveData.push({type:'personnel',date:x.accounting_month||String(x.created_at||'').slice(0,10),name:'Personaloriginal · '+(x.original_name||'Datei'),amount:null,status:x.processing_status||'archiviert'});
+   else archiveData.push({type:'expense',date:x.expense_date,name:(x.supplier||'')+' · '+(x.description||'Betriebskosten'),amount:N(x.gross_amount),status:x.payment_status||'erfasst'});
+  }
+  archiveData.sort((a,b)=>b.date.localeCompare(a.date));
+  E('archiveTotals').replaceChildren();for(const [key,label] of [['bonit','BONit Belege'],['invoice','Lieferantenbelege'],['bank','Bankbuchungen'],['personnel','Personalunterlagen & Kosten'],['expense','Kostenbuchungen']])tile(E('archiveTotals'),label,String(archiveData.filter(x=>x.type===key).length));
+  showArchive();
+  E('archiveState').textContent=archiveData.length+' archivierte Datensätze aus allen Zeiträumen geladen. Bankbuchungen und Rechnungen sind getrennte Quellen, keine addierte Kostenrechnung.';
+ }catch(err){E('archiveState').textContent='Archivabruf fehlgeschlagen: '+err.message;}
+}
+function showArchive(){
+ const type=E('archiveFilter').value,rows=archiveData.filter(x=>type==='all'||x.type===type);E('allArchiveRows').replaceChildren();
+ for(const x of rows.slice(0,500)){const tr=E('allArchiveRows').insertRow();cell(tr,x.date||'–');cell(tr,({bonit:'BONit',invoice:'Lieferant',bank:'Bank',personnel:'Personal',expense:'Kosten'})[x.type]||x.type);cell(tr,x.name);cell(tr,EUR(x.amount),true);cell(tr,x.status);}
+ E('archiveState').textContent=rows.length+' Einträge im gewählten Bereich'+(rows.length>500?' · erste 500 angezeigt':'')+'. Keine Beträge aus verschiedenen Quellen doppelt addiert.';
+}
+function showResultBridge({net,personnel,purchases,fixed,expenseCount,fixedCount,period}){
+ const root=E('resultBridge');root.replaceChildren();
+ const line=(label,value,style='',detail='')=>{const div=document.createElement('div');div.className='resultLine '+style;const left=document.createElement('div');left.className='resultLabel';left.textContent=label;if(detail){const sub=document.createElement('small');sub.textContent=detail;left.append(sub);}const right=document.createElement('strong');right.textContent=value;div.append(left,right);root.append(div);};
+ line('Nettoumsatz',EUR(net));
+ line('− Personalkosten',personnel===null?'Nicht erfasst':'− '+EUR(personnel));
+ const remainder=net!==null&&personnel!==null?net-personnel:null;
+ line('Verbleibt nach Personal',EUR(remainder),'highlight');
+ line('− Erfasste Wareneinkäufe',purchases===null?'Noch nicht vollständig':'− '+EUR(purchases),'','Einkäufe ≠ tatsächlicher Wareneinsatz');
+ line('− Erfasste Bank-Fixkosten',fixed===null?'Noch nicht vollständig':'− '+EUR(fixed),'','Nur bisher zugeordnete Kosten, nicht alle Fixkosten');
+ const partial=remainder!==null?remainder-(purchases||0)-(fixed||0):null;
+ line('Rechnerischer Zwischenstand',EUR(partial),'pending','Kein Gewinn: weitere Kosten und Warenverbrauch fehlen');
+ line('Betriebsergebnis','Noch nicht berechenbar','','Erst nach vollständigem Wareneinsatz und allen Betriebskosten');
+ E('resultCaution').textContent='Zeitraum '+period+' · '+expenseCount+' Kostenbuchungen und '+fixedCount+' Bank-Fixkosten erfasst. Einkauf, Bankzahlung und Rechnung können dieselbe Ausgabe betreffen. Der Zwischenstand zieht nur erfasste Positionen ab; die vollständige Kostenrechnung und Doppelbuchungsprüfung sind noch offen.';
+}
 function renderAugust(A=null){
  const month=E('month').value,supported=month==='2026-08'||month==='2026-09';E('monthlyReference').classList.toggle('hidden',!supported);if(!supported)return;
  if(!A){E('monthlyTitle').textContent='BONit Monatsabschluss · '+(month==='2026-09'?'September':'August')+' 2026';E('augKpis').replaceChildren();tile(E('augKpis'),'Monatsdaten','Keine geschützten Monatsdaten verfügbar.');return;}
@@ -118,7 +188,6 @@ function renderAugust(A=null){
  E('augTables').replaceChildren();for(const [name,value] of A.tables){const tr=E('augTables').insertRow();cell(tr,name);cell(tr,EUR(value),true);}
  E('augHours').replaceChildren();const table=document.createElement('table');table.innerHTML='<thead><tr><th>Uhrzeit</th><th>Umsatzverteilung</th><th class="num">Brutto</th></tr></thead>';const tbody=document.createElement('tbody');table.append(tbody);for(const [hour,value] of A.hours){const tr=tbody.insertRow();cell(tr,hour+':00–'+hour+':59');const td=tr.insertCell();const bar=document.createElement('div');bar.style.cssText='height:12px;border-radius:4px;background:#087f70;width:'+Math.round(value/5000*100)+'%;min-width:'+(value?'2px':'0')+';';td.append(bar);cell(tr,EUR(value),true);}E('augHours').append(table);
 }
-
 
 const taxRepairAttempted = new Set();
 let taxRepairRunning = false;
