@@ -202,7 +202,7 @@ const taxRepairAttempted = new Set();
 let taxRepairRunning = false;
 async function repairStoredTaxes(documents) {
  if(taxRepairRunning||!user)return;
- const pending=documents.filter(d=>d.document_type==='cash_report'&&d.extracted_data?.tax_verification?.version!==2&&(d.storage_path||d.extracted_data?.original_files?.length)&&!taxRepairAttempted.has(d.id)).slice(0,4);
+ const pending=documents.filter(d=>d.document_type==='cash_report'&&(d.extracted_data?.tax_verification?.version!==2||d.extracted_data?.receipt_count_verification?.version!==1)&&(d.storage_path||d.extracted_data?.original_files?.length)&&!taxRepairAttempted.has(d.id)).slice(0,4);
  if(!pending.length)return;
  taxRepairRunning=true;let updated=0;
  try{
@@ -210,7 +210,7 @@ async function repairStoredTaxes(documents) {
    taxRepairAttempted.add(d.id);
    E('uploadStatus').textContent='Gespeicherte Abrechnung '+D(d.document_date)+' wird automatisch anhand der Originalfotos nachgeprüft …';
    try{
-    const {data,error}=await db.functions.invoke('analyze-receipt',{body:{business_id:BID,document_id:d.id}});
+    const {data,error}=await db.functions.invoke('analyze-receipt',{body:{business_id:BID,document_id:d.id,...(d.extracted_data?.tax_verification?.version===2?{mode:'paid_receipts'}:{})}});
     if(error)throw error;if(data?.error)throw Error(data.error);
     updated++;
     const verified=data?.documents?.[0]?.tax_verification?.verified;
