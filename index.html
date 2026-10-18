@@ -163,6 +163,32 @@ function renderAugust(){
  E('augTables').replaceChildren();for(const [name,value] of A.tables){const tr=E('augTables').insertRow();cell(tr,name);cell(tr,EUR(value),true);}
  E('augHours').replaceChildren();const table=document.createElement('table');table.innerHTML='<thead><tr><th>Uhrzeit</th><th>Umsatzverteilung</th><th class="num">Brutto</th></tr></thead>';const tbody=document.createElement('tbody');table.append(tbody);for(const [hour,value] of A.hours){const tr=tbody.insertRow();cell(tr,hour+':00–'+hour+':59');const td=tr.insertCell();const bar=document.createElement('div');bar.style.cssText='height:12px;border-radius:4px;background:#087f70;width:'+Math.round(value/5000*100)+'%;min-width:'+(value?'2px':'0')+';';td.append(bar);cell(tr,EUR(value),true);}E('augHours').append(table);
 }
+
+const taxRepairAttempted = new Set();
+let taxRepairRunning = false;
+async function repairStoredTaxes(documents) {
+ if(taxRepairRunning||!user)return;
+ const pending=documents.filter(d=>d.document_type==='cash_report'&&d.extracted_data?.tax_verification?.version!==2&&(d.storage_path||d.extracted_data?.original_files?.length)&&!taxRepairAttempted.has(d.id)).slice(0,4);
+ if(!pending.length)return;
+ taxRepairRunning=true;let updated=0;
+ try{
+  for(const d of pending){
+   taxRepairAttempted.add(d.id);
+   E('uploadStatus').textContent='Gespeicherte Abrechnung '+D(d.document_date)+' wird automatisch anhand der Originalfotos nachgeprüft …';
+   try{
+    const {data,error}=await db.functions.invoke('analyze-receipt',{body:{business_id:BID,document_id:d.id}});
+    if(error)throw error;if(data?.error)throw Error(data.error);
+    updated++;
+    const verified=data?.documents?.[0]?.tax_verification?.verified;
+    E('uploadStatus').textContent=verified?'Steuerwerte vom '+D(d.document_date)+' automatisch übernommen.':'Original vom '+D(d.document_date)+' erneut gelesen; nicht eindeutige Werte bleiben zur Prüfung markiert.';
+   }catch(error){E('uploadStatus').textContent='Automatische Nachprüfung vom '+D(d.document_date)+' noch offen: '+(error.message||String(error));}
+  }
+ }finally{
+  taxRepairRunning=false;
+  if(updated){await refresh();await loadWholeArchive();}
+ }
+}
+
 async function refresh(){renderAugust();
  const [start,end]=dateRange();E('summary').textContent='Archiv wird abgeglichen …';
  try{
@@ -220,6 +246,7 @@ async function refresh(){renderAugust();
  E('articles').replaceChildren();if(M){for(const [id,name,qty,price,total] of [...M.items].sort((a,b)=>b[4]-a[4])){const tr=E('articles').insertRow();cell(tr,id+' · '+name+' ('+EUR(price)+')');cell(tr,String(qty),true);cell(tr,EUR(total),true);}}else for(const [name,x] of [...items].sort((a,b)=>b[1].qty-a[1].qty).slice(0,30)){const tr=E('articles').insertRow();cell(tr,name);cell(tr,String(x.qty),true);cell(tr,x.known?EUR(x.gross):'–',true);}
  E('archive').replaceChildren();for(const d of monthlyReports){const p=document.createElement('p');p.textContent='BONit Monatsabschluss '+(d.extracted_data?.period_start||'?')+' bis '+(d.extracted_data?.period_end||'?')+' · '+EUR(N(d.extracted_data?.gross_total))+' · Original im Archiv (nicht zusätzlich zu Tagesumsätzen gezählt)';E('archive').append(p);}for(const d of docs.sort((a,b)=>b.document_date.localeCompare(a.document_date)).slice(0,50)){const p=document.createElement('p');p.className='muted';p.textContent=D(d.document_date)+' · '+(d.document_type==='cash_report'?'BONit / Kassa':d.document_type==='invoice'?'Lieferantenrechnung':d.document_type)+' · '+(d.supplier||'')+' · '+(d.status||'');const paths=[...new Set([...(d.extracted_data?.original_files||[]),d.storage_path].filter(Boolean))];if(paths.length){const box=document.createElement('div');box.hidden=true;for(const [index,path] of paths.entries()){const button=document.createElement('button');button.type='button';button.textContent='Original '+(index+1);button.style.margin='4px';button.onclick=async()=>{button.disabled=true;try{const result=await db.storage.from('invoice-originals').createSignedUrl(path,300);if(result.error)throw result.error;const img=document.createElement('img');img.alt='Original '+(index+1)+' · '+D(d.document_date);img.src=result.data.signedUrl;img.style.cssText='display:block;max-width:100%;height:auto;margin:8px 0';box.replaceChildren(img);box.hidden=false;}catch(error){box.textContent='Original konnte nicht geöffnet werden: '+error.message;box.hidden=false;}finally{button.disabled=false;}};p.append(button);}p.append(box);}E('archive').append(p);}
  E('summary').textContent=M?(isSep?'September 2026':'August 2026')+' · BONit Monatsabschluss Z '+M.z_number+' · '+M.days+' Abschlusstage · '+M.receipts+' Rechnungen. Keine Doppelzählung.':daily.length+' Umsatztage · '+docs.length+' archivierte Dokumente · BONit vor Archiv, keine Doppelzählung.';
+ void repairStoredTaxes(docs);
  }catch(e){E('summary').textContent='Datenabruf fehlgeschlagen: '+e.message;}
 }
 async function image(file){return await new Promise((resolve,reject)=>{const url=URL.createObjectURL(file),img=new Image();img.onload=()=>{const scale=Math.min(1,1700/Math.max(img.width,img.height)),canvas=document.createElement('canvas');canvas.width=Math.round(img.width*scale);canvas.height=Math.round(img.height*scale);canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);canvas.toBlob(b=>{URL.revokeObjectURL(url);b?resolve(b):reject(Error('Bildfehler'));},'image/jpeg',.8);};img.onerror=()=>{URL.revokeObjectURL(url);reject(Error('Foto nicht lesbar'));};img.src=url;});}
