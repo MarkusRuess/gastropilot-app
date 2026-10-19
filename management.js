@@ -1,4 +1,5 @@
 import {createClient} from 'https://esm.sh/@supabase/supabase-js@2';
+import {loadBankFixedCosts} from './bank-costs-integration.js';
 const db=createClient('https://sjnwfwcpgwsavygewwzb.supabase.co','sb_publishable__tucXG-IQGUhibMqMSUzCw_5RnH_sbQ');
 const $=id=>document.getElementById(id);
 let businessId=null,role=null;
@@ -58,17 +59,25 @@ async function renderAutoMatch(){
 
 async function renderFixedTiles(){
  const root=$('gpFixedTiles'),note=$('gpFixedNote');if(!root)return;
- root.replaceChildren();const month=today().slice(0,7);
- const [tx,confirmed]=await Promise.all([db.from('bank_transactions').select('id,booking_date,payee,description,amount,category').eq('business_id',businessId).gte('booking_date',month+'-01').lt('amount',0).limit(500),db.from('bank_fixed_costs').select('booking_date,payee,amount,category').eq('business_id',businessId).gte('booking_date',month+'-01').limit(500)]);
- if(tx.error){note.textContent='Bankdaten nicht verfügbar: '+tx.error.message;return;}
- const cats=[['rent','Miete'],['energy','Strom & Energie'],['insurance','Versicherungen'],['telephone','Telefon & Internet'],['accounting','Steuerberatung'],['payment_processing','Zahlungsanbieter'],['other','Weitere Fixkosten']];
+ root.replaceChildren();const month=today().slice(0,7),[year,monthNo]=month.split('-').map(Number);
+ const end=(monthNo===12?year+1:year)+'-'+String(monthNo===12?1:monthNo+1).padStart(2,'0')+'-01';
+ const result=await loadBankFixedCosts(db,businessId,month+'-01',end);
+ if(result.error){note.textContent='Bankdaten nicht verfügbar: '+result.error.message;return}
+ const cats=[['rent','Miete'],['energy','Strom & Energie'],['telephone','Telefon'],['internet','Internet'],['insurance','Betriebliche Versicherungen'],['other','Weitere Fixkosten']];
  const groups=Object.fromEntries(cats.map(([k])=>[k,[]]));
- const seen=new Set();
- const pick=x=>{const p=String(x.payee||'').toLowerCase(),c=String(x.category||'').toLowerCase();if(c==='rent'||/immobilien baden/.test(p))return 'rent';if(c==='energy'||/wien energie|evn/.test(p))return 'energy';if(c==='insurance'||/versicherung/.test(p))return 'insurance';if(['telephone','internet','telecom'].includes(c)||/hutchison|easyname/.test(p))return 'telephone';if(c==='accounting'||/steuerberatung/.test(p))return 'accounting';if(c==='payment_processing'||/hobex/.test(p))return 'payment_processing';return null};
- for(const x of tx.data||[]){const cat=pick(x);if(!cat)continue;const key=[x.booking_date,String(x.payee).toLowerCase(),Math.abs(Number(x.amount)).toFixed(2)].join('|');if(seen.has(key))continue;seen.add(key);groups[cat].push({date:x.booking_date,name:x.payee,amount:Math.abs(Number(x.amount)),source:'Bank'});}
- for(const x of confirmed.data||[]){const cat=pick(x)||'other';const key=[x.booking_date,String(x.payee).toLowerCase(),Math.abs(Number(x.amount)).toFixed(2)].join('|');if(seen.has(key))continue;seen.add(key);groups[cat].push({date:x.booking_date,name:x.payee,amount:Math.abs(Number(x.amount)),source:'Bestätigt'});}
- let total=0;for(const [key,label] of cats){const items=groups[key];const sum=items.reduce((n,x)=>n+x.amount,0);total+=sum;const tile=document.createElement('div');tile.className='gp-fixed-tile';const small=document.createElement('small');small.textContent=label;const strong=document.createElement('strong');strong.textContent=euro(sum);const info=document.createElement('p');info.textContent=items.length+' Bankpositionen · '+month;tile.append(small,strong,info);if(items.length){const details=document.createElement('details');const summary=document.createElement('summary');summary.textContent='Buchungen ansehen';details.append(summary);for(const x of items){const row=document.createElement('div');row.className='gp-fixed-row';const left=document.createElement('span');left.textContent=x.date+' · '+x.name;const right=document.createElement('b');right.textContent=euro(x.amount);row.append(left,right);details.append(row)}tile.append(details)}root.append(tile)}
- note.textContent='Bankbasierte Fixkosten '+month+': '+euro(total)+' · Bereits bestätigte Positionen werden nicht nochmals addiert. Anzahlungen sind Zahlungsabflüsse, nicht zwingend Monatsaufwand. Lieferantenrechnungen und Personal sind hier nicht enthalten.';
+ for(const x of result.data||[]){const cat=x.category;if(!groups[cat])continue;groups[cat].push({date:x.booking_date,name:x.payee||x.description||'Bankzahlung',amount:Number(x.amount)||0,source:x.source})}
+ let total=0;
+ for(const [key,label] of cats){
+  const items=groups[key],sum=items.reduce((n,x)=>n+x.amount,0);total+=sum;
+  const tile=document.createElement('div');tile.className='gp-fixed-tile';
+  const small=document.createElement('small');small.textContent=label;
+  const strong=document.createElement('strong');strong.textContent=euro(sum);
+  const info=document.createElement('p');info.textContent=items.length+' Bankpositionen · '+month;
+  tile.append(small,strong,info);
+  if(items.length){const details=document.createElement('details'),summary=document.createElement('summary');summary.textContent='Buchungen ansehen';details.append(summary);for(const x of items){const row=document.createElement('div');row.className='gp-fixed-row';const left=document.createElement('span');left.textContent=x.date+' · '+x.name;const right=document.createElement('b');right.textContent=euro(x.amount);row.append(left,right);details.append(row)}tile.append(details)}
+  root.append(tile)
+ }
+ note.textContent='Fixkosten aus Bankbelegen '+month+': '+euro(total)+' · private Versicherungen, Personal, Steuern, Lieferanteneinkäufe und interne Überweisungen sind ausgeschlossen.';
 }
 
 async function refresh(){
