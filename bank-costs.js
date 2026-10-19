@@ -1,4 +1,5 @@
 import {createClient} from 'https://esm.sh/@supabase/supabase-js@2';
+import {loadBankFixedCosts} from './bank-costs-integration.js';
 const db=createClient('https://sjnwfwcpgwsavygewwzb.supabase.co','sb_publishable__tucXG-IQGUhibMqMSUzCw_5RnH_sbQ');
 const $=id=>document.getElementById(id);
 const eur=n=>new Intl.NumberFormat('de-AT',{style:'currency',currency:'EUR'}).format(n);
@@ -19,16 +20,16 @@ async function fingerprint(s){
 async function refresh(){
  try{
  const id=await owner();
- const r=await db.from('bank_fixed_costs').select('*').eq('business_id',id).order('booking_date',{ascending:false}).limit(500);
+ const end='2100-01-01';const r=await loadBankFixedCosts(db,id,'1900-01-01',end);
  if(r.error)throw r.error;
  const list=$('bankCostSummary');list.replaceChildren();
- const rows=r.data||[];
+ const rows=(r.data||[]).sort((a,b)=>String(b.booking_date).localeCompare(String(a.booking_date)));
  const months=[...new Set(rows.map(x=>x.booking_date.slice(0,7)))].sort().reverse();
  for(const month of months){
   const subset=rows.filter(x=>x.booking_date.startsWith(month));
   const total=subset.reduce((a,x)=>a+Number(x.amount),0);
   const h=document.createElement('div');h.className='entry';
-  const title=document.createElement('strong');title.textContent=month+' · bestätigte Fixkostenzahlungen '+eur(total);
+  const title=document.createElement('strong');title.textContent=month+' · Fixkostenzahlungen aus Bankbelegen '+eur(total);
   h.append(title);
   for(const category of Object.keys(names)){
    const items=subset.filter(x=>x.category===category);if(!items.length)continue;
@@ -37,7 +38,7 @@ async function refresh(){
   }
   list.append(h);
  }
- if(!rows.length)$('bankCostStatus').textContent='Noch keine geprüften Fixkosten-Bankzahlungen vorhanden.';
+ if(!rows.length)$('bankCostStatus').textContent='Noch keine Fixkosten in den Bankbelegen gefunden.';
  }catch(e){$('bankCostStatus').textContent='Fixkosten nicht geladen: '+e.message}
 }
 $('bankCostForm').onsubmit=async ev=>{
