@@ -603,16 +603,22 @@ async function secureOriginal(file){
 }
 async function process(){
  if(busy||!queue.length)return;if(!user){E('uploadStatus').textContent='Bitte anmelden.';return;}
- busy=true;drawQueue();E('review').replaceChildren();const files=[...queue];let saved=0,duplicate=0,failed=0,secured=0;const errors=[];
+ busy=true;drawQueue();E('review').replaceChildren();const files=[...queue];let saved=0,duplicate=0,failed=0,secured=0;const errors=[],intakes=new Map();
  try{
   for(const [fileIndex,file] of files.entries()){
-   let intake=null;
+   try{
+    E('uploadStatus').textContent='Originale sichern '+(fileIndex+1)+'/'+files.length+' · '+file.name;
+    const intake=await withTimeout(secureOriginal(file),45000,'Speichern dauerte zu lange. Bitte Archiv prüfen, bevor du erneut sendest.');
+    intakes.set(file,intake);
+    if(!intake.alreadyRecognized)secured++;
+   }catch(e){failed++;errors.push(file.name+': '+(e.message||String(e)));}
+  }
+  for(const [fileIndex,file] of files.entries()){
+   let intake=intakes.get(file);if(!intake)continue;
    const setProgress=step=>{E('uploadStatus').textContent=(fileIndex+1)+'/'+files.length+' · '+file.name+' · '+step;};
    try{
-    setProgress('Original wird zuerst im Archiv gesichert …');
-    intake=await withTimeout(secureOriginal(file),45000,'Speichern dauerte zu lange. Bitte Archiv prüfen, bevor du erneut sendest.');
     if(intake.alreadyRecognized){duplicate++;queue=queue.filter(f=>f!==file);continue;}
-    secured++;setProgress('Original gesichert · Erkennung läuft …');
+    setProgress('Original gesichert · Erkennung läuft …');
     const blobs=await withTimeout(pages(file,setProgress),90000,'Datei/PDF konnte nach 90 Sekunden nicht vorbereitet werden.');
     if(blobs.length>12)throw Error('PDF hat mehr als 12 Seiten');
     const images=[];for(const blob of blobs)images.push({image_base64:await b64(blob),mime_type:'image/jpeg'});
