@@ -245,7 +245,7 @@ dialog::backdrop{background:#0f1e2d99}
 @media(max-width:540px){#bonitImportLogCard{padding:15px}.bonit-log-row{grid-template-columns:minmax(0,1fr) auto;gap:5px 10px;padding:12px}.bonit-log-date{font-size:13px}.bonit-log-number{grid-column:1;grid-row:2}.bonit-log-amount{grid-column:2;grid-row:1 / span 2;font-size:16px}}
 .gp-monthly-control-btn{display:inline-flex;align-items:center;gap:11px;min-height:48px;margin-top:10px;padding:9px 15px 9px 9px;background:#fff;color:#111;text-decoration:none;border:1px solid #d9d9d9;border-radius:13px;font-size:14px;font-weight:750;box-shadow:0 4px 12px #11111116;transition:transform .18s,background .18s,box-shadow .18s}.gp-monthly-control-btn:hover{background:#fff;color:#111;transform:translateY(-1px);box-shadow:0 7px 17px #11111125}.gp-monthly-control-btn:focus-visible{outline:3px solid #777;outline-offset:3px}.gp-monthly-control-icon{display:grid;place-items:center;width:29px;height:29px;border-radius:9px;background:#f2f2f2;font-size:17px}.gp-monthly-control-arrow{font-size:18px;margin-left:9px;opacity:.8}@media(max-width:440px){.gp-monthly-control-btn{width:100%;justify-content:flex-start}.gp-monthly-control-arrow{margin-left:auto}}
 .recent-invoice-row{display:flex;justify-content:space-between;align-items:center;gap:16px;border:1px solid #e5e5e5;background:#fff;border-radius:12px;padding:14px;margin:8px 0}.recent-invoice-row strong{display:block;font-size:15px}.recent-invoice-row small{display:block;color:#666;font-size:12px;margin-top:4px;overflow-wrap:anywhere}.recent-invoice-amount{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}@media(max-width:480px){.recent-invoice-row{align-items:flex-start;flex-direction:column}.recent-invoice-amount{text-align:left}}
-.invoice-payment-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end}.invoice-payment-select{width:auto;min-width:110px;padding:9px 12px;border:1px solid #d5d5d5;border-radius:10px;background:#fff;color:#111;font-size:14px;font-weight:650}.invoice-payment-actions small{flex-basis:100%;text-align:right}@media(max-width:480px){.invoice-payment-actions{justify-content:flex-start}.invoice-payment-actions small{text-align:left}}
+.invoice-payment-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end}.invoice-payment-actions small{flex-basis:100%;text-align:right}.gp-payment-choice{margin:12px 0;padding:12px;border:1px solid #d7e5e1;border-radius:12px;background:#f6fbf9}.gp-payment-choice strong{display:block;margin-bottom:8px}.gp-payment-buttons{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.gp-payment-buttons button{margin:0;min-height:48px;border:2px solid #263e50;background:#fff;color:#263e50}.gp-payment-buttons button[aria-pressed=true]{background:#397f73;border-color:#397f73;color:#fff}.gp-payment-buttons button:focus-visible{outline:3px solid #888;outline-offset:2px}@media(max-width:480px){.invoice-payment-actions{justify-content:flex-start}.invoice-payment-actions small{text-align:left}}
 .gp-extra-navigation{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:14px 0 18px}.gp-extra-tile{position:relative;display:flex;flex-direction:column;justify-content:flex-end;min-height:170px;padding:16px;border:1px solid #d8d8d8;border-radius:16px;background:#fff!important;color:#111!important;text-decoration:none!important}.gp-extra-tile:hover,.gp-extra-tile:focus-visible{background:#fff!important;border-color:#777;box-shadow:0 2px 8px #00000010}.gp-extra-number{position:absolute;top:15px;left:16px;font-weight:700}.gp-extra-arrow{position:absolute;top:12px;right:16px;font-size:24px;font-weight:700}.gp-extra-tile strong{font-size:20px;color:#111}.gp-extra-tile small{font-size:13px;color:#444;margin-top:5px}@media(max-width:700px){.gp-extra-navigation{grid-template-columns:repeat(2,minmax(0,1fr))}.gp-extra-tile{min-height:140px}}@media(max-width:380px){.gp-extra-tile strong{font-size:17px}}
 .gp-top-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.gp-top-tile{border:1px solid #e5e5e5;border-radius:14px;padding:14px;background:white;min-width:0}.gp-top-head{display:flex;align-items:flex-start;gap:10px}.gp-top-head .top-link{font-weight:650;overflow-wrap:anywhere}.gp-top-qty{display:block;margin:8px 0;font-size:20px}.gp-top-track{height:7px;background:#eee;border-radius:10px;overflow:hidden;margin-bottom:7px}.gp-top-track>div{height:100%;background:#555;border-radius:10px}.gp-top-financial{font-size:12px;color:#555;margin-top:9px;padding-top:8px;border-top:1px solid #eee}@media(max-width:640px){.gp-top-grid{grid-template-columns:1fr}}
 /* GastroPilot 2.0 – einheitliche kompakte Startkacheln */
@@ -1606,6 +1606,19 @@ $('gp2UploadTile').onclick=()=>{switchPage('cash');$('cashFiles').click();};
 $('gpUploadCamera').onclick=()=>{switchPage('cash');$('cashCameraInput').click();};
 $('gpUploadFile').onclick=()=>{switchPage('cash');$('cashFiles').click();};
 
+function gpOpenManualInvoice(file){
+ if(file){clearFiles('invoice');addFiles('invoice',[file]);}
+ if(!state.invoice.files.length){message('invoiceStatus','Bitte zuerst ein Foto oder PDF auswählen.',true);return;}
+ state.invoice.results=[{
+  date:'',supplier:'',invoice_number:'',gross_total:null,net_total:null,vat_total:null,
+  payment_status:'',purchase_items:[],sales_items:[],tax_breakdown:[]
+ }];
+ switchPage('invoice');
+ renderResults('invoice');
+ message('invoiceStatus','Manuelle Erfassung geöffnet. Rechnungsdatum, Lieferant und Bruttobetrag eintragen; dann Offen oder Bezahlt wählen.');
+ $('invoiceCapture').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
 // Unified camera/PDF intake: detect document type using the existing authenticated
 // analyzer, then route to the existing review and original-file archive workflow.
 async function gpAutoIntake(file){
@@ -1632,7 +1645,14 @@ async function gpAutoIntake(file){
   switchPage(kind==='invoice'?'invoice':'cash');
   message(kindId(kind)+'Status',data.documents.length+' Beleg(e) erkannt. Werte prüfen und speichern.');
   status.textContent='Erkannt: '+(kind==='invoice'?'Lieferantenrechnung':'BONit-Tagesabschluss')+' · Belegprüfung geöffnet.';
- }catch(e){status.textContent='Erkennung fehlgeschlagen: '+e.message;}
+ }catch(e){
+  status.textContent='Erkennung fehlgeschlagen: '+e.message+' ';
+  const manual=document.createElement('button');
+  manual.type='button';manual.className='secondary';
+  manual.textContent='Rechnung manuell erfassen';
+  manual.onclick=()=>gpOpenManualInvoice(file);
+  status.append(manual);
+ }
  finally{locked=false;renderFiles('cash_report');renderFiles('invoice');}
 }
 $('gpAutoCamera').onclick=()=>$('gpAutoCameraInput').click();
@@ -1847,6 +1867,14 @@ async function scan(kind){
 
   }catch(e){
     message(id+'Status','Fehler: '+e.message,true);
+    if(kind==='invoice'&&state.invoice.files.length){
+      const status=$(id+'Status');
+      const manual=document.createElement('button');
+      manual.type='button';manual.className='secondary';
+      manual.textContent='Rechnung manuell erfassen';
+      manual.onclick=()=>gpOpenManualInvoice();
+      status.append(document.createTextNode(' '),manual);
+    }
   }finally{
     locked=false;
     renderFiles('cash_report');
@@ -1915,6 +1943,26 @@ function gpCollectInvoiceItems(host){
  return out;
 }
 
+function gpPaymentChoice(initial){
+ const section=document.createElement('section');section.className='gp-payment-choice';
+ const title=document.createElement('strong');title.textContent='Zahlungsstatus – bitte auswählen';
+ const input=document.createElement('input');input.type='hidden';input.dataset.key='payment_status';
+ const raw=String(initial||'').trim().toLowerCase();
+ input.value=raw==='paid'||raw==='bezahlt'?'paid':raw==='open'||raw==='offen'?'open':'';
+ const group=document.createElement('div');group.className='gp-payment-buttons';group.setAttribute('role','group');group.setAttribute('aria-label','Zahlungsstatus');
+ const buttons=[];
+ const refresh=()=>buttons.forEach(button=>{
+  const active=button.dataset.value===input.value;
+  button.setAttribute('aria-pressed',String(active));
+ });
+ for(const [value,label] of [['open','Offen'],['paid','Bezahlt']]){
+  const button=document.createElement('button');button.type='button';button.dataset.value=value;
+  button.textContent=label;button.setAttribute('aria-pressed','false');
+  button.onclick=()=>{input.value=value;refresh();};
+  buttons.push(button);group.append(button);
+ }
+ refresh();section.append(title,input,group);return section;
+}
 function renderResults(kind){
   const id=kindId(kind);
   const target=$(id+'Results');
@@ -1987,6 +2035,7 @@ function renderResults(kind){
       field?.addEventListener('input',update);
       update();
       body.append(warning);
+      body.append(gpPaymentChoice(doc.payment_status));
     }
 
     const msg=document.createElement('div');
@@ -2071,27 +2120,6 @@ function renderResults(kind){
       ]){
         extraGrid.append(makeField(label,key,doc[key],type));
       }
-    }else{
-      const label=document.createElement('label');
-      label.textContent='Zahlungsstatus';
-
-      const select=document.createElement('select');
-      select.dataset.key='payment_status';
-
-      for(const [value,text] of [
-        ['unknown','Nicht angegeben'],
-        ['open','Offen'],
-        ['paid','Bezahlt']
-      ]){
-        const opt=document.createElement('option');
-        opt.value=value;
-        opt.textContent=text;
-        select.append(opt);
-      }
-
-      select.value=doc.payment_status||'unknown';
-      label.append(select);
-      extraGrid.append(label);
     }
 
     extra.append(extraGrid);
@@ -2167,6 +2195,7 @@ async function saveResult(
   msg.textContent='Prüfe Beleg …';
 
   let saved=false;
+  let expenseWarning='';
 
   try{
     const values={};
@@ -2203,6 +2232,10 @@ async function saveResult(
         throw Error('Lieferant unbekannt. Bitte Lieferant auf der Rechnung prüfen und eintragen.');
       }
       reviewed.supplier=supplier;
+    }
+
+    if(kind==='invoice'&&!['open','paid'].includes(reviewed.payment_status)){
+      throw Error('Bitte Zahlungsstatus Offen oder Bezahlt auswählen.');
     }
 
     if(reviewed.gross_total===null){
@@ -2285,7 +2318,7 @@ async function saveResult(
       }
     }
     reviewed.original_files=originalPaths;
-    const {error}=await db.from('documents').insert({
+    const insertedDocument=await db.from('documents').insert({
       storage_path:originalPaths[0]||null,
       business_id:businessId,
       uploaded_by:user.id,
@@ -2296,14 +2329,40 @@ async function saveResult(
         reviewed.invoice_number:null,
       status:'reviewed',
       extracted_data:reviewed
-    });
+    }).select('id').single();
 
-    if(error){
+    if(insertedDocument.error){
       if(originalPaths.length)await db.storage.from('invoice-originals').remove(originalPaths);
-      throw error;
+      throw insertedDocument.error;
     }
 
     saved=true;
+    if(kind==='invoice'){
+      const mapped={food:'food',beverage:'drinks',drinks:'drinks',cleaning:'nonfood',consumables:'nonfood',packaging:'nonfood',equipment:'nonfood',nonfood:'nonfood',other:'other',unknown:'other'};
+      const weights={};
+      for(const item of reviewed.purchase_items||[]){
+        const source=gpCostNames[item.category]?item.category:gpSuggestCost(item.name);
+        const category=mapped[source]||'other';
+        const weight=Number(item.net??item.gross??1);
+        if(Number.isFinite(weight)&&weight>0)weights[category]=(weights[category]||0)+weight;
+      }
+      const expenseCategory=Object.keys(weights).sort((a,b)=>weights[b]-weights[a])[0]||'other';
+      const expense=await db.from('expenses').insert({
+        business_id:businessId,
+        document_id:insertedDocument.data.id,
+        expense_date:reviewed.date,
+        accounting_month:reviewed.date.slice(0,7)+'-01',
+        category:expenseCategory,
+        description:'Rechnung '+(reviewed.invoice_number||'ohne Nummer'),
+        supplier:reviewed.supplier,
+        gross_amount:reviewed.gross_total,
+        net_amount:reviewed.net_total,
+        vat_amount:reviewed.vat_total,
+        payment_status:reviewed.payment_status,
+        paid_at:reviewed.payment_status==='paid'?new Date().toISOString().slice(0,10):null
+      });
+      if(expense.error)expenseWarning='Ausgabenposten noch nicht verbucht: '+expense.error.message;
+    }
 
     const resultIndex=state[kind].results.indexOf(doc);
     if(resultIndex!==-1){
@@ -2337,6 +2396,7 @@ async function saveResult(
       statusEl.replaceChildren();
     };
     statusEl.append(confirmation,document.createTextNode(' · Der Beleg wurde in GastroPilot übernommen. '),done);
+    if(expenseWarning)statusEl.append(document.createTextNode(' '+expenseWarning));
     statusEl.scrollIntoView({behavior:'smooth',block:'center'});
 
     const next=$(id+'Results').querySelector('.result');
@@ -3442,6 +3502,18 @@ async function renderBonitCashArchive(){
   }
 }
 
+function gpInvoiceExpenseCategory(data){
+ const mapped={food:'food',beverage:'drinks',drinks:'drinks',cleaning:'nonfood',consumables:'nonfood',packaging:'nonfood',equipment:'nonfood',nonfood:'nonfood',other:'other',unknown:'other'};
+ const items=Array.isArray(data.purchase_items)&&data.purchase_items.length?data.purchase_items:(data.article_details||[]);
+ const weights={};
+ for(const item of items){
+  const source=gpCostNames[item.category]?item.category:gpSuggestCost(item.name);
+  const category=mapped[source]||'other';
+  const weight=Number(item.net??item.gross??1);
+  if(Number.isFinite(weight)&&weight>0)weights[category]=(weights[category]||0)+weight;
+ }
+ return Object.keys(weights).sort((a,b)=>weights[b]-weights[a])[0]||'other';
+}
 async function refreshRecentInvoiceUploads(){
  const box=$('recentInvoiceUploads');if(!box||!businessId)return;
  const {data,error}=await db.from('documents').select('id,document_date,created_at,supplier,invoice_number,status,extracted_data')
@@ -3458,36 +3530,56 @@ async function refreshRecentInvoiceUploads(){
   main.append(name,info,upload);
   const total=document.createElement('strong');total.className='recent-invoice-amount';
   const raw=doc.extracted_data?.gross_total;total.textContent=validNumber(raw)?euro(Number(raw)):'Betrag offen';
-  const payment=document.createElement('select');
-  payment.className='invoice-payment-select';
-  payment.setAttribute('aria-label','Zahlungsstatus für '+(doc.supplier||'Rechnung'));
-  for(const [value,label] of [['open','Offen'],['paid','Bezahlt']]){
-   const option=document.createElement('option');option.value=value;option.textContent=label;payment.append(option);
-  }
+  const rawStatus=String(doc.extracted_data?.payment_status||'').toLowerCase();
+  const initial=rawStatus==='paid'||rawStatus==='bezahlt'?'paid':'open';
   const {data:linked,error:linkedError}=await db.from('expenses').select('id,payment_status').eq('business_id',businessId).eq('document_id',doc.id).limit(1);
-  const expense=linked?.[0];
-  payment.value=expense?.payment_status==='paid'||doc.extracted_data?.payment_status==='paid'?'paid':'open';
-  if(linkedError){payment.disabled=true;payment.title='Status konnte nicht geladen werden';}
+  let expense=linked?.[0]||null;
+  let current=expense?.payment_status==='paid'||expense?.payment_status==='bezahlt'?'paid':initial;
+  const buttons=document.createElement('div');buttons.className='gp-payment-buttons';
+  buttons.setAttribute('role','group');buttons.setAttribute('aria-label','Zahlungsstatus für '+(doc.supplier||'Rechnung'));
   const feedback=document.createElement('small');feedback.setAttribute('aria-live','polite');
-  payment.onchange=async()=>{
-   const previous=payment.value==='paid'?'open':'paid',next=payment.value;
-   payment.disabled=true;feedback.textContent='Speichert …';
-   try{
-    const extracted={...(doc.extracted_data||{}),payment_status:next};
-    const result=await db.from('documents').update({extracted_data:extracted}).eq('id',doc.id).eq('business_id',businessId).select('id');
-    if(result.error)throw result.error;
-    if(!result.data?.length)throw Error('Keine Berechtigung zum Ändern des Belegs.');
-    if(expense){
-     const updated=await db.from('expenses').update({payment_status:next}).eq('id',expense.id).eq('business_id',businessId).select('id');
-     if(updated.error)throw updated.error;
-     if(!updated.data?.length)throw Error('Ausgabenstatus konnte nicht gespeichert werden.');
-    }
-    doc.extracted_data=extracted;
-    feedback.textContent='✓ '+(next==='paid'?'Bezahlt':'Offen')+' gespeichert';
-   }catch(e){payment.value=previous;feedback.textContent='Fehler: '+e.message;}
-   finally{payment.disabled=false;}
-  };
-  const actions=document.createElement('div');actions.className='invoice-payment-actions';actions.append(total,payment,feedback);
+  const options=[];
+  const refreshButtons=()=>options.forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.value===current)));
+  for(const [value,label] of [['open','Offen'],['paid','Bezahlt']]){
+   const button=document.createElement('button');button.type='button';button.dataset.value=value;button.textContent=label;
+   button.setAttribute('aria-pressed','false');
+   if(linkedError){button.disabled=true;button.title='Status konnte nicht geladen werden';}
+   button.onclick=async()=>{
+    if(value===current)return;
+    const previous=current;current=value;refreshButtons();options.forEach(x=>x.disabled=true);feedback.textContent='Speichert …';
+    try{
+     const extracted={...(doc.extracted_data||{}),payment_status:value};
+     const updatedDoc=await db.from('documents').update({extracted_data:extracted}).eq('id',doc.id).eq('business_id',businessId).select('id');
+     if(updatedDoc.error)throw updatedDoc.error;
+     if(!updatedDoc.data?.length)throw Error('Keine Berechtigung zum Ändern des Belegs.');
+     if(expense){
+      const updated=await db.from('expenses').update({payment_status:value,paid_at:value==='paid'?new Date().toISOString().slice(0,10):null}).eq('id',expense.id).eq('business_id',businessId).select('id');
+      if(updated.error)throw updated.error;
+      if(!updated.data?.length)throw Error('Ausgabenstatus konnte nicht gespeichert werden.');
+     }else{
+      const gross=Number(doc.extracted_data?.gross_total),date=doc.document_date;
+      if(!Number.isFinite(gross)||!date)throw Error('Rechnung gespeichert, aber Betrag oder Datum fehlen für die Ausgabenbuchung.');
+      const created=await db.from('expenses').insert({
+       business_id:businessId,document_id:doc.id,expense_date:date,
+       accounting_month:date.slice(0,7)+'-01',category:gpInvoiceExpenseCategory(doc.extracted_data||{}),
+       description:'Rechnung '+(doc.invoice_number||'ohne Nummer'),supplier:doc.supplier||doc.extracted_data?.supplier||null,
+       gross_amount:gross,net_amount:validNumber(doc.extracted_data?.net_total)?Number(doc.extracted_data.net_total):null,
+       vat_amount:validNumber(doc.extracted_data?.vat_total)?Number(doc.extracted_data.vat_total):null,
+       payment_status:value,paid_at:value==='paid'?new Date().toISOString().slice(0,10):null
+      }).select('id').single();
+      if(created.error)throw created.error;
+      expense=created.data;
+     }
+     doc.extracted_data=extracted;
+     feedback.textContent='✓ '+(value==='paid'?'Bezahlt':'Offen')+' gespeichert';
+    }catch(e){current=previous;refreshButtons();feedback.textContent='Fehler: '+e.message;}
+    finally{options.forEach(x=>x.disabled=false);}
+   };
+   options.push(button);buttons.append(button);
+  }
+  refreshButtons();
+  const actions=document.createElement('div');actions.className='invoice-payment-actions';
+  actions.append(total,buttons,feedback);
   row.append(main,actions);box.append(row);
  }
 }
