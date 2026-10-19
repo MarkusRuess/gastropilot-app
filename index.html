@@ -162,17 +162,17 @@ async function reanalyzeInvoice(documentId,button){
  if(button.disabled)return;button.disabled=true;E('archiveState').textContent='Originalrechnung wird erneut nach Produkt, Menge und Preis gelesen …';
  try{const {data,error}=await withTimeout(db.functions.invoke('analyze-receipt',{body:{business_id:BID,mode:'invoice_items',document_id:documentId}}),120000,'Produktlesung dauert länger als 2 Minuten. Originalbeleg bleibt gespeichert.');if(error)throw error;if(data?.error)throw Error(data.error);const updated=data?.documents?.[0];if(!updated?.purchase_items?.length)throw Error('Keine auslesbaren Produktpositionen erhalten.');const target=archiveData.find(x=>x.id===documentId);if(target)target.extracted_data=updated;showArchive();E('archiveState').textContent=updated.purchase_items.length+' Produktpositionen mit Mengen/Preisen im Archiv ergänzt.';}catch(e){E('archiveState').textContent='Produkte konnten nicht ergänzt werden: '+(e.message||String(e));}finally{button.disabled=false;}
 }
-async function openArchiveOriginal(document,button){
+async function openArchiveOriginal(invoiceDoc,button){
  if(button.disabled)return;button.disabled=true;button.textContent='Rechnung wird geöffnet …';
  try{
-  const paths=[...new Set([...(document.extracted_data?.original_files||[]),document.storage_path].filter(Boolean))];
+  const paths=[...new Set([...(invoiceDoc.extracted_data?.original_files||[]),invoiceDoc.storage_path].filter(Boolean))];
   if(!paths.length)throw Error('Für diese Rechnung ist kein Original hinterlegt.');
   const path=paths[0],{data,error}=await db.storage.from('invoice-originals').createSignedUrl(path,300);
   if(error)throw error;
   let overlay=E('archiveDocumentPreview');
   if(!overlay){overlay=document.createElement('div');overlay.id='archiveDocumentPreview';overlay.className='documentPreviewOverlay';overlay.setAttribute('role','dialog');overlay.setAttribute('aria-modal','true');document.body.append(overlay);}
   overlay.replaceChildren();const panel=document.createElement('div');panel.className='documentPreviewPanel';
-  const head=document.createElement('div');head.className='documentPreviewHead';const title=document.createElement('strong');title.textContent=(document.supplier||'Rechnung')+' · '+(document.invoice_number||'Original');const close=document.createElement('button');close.type='button';close.textContent='Schließen';close.onclick=()=>overlay.hidden=true;head.append(title,close);panel.append(head);
+  const head=document.createElement('div');head.className='documentPreviewHead';const title=document.createElement('strong');title.textContent=(invoiceDoc.supplier||'Rechnung')+' · '+(invoiceDoc.invoice_number||'Original');const close=document.createElement('button');close.type='button';close.textContent='Schließen';close.onclick=()=>overlay.hidden=true;head.append(title,close);panel.append(head);
   const url=data.signedUrl;
   if(/\.pdf(?:$|\?)/i.test(path)){const frame=document.createElement('iframe');frame.title='Rechnungsoriginal';frame.src=url;panel.append(frame);}
   else{const image=document.createElement('img');image.alt='Rechnungsoriginal';image.src=url;panel.append(image);}
