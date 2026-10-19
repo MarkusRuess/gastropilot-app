@@ -12,7 +12,7 @@
 .row{display:flex;gap:9px;align-items:center;flex-wrap:wrap}.row>*{min-width:0}#app>.row{justify-content:space-between;margin:5px 0 13px}#app>.row h2{font-size:20px;letter-spacing:-.4px;margin-right:auto}
 button,input,select{font:inherit;padding:9px 11px;border-radius:8px;border:1px solid #ccd5dd}button{background:#1e3c50;color:white;border-color:#1e3c50;font-weight:650;cursor:pointer}button:hover{filter:brightness(1.08)}button:disabled{opacity:.48}input[type=month]{width:168px;background:white}input[type=file]{max-width:100%}label{display:block;font-size:12px;margin:8px 0}.muted,.section-intro{color:#718096;font-size:12px}.hidden{display:none!important}
 h2{font-size:17px;margin:10px 0}h3{font-size:14px}table{width:100%;border-collapse:collapse;font-size:12px}td,th{padding:9px 7px;border-bottom:1px solid #edf1f5;text-align:left}thead{background:#f7f9fb;color:#64748b}th.num,td.num{text-align:right}.scroll{overflow:auto}.warning{color:#b45309}.good{color:#0f766e}.field{display:grid;grid-template-columns:repeat(auto-fit,minmax(165px,1fr));gap:8px}.field input,.field select{width:100%}.review{border-top:1px solid #ddd;padding:10px 0}.status{font-size:12px;white-space:pre-wrap}
-#intake{background:linear-gradient(135deg,#edf8f5,#fff 62%);border:1px solid #b6dcd3;border-radius:15px;padding:22px;box-shadow:0 4px 18px #116d5c0c}#intake h2{font-size:19px;color:#135a51}#intake .upload-actions{margin:16px 0 8px}#intake .upload-actions button{flex:1;min-width:190px;padding:16px;font-size:14px}#confirmUpload{padding:13px 17px;background:#087f70;border-color:#087f70}#fileQueue{padding:10px;background:#fff;border:1px dashed #a9d0c7;border-radius:9px;margin:10px 0}#fileQueue:empty{display:none}
+#intake{background:linear-gradient(135deg,#edf8f5,#fff 62%);border:1px solid #b6dcd3;border-radius:15px;padding:22px;box-shadow:0 4px 18px #116d5c0c}.paymentChoice{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:12px 0}.paymentChoice button{min-height:58px;font-size:17px}.paymentChoice button.selected{background:#087f70;border-color:#087f70}.paymentSave{width:100%;padding:14px;font-size:16px}.paymentLater{margin-top:9px;background:#f1f5f9;color:#1e3c50;border-color:#cbd5e1}@media(max-width:420px){.paymentChoice{grid-template-columns:1fr}}#intake h2{font-size:19px;color:#135a51}#intake .upload-actions{margin:16px 0 8px}#intake .upload-actions button{flex:1;min-width:190px;padding:16px;font-size:14px}#confirmUpload{padding:13px 17px;background:#087f70;border-color:#087f70}#fileQueue{padding:10px;background:#fff;border:1px dashed #a9d0c7;border-radius:9px;margin:10px 0}#fileQueue:empty{display:none}
 #login{max-width:430px;margin:9vh auto;padding:27px}#login input{display:block;width:100%;margin-top:5px}#login button{width:100%;margin-top:8px;padding:12px}
 @media(max-width:650px){main{padding:10px}.card{padding:13px;margin:9px 0}.grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.tile{padding:9px;min-height:68px}.tile b{font-size:17px}#app>.row h2{width:100%;font-size:18px}#intake{padding:15px}#intake .upload-actions button{min-width:100%}}
 .top-article-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.top-article{padding:9px 11px;border:1px solid var(--line);border-radius:10px;background:#f8fafc}.top-article strong{display:block;font-size:12px;line-height:1.3;overflow-wrap:anywhere}.top-article .metrics{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:11px;margin-top:5px;font-variant-numeric:tabular-nums}.top-article .metrics span{white-space:nowrap}.top-article .metrics b{color:#116d5c}@media(max-width:600px){.top-article-grid{grid-template-columns:1fr}}
@@ -415,12 +415,13 @@ async function refresh(){void loadWeeklyPurchase().catch(e=>E('purchasePeriod').
  }catch(e){E('summary').textContent='Datenabruf fehlgeschlagen: '+e.message;}
 }
 async function image(file){return await new Promise((resolve,reject)=>{const url=URL.createObjectURL(file),img=new Image();img.onload=()=>{const scale=Math.min(1,1700/Math.max(img.width,img.height)),canvas=document.createElement('canvas');canvas.width=Math.round(img.width*scale);canvas.height=Math.round(img.height*scale);canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);canvas.toBlob(b=>{URL.revokeObjectURL(url);b?resolve(b):reject(Error('Bildfehler'));},'image/jpeg',.8);};img.onerror=()=>{URL.revokeObjectURL(url);reject(Error('Foto nicht lesbar'));};img.src=url;});}
-async function pages(file){if(file.type!=='application/pdf')return [await image(file)];const pdfjs=await import('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.min.mjs');pdfjs.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.worker.min.mjs';const pdf=await pdfjs.getDocument({data:new Uint8Array(await file.arrayBuffer())}).promise;if(pdf.numPages>12)throw Error('Maximal 12 PDF-Seiten');const out=[];for(let i=1;i<=pdf.numPages;i++){const page=await pdf.getPage(i),base=page.getViewport({scale:1}),v=page.getViewport({scale:Math.min(2,1700/Math.max(base.width,base.height))}),canvas=document.createElement('canvas');canvas.width=Math.round(v.width);canvas.height=Math.round(v.height);await page.render({canvasContext:canvas.getContext('2d'),viewport:v}).promise;out.push(await new Promise(resolve=>canvas.toBlob(resolve,'image/jpeg',.8)));}return out;}
+function withTimeout(promise,ms,message){let timer;return Promise.race([promise,new Promise((_,reject)=>{timer=setTimeout(()=>reject(Error(message)),ms);})]).finally(()=>clearTimeout(timer));}
+async function pages(file,onProgress=()=>{}){if(file.type!=='application/pdf'){onProgress('Foto wird vorbereitet …');return [await image(file)];}onProgress('PDF wird geöffnet …');const pdfjs=await import('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.min.mjs');pdfjs.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.worker.min.mjs';const pdf=await pdfjs.getDocument({data:new Uint8Array(await file.arrayBuffer())}).promise;if(pdf.numPages>12)throw Error('Maximal 12 PDF-Seiten');const out=[];for(let i=1;i<=pdf.numPages;i++){onProgress('PDF-Seite '+i+'/'+pdf.numPages+' wird umgewandelt …');const page=await pdf.getPage(i),base=page.getViewport({scale:1}),v=page.getViewport({scale:Math.min(2,1700/Math.max(base.width,base.height))}),canvas=document.createElement('canvas');canvas.width=Math.round(v.width);canvas.height=Math.round(v.height);await page.render({canvasContext:canvas.getContext('2d'),viewport:v}).promise;out.push(await new Promise((resolve,reject)=>canvas.toBlob(b=>b?resolve(b):reject(Error('PDF-Seite '+i+' konnte nicht umgewandelt werden')),'image/jpeg',.8)));}return out;}
 async function b64(blob){return await new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(String(r.result).split(',')[1]);r.onerror=()=>reject(Error('Datei nicht lesbar'));r.readAsDataURL(blob);});}
 function field(container,label,key,value,type='text'){const l=document.createElement('label');l.textContent=label;const i=document.createElement('input');i.type=type;i.dataset.key=key;i.value=value??'';l.append(i);container.append(l);}
 function queueFiles(files){if(busy)return;for(const f of files){if(!['image/jpeg','image/png','image/webp','application/pdf'].includes(f.type))continue;if(f.size>20*1024*1024){E('uploadStatus').textContent=f.name+': über 20 MB';continue;}if(queue.length>=12){E('uploadStatus').textContent='Maximal 12 Dateien pro Durchgang.';break;}if(!queue.some(x=>x.name===f.name&&x.size===f.size&&x.lastModified===f.lastModified))queue.push(f);}drawQueue();}
 function drawQueue(){E('fileQueue').replaceChildren();const heading=document.createElement('p');heading.textContent=queue.length+' von 12 Fotos / PDF ausgewählt';E('fileQueue').append(heading);for(const [i,f] of queue.entries()){const row=document.createElement('div');row.className='row';row.style.marginBottom='5px';const name=document.createElement('span');name.textContent=(i+1)+'. '+f.name;const remove=document.createElement('button');remove.textContent='Entfernen';remove.disabled=busy;remove.onclick=()=>{queue.splice(i,1);drawQueue();};row.append(name,remove);E('fileQueue').append(row);}E('confirmUpload').disabled=busy||queue.length===0;E('clearUpload').disabled=busy||queue.length===0;}
-async function autoArchive(doc,sourceFile){
+async function autoArchive(doc,sourceFile,paymentStatus){
  const x={...doc},kind=x.document_type;
  if(!['cash_report','monthly_report','invoice'].includes(kind))throw Error('Dokumenttyp nicht sicher erkannt');
  if(!/^\d{4}-\d{2}-\d{2}$/.test(x.date||'')){x.date=new Date().toLocaleDateString('en-CA',{timeZone:'Europe/Vienna'});x.needs_review=true;x.import_warning='Belegdatum unklar; Erfassungsdatum als vorläufiges Archivdatum.';}
@@ -438,7 +439,8 @@ async function autoArchive(doc,sourceFile){
   if(!x.supplier||!x.invoice_number){x.needs_review=true;x.import_warning='Lieferant oder Rechnungsnummer unvollständig; Original archiviert.';}
   const {data,error}=await db.from('documents').select('id').eq('business_id',BID).eq('document_type','invoice').eq('supplier',x.supplier).eq('invoice_number',x.invoice_number).limit(1);
   if(error)throw error;if(x.supplier&&x.invoice_number&&data?.length)return 'bereits vorhanden';
-  x.payment_status='ungeklaert';x.payment_method=null;
+  if(!['offen','bezahlt'].includes(paymentStatus))throw Error('Bitte Offen oder Bezahlt wählen.');
+  x.payment_status=paymentStatus;x.payment_method=null;
  }
  const originals=Array.isArray(sourceFile)?sourceFile:[sourceFile],paths=[];
  try{
@@ -455,6 +457,20 @@ async function autoArchive(doc,sourceFile){
  }catch(e){if(paths.length)await db.storage.from('invoice-originals').remove(paths);throw e;}
  return 'gespeichert';
 }
+function chooseInvoicePayment(doc,sourceFile){
+ return new Promise(resolve=>{
+  const wrap=document.createElement('div');wrap.className='review';const h=document.createElement('h3');h.textContent='Lieferantenrechnung erkannt';wrap.append(h);
+  const src=document.createElement('p');src.className='muted';src.textContent='Original: '+sourceFile.name;wrap.append(src);
+  const details=document.createElement('p');details.textContent=(doc.supplier||'Lieferant nicht erkannt')+' · Rechnungsnr. '+(doc.invoice_number||'nicht erkannt')+' · '+(N(doc.gross_total)===null?'Betrag nicht erkannt':EUR(N(doc.gross_total)));wrap.append(details);
+  const promptText=document.createElement('p');promptText.textContent='Zahlungsstatus wählen. Danach die Rechnung speichern.';wrap.append(promptText);
+  const choices=document.createElement('div');choices.className='paymentChoice';const open=document.createElement('button');open.type='button';open.textContent='Offen';const paid=document.createElement('button');paid.type='button';paid.textContent='Bezahlt';let selected='';
+  const save=document.createElement('button');save.type='button';save.className='paymentSave';save.textContent='Rechnung speichern';save.disabled=true;
+  const later=document.createElement('button');later.type='button';later.className='paymentLater';later.textContent='Später prüfen';
+  function choose(value,button){selected=value;open.classList.toggle('selected',button===open);paid.classList.toggle('selected',button===paid);open.setAttribute('aria-pressed',String(button===open));paid.setAttribute('aria-pressed',String(button===paid));save.disabled=false;}
+  open.onclick=()=>choose('offen',open);paid.onclick=()=>choose('bezahlt',paid);save.onclick=()=>{if(selected)resolve(selected);};later.onclick=()=>resolve(null);
+  choices.append(open,paid);wrap.append(choices,save,later);E('review').replaceChildren(wrap);E('uploadStatus').textContent='Rechnung erkannt · Zahlungsstatus auswählen: '+sourceFile.name;
+ });
+}
 async function process(){
  if(busy||!queue.length)return;if(!user){E('uploadStatus').textContent='Bitte anmelden.';return;}
  busy=true;drawQueue();E('review').replaceChildren();const files=[...queue];let saved=0,duplicate=0,failed=0;const errors=[];
@@ -465,7 +481,7 @@ async function process(){
    try{
     E('uploadStatus').textContent=files.length+' Fotos werden als zusammenhängender Abschluss erkannt …';
     const images=[];for(const file of files)images.push({image_base64:await b64(file),mime_type:file.type});
-    const {data,error}=await db.functions.invoke('analyze-receipt',{body:{business_id:BID,mode:'auto',images}});
+    const {data,error}=await withTimeout(db.functions.invoke('analyze-receipt',{body:{business_id:BID,mode:'auto',images}}),120000,'Die Erkennung antwortet nach 2 Minuten nicht. Datei bleibt zur erneuten Verarbeitung ausgewählt.');
     if(error)throw error;if(data?.error)throw Error(data.error);
     if(data?.documents?.length===1&&['monthly_report','cash_report'].includes(data.documents[0].document_type)){
      const outcome=await autoArchive(data.documents[0],files);
@@ -476,20 +492,21 @@ async function process(){
     }
    }catch(e){errors.push('Gemeinsame Seitenerkennung: '+(e.message||String(e))+' · Einzelverarbeitung wird versucht.');}
   }
-  for(const file of files){
-   E('uploadStatus').textContent='Automatische Verarbeitung '+(saved+duplicate+failed+1)+'/'+files.length+': '+file.name;
+  for(const [fileIndex,file] of files.entries()){
+   const setProgress=step=>{E('uploadStatus').textContent='Automatische Verarbeitung '+(fileIndex+1)+'/'+files.length+': '+file.name+' · '+step;};setProgress('wird vorbereitet …');
    try{
-    const blobs=await pages(file);if(blobs.length>12)throw Error('PDF hat mehr als 12 Seiten');
-    const images=[];for(const blob of blobs)images.push({image_base64:await b64(blob),mime_type:'image/jpeg'});
-    const {data,error}=await db.functions.invoke('analyze-receipt',{body:{business_id:BID,mode:'auto',images}});
+    const blobs=await withTimeout(pages(file,setProgress),90000,'Datei/PDF konnte nach 90 Sekunden nicht vorbereitet werden. Datei bleibt ausgewählt.');if(blobs.length>12)throw Error('PDF hat mehr als 12 Seiten');
+    setProgress(blobs.length+' Seite(n) werden an die Erkennung gesendet …');const images=[];for(const blob of blobs)images.push({image_base64:await b64(blob),mime_type:'image/jpeg'});
+    setProgress('KI prüft Dokument und liest Rechnungsdaten …');const {data,error}=await withTimeout(db.functions.invoke('analyze-receipt',{body:{business_id:BID,mode:'auto',images}}),120000,'Die Erkennung antwortet nach 2 Minuten nicht. Datei bleibt zur erneuten Verarbeitung ausgewählt.');
     if(error)throw error;if(data?.error)throw Error(data.error);
     if(data?.documents?.length!==1)throw Error('Mehrere Belege in einer Datei nicht eindeutig zuordenbar');
-    const outcome=await autoArchive(data.documents[0],file);
+    const document=data.documents[0];let paymentStatus=null;if(document.document_type==='invoice'){paymentStatus=await chooseInvoicePayment(document,file);if(!paymentStatus)throw Error('Zur Prüfung zurückgestellt; bitte erneut starten und Offen oder Bezahlt wählen.');setProgress('Zahlungsstatus '+paymentStatus+' gewählt · Rechnung wird gespeichert …');}
+    const outcome=await autoArchive(document,file,paymentStatus);
     if(outcome==='bereits vorhanden')duplicate++;else saved++;
     queue=queue.filter(f=>f!==file);
    }catch(e){failed++;errors.push(file.name+': '+(e.message||String(e)));}
   }
-  E('uploadStatus').textContent=saved+' automatisch archiviert · '+duplicate+' bereits vorhanden · '+failed+' zur Prüfung. Rechnungen ohne belegten Zahlungsstatus bleiben „ungeklärt“.';
+  E('uploadStatus').textContent=saved+' automatisch archiviert · '+duplicate+' bereits vorhanden · '+failed+' zur Prüfung. Bei erkannten Rechnungen wurde vor dem Speichern Offen oder Bezahlt abgefragt.';
   for(const msg of errors){const p=document.createElement('p');p.className='warning';p.textContent=msg;E('review').append(p);}
   if(saved){await refresh();await loadWholeArchive();}
  }finally{busy=false;drawQueue();}
