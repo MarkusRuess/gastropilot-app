@@ -116,7 +116,7 @@ h2{font-size:17px;margin:10px 0}h3{font-size:14px}table{width:100%;border-collap
 <header><strong>GastroPilot</strong><small>Dein Lokal. Deine Zahlen. Dein Überblick.</small></header>
 <main><section id="login" class="card"><h2>Anmelden</h2><form id="loginForm"><label>E-Mail<input id="email" type="email" autocomplete="username" required></label><label>Passwort<input id="password" type="password" autocomplete="current-password" required></label><button>Anmelden</button></form><p id="loginMsg" class="status"></p></section>
 <div id="app" class="hidden"><div class="row"><h2>Das Friedrich · Betriebssteuerung</h2><div id="monthOverview" class="month-overview" role="region" aria-label="Monatsübersicht"><div class="month-overview-head"><div><small>Monatsübersicht</small><strong id="monthOverviewTitle">Monat auswählen</strong></div><div class="month-controls"><button id="monthPrev" type="button" aria-label="Vorheriger Monat">‹</button><label class="month-input-label"><span class="visually-hidden">Monat auswählen</span><input id="month" type="month" aria-label="Monat auswählen"></label><button id="monthNext" type="button" aria-label="Nächster Monat">›</button></div></div><div id="monthOverviewStats" class="month-overview-stats"></div><details id="monthCalendar"><summary>Tagesübersicht</summary><div id="monthCalendarGrid" class="month-calendar-grid" aria-label="Kalender des ausgewählten Monats"></div><div id="monthDayDetail" class="month-day-detail" aria-live="polite"></div><p class="month-calendar-note">Beträge brutto in € · — = kein Tagesabschluss erfasst</p></details></div><button id="refresh">Aktualisieren</button><button id="logout">Abmelden</button></div><p id="summary" class="muted">Lade Archiv …</p><div class="grid" id="quickKpis"></div><a class="tile article-launch-tile" href="kalkulation.html" style="text-decoration:none"><small>Neue Kachel</small><b>Kalkulation</b><small>Rechnungs-EK · BONit-VK · Ziel 26 %</small></a><a class="tile article-launch-tile" href="menu-prices.html" style="text-decoration:none"><small>Das Friedrich</small><b>Kartenpreise</b><small>Aktueller VK · neuer Preisvorschlag</small></a><details id="profitGoalTile" class="tile profit-goal-tile"><summary><small>Personal + Fixkosten + Gewinn</small><b>Gewinnziel</b><small>Monatliche Zielpreise ansehen <span aria-hidden="true">⌄</span></small></summary><div class="profit-goal-panel"><p class="muted">Orientierung für den ausgewählten Monat. Gewinnquote und vollständige Fixkosten kannst du hier ergänzen.</p><div class="profit-goal-metrics"><div><small>Nettoumsatz</small><strong id="profitGoalNet">–</strong></div><div><small>Personalkosten</small><strong id="profitGoalStaff">–</strong></div><div><small>Erfasste Fixkosten</small><strong id="profitGoalRecordedFixed">–</strong></div><div><small>Monatliches Gewinnziel</small><strong id="profitGoalAmount">–</strong></div><div class="profit-goal-required"><small>Ziel-Nettoumsatz inkl. 26 % Wareneinsatz, Personal, Fixkosten und Gewinn</small><strong id="profitGoalRevenue">–</strong></div></div><div class="profit-goal-inputs"><label>Vollständige Fixkosten pro Monat (€)<input id="profitGoalFixedInput" type="number" min="0" step="0.01" inputmode="decimal"></label><label>Gewinnziel vom Nettoumsatz (%)<input id="profitGoalPercentInput" type="number" min="0" max="80" step="0.5" inputmode="decimal" value="10"></label></div><p id="profitGoalNote" class="muted"></p><a class="profit-goal-link" href="kalkulation.html">VK-Empfehlungen für BONit-Artikel öffnen →</a></div></details><nav id="quickNav" class="quickNav"><button type="button" data-target="monthlyReference">Monat</button><button type="button" data-target="intake">Upload</button><button type="button" data-target="financeSection">Finanzen</button><button type="button" data-target="weeklyPurchase">Einkauf</button><button type="button" data-target="topArticles">Top 20</button><button type="button" data-target="slowArticles">Selten verkauft</button><button type="button" data-target="centralArchive">Archiv</button></nav>
-<section class="card" id="intake"><h2>📷 Ein zentraler Eingang für ALLE Unterlagen</h2><p class="section-intro">Kassenabschlüsse, BONit, Lieferantenrechnungen, Personalunterlagen und andere Dokumente. Fotos nacheinander aufnehmen oder bis zu 12 Fotos/PDF-Dateien gemeinsam auswählen. <strong>Ein Klick auf „Automatisch erkennen & speichern“ genügt. Keine einzelnen Speicherbestätigungen. Unklare Dokumente werden zur Prüfung gemeldet.</strong></p><div class="row upload-actions"><button id="camera" type="button">📷 Foto aufnehmen</button><button id="fileButton" type="button">📄 Fotos / PDF auswählen</button></div><input id="cameraInput" class="hidden" type="file" accept="image/*" capture="environment"><input id="fileInput" class="hidden" type="file" accept="image/jpeg,image/png,image/webp,application/pdf" multiple><div id="fileQueue" class="muted"></div><div class="row"><button id="confirmUpload" type="button" disabled>Automatisch erkennen & speichern</button><button id="clearUpload" type="button" disabled>Auswahl leeren</button></div><p id="uploadStatus" class="status muted">Fotos sammeln und anschließend einmal auf „Automatisch erkennen & speichern“ klicken.</p><div id="review"></div></section>
+<section class="card" id="intake"><h2>📷 Ein zentraler Eingang für ALLE Unterlagen</h2><p class="section-intro">Kassenabschlüsse, BONit, Lieferantenrechnungen, Personalunterlagen und andere Dokumente. Fotos nacheinander aufnehmen oder bis zu 12 Fotos/PDF-Dateien gemeinsam auswählen. <strong>Ein Klick startet die Erkennung. Für jede Rechnung Offen oder Bezahlt wählen und danach Rechnung speichern. Unklare Dokumente werden zur Prüfung gemeldet.</strong></p><div class="row upload-actions"><button id="camera" type="button">📷 Foto aufnehmen</button><button id="fileButton" type="button">📄 Fotos / PDF auswählen</button></div><input id="cameraInput" class="hidden" type="file" accept="image/*" capture="environment"><input id="fileInput" class="hidden" type="file" accept="image/jpeg,image/png,image/webp,application/pdf" multiple><div id="fileQueue" class="muted"></div><div class="row"><button id="confirmUpload" type="button" disabled>Automatisch erkennen & speichern</button><button id="clearUpload" type="button" disabled>Auswahl leeren</button></div><p id="uploadStatus" class="status muted">Fotos sammeln und anschließend einmal auf „Automatisch erkennen & speichern“ klicken.</p><div id="review"></div></section>
 <section class="card" id="monthlyReference"><h2 id="monthlyTitle">BONit Monatsabschluss</h2><p class="muted">BONit Periodischer Abschluss · Monatsreferenz, keine Addition zu Tagesumsätzen.</p><div class="grid" id="augKpis"></div><h3>Artikelgruppen · Bruttoumsatz und Anteil</h3><div class="scroll"><table><thead><tr><th>Artikelgruppe</th><th class="num">Brutto</th><th class="num">Anteil</th></tr></thead><tbody id="augGroups"></tbody></table></div><h3>Stundenumsätze</h3><div id="augHours" class="scroll"></div><h3>Artikel · Menge, Einzelpreis, Umsatz</h3><p class="muted">Auszug der eindeutig lesbaren Artikelzeilen. Weitere Artikel aus dem Original werden schrittweise ergänzt; keine erfundenen Positionen.</p><div class="scroll"><table><thead><tr><th>Artikel</th><th class="num">Menge</th><th class="num">Preis</th><th class="num">Brutto</th></tr></thead><tbody id="augItems"></tbody></table></div><h3>Tischumsätze</h3><div class="scroll"><table><thead><tr><th>Tisch</th><th class="num">Brutto</th></tr></thead><tbody id="augTables"></tbody></table></div></section><section class="card" id="salesSection"><h2>Umsatz · Original BONit</h2><div class="grid" id="sales"></div><h3>10 % und 20 % direkt unter Bruttoumsatz</h3><div class="grid" id="tax"></div><p id="taxNote" class="muted"></p></section>
 <section class="card"><h2>Artikel & Preise · Stoßzeiten</h2><p class="muted">Artikelmengen, Verkaufspreise und Stundenverteilung werden aus den gespeicherten BONit-Originaldaten ausgewertet, soweit diese Felder vorliegen.</p><div class="grid" id="operating"></div><h3>Umsatz nach Stunden</h3><div id="hours" class="muted">Keine verifizierten Stundenwerte im Archiv.</div></section><section class="card" id="financeSection"><h2>Personal · Wareneinsatz · Liquidität · Ergebnis</h2><div class="grid" id="costs"></div><details id="financeSectionDisclosure"><summary class="top-articles-launch"><span><strong>Vom Nettoumsatz zum Ergebnis</strong><small>Personal · Einkäufe · Fixkosten · Zwischenstand</small></span><span class="top-articles-chevron" aria-hidden="true">⌄</span></summary><div class="top-articles-content"><div id="resultBridge" class="resultBridge"></div><p id="resultCaution" class="muted"></p><p class="muted">Personalziel 35 % und Wareneinsatzziel 26 % vom Nettoumsatz. Fehlende Belege bleiben offen – keine Schätzungen.</p></div></details><details class="purchaseCalcDisclosure"><summary>Gespeicherte Einkaufspreise für Kalkulation</summary><div id="purchaseItemsCalc"></div></details></section>
 <section class="card"><details id="dailyArchiveDisclosure"><summary class="top-articles-launch"><span><strong>Originalabrechnungen und Tagesumsätze</strong><small>Einzeltage · Brutto · Netto · Bar · Karte · Bons</small></span><span class="top-articles-chevron" aria-hidden="true">⌄</span></summary><div class="top-articles-content"><div class="scroll"><table><thead><tr><th>Datum</th><th>Quelle</th><th class="num">Brutto</th><th class="num">Netto</th><th class="num">Bar</th><th class="num">Karte</th><th class="num">Bons</th></tr></thead><tbody id="days"></tbody></table></div></div></details></section>
@@ -518,7 +518,7 @@ function field(container,label,key,value,type='text'){const l=document.createEle
 function queueFiles(files){if(busy)return;for(const f of files){if(!['image/jpeg','image/png','image/webp','application/pdf'].includes(f.type))continue;if(f.size>20*1024*1024){E('uploadStatus').textContent=f.name+': über 20 MB';continue;}if(queue.length>=12){E('uploadStatus').textContent='Maximal 12 Dateien pro Durchgang.';break;}if(!queue.some(x=>x.name===f.name&&x.size===f.size&&x.lastModified===f.lastModified))queue.push(f);}drawQueue();}
 function drawQueue(){E('fileQueue').replaceChildren();const heading=document.createElement('p');heading.textContent=queue.length+' von 12 Fotos / PDF ausgewählt';E('fileQueue').append(heading);for(const [i,f] of queue.entries()){const row=document.createElement('div');row.className='row';row.style.marginBottom='5px';const name=document.createElement('span');name.textContent=(i+1)+'. '+f.name;const remove=document.createElement('button');remove.textContent='Entfernen';remove.disabled=busy;remove.onclick=()=>{queue.splice(i,1);drawQueue();};row.append(name,remove);E('fileQueue').append(row);}E('confirmUpload').disabled=busy||queue.length===0;E('clearUpload').disabled=busy||queue.length===0;}
 async function autoArchive(doc,sourceFile,paymentStatus){
- const x={...doc},kind=x.document_type;
+ const x={...doc},kind=x.document_type;let existingIncompleteCash=null;
  if(!['cash_report','monthly_report','invoice'].includes(kind))throw Error('Dokumenttyp nicht sicher erkannt');
  if(!/^\d{4}-\d{2}-\d{2}$/.test(x.date||'')){x.date=new Date().toLocaleDateString('en-CA',{timeZone:'Europe/Vienna'});x.needs_review=true;x.import_warning='Belegdatum unklar; Erfassungsdatum als vorläufiges Archivdatum.';}
  if(N(x.gross_total)===null){x.needs_review=true;x.import_warning='Bruttobetrag noch nicht erkannt; Originaldatei archiviert, keine Umsatzverbuchung.';}
@@ -529,8 +529,13 @@ async function autoArchive(doc,sourceFile,paymentStatus){
   if(error)throw error;
   if(x.period_start&&x.period_end&&data?.some(d=>d.extracted_data?.period_start===x.period_start&&d.extracted_data?.period_end===x.period_end))return 'bereits vorhanden';
  }else if(kind==='cash_report'){
-  const {data,error}=await db.from('documents').select('id').eq('business_id',BID).eq('document_type','cash_report').eq('document_date',x.date).limit(1);
-  if(error)throw error;if(data?.length)return 'bereits vorhanden';
+  const {data,error}=await db.from('documents').select('id,extracted_data,storage_path').eq('business_id',BID).eq('document_type','cash_report').eq('document_date',x.date).limit(1);
+  if(error)throw error;
+  if(data?.length){
+   const current=data[0];
+   if(N(current.extracted_data?.gross_total)!==null||N(x.gross_total)===null||x.tax_verification?.verified!==true)return 'bereits vorhanden';
+   existingIncompleteCash=current;
+  }
  }else{
   if(!x.supplier||!x.invoice_number){x.needs_review=true;x.import_warning='Lieferant oder Rechnungsnummer unvollständig; Original archiviert.';}
   const {data,error}=await db.from('documents').select('id').eq('business_id',BID).eq('document_type','invoice').eq('supplier',x.supplier).eq('invoice_number',x.invoice_number).limit(1);
@@ -548,8 +553,17 @@ async function autoArchive(doc,sourceFile,paymentStatus){
    paths.push(path);
   }
   x.original_files=paths;x.original_page_count=originals.length;x.import_method='automatic';x.needs_review=!!x.needs_review;
-  const {error}=await db.from('documents').insert({business_id:BID,uploaded_by:user.id,document_type:kind,document_date:x.date,supplier:kind==='invoice'?x.supplier:null,invoice_number:kind==='invoice'?x.invoice_number:null,storage_path:paths[0],status:x.needs_review?'auto_review':'auto_imported',extracted_data:x});
-  if(error)throw error;
+  if(existingIncompleteCash){
+   const prior=existingIncompleteCash.extracted_data||{};
+   x.original_files=[...new Set([...(Array.isArray(prior.original_files)?prior.original_files:existingIncompleteCash.storage_path?[existingIncompleteCash.storage_path]:[]),...paths])];
+   x.original_page_count=x.original_files.length;
+   if(!x.sales_items?.length&&prior.sales_items?.length)x.sales_items=prior.sales_items;
+   const {data,error}=await db.from('documents').update({extracted_data:{...prior,...x},status:x.needs_review?'auto_review':'auto_imported'}).eq('id',existingIncompleteCash.id).eq('business_id',BID).select('id').maybeSingle();
+   if(error||!data)throw error||Error('Tagesabschluss konnte nicht ergänzt werden.');
+  }else{
+   const {error}=await db.from('documents').insert({business_id:BID,uploaded_by:user.id,document_type:kind,document_date:x.date,supplier:kind==='invoice'?x.supplier:null,invoice_number:kind==='invoice'?x.invoice_number:null,storage_path:paths[0],status:x.needs_review?'auto_review':'auto_imported',extracted_data:x});
+   if(error)throw error;
+  }
  }catch(e){if(paths.length)await db.storage.from('invoice-originals').remove(paths);throw e;}
  return 'gespeichert';
 }
@@ -572,22 +586,45 @@ async function process(){
  if(busy||!queue.length)return;if(!user){E('uploadStatus').textContent='Bitte anmelden.';return;}
  busy=true;drawQueue();E('review').replaceChildren();const files=[...queue];let saved=0,duplicate=0,failed=0;const errors=[];
  try{
-  // Mehrseitige Fotos in EINEM Upload zuerst als zusammenhängenden BONit-Abschluss lesen.
-  // Nur wenn eindeutig ein Monats-/Tagesabschluss erkannt wird, gemeinsam archivieren.
+  // Analyze selected photos together once; reuse the result for clearly assigned documents.
+  // Each recognized invoice retains its own original file(s) and payment decision.
   if(files.length>1&&files.every(f=>f.type.startsWith('image/'))){
    try{
-    E('uploadStatus').textContent=files.length+' Fotos werden als zusammenhängender Abschluss erkannt …';
+    E('uploadStatus').textContent=files.length+' Fotos werden gemeinsam erkannt …';
     const images=[];for(const file of files)images.push({image_base64:await b64(file),mime_type:file.type});
-    const {data,error}=await withTimeout(db.functions.invoke('analyze-receipt',{body:{business_id:BID,mode:'auto',images}}),120000,'Die Erkennung antwortet nach 2 Minuten nicht. Datei bleibt zur erneuten Verarbeitung ausgewählt.');
+    const {data,error}=await withTimeout(db.functions.invoke('analyze-receipt',{body:{business_id:BID,mode:'auto',images}}),120000,'Die gemeinsame Erkennung antwortet nach 2 Minuten nicht.');
     if(error)throw error;if(data?.error)throw Error(data.error);
-    if(data?.documents?.length===1&&['monthly_report','cash_report'].includes(data.documents[0].document_type)){
-     const outcome=await autoArchive(data.documents[0],files);
-     if(outcome==='bereits vorhanden')duplicate++;else saved++;
-     queue=queue.filter(f=>!files.includes(f));
-     E('uploadStatus').textContent=files.length+' Seiten als EIN BONit-Abschluss '+(outcome==='bereits vorhanden'?'bereits vorhanden':'archiviert')+'.';
-     await refresh();await loadWholeArchive();return;
+    const docs=Array.isArray(data?.documents)?data.documents:[],assigned=new Set();
+    const unambiguous=docs.length>0&&docs.every(doc=>{
+     if(!['invoice','cash_report','monthly_report'].includes(doc.document_type)||!Array.isArray(doc.image_indices)||!doc.image_indices.length)return false;
+     for(const index of doc.image_indices){
+      if(!Number.isInteger(index)||index<1||index>files.length||assigned.has(index))return false;
+      assigned.add(index);
+     }
+     return true;
+    })&&assigned.size===files.length;
+    if(unambiguous){
+     for(const doc of docs){
+      const originals=doc.image_indices.map(index=>files[index-1]);
+      E('uploadStatus').textContent='Erkannt: '+(saved+duplicate+failed+1)+'/'+docs.length+' Dokumente · '+(doc.supplier||doc.document_type);
+      try{
+       let paymentStatus=null;
+       if(doc.document_type==='invoice'){
+        paymentStatus=await chooseInvoicePayment(doc,originals[0]);
+        if(!paymentStatus)throw Error('Zur Prüfung zurückgestellt; Offen oder Bezahlt wählen.');
+       }
+       const outcome=await autoArchive(doc,originals,paymentStatus);
+       if(outcome==='bereits vorhanden')duplicate++;else saved++;
+       queue=queue.filter(f=>!originals.includes(f));
+      }catch(e){failed++;errors.push(originals.map(f=>f.name).join(', ')+': '+(e.message||String(e)));}
+     }
+     E('uploadStatus').textContent=saved+' archiviert · '+duplicate+' bereits vorhanden · '+failed+' zur Prüfung.';
+     for(const msg of errors){const p=document.createElement('p');p.className='warning';p.textContent=msg;E('review').append(p);}
+     if(saved){await refresh();await loadWholeArchive();}
+     return;
     }
-   }catch(e){errors.push('Gemeinsame Seitenerkennung: '+(e.message||String(e))+' · Einzelverarbeitung wird versucht.');}
+    E('uploadStatus').textContent='Fotos nicht eindeutig zugeordnet · Einzelverarbeitung startet …';
+   }catch(e){errors.push('Gemeinsame Erkennung: '+(e.message||String(e))+' · Einzelverarbeitung wird versucht.');}
   }
   for(const [fileIndex,file] of files.entries()){
    const setProgress=step=>{E('uploadStatus').textContent='Automatische Verarbeitung '+(fileIndex+1)+'/'+files.length+': '+file.name+' · '+step;};setProgress('wird vorbereitet …');
