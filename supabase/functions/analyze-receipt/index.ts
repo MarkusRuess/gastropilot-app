@@ -460,10 +460,17 @@ Erkenne ausdrücklich BONit Monatsabschluss, Monatsauswertung, Monatsbericht, Ze
 
 TAGESABRECHNUNGEN (cash_report)
 
-Alle hochgeladenen Fotos gehören grundsätzlich
-zu EINER Tagesabrechnung.
-
-Fasse alle Seiten zu EINEM Dokument zusammen.
+Prüfe die Bildnummern, Seitenüberschriften, Belegnummern und Datumsangaben.
+Mehrere Seiten derselben Tagesabrechnung gehören zu EINEM Dokument;
+setze image_indices auf alle zugehörigen Bilder in Eingabereihenfolge.
+Eine gemeinsam hochgeladene Lieferantenrechnung oder ein anderer
+Tagesabschluss bleibt ein separates Dokument. Vermische niemals
+verschiedene Belege oder unterschiedliche Berichtszeiträume.
+Das Tagesdatum kann auf einer anderen Seite als der Gesamtbetrag stehen:
+lies alle zugehörigen Seiten, bevor du date bestimmst. Verwende das
+Abschlussdatum des Berichts, nicht Uploadzeit, Druckzeit oder ein Datum
+eines einzelnen Bons. Falls mehrere widersprüchliche Datumsangaben
+vorliegen, setze date auf null und needs_review auf true.
 
 Erfasse:
 
@@ -473,6 +480,12 @@ im Format YYYY-MM-DD.
 
 gross_total:
 Gesamter Bruttoumsatz des Tages.
+Nimm den ausgewiesenen Tagesgesamtumsatz aus der Abschlussübersicht.
+Artikelgruppen, einzelne Seiten, Zahlungsarten, Steuern, Stornos und
+Zwischensummen sind keine zusätzlichen Tagesumsätze. Falls der
+Gesamtbetrag auf den vorliegenden Seiten nicht lesbar oder der Bericht
+offensichtlich unvollständig ist, setze gross_total auf null und
+needs_review auf true; errechne keinen vermuteten Gesamtbetrag.
 
 net_total:
 Gesamter Nettoumsatz, wenn ausgewiesen
