@@ -755,6 +755,7 @@ async function recognizePhotoGroup(files,intakes){
    const outcome=await autoArchive(doc,entries.map(entry=>entry.file),paymentStatus,primary.intake,entries.filter(entry=>entry!==primary).map(entry=>entry.intake));
    if(outcome==='bereits vorhanden')duplicate++;else saved++;
    queue=queue.filter(file=>!entries.some(entry=>entry.file===file));
+   E('review').replaceChildren();
   }catch(error){
    failed++;const message=error.message||String(error);errors.push(entries.map(entry=>entry.file.name).join(', ')+': '+message);
    for(const entry of entries.filter(entry=>entry.intake?.document_type==='other')){
@@ -822,7 +823,7 @@ async function process(){
    let intake=intakes.get(file);if(!intake)continue;let candidate=null;
    const setProgress=step=>{E('uploadStatus').textContent=(fileIndex+1)+'/'+files.length+' · '+file.name+' · '+step;};
    try{
-    if(intake.alreadyRecognized){duplicate++;queue=queue.filter(f=>f!==file);continue;}
+    if(intake.alreadyRecognized){duplicate++;queue=queue.filter(f=>f!==file);E('review').replaceChildren();setProgress('Bereits archiviert – keine Doppelbuchung.');continue;}
     if(intake.periodArchived){saved++;queue=queue.filter(f=>f!==file);setProgress('Monatszeitraum '+intake.extracted_data.period_start+' bis '+intake.extracted_data.period_end+' automatisch archiviert.');continue;}
     setProgress('Original gesichert · Erkennung läuft …');
     const blobs=await withTimeout(pages(file,setProgress),90000,'Datei/PDF konnte nach 90 Sekunden nicht vorbereitet werden.');
@@ -847,6 +848,7 @@ async function process(){
     const outcome=await autoArchive(document,file,paymentStatus,intake);
     if(outcome==='bereits vorhanden')duplicate++;else saved++;
     queue=queue.filter(f=>f!==file);
+    E('review').replaceChildren();
     if(document.document_type==='invoice'){
      E('review').replaceChildren();
      E('uploadStatus').textContent=outcome==='bereits vorhanden'?'Rechnung bereits vorhanden – keine Doppelbuchung.':'✓ Rechnung erfolgreich gespeichert · Status: '+(paymentStatus==='bezahlt'?'Bezahlt':'Offen')+' · '+file.name;
@@ -858,7 +860,7 @@ async function process(){
     if(intake)await db.from('documents').update({status:'error',extracted_data:{...(intake.extracted_data||{}),recognition_candidate:candidate,import_warning:message}}).eq('id',intake.id).eq('business_id',BID).eq('document_type','other');
    }
   }
-  E('uploadStatus').textContent=(failed===0&&saved>0?'✓ Erfolgreich gespeichert · ':'')+saved+' erkannt und archiviert · '+duplicate+' bereits vorhanden · '+failed+' zur Prüfung. '+(secured?'Originale wurden vor der Erkennung gesichert.':'');
+  E('uploadStatus').textContent=(failed===0&&(saved>0||duplicate>0)?'✓ Verarbeitung abgeschlossen · ':'')+saved+' erkannt und archiviert · '+duplicate+' bereits vorhanden (keine Doppelbuchung) · '+failed+' zur Prüfung. '+(secured?'Originale wurden vor der Erkennung gesichert.':'');
   if(failed===0&&saved>0){E('review').replaceChildren();E('intake').scrollIntoView({behavior:'smooth',block:'start'});}
   for(const msg of errors){const p=document.createElement('p');p.className='warning';p.textContent=msg;E('review').append(p);}
   if(secured||saved||duplicate){await refresh();await loadWholeArchive();}
