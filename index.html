@@ -669,6 +669,8 @@ async function autoArchive(doc,sourceFile,paymentStatus,intake=null,extraIntakes
  }catch(e){if(!intake&&paths.length)await db.storage.from('invoice-originals').remove(paths);throw e;}
  return 'gespeichert';
 }
+async function invoiceAlreadyArchived(doc){if(doc.document_type!=='invoice'||!doc.supplier||!doc.invoice_number)return false;const {data,error}=await db.from('documents').select('id').eq('business_id',BID).eq('document_type','invoice').eq('supplier',doc.supplier).eq('invoice_number',doc.invoice_number).limit(1);if(error)throw error;return !!data?.length;}
+function showArchivedDuplicate(file){E('review').replaceChildren();const notice=document.createElement('div');notice.className='status';notice.setAttribute('role','alert');notice.style.cssText='padding:18px;border:2px solid #c48b32;border-radius:12px;background:#fff7e6;color:#5b3a08;font-weight:750';notice.textContent='⚠ Rechnung bereits im Archiv – keine erneute Buchung. '+(file?.name||'');E('review').append(notice);E('uploadStatus').textContent='Bereits im Archiv · keine Doppelbuchung.';}
 function chooseInvoicePayment(doc,sourceFile){
  return new Promise(resolve=>{
   const wrap=document.createElement('div');wrap.className='review';const h=document.createElement('h3');h.textContent='Lieferantenrechnung erkannt';wrap.append(h);
@@ -749,6 +751,7 @@ async function recognizePhotoGroup(files,intakes){
    }
    let paymentStatus=null;
    if(doc.document_type==='invoice'){
+    if(await invoiceAlreadyArchived(doc)){duplicate++;queue=queue.filter(file=>!entries.some(entry=>entry.file===file));showArchivedDuplicate(primary.file);continue;}
     paymentStatus=await chooseInvoicePayment(doc,primary.file);
     if(!paymentStatus)throw Error('Zahlungsstatus offen; Originale bleiben im Archiv.');
    }
@@ -823,7 +826,7 @@ async function process(){
    let intake=intakes.get(file);if(!intake)continue;let candidate=null;
    const setProgress=step=>{E('uploadStatus').textContent=(fileIndex+1)+'/'+files.length+' · '+file.name+' · '+step;};
    try{
-    if(intake.alreadyRecognized){duplicate++;queue=queue.filter(f=>f!==file);E('review').replaceChildren();setProgress('Bereits archiviert – keine Doppelbuchung.');continue;}
+    if(intake.alreadyRecognized){duplicate++;queue=queue.filter(f=>f!==file);showArchivedDuplicate(file);continue;}
     if(intake.periodArchived){saved++;queue=queue.filter(f=>f!==file);setProgress('Monatszeitraum '+intake.extracted_data.period_start+' bis '+intake.extracted_data.period_end+' automatisch archiviert.');continue;}
     setProgress('Original gesichert · Erkennung läuft …');
     const blobs=await withTimeout(pages(file,setProgress),90000,'Datei/PDF konnte nach 90 Sekunden nicht vorbereitet werden.');
@@ -841,6 +844,7 @@ async function process(){
      document.import_warning='Belegdatum vom Betreiber nachgetragen.';
     }
     if(document.document_type==='invoice'){
+     if(await invoiceAlreadyArchived(document)){duplicate++;queue=queue.filter(f=>f!==file);showArchivedDuplicate(file);continue;}
      paymentStatus=await chooseInvoicePayment(document,file);
      if(!paymentStatus)throw Error('Zahlungsstatus offen; Original bleibt im Archiv.');
      setProgress('Zahlungsstatus '+paymentStatus+' · wird gespeichert …');
@@ -861,7 +865,7 @@ async function process(){
    }
   }
   E('uploadStatus').textContent=(failed===0&&(saved>0||duplicate>0)?'✓ Verarbeitung abgeschlossen · ':'')+saved+' erkannt und archiviert · '+duplicate+' bereits vorhanden (keine Doppelbuchung) · '+failed+' zur Prüfung. '+(secured?'Originale wurden vor der Erkennung gesichert.':'');
-  if(failed===0&&saved>0){E('review').replaceChildren();E('intake').scrollIntoView({behavior:'smooth',block:'start'});}
+  if(failed===0&&saved>0&&duplicate===0){E('review').replaceChildren();E('intake').scrollIntoView({behavior:'smooth',block:'start'});}
   for(const msg of errors){const p=document.createElement('p');p.className='warning';p.textContent=msg;E('review').append(p);}
   if(secured||saved||duplicate){await refresh();await loadWholeArchive();}
  }finally{busy=false;drawQueue();}
