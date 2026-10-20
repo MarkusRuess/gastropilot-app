@@ -610,7 +610,7 @@ async function autoArchive(doc,sourceFile,paymentStatus,intake=null,extraIntakes
   return 'bereits vorhanden';
  }
  if(!['cash_report','monthly_report','invoice'].includes(kind))throw Error('Dokumenttyp nicht sicher erkannt');
- if(!/^\d{4}-\d{2}-\d{2}$/.test(x.date||''))throw Error('Belegdatum fehlt. Original bleibt im Archiv zur Prüfung.');
+ if(!validCalendarDate(x.date))throw Error('Belegdatum ungültig. Original bleibt im Archiv zur Prüfung.');
  if(kind==='cash_report'&&N(x.gross_total)!==null&&N(x.food_gross)!==null&&Math.abs(N(x.gross_total)-N(x.food_gross))<.03&&N(x.cash_total)===null&&N(x.card_total)===null&&N(x.receipt_count)===null){
   throw Error('Nur Speisen-Zwischensumme erkannt. Die Seite wird nicht als vollständiger Tagesumsatz gespeichert.');
  }
@@ -686,14 +686,15 @@ function chooseInvoicePayment(doc,sourceFile){
   choices.append(open,paid);wrap.append(choices,save,later);E('review').replaceChildren(wrap);E('uploadStatus').textContent='Rechnung erkannt · Zahlungsstatus auswählen: '+sourceFile.name;
  });
 }
+function validCalendarDate(value){if(!/^\d{4}-\d{2}-\d{2}$/.test(value||''))return false;const [y,m,d]=value.split('-').map(Number);return m>=1&&m<=12&&d>=1&&d<=new Date(Date.UTC(y,m,0)).getUTCDate();}
 function chooseDocumentDate(doc,sourceFile){
  return new Promise(resolve=>{
   const wrap=document.createElement('div');wrap.className='review';
   const title=document.createElement('h3');title.textContent='Belegdatum nicht erkannt';
   const detail=document.createElement('p');detail.textContent='Original gesichert: '+sourceFile.name+'. Datum auf dem Beleg auswählen, damit der Umsatz dem richtigen Tag zugeordnet wird.';
   const label=document.createElement('label');label.textContent='Datum auf dem Beleg';
-  const input=document.createElement('input');input.type='date';input.required=true;label.append(input);
-  const save=document.createElement('button');save.type='button';save.textContent='Datum übernehmen';save.onclick=()=>{if(input.value)resolve(input.value);else input.reportValidity();};
+  const input=document.createElement('input');input.type='date';input.required=true;if(/^\d{4}-\d{2}-\d{2}$/.test(doc.date||'')){const [y,m]=doc.date.split('-').map(Number);if(m>=1&&m<=12)input.value=String(y)+'-'+String(m).padStart(2,'0')+'-'+String(new Date(Date.UTC(y,m,0)).getUTCDate()).padStart(2,'0');}label.append(input);
+  const save=document.createElement('button');save.type='button';save.textContent='Datum übernehmen';save.onclick=()=>{if(validCalendarDate(input.value))resolve(input.value);else{input.setCustomValidity('Bitte ein gültiges Kalenderdatum wählen.');input.reportValidity();input.setCustomValidity('');}};
   const later=document.createElement('button');later.type='button';later.textContent='Später prüfen';later.onclick=()=>resolve(null);
   wrap.append(title,detail,label,save,later);E('review').replaceChildren(wrap);
   E('uploadStatus').textContent='Original gesichert · Belegdatum auswählen: '+sourceFile.name;
@@ -743,7 +744,7 @@ async function recognizePhotoGroup(files,intakes){
   const primary=entries.find(entry=>entry.intake?.document_type==='other')||entries[0];
   try{
    if(doc.document_type==='monthly_report'&&/^\d{4}-\d{2}-\d{2}$/.test(doc.period_end||''))doc.date=doc.period_end;
-   if(!/^\d{4}-\d{2}-\d{2}$/.test(doc.date||'')){
+   if(!validCalendarDate(doc.date)){
     const dates=[...new Set(entries.map(entry=>entry.intake?.document_type==='cash_report'?entry.intake.extracted_data?.date:null).filter(date=>/^\d{4}-\d{2}-\d{2}$/.test(date||'')))];
     doc.date=dates.length===1?dates[0]:await chooseDocumentDate(doc,primary.file);
     if(!doc.date)throw Error('Datum noch offen; Originale bleiben im Archiv.');
@@ -837,7 +838,7 @@ async function process(){
     if(data?.documents?.length!==1)throw Error('Dokument nicht eindeutig erkannt. Original bleibt im Archiv.');
     const document=data.documents[0];candidate=document;let paymentStatus=null;
     if(document.document_type==='monthly_report'&&/^\d{4}-\d{2}-\d{2}$/.test(document.period_end||''))document.date=document.period_end;
-    if(!/^\d{4}-\d{2}-\d{2}$/.test(document.date||'')){
+    if(!validCalendarDate(document.date)){
      document.date=await chooseDocumentDate(document,file);
      if(!document.date)throw Error('Datum noch offen; Original bleibt im Archiv.');
      document.needs_review=true;
@@ -862,6 +863,7 @@ async function process(){
     failed++;const message=e.message||String(e);
     errors.push(file.name+': '+message+(intake?' Original ist im Archiv gesichert.':''));
     if(intake)await db.from('documents').update({status:'error',extracted_data:{...(intake.extracted_data||{}),recognition_candidate:candidate,import_warning:message}}).eq('id',intake.id).eq('business_id',BID).eq('document_type','other');
+    E('review').replaceChildren();
    }
   }
   E('uploadStatus').textContent=(failed===0&&(saved>0||duplicate>0)?'✓ Verarbeitung abgeschlossen · ':'')+saved+' erkannt und archiviert · '+duplicate+' bereits vorhanden (keine Doppelbuchung) · '+failed+' zur Prüfung. '+(secured?'Originale wurden vor der Erkennung gesichert.':'');
