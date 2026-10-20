@@ -18,7 +18,7 @@ function itemCard(item){
  const name=document.createElement('div');name.className='name';name.textContent=item.article_name;
  const serving=document.createElement('div');serving.className='serving';serving.textContent=item.serving;
  namebox.append(name,serving);
- if(item.source_note?.includes('prüfen')){const note=document.createElement('div');note.className='note';note.textContent=item.source_note;namebox.append(note)}
+ if(item.source_note?.includes('prüfen')||item.source_note?.startsWith('Marktpreis Baden:')){const note=document.createElement('div');note.className='note';note.textContent=item.source_note;namebox.append(note)}
  const current=document.createElement('div');current.className='current';const currentTitle=document.createElement('small');currentTitle.textContent='Karten-VK';const currentValue=document.createElement('strong');currentValue.textContent=money(item.printed_gross_price);current.append(currentTitle,currentValue);
  const proposal=document.createElement('label');proposal.className='proposal';const proposedTitle=document.createElement('small');proposedTitle.textContent='Neuer VK inkl. USt.';const input=document.createElement('input');input.type='number';input.min='0';input.step='0.10';input.inputMode='decimal';input.placeholder='–';input.value=item.proposed_gross_price??'';proposal.append(proposedTitle,input);
  const button=document.createElement('button');button.className='save primary';button.type='button';button.textContent='Speichern';
