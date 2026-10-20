@@ -466,22 +466,22 @@ for(const id of ['purchaseKeg','purchaseCan','purchaseDose']){const saved=localS
 
 let topArticleRows=[],topArticlePage=0,topArticleTotal=null,topArticleKey='';
 let slowArticleRows=[],slowArticlePage=0,slowArticleTotal=null,slowArticleKey='';
-function selectSlowArticles(rows){return rows.filter(x=>x.known&&Number.isFinite(x.qty)&&x.qty>0&&Number.isFinite(x.gross)&&x.gross>=0).sort((a,b)=>a.qty-b.qty||a.gross-b.gross||a.name.localeCompare(b.name,'de')).slice(0,20);}
+function selectSlowArticles(rows){return rows.filter(x=>x.known&&Number.isFinite(x.qty)&&x.qty>0&&Number.isFinite(x.gross)&&x.gross>=0).sort((a,b)=>a.qty-b.qty||a.gross-b.gross||a.name.localeCompare(b.name,'de')).slice(0,30);}
 function drawSlowArticles(){
- const pages=Math.max(1,Math.ceil(slowArticleRows.length/5));slowArticlePage=Math.min(slowArticlePage,pages-1);
+ slowArticlePage=0;
  const host=E('slowArticleCards');host.replaceChildren();
  const number=new Intl.NumberFormat('de-AT',{maximumFractionDigits:2}),percent=new Intl.NumberFormat('de-AT',{style:'percent',maximumFractionDigits:2});
- for(const [offset,x] of slowArticleRows.slice(slowArticlePage*5,slowArticlePage*5+5).entries()){
-  const card=document.createElement('div');card.className='top-article';const name=document.createElement('strong');name.textContent=(slowArticlePage*5+offset+1)+'. '+x.name;card.append(name);
+ for(const [offset,x] of slowArticleRows.entries()){
+  const card=document.createElement('div');card.className='top-article';const name=document.createElement('strong');name.textContent=(offset+1)+'. '+x.name;card.append(name);
   const metrics=document.createElement('div');metrics.className='metrics';
   for(const [label,value] of [['Menge',number.format(x.qty)],['Ø Preis',x.known&&x.qty>0?EUR(x.gross/x.qty):'–'],['Umsatz',x.known?EUR(x.gross):'fehlt'],['Anteil',x.known&&slowArticleTotal>0?percent.format(x.gross/slowArticleTotal):'–']]){
    const span=document.createElement('span');span.append(label+' ');const valueNode=document.createElement('b');valueNode.textContent=value;span.append(valueNode);metrics.append(span);
   }card.append(metrics);if(Array.isArray(x.variants)&&x.variants.length>1){const detail=document.createElement('div');detail.className='metrics';detail.style.cssText='margin-top:4px;font-size:11px;opacity:.82';for(const v of x.variants){const span=document.createElement('span');span.textContent=v.label+' · '+number.format(v.qty)+' Stk · '+EUR(v.gross);detail.append(span);}card.append(detail);}host.append(card);
  }
  if(!slowArticleRows.length)host.textContent='Keine Artikeldaten für diesen Monat vorhanden.';
- E('slowPage').textContent=(slowArticlePage+1)+' / '+pages+' · '+slowArticleRows.length+' Artikel';E('slowPrev').disabled=slowArticlePage===0;E('slowNext').disabled=slowArticlePage>=pages-1;
+ E('slowPage').textContent=slowArticleRows.length+' Artikel · eine Liste';E('slowPrev').hidden=true;E('slowNext').hidden=true;
 }
-E('slowPrev').onclick=()=>{slowArticlePage--;drawSlowArticles();};E('slowNext').onclick=()=>{slowArticlePage++;drawSlowArticles();};
+
 
 function renderSlowArticles(rows,total,days,sourceDays){
  const key=E('month').value;if(slowArticleKey!==key){slowArticlePage=0;slowArticleKey=key;}
