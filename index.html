@@ -518,9 +518,16 @@ async function b64(blob){return await new Promise((resolve,reject)=>{const r=new
 function field(container,label,key,value,type='text'){const l=document.createElement('label');l.textContent=label;const i=document.createElement('input');i.type=type;i.dataset.key=key;i.value=value??'';l.append(i);container.append(l);}
 function queueFiles(files){if(busy)return;for(const f of files){if(!['image/jpeg','image/png','image/webp','application/pdf'].includes(f.type))continue;if(f.size>20*1024*1024){E('uploadStatus').textContent=f.name+': über 20 MB';continue;}if(queue.length>=12){E('uploadStatus').textContent='Maximal 12 Dateien pro Durchgang.';break;}if(!queue.some(x=>x.name===f.name&&x.size===f.size&&x.lastModified===f.lastModified))queue.push(f);}drawQueue();}
 function drawQueue(){E('fileQueue').replaceChildren();const heading=document.createElement('p');heading.textContent=queue.length+' von 12 Fotos / PDF ausgewählt';E('fileQueue').append(heading);for(const [i,f] of queue.entries()){const row=document.createElement('div');row.className='row';row.style.marginBottom='5px';const name=document.createElement('span');name.textContent=(i+1)+'. '+f.name;const remove=document.createElement('button');remove.textContent='Entfernen';remove.disabled=busy;remove.onclick=()=>{queue.splice(i,1);drawQueue();};row.append(name,remove);E('fileQueue').append(row);}E('confirmUpload').disabled=busy||queue.length===0;E('clearUpload').disabled=busy||queue.length===0;}
-async function autoArchive(doc,sourceFile,paymentStatus,intake=null){
+async function autoArchive(doc,sourceFile,paymentStatus,intake=null,extraIntakes=[]){
  const x={...doc},kind=x.document_type;let existingIncompleteCash=null;
- async function markDuplicate(existingId){if(intake){const {error}=await db.from('documents').update({status:'reviewed',extracted_data:{...(intake.extracted_data||{}),duplicate_of:existingId,import_warning:'Original gesichert; bereits archivierter Beleg.'}}).eq('id',intake.id).eq('business_id',BID);if(error)throw error;}return 'bereits vorhanden';}
+ const allIntakes=[intake,...extraIntakes].filter(Boolean);
+ async function markDuplicate(existingId,warning='Original gesichert; bereits archivierter Beleg.',items=allIntakes){
+  for(const item of items.filter(item=>item.document_type==='other')){
+   const {error}=await db.from('documents').update({status:'reviewed',extracted_data:{...(item.extracted_data||{}),duplicate_of:existingId,import_warning:warning}}).eq('id',item.id).eq('business_id',BID);
+   if(error)throw error;
+  }
+  return 'bereits vorhanden';
+ }
  if(!['cash_report','monthly_report','invoice'].includes(kind))throw Error('Dokumenttyp nicht sicher erkannt');
  if(!/^\d{4}-\d{2}-\d{2}$/.test(x.date||''))throw Error('Belegdatum fehlt. Original bleibt im Archiv zur Prüfung.');
  if(N(x.gross_total)===null){x.needs_review=true;x.import_warning='Bruttobetrag noch nicht erkannt; Originaldatei archiviert, keine Umsatzverbuchung.';}
@@ -531,11 +538,16 @@ async function autoArchive(doc,sourceFile,paymentStatus,intake=null){
   if(error)throw error;
   if(x.period_start&&x.period_end){const match=data?.find(d=>d.extracted_data?.period_start===x.period_start&&d.extracted_data?.period_end===x.period_end);if(match)return await markDuplicate(match.id);}
  }else if(kind==='cash_report'){
-  const {data,error}=await db.from('documents').select('id,extracted_data,storage_path').eq('business_id',BID).eq('document_type','cash_report').eq('document_date',x.date).order('created_at',{ascending:true}).limit(1);
+  const {data,error}=await db.from('documents').select('id,extracted_data,storage_path').eq('business_id',BID).eq('document_type','cash_report').eq('document_date',x.date).order('created_at',{ascending:true}).limit(100);
   if(error)throw error;
   if(data?.length){
-   const current=data[0];
-   if(N(current.extracted_data?.gross_total)!==null||N(x.gross_total)===null)return await markDuplicate(current.id);
+   const current=data.find(item=>N(item.extracted_data?.gross_total)!==null&&N(x.gross_total)!==null&&Math.abs(N(item.extracted_data.gross_total)-N(x.gross_total))<=.03)||data.find(item=>N(item.extracted_data?.gross_total)===null)||data[0];
+   if(N(current.extracted_data?.gross_total)!==null){
+    if(N(x.gross_total)===null||Math.abs(N(current.extracted_data.gross_total)-N(x.gross_total))>.03){
+     throw Error('Für dieses Datum liegt ein Tagesabschluss mit anderem Betrag vor. Original und Erkennung bleiben zur Prüfung gesichert.');
+    }
+    existingIncompleteCash=current;
+   }else if(N(x.gross_total)===null)return await markDuplicate(current.id);
    existingIncompleteCash=current;
   }
  }else{
@@ -545,9 +557,9 @@ async function autoArchive(doc,sourceFile,paymentStatus,intake=null){
   if(!['offen','bezahlt'].includes(paymentStatus))throw Error('Bitte Offen oder Bezahlt wählen.');
   x.payment_status=paymentStatus;x.payment_method=null;
  }
- const originals=Array.isArray(sourceFile)?sourceFile:[sourceFile],paths=intake?[intake.storage_path]:[];
+ const originals=Array.isArray(sourceFile)?sourceFile:[sourceFile],paths=allIntakes.length?allIntakes.map(item=>item.storage_path):[];
  try{
-  for(const original of intake?[]:originals){
+  for(const original of allIntakes.length?[]:originals){
    const ext=original.type==='application/pdf'?'pdf':original.type==='image/png'?'png':original.type==='image/webp'?'webp':'jpg';
    const path=BID+'/'+crypto.randomUUID()+'.'+ext;
    const upload=await db.storage.from('invoice-originals').upload(path,original,{contentType:original.type,upsert:false});
@@ -561,12 +573,13 @@ async function autoArchive(doc,sourceFile,paymentStatus,intake=null){
    x.original_files=[...new Set([...(Array.isArray(prior.original_files)?prior.original_files:existingIncompleteCash.storage_path?[existingIncompleteCash.storage_path]:[]),...paths])];
    x.original_page_count=x.original_files.length;
    if(prior.sales_items?.length)x.sales_items=[...prior.sales_items,...(x.sales_items||[])].filter((item,index,all)=>all.findIndex(other=>other.name===item.name&&other.quantity===item.quantity)===index);
+   if(N(prior.gross_total)!==null)x.gross_total=prior.gross_total;
    const {data,error}=await db.from('documents').update({extracted_data:{...prior,...x},status:x.needs_review?'auto_review':'auto_imported'}).eq('id',existingIncompleteCash.id).eq('business_id',BID).select('id').maybeSingle();
    if(error||!data)throw error||Error('Tagesabschluss konnte nicht ergänzt werden.');
-   if(intake)await markDuplicate(existingIncompleteCash.id);
+   if(allIntakes.length)await markDuplicate(existingIncompleteCash.id);
   }else{
    const record={document_type:kind,document_date:x.date,supplier:kind==='invoice'?x.supplier:null,invoice_number:kind==='invoice'?x.invoice_number:null,status:x.needs_review?'auto_review':'auto_imported',extracted_data:x};
-   if(intake){const {data,error}=await db.from('documents').update(record).eq('id',intake.id).eq('business_id',BID).select('id').maybeSingle();if(error||!data)throw error||Error('Archivdatensatz konnte nicht aktualisiert werden.');}
+   if(intake){const {data,error}=await db.from('documents').update(record).eq('id',intake.id).eq('business_id',BID).select('id').maybeSingle();if(error||!data)throw error||Error('Archivdatensatz konnte nicht aktualisiert werden.');if(extraIntakes.length)await markDuplicate(intake.id,'Original gehört zum gemeinsam erkannten Beleg.',extraIntakes);}
    else{const {error}=await db.from('documents').insert({...record,business_id:BID,uploaded_by:user.id,storage_path:paths[0]});if(error)throw error;}
   }
  }catch(e){if(!intake&&paths.length)await db.storage.from('invoice-originals').remove(paths);throw e;}
@@ -615,6 +628,75 @@ async function secureOriginal(file){
  if(error){await db.storage.from('invoice-originals').remove([path]);throw error;}
  return data;
 }
+async function recognizePhotoGroup(files,intakes){
+ if(files.length<2||!files.every(file=>file.type.startsWith('image/'))||files.every(file=>intakes.get(file)?.alreadyRecognized))return null;
+ E('uploadStatus').textContent=files.length+' gesicherte Fotos werden als zusammengehörende Belegseiten gelesen …';
+ const images=[];
+ for(const file of files){const [blob]=await pages(file);images.push({image_base64:await b64(blob),mime_type:'image/jpeg'});}
+ const {data,error}=await withTimeout(db.functions.invoke('analyze-receipt',{body:{business_id:BID,mode:'auto',defer_tax_verification:true,images}}),120000,'Gemeinsame Erkennung antwortet nach 2 Minuten nicht. Originale bleiben im Archiv.');
+ if(error)throw error;if(data?.error)throw Error(data.error);
+ const docs=data?.documents||[],used=new Set();
+ if(!docs.length||!docs.every(doc=>{
+  if(!['cash_report','monthly_report','invoice'].includes(doc.document_type)||!Array.isArray(doc.image_indices)||!doc.image_indices.length)return false;
+  for(const number of doc.image_indices){if(!Number.isInteger(number)||number<1||number>files.length||used.has(number))return false;used.add(number);}
+  return true;
+ })||used.size!==files.length)throw Error('Seiten nicht eindeutig zugeordnet; Einzelprüfung startet.');
+ let saved=0,duplicate=0,failed=0;const errors=[];
+ for(const doc of docs){
+  const entries=doc.image_indices.map(number=>({file:files[number-1],intake:intakes.get(files[number-1])}));
+  const primary=entries.find(entry=>entry.intake?.document_type==='other')||entries[0];
+  try{
+   if(!/^\d{4}-\d{2}-\d{2}$/.test(doc.date||'')){
+    const dates=[...new Set(entries.map(entry=>entry.intake?.document_type==='cash_report'?entry.intake.extracted_data?.date:null).filter(date=>/^\d{4}-\d{2}-\d{2}$/.test(date||'')))];
+    doc.date=dates.length===1?dates[0]:await chooseDocumentDate(doc,primary.file);
+    if(!doc.date)throw Error('Datum noch offen; Originale bleiben im Archiv.');
+    doc.needs_review=true;doc.import_warning='Belegdatum aus zusammengehörender Seite übernommen oder bestätigt.';
+   }
+   let paymentStatus=null;
+   if(doc.document_type==='invoice'){
+    paymentStatus=await chooseInvoicePayment(doc,primary.file);
+    if(!paymentStatus)throw Error('Zahlungsstatus offen; Originale bleiben im Archiv.');
+   }
+   const outcome=await autoArchive(doc,entries.map(entry=>entry.file),paymentStatus,primary.intake,entries.filter(entry=>entry!==primary).map(entry=>entry.intake));
+   if(outcome==='bereits vorhanden')duplicate++;else saved++;
+   queue=queue.filter(file=>!entries.some(entry=>entry.file===file));
+  }catch(error){
+   failed++;const message=error.message||String(error);errors.push(entries.map(entry=>entry.file.name).join(', ')+': '+message);
+   for(const entry of entries.filter(entry=>entry.intake?.document_type==='other')){
+    const old=entry.intake.extracted_data||{};
+    await db.from('documents').update({status:'error',extracted_data:{...old,recognition_candidate:doc,import_warning:message}}).eq('id',entry.intake.id).eq('business_id',BID).eq('document_type','other');
+   }
+  }
+ }
+ return {saved,duplicate,failed,errors};
+}
+async function retrySavedPhotoGroup(){
+ if(busy||!user)return;busy=true;E('review').replaceChildren();
+ try{
+  E('uploadStatus').textContent='Gesicherte Fotos werden gesucht …';
+  const since=new Date(Date.now()-48*60*60*1000).toISOString();
+  const {data,error}=await db.from('documents').select('id,storage_path,status,document_type,extracted_data,created_at').eq('business_id',BID).eq('document_type','other').gte('created_at',since).order('created_at',{ascending:false}).limit(24);
+  if(error)throw error;
+  const pending=(data||[]).filter(row=>row.storage_path&&['pending','error','reviewed'].includes(row.status));
+  if(!pending.length)throw Error('Keine gesicherten, ungeklärten Fotos der letzten 48 Stunden gefunden.');
+  const newest=Date.parse(pending[0].created_at);
+  const group=pending.filter(row=>newest-Date.parse(row.created_at)<=120000).reverse();
+  if(group.length<2)throw Error('Keine zusammengehörenden Fotos gefunden. Die Originale bleiben im Archiv.');
+  const files=[],intakes=new Map();
+  for(const row of group){
+   const {data:blob,error:downloadError}=await db.storage.from('invoice-originals').download(row.storage_path);
+   if(downloadError||!blob)throw downloadError||Error('Originalfoto nicht lesbar.');
+   const type=blob.type||'image/jpeg';
+   const file=new File([blob],row.extracted_data?.original_name||'Gesichertes Foto.jpg',{type});
+   files.push(file);intakes.set(file,row);
+  }
+  const result=await recognizePhotoGroup(files,intakes);
+  E('uploadStatus').textContent=result.saved+' Dokument(e) erkannt · '+result.duplicate+' bereits vorhanden · '+result.failed+' zur Prüfung.';
+  for(const message of result.errors){const p=document.createElement('p');p.className='warning';p.textContent=message;E('review').append(p);}
+  await refresh();await loadWholeArchive();
+ }catch(error){E('uploadStatus').textContent='Wiederaufnahme: '+(error.message||String(error));}
+ finally{busy=false;drawQueue();}
+}
 async function process(){
  if(busy||!queue.length)return;if(!user){E('uploadStatus').textContent='Bitte anmelden.';return;}
  busy=true;drawQueue();E('review').replaceChildren();const files=[...queue];let saved=0,duplicate=0,failed=0,secured=0;const errors=[],intakes=new Map();
@@ -627,8 +709,18 @@ async function process(){
     if(!intake.alreadyRecognized)secured++;
    }catch(e){failed++;errors.push(file.name+': '+(e.message||String(e)));}
   }
+  if(intakes.size===files.length&&files.length>1){
+   try{
+    const grouped=await recognizePhotoGroup(files,intakes);
+    if(grouped){saved+=grouped.saved;duplicate+=grouped.duplicate;failed+=grouped.failed;errors.push(...grouped.errors);
+     E('uploadStatus').textContent=saved+' Dokument(e) aus '+files.length+' Seiten erkannt · '+failed+' zur Prüfung.';
+     for(const msg of errors){const p=document.createElement('p');p.className='warning';p.textContent=msg;E('review').append(p);}
+     await refresh();await loadWholeArchive();return;
+    }
+   }catch(error){errors.push('Gemeinsame Erkennung: '+(error.message||String(error)));}
+  }
   for(const [fileIndex,file] of files.entries()){
-   let intake=intakes.get(file);if(!intake)continue;
+   let intake=intakes.get(file);if(!intake)continue;let candidate=null;
    const setProgress=step=>{E('uploadStatus').textContent=(fileIndex+1)+'/'+files.length+' · '+file.name+' · '+step;};
    try{
     if(intake.alreadyRecognized){duplicate++;queue=queue.filter(f=>f!==file);continue;}
@@ -639,7 +731,7 @@ async function process(){
     const {data,error}=await withTimeout(db.functions.invoke('analyze-receipt',{body:{business_id:BID,mode:'auto',defer_tax_verification:true,images}}),120000,'Die Erkennung antwortet nach 2 Minuten nicht.');
     if(error)throw error;if(data?.error)throw Error(data.error);
     if(data?.documents?.length!==1)throw Error('Dokument nicht eindeutig erkannt. Original bleibt im Archiv.');
-    const document=data.documents[0];let paymentStatus=null;
+    const document=data.documents[0];candidate=document;let paymentStatus=null;
     if(!/^\d{4}-\d{2}-\d{2}$/.test(document.date||'')){
      document.date=await chooseDocumentDate(document,file);
      if(!document.date)throw Error('Datum noch offen; Original bleibt im Archiv.');
@@ -657,7 +749,7 @@ async function process(){
    }catch(e){
     failed++;const message=e.message||String(e);
     errors.push(file.name+': '+message+(intake?' Original ist im Archiv gesichert.':''));
-    if(intake)await db.from('documents').update({status:'error',extracted_data:{...(intake.extracted_data||{}),import_warning:message}}).eq('id',intake.id).eq('business_id',BID).eq('document_type','other');
+    if(intake)await db.from('documents').update({status:'error',extracted_data:{...(intake.extracted_data||{}),recognition_candidate:candidate,import_warning:message}}).eq('id',intake.id).eq('business_id',BID).eq('document_type','other');
    }
   }
   E('uploadStatus').textContent=saved+' erkannt und archiviert · '+duplicate+' bereits vorhanden · '+failed+' zur Prüfung. '+(secured?'Originale wurden vor der Erkennung gesichert.':'');
@@ -674,6 +766,7 @@ E('camera').onclick=()=>E('cameraInput').click();E('fileButton').onclick=()=>E('
 async function enter(){const {data,error}=await db.auth.getSession();if(error)throw error;const u=data?.session?.user;if(!u)return false;const membership=await db.from('business_members').select('business_id').eq('business_id',BID).eq('user_id',u.id).limit(1);if(membership.error)throw new Error('Betriebszugriff konnte nicht geprüft werden: '+membership.error.message);if(!membership.data?.length)throw new Error('Für dieses Konto fehlt die Freigabe für Das Friedrich.');user=u;E('login').classList.add('hidden');E('app').classList.remove('hidden');await refresh();await loadWholeArchive();showMobilePanel('monthlyReference');return true;}
 E('loginForm').onsubmit=async e=>{e.preventDefault();const button=E('loginForm').querySelector('button');button.disabled=true;E('loginMsg').textContent='Anmeldung wird geprüft …';try{const {data,error}=await Promise.race([db.auth.signInWithPassword({email:E('email').value.trim(),password:E('password').value}),new Promise((_,reject)=>setTimeout(()=>reject(new Error('Anmeldeserver antwortet nicht (15 Sekunden). Bitte Netzwerk prüfen.')),15000))]);if(error)throw error;if(!data?.session)throw new Error('Keine Sitzung erhalten.');const ok=await enter();if(!ok)throw new Error('Anmeldung erfolgreich, aber die Sitzung wurde nicht geladen.');E('loginMsg').textContent='';}catch(err){const m=String(err.message||err);E('loginMsg').textContent=/invalid login credentials/i.test(m)?'E-Mail oder Passwort wurde von Supabase nicht akzeptiert. Bitte die bisherigen GastroPilot-Zugangsdaten verwenden.':m;}finally{button.disabled=false;}};
 for(const b of document.querySelectorAll('#quickNav button'))b.onclick=()=>showMobilePanel(b.dataset.target);E('archiveLoad').onclick=loadWholeArchive;E('archiveFilter').onchange=showArchive;
+const retryButton=document.createElement('button');retryButton.type='button';retryButton.textContent='Gesicherte Fotos gemeinsam erkennen';retryButton.onclick=retrySavedPhotoGroup;E('archiveLoad').after(retryButton);
 const cardTables=()=>{document.querySelectorAll('#app table').forEach(table=>{const labels=[...table.querySelectorAll('thead th')].map(x=>x.textContent.trim());table.querySelectorAll('tbody tr').forEach(tr=>{[...tr.children].forEach((td,i)=>{if(!td.dataset.label)td.dataset.label=labels[i]||'';});});});};
 const cardObserver=new MutationObserver(cardTables);
 document.querySelectorAll('#app tbody').forEach(el=>cardObserver.observe(el,{childList:true,subtree:true}));
