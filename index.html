@@ -530,6 +530,9 @@ async function autoArchive(doc,sourceFile,paymentStatus,intake=null,extraIntakes
  }
  if(!['cash_report','monthly_report','invoice'].includes(kind))throw Error('Dokumenttyp nicht sicher erkannt');
  if(!/^\d{4}-\d{2}-\d{2}$/.test(x.date||''))throw Error('Belegdatum fehlt. Original bleibt im Archiv zur Prüfung.');
+ if(kind==='cash_report'&&N(x.gross_total)!==null&&N(x.food_gross)!==null&&Math.abs(N(x.gross_total)-N(x.food_gross))<.03&&N(x.cash_total)===null&&N(x.card_total)===null&&N(x.receipt_count)===null){
+  throw Error('Nur Speisen-Zwischensumme erkannt. Die Seite wird nicht als vollständiger Tagesumsatz gespeichert.');
+ }
  if(N(x.gross_total)===null){x.needs_review=true;x.import_warning='Bruttobetrag noch nicht erkannt; Originaldatei archiviert, keine Umsatzverbuchung.';}
  if(N(x.gross_total)!==null&&N(x.net_total)!==null&&N(x.vat_total)!==null&&Math.abs(N(x.net_total)+N(x.vat_total)-N(x.gross_total))>.03){x.needs_review=true;x.import_warning='Brutto, Netto und Steuer weichen ab; nicht für Umsatzberechnung freigegeben.';}
  if(kind==='monthly_report'){
@@ -677,7 +680,7 @@ async function retrySavedPhotoGroup(){
   const since=new Date(Date.now()-48*60*60*1000).toISOString();
   const {data,error}=await db.from('documents').select('id,storage_path,status,document_type,extracted_data,created_at').eq('business_id',BID).eq('document_type','other').gte('created_at',since).order('created_at',{ascending:false}).limit(24);
   if(error)throw error;
-  const pending=(data||[]).filter(row=>row.storage_path&&['pending','error','reviewed'].includes(row.status));
+  const pending=(data||[]).filter(row=>row.storage_path&&!row.extracted_data?.duplicate_of&&['pending','error','reviewed'].includes(row.status));
   if(!pending.length)throw Error('Keine gesicherten, ungeklärten Fotos der letzten 48 Stunden gefunden.');
   const newest=Date.parse(pending[0].created_at);
   const group=pending.filter(row=>newest-Date.parse(row.created_at)<=120000).reverse();
