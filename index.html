@@ -567,7 +567,7 @@ async function refresh(){void loadWeeklyPurchase().catch(e=>E('purchasePeriod').
  for(const [label,targetId,detail] of [['Top 30','topArticles','Umsatzstärkste Artikel ›'],['Selten verkauft','slowArticles','20 geringste Verkaufsmengen ›'],['Ergebnis','financeSection','Vom Nettoumsatz zum Ergebnis ›'],['Einkauf','weeklyPurchase','Empfehlung für nächste Woche ›']]){
   const button=document.createElement('button');button.type='button';button.className='tile article-launch-tile';button.setAttribute('aria-controls',targetId);
   const title=document.createElement('b');title.textContent=label;const hint=document.createElement('small');hint.textContent=detail;button.append(title,hint);
-  button.onclick=()=>{const disclosure=E(targetId+'Disclosure');if(disclosure)disclosure.open=true;showMobilePanel(targetId);};E('sales').append(button);
+  button.onclick=()=>{const disclosure=E(targetId+'Disclosure');if(disclosure)disclosure.open=true;const target=E(targetId);if(target){target.classList.remove('mobileHidden');target.scrollIntoView({behavior:'smooth',block:'start'});}if(window.matchMedia('(max-width:680px)').matches)showMobilePanel(targetId);};E('sales').append(button);
  }
 
  const taxRows=[];for(const d of daily){const stored=archive.get(d.date);const x=['auto_imported','reviewed'].includes(stored?.status)?stored.extracted_data||{}:{};const z=vat(x)||vat({...d.raw,gross_total:d.gross,net_total:d.net});if(z&&Math.abs(z.g10+z.g20-d.gross)<.03)taxRows.push(z);}
