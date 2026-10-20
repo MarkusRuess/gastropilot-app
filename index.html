@@ -686,6 +686,7 @@ function chooseInvoicePayment(doc,sourceFile){
   choices.append(open,paid);wrap.append(choices,save,later);E('review').replaceChildren(wrap);E('uploadStatus').textContent='Rechnung erkannt · Zahlungsstatus auswählen: '+sourceFile.name;
  });
 }
+function archiveInvoiceWithUnclearDate(doc){if(doc.document_type!=='invoice'||validCalendarDate(doc.date))return false;const original=doc.date||'';doc.invoice_date_original=original;doc.date=new Date().toLocaleDateString('en-CA',{timeZone:'Europe/Vienna'});doc.archive_date_is_placeholder=true;doc.needs_review=true;doc.import_warning='Rechnungsdatum ungültig ('+original+'). '+doc.date+' ist nur technisches Archivdatum, kein bestätigtes Rechnungsdatum. Datum prüfen.';return true;}
 function validCalendarDate(value){if(!/^\d{4}-\d{2}-\d{2}$/.test(value||''))return false;const [y,m,d]=value.split('-').map(Number);return m>=1&&m<=12&&d>=1&&d<=new Date(Date.UTC(y,m,0)).getUTCDate();}
 function chooseDocumentDate(doc,sourceFile){
  return new Promise(resolve=>{
@@ -744,7 +745,7 @@ async function recognizePhotoGroup(files,intakes){
   const primary=entries.find(entry=>entry.intake?.document_type==='other')||entries[0];
   try{
    if(doc.document_type==='monthly_report'&&/^\d{4}-\d{2}-\d{2}$/.test(doc.period_end||''))doc.date=doc.period_end;
-   if(!validCalendarDate(doc.date)){
+   if(!validCalendarDate(doc.date)&&!archiveInvoiceWithUnclearDate(doc)){
     const dates=[...new Set(entries.map(entry=>entry.intake?.document_type==='cash_report'?entry.intake.extracted_data?.date:null).filter(date=>/^\d{4}-\d{2}-\d{2}$/.test(date||'')))];
     doc.date=dates.length===1?dates[0]:await chooseDocumentDate(doc,primary.file);
     if(!doc.date)throw Error('Datum noch offen; Originale bleiben im Archiv.');
@@ -838,7 +839,7 @@ async function process(){
     if(data?.documents?.length!==1)throw Error('Dokument nicht eindeutig erkannt. Original bleibt im Archiv.');
     const document=data.documents[0];candidate=document;let paymentStatus=null;
     if(document.document_type==='monthly_report'&&/^\d{4}-\d{2}-\d{2}$/.test(document.period_end||''))document.date=document.period_end;
-    if(!validCalendarDate(document.date)){
+    if(!validCalendarDate(document.date)&&!archiveInvoiceWithUnclearDate(document)){
      document.date=await chooseDocumentDate(document,file);
      if(!document.date)throw Error('Datum noch offen; Original bleibt im Archiv.');
      document.needs_review=true;
