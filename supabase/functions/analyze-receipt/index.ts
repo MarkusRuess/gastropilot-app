@@ -1,12 +1,6 @@
 
 import { createClient } from "npm:@supabase/supabase-js@2";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-};
+import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
 
 function json(data: unknown, status = 200) {
   return new Response(JSON.stringify(data), {
@@ -141,6 +135,24 @@ function normalizeSalesItems(value: unknown) {
     .map((item: any) => ({
       name: item.name.trim(),
       quantity: item.quantity,
+    }));
+}
+
+function normalizePurchaseItems(value: unknown) {
+  if (!Array.isArray(value)) return [];
+  return value
+    .filter((item: any) => item && typeof item.name === "string" && item.name.trim())
+    .map((item: any) => ({
+      name: item.name.trim(),
+      article_number: textOrNull(item.article_number),
+      quantity: quantity(item.quantity),
+      unit: textOrNull(item.unit),
+      unit_price_net: amount(item.unit_price_net),
+      unit_price_gross: amount(item.unit_price_gross),
+      line_net: amount(item.line_net),
+      line_vat: amount(item.line_vat),
+      line_gross: amount(item.line_gross),
+      tax_rate: typeof item.tax_rate === "number" && Number.isFinite(item.tax_rate) ? item.tax_rate : null,
     }));
 }
 
@@ -293,9 +305,11 @@ Deno.serve(async (req) => {
     const mode =
       body.mode === "cash_report"
         ? "cash_report"
-        : body.mode === "invoice"
-          ? "invoice"
-          : "auto";
+        : body.mode === "invoice_items"
+          ? "invoice_items"
+          : body.mode === "invoice"
+            ? "invoice"
+            : "auto";
 
     let images = normalizeImages(body);
     let savedDocument: any = null;
@@ -327,8 +341,9 @@ Deno.serve(async (req) => {
 
     if (body.document_id) {
       if (typeof body.document_id !== "string" || !/^[0-9a-f-]{36}$/i.test(body.document_id)) return json({error:"Ungültiger Beleg"},400);
-      const existing=await supabase.from("documents").select("*").eq("id",body.document_id).eq("business_id",businessId).eq("document_type","cash_report").maybeSingle();
-      if(existing.error||!existing.data)return json({error:"Abrechnung nicht gefunden oder kein Zugriff"},404);
+      const expectedType=body.mode==="invoice_items"?"invoice":"cash_report";
+      const existing=await supabase.from("documents").select("*").eq("id",body.document_id).eq("business_id",businessId).eq("document_type",expectedType).maybeSingle();
+      if(existing.error||!existing.data)return json({error:"Beleg nicht gefunden oder kein Zugriff"},404);
       savedDocument=existing.data;
       const paths=[...new Set([...(savedDocument.extracted_data?.original_files||[]),savedDocument.storage_path].filter(Boolean))];
       if(!paths.length||paths.length>MAX_IMAGES)return json({error:"Originalfotos fehlen"},422);
@@ -711,7 +726,18 @@ vat_total = Umsatzsteuer
 tax_breakdown = ausgewiesene Steuergruppen
 
 sales_items = lesbare Artikel und Mengen,
-sofern sinnvoll erkennbar.
+sofern sinnvoll erkennbar; aus Kompatibilitätsgründen beibehalten.
+
+purchase_items = JEDE lesbare Rechnungsposition einzeln:
+name, article_number, quantity, unit, unit_price_net,
+unit_price_gross, line_net, line_vat, line_gross, tax_rate.
+Übernimm Menge, Einheit, Einzelpreis und Positionssumme genau
+aus den gedruckten Spalten. Fehlt ein Wert oder ist er unlesbar,
+setze null. Erfinde und schätze nichts. Ordne Preise nicht der
+falschen Position zu. Mengenangaben wie kg, l, Stück und Gebinde
+exakt übernehmen. Wenn der Beleg nur einen Einzelpreis oder nur
+eine Positionssumme zeigt, fülle nur diesen eindeutig gedruckten
+Wert. Produkte und Preise dienen der späteren Einkaufskalkulation.
 
 Die bisherigen Rechnungsfelder bleiben
 kompatibel.
@@ -765,6 +791,7 @@ AUSGABEFORMAT
       "other_payments_total": null,
       "receipt_count": null,
       "sales_items": [],
+      "purchase_items": [],
       "category_sales": [],
       "notes": null,
       "image_indices": [1],
@@ -797,7 +824,7 @@ Gib ausschließlich gültiges JSON zurück.
 `;
 
     let extracted: any;
-    if(savedDocument){extracted={documents:[savedDocument.extracted_data]};}else{
+    if(savedDocument && body.mode!=="invoice_items"){extracted={documents:[savedDocument.extracted_data]};}else{
     const content: any[] = [{
       type: "input_text",
       text: instructions,
@@ -972,6 +999,9 @@ Gib ausschließlich gültiges JSON zurück.
             document.sales_items
           ),
 
+        purchase_items:
+          normalizePurchaseItems(document.purchase_items),
+
         // NEU:
         // Artikelgruppenstatistik wird
         // vollständig an GastroPilot übergeben.
@@ -1000,9 +1030,26 @@ Gib ausschließlich gültiges JSON zurück.
     );
 
 
+    if(savedDocument && body.mode==="invoice_items"){
+      const recognized=documents[0];
+      if(!recognized || recognized.document_type!=="invoice" || !recognized.purchase_items.length){
+        return json({error:"Keine Produktpositionen mit ausreichend lesbaren Mengen/Preisen erkannt. Originalrechnung bleibt unverändert."},422);
+      }
+      const original=savedDocument.extracted_data||{};
+      const merged={...original,purchase_items:recognized.purchase_items,purchase_items_checked_at:new Date().toISOString(),purchase_items_source:"original_invoice_reprocess"};
+      const updated=await supabase.from("documents").update({extracted_data:merged}).eq("id",savedDocument.id).eq("business_id",businessId).select("id").maybeSingle();
+      if(updated.error||!updated.data)return json({error:"Produktpositionen konnten nicht im Archiv gespeichert werden"},500);
+      return json({success:true,updated:true,documents:[{...recognized,...merged}]});
+    }
+
     for (let i=0;i<documents.length;i++) {
       const document=documents[i];
       if(document.document_type!=="cash_report")continue;
+      if(body.defer_tax_verification===true && !savedDocument){
+        document.needs_review=true;
+        document.tax_verification={version:0,verified:false,errors:["Steuerprüfung im Archiv ausstehend"],checked_at:new Date().toISOString()};
+        continue;
+      }
       const selected=document.image_indices.length?document.image_indices.map(index=>images[index-1]).filter(Boolean):images;
       try{documents[i]=await verifyPrintedTaxes(document,selected,apiKey);}
       catch(error){document.needs_review=true;document.tax_verification={version:TAX_PIPELINE_VERSION,verified:false,errors:[String(error.message||error)],checked_at:new Date().toISOString()};}
