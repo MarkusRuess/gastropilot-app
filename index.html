@@ -717,7 +717,11 @@ async function process(){
      for(const msg of errors){const p=document.createElement('p');p.className='warning';p.textContent=msg;E('review').append(p);}
      await refresh();await loadWholeArchive();return;
     }
-   }catch(error){errors.push('Gemeinsame Erkennung: '+(error.message||String(error)));}
+   }catch(error){
+    E('uploadStatus').textContent='Gemeinsame Erkennung nicht abgeschlossen. Alle Originale sind gesichert; über „Gesicherte Fotos gemeinsam erkennen“ erneut versuchen.';
+    const p=document.createElement('p');p.className='warning';p.textContent=error.message||String(error);E('review').append(p);
+    await refresh();await loadWholeArchive();return;
+   }
   }
   for(const [fileIndex,file] of files.entries()){
    let intake=intakes.get(file);if(!intake)continue;let candidate=null;
@@ -766,7 +770,7 @@ E('camera').onclick=()=>E('cameraInput').click();E('fileButton').onclick=()=>E('
 async function enter(){const {data,error}=await db.auth.getSession();if(error)throw error;const u=data?.session?.user;if(!u)return false;const membership=await db.from('business_members').select('business_id').eq('business_id',BID).eq('user_id',u.id).limit(1);if(membership.error)throw new Error('Betriebszugriff konnte nicht geprüft werden: '+membership.error.message);if(!membership.data?.length)throw new Error('Für dieses Konto fehlt die Freigabe für Das Friedrich.');user=u;E('login').classList.add('hidden');E('app').classList.remove('hidden');await refresh();await loadWholeArchive();showMobilePanel('monthlyReference');return true;}
 E('loginForm').onsubmit=async e=>{e.preventDefault();const button=E('loginForm').querySelector('button');button.disabled=true;E('loginMsg').textContent='Anmeldung wird geprüft …';try{const {data,error}=await Promise.race([db.auth.signInWithPassword({email:E('email').value.trim(),password:E('password').value}),new Promise((_,reject)=>setTimeout(()=>reject(new Error('Anmeldeserver antwortet nicht (15 Sekunden). Bitte Netzwerk prüfen.')),15000))]);if(error)throw error;if(!data?.session)throw new Error('Keine Sitzung erhalten.');const ok=await enter();if(!ok)throw new Error('Anmeldung erfolgreich, aber die Sitzung wurde nicht geladen.');E('loginMsg').textContent='';}catch(err){const m=String(err.message||err);E('loginMsg').textContent=/invalid login credentials/i.test(m)?'E-Mail oder Passwort wurde von Supabase nicht akzeptiert. Bitte die bisherigen GastroPilot-Zugangsdaten verwenden.':m;}finally{button.disabled=false;}};
 for(const b of document.querySelectorAll('#quickNav button'))b.onclick=()=>showMobilePanel(b.dataset.target);E('archiveLoad').onclick=loadWholeArchive;E('archiveFilter').onchange=showArchive;
-const retryButton=document.createElement('button');retryButton.type='button';retryButton.textContent='Gesicherte Fotos gemeinsam erkennen';retryButton.onclick=retrySavedPhotoGroup;E('archiveLoad').after(retryButton);
+const retryButton=document.createElement('button');retryButton.type='button';retryButton.textContent='Gesicherte Fotos gemeinsam erkennen';retryButton.onclick=retrySavedPhotoGroup;E('confirmUpload').after(retryButton);
 const cardTables=()=>{document.querySelectorAll('#app table').forEach(table=>{const labels=[...table.querySelectorAll('thead th')].map(x=>x.textContent.trim());table.querySelectorAll('tbody tr').forEach(tr=>{[...tr.children].forEach((td,i)=>{if(!td.dataset.label)td.dataset.label=labels[i]||'';});});});};
 const cardObserver=new MutationObserver(cardTables);
 document.querySelectorAll('#app tbody').forEach(el=>cardObserver.observe(el,{childList:true,subtree:true}));
