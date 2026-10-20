@@ -125,7 +125,7 @@ h2{font-size:17px;margin:10px 0}h3{font-size:14px}table{width:100%;border-collap
 .menu-dashboard-scroll td:first-child{font-weight:650}
 .menu-dashboard-scroll td.new-price{font-weight:750;color:#116d5c}
 @media(max-width:650px){.menu-dashboard-tile>summary{min-height:68px;padding:9px 38px 9px 9px}.menu-dashboard-tile>summary b{font-size:17px}.menu-dashboard-panel{padding:0 9px 9px}.menu-dashboard-scroll table{min-width:0}.menu-dashboard-scroll tbody{grid-template-columns:1fr!important}.menu-dashboard-scroll tr{margin:0}.menu-dashboard-scroll td:first-child{display:block!important}.menu-dashboard-scroll td:first-child::before{display:none!important}}
-</style></head><body>
+</style><style>.top-article-grid{grid-template-columns:1fr!important;gap:5px}.top-article{padding:7px 10px;min-height:0}.top-article strong{font-size:12px}.top-article .metrics{font-size:11px;margin-top:2px;gap:3px 12px}@media(min-width:1100px){.top-article-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}}</style></head><body>
 <header><strong>GastroPilot</strong><small>Dein Lokal. Deine Zahlen. Dein Überblick.</small></header>
 <main><section id="login" class="card"><h2>Anmelden</h2><form id="loginForm"><label>E-Mail<input id="email" type="email" autocomplete="username" required></label><label>Passwort<input id="password" type="password" autocomplete="current-password" required></label><button>Anmelden</button></form><p id="loginMsg" class="status"></p></section>
 <div id="app" class="hidden"><div class="row"><h2>Das Friedrich · Betriebssteuerung</h2><div id="monthOverview" class="month-overview" role="region" aria-label="Monatsübersicht"><div class="month-overview-head"><div><small>Monatsübersicht</small><strong id="monthOverviewTitle">Monat auswählen</strong></div><div class="month-controls"><button id="monthPrev" type="button" aria-label="Vorheriger Monat">‹</button><label class="month-input-label"><span class="visually-hidden">Monat auswählen</span><input id="month" type="month" aria-label="Monat auswählen"></label><button id="monthNext" type="button" aria-label="Nächster Monat">›</button></div></div><div id="monthOverviewStats" class="month-overview-stats"></div><details id="monthCalendar"><summary>Tagesübersicht</summary><div id="monthCalendarGrid" class="month-calendar-grid" aria-label="Kalender des ausgewählten Monats"></div><div id="monthDayDetail" class="month-day-detail" aria-live="polite"></div><p class="month-calendar-note">Beträge brutto in € · — = kein Tagesabschluss erfasst</p></details></div><button id="refresh">Aktualisieren</button><button id="logout">Abmelden</button></div><p id="summary" class="muted">Lade Archiv …</p><div class="grid" id="quickKpis"></div><a class="tile article-launch-tile" href="kalkulation.html" style="text-decoration:none"><small>Neue Kachel</small><b>Kalkulation</b><small>Rechnungs-EK · BONit-VK · Ziel 26 %</small></a><details id="menuDashboardTile" class="tile menu-dashboard-tile"><summary><b>Getränke &amp; Speisekarte</b></summary><div class="menu-dashboard-panel"><div class="menu-dashboard-scroll"><table><thead><tr><th>Produkt</th><th>Einheit</th><th class="num">Aktueller BONit-VK</th><th class="num">Meine Empfehlung</th></tr></thead><tbody id="menuDashboardRows"></tbody></table></div></div></details><details id="profitGoalTile" class="tile profit-goal-tile"><summary><small>Personal + Fixkosten + Gewinn</small><b>Gewinnziel</b><small>Monatliche Zielpreise ansehen <span aria-hidden="true">⌄</span></small></summary><div class="profit-goal-panel"><p class="muted">Orientierung für den ausgewählten Monat. Gewinnquote und vollständige Fixkosten kannst du hier ergänzen.</p><div class="profit-goal-metrics"><div><small>Nettoumsatz</small><strong id="profitGoalNet">–</strong></div><div><small>Personalkosten</small><strong id="profitGoalStaff">–</strong></div><div><small>Erfasste Fixkosten</small><strong id="profitGoalRecordedFixed">–</strong></div><div><small>Monatliches Gewinnziel</small><strong id="profitGoalAmount">–</strong></div><div class="profit-goal-required"><small>Ziel-Nettoumsatz inkl. 26 % Wareneinsatz, Personal, Fixkosten und Gewinn</small><strong id="profitGoalRevenue">–</strong></div></div><div class="profit-goal-inputs"><label>Vollständige Fixkosten pro Monat (€)<input id="profitGoalFixedInput" type="number" min="0" step="0.01" inputmode="decimal"></label><label>Gewinnziel vom Nettoumsatz (%)<input id="profitGoalPercentInput" type="number" min="0" max="80" step="0.5" inputmode="decimal" value="10"></label></div><p id="profitGoalNote" class="muted"></p><a class="profit-goal-link" href="kalkulation.html">VK-Empfehlungen für BONit-Artikel öffnen →</a></div></details><nav id="quickNav" class="quickNav"><button type="button" data-target="monthlyReference">Monat</button><button type="button" data-target="intake">Upload</button><button type="button" data-target="financeSection">Finanzen</button><button type="button" data-target="weeklyPurchase">Einkauf</button><button type="button" data-target="topArticles">Top 20</button><button type="button" data-target="slowArticles">Selten verkauft</button><button type="button" data-target="centralArchive">Archiv</button></nav>
@@ -498,21 +498,22 @@ function renderTopArticles(rows,total,days,sourceDays){
  drawTopArticles();
 }
 function drawTopArticles(){
- const pages=Math.max(1,Math.ceil(topArticleRows.length/5));topArticlePage=Math.min(topArticlePage,pages-1);
  const host=E('topArticleCards');host.replaceChildren();
  const number=new Intl.NumberFormat('de-AT',{maximumFractionDigits:2}),percent=new Intl.NumberFormat('de-AT',{style:'percent',maximumFractionDigits:2});
- for(const [offset,x] of topArticleRows.slice(topArticlePage*5,topArticlePage*5+5).entries()){
-  const card=document.createElement('div');card.className='top-article';const name=document.createElement('strong');name.textContent=(topArticlePage*5+offset+1)+'. '+x.name;card.append(name);
+ for(const [index,x] of topArticleRows.entries()){
+  const card=document.createElement('div');card.className='top-article';
+  const name=document.createElement('strong');name.textContent=(index+1)+'. '+x.name;card.append(name);
   const metrics=document.createElement('div');metrics.className='metrics';
   for(const [label,value] of [['Menge',number.format(x.qty)],['Ø Preis',x.known&&x.qty>0?EUR(x.gross/x.qty):'–'],['Umsatz',x.known?EUR(x.gross):'fehlt'],['Anteil',x.known&&topArticleTotal>0?percent.format(x.gross/topArticleTotal):'–']]){
    const span=document.createElement('span');span.append(label+' ');const valueNode=document.createElement('b');valueNode.textContent=value;span.append(valueNode);metrics.append(span);
-  }card.append(metrics);host.append(card);
+  }
+  card.append(metrics);host.append(card);
  }
  if(!topArticleRows.length)host.textContent='Keine Artikeldaten für diesen Monat vorhanden.';
- E('articlePage').textContent=(topArticlePage+1)+' / '+pages+' · '+topArticleRows.length+' Artikel';E('articlePrev').disabled=topArticlePage===0;E('articleNext').disabled=topArticlePage>=pages-1;
+ E('articlePage').textContent=topArticleRows.length+' Artikel · eine Liste';
+ E('articlePrev').hidden=true;E('articleNext').hidden=true;
 }
-E('articlePrev').onclick=()=>{topArticlePage--;drawTopArticles();};E('articleNext').onclick=()=>{topArticlePage++;drawTopArticles();};
-
+E('articlePrev').hidden=true;E('articleNext').hidden=true;
 async function refresh(){void loadWeeklyPurchase().catch(e=>E('purchasePeriod').textContent='Einkaufsdaten konnten nicht geladen werden: '+e.message);
  const [start,end]=dateRange();E('summary').textContent='Archiv wird abgeglichen …';
  try{
