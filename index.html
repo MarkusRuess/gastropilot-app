@@ -288,8 +288,8 @@ function renderAugust(A=null){
 const taxRepairAttempted = new Set();
 let taxRepairRunning = false;
 async function repairStoredTaxes(documents) {
- if(taxRepairRunning||!user)return;
- const pending=documents.filter(d=>d.document_type==='cash_report'&&(d.extracted_data?.tax_verification?.version!==2||d.extracted_data?.receipt_count_verification?.version!==1||d.extracted_data?.article_sales_verification?.version!==1)&&(d.storage_path||d.extracted_data?.original_files?.length)&&!taxRepairAttempted.has(d.id)).slice(0,4);
+ if(taxRepairRunning||!user||busy)return;
+ const pending=documents.filter(d=>d.document_type==='cash_report'&&(d.extracted_data?.tax_verification?.version!==2||d.extracted_data?.receipt_count_verification?.version!==1||d.extracted_data?.article_sales_verification?.version!==1)&&(d.storage_path||d.extracted_data?.original_files?.length)&&!taxRepairAttempted.has(d.id)).sort((a,b)=>b.created_at.localeCompare(a.created_at)).slice(0,1);
  if(!pending.length)return;
  taxRepairRunning=true;let updated=0;
  try{
@@ -305,8 +305,8 @@ async function repairStoredTaxes(documents) {
    }catch(error){E('uploadStatus').textContent='Automatische Nachprüfung vom '+D(d.document_date)+' noch offen: '+(error.message||String(error));}
   }
  }finally{
-  taxRepairRunning=false;
-  if(updated){await refresh();await loadWholeArchive();}
+  try{if(updated){await refresh();await loadWholeArchive();}}
+  finally{taxRepairRunning=false;}
  }
 }
 
