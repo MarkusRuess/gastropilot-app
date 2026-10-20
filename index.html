@@ -476,7 +476,7 @@ function drawSlowArticles(){
   const metrics=document.createElement('div');metrics.className='metrics';
   for(const [label,value] of [['Menge',number.format(x.qty)],['Ø Preis',x.known&&x.qty>0?EUR(x.gross/x.qty):'–'],['Umsatz',x.known?EUR(x.gross):'fehlt'],['Anteil',x.known&&slowArticleTotal>0?percent.format(x.gross/slowArticleTotal):'–']]){
    const span=document.createElement('span');span.append(label+' ');const valueNode=document.createElement('b');valueNode.textContent=value;span.append(valueNode);metrics.append(span);
-  }card.append(metrics);host.append(card);
+  }card.append(metrics);if(x.variants.length>1){const detail=document.createElement('div');detail.className='metrics';detail.style.cssText='margin-top:4px;font-size:11px;opacity:.82';for(const v of x.variants){const span=document.createElement('span');span.textContent=v.label+' · '+number.format(v.qty)+' Stk · '+EUR(v.gross);detail.append(span);}card.append(detail);}host.append(card);
  }
  if(!slowArticleRows.length)host.textContent='Keine Artikeldaten für diesen Monat vorhanden.';
  E('slowPage').textContent=(slowArticlePage+1)+' / '+pages+' · '+slowArticleRows.length+' Artikel';E('slowPrev').disabled=slowArticlePage===0;E('slowNext').disabled=slowArticlePage>=pages-1;
@@ -489,10 +489,31 @@ function renderSlowArticles(rows,total,days,sourceDays){
  E('slowArticleNote').textContent='Ausgewählter Monat · geringste verkaufte Menge zuerst, bei gleicher Menge geringster Bruttoumsatz. '+(sourceDays<days?'Nur '+sourceDays+' von '+days+' Tagen mit belegten Artikelumsätzen; vorläufige Rangliste. ':'')+'Menge · Ø Preis · Umsatz · Anteil am Monatsumsatz. Artikel ohne Verkauf sind aus Abrechnungen allein nicht erkennbar; Stornos ohne positiven Absatz werden ausgeschlossen.';
  drawSlowArticles();
 }
+function articleFamily(name){
+ let n=String(name||'').replace(/^\s*\d+\s*·\s*/,'').trim();
+ const wine=/(?:1\s*\/\s*8|0[,.]75\s*l|0[,.]7\s*l|flasche|bouteille)/i.test(n);
+ if(wine){
+  let base=n.replace(/\b1\s*\/\s*8\b/gi,' ').replace(/\b0[,.]75\s*l\b|\b0[,.]7\s*l\b|\bflasche\b|\bbouteille\b/gi,' ').replace(/\s+/g,' ').trim();
+  if(base.length>3)return {key:'wine:'+base.toLocaleLowerCase('de-AT'),name:base,variant:/1\s*\/\s*8/.test(n)?'1/8 Glas':'0,75 l Flasche'};
+ }
+ const coffee=/melange|kleiner brauner|großer brauner|grosser brauner|espresso|verlängerter|verlangerter|cappuccino|latte macchiato|caff[eè] latte/i.test(n);
+ if(coffee){let base=n.replace(/\b(?:einfach|doppelt|klein|groß|gross|mit milch|ohne milch)\b/gi,' ').replace(/\s+/g,' ').trim();return {key:'coffee:'+base.toLocaleLowerCase('de-AT'),name:base,variant:n};}
+ return {key:'article:'+n.toLocaleLowerCase('de-AT'),name:n,variant:n};
+}
+function groupTopArticles(rows){
+ const groups=new Map();
+ for(const x of rows){
+  const family=articleFamily(x.name),key=family.key;
+  if(!groups.has(key))groups.set(key,{name:family.name,qty:0,gross:0,known:true,variants:[]});
+  const g=groups.get(key);g.qty+=Number(x.qty)||0;g.gross+=Number(x.gross)||0;g.known=g.known&&x.known;
+  const v=g.variants.find(v=>v.label===family.variant);if(v){v.qty+=Number(x.qty)||0;v.gross+=Number(x.gross)||0;}else g.variants.push({label:family.variant,qty:Number(x.qty)||0,gross:Number(x.gross)||0});
+ }
+ return [...groups.values()];
+}
 function renderTopArticles(rows,total,days,sourceDays){
  renderSlowArticles(rows,total,days,sourceDays);
  const key=E('month').value;if(topArticleKey!==key){topArticlePage=0;topArticleKey=key;}
- topArticleTotal=total;topArticleRows=rows.filter(x=>x.qty!==0||x.gross!==0).sort((a,b)=>Number(b.known)-Number(a.known)||(a.known?b.gross-a.gross:b.qty-a.qty)).slice(0,20);
+ topArticleTotal=total;topArticleRows=groupTopArticles(rows.filter(x=>x.qty!==0||x.gross!==0)).sort((a,b)=>Number(b.known)-Number(a.known)||(a.known?b.gross-a.gross:b.qty-a.qty)).slice(0,20);
  const incomplete=rows.filter(x=>!x.known).length;
  const monthLabel=new Intl.DateTimeFormat('de-AT',{month:'long',year:'numeric',timeZone:'UTC'}).format(new Date(E('month').value+'-01T12:00:00Z'));E('topArticleNote').textContent=monthLabel+' · '+sourceDays+' Verkaufstage mit belegten Artikelumsätzen'+(sourceDays<days?' ('+(days-sourceDays)+' Tagesabschlüsse ohne vollständige Artikeldaten; vorläufige Rangliste)':'')+' · Rangliste nach Artikel-Bruttoumsatz · Ø Preis = Artikelumsatz ÷ Menge · Anteil = Artikelumsatz ÷ Monats-Bruttoumsatz. Aktualisierung mit jedem neuen BONit-Import.';
  drawTopArticles();
