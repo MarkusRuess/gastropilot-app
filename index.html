@@ -297,7 +297,8 @@ async function repairStoredTaxes(documents) {
    taxRepairAttempted.add(d.id);
    E('uploadStatus').textContent='Gespeicherte Abrechnung '+D(d.document_date)+' wird automatisch anhand der Originalfotos nachgeprüft …';
    try{
-    const {data,error}=await db.functions.invoke('analyze-receipt',{body:{business_id:BID,document_id:d.id,...(d.extracted_data?.tax_verification?.version===2?{mode:'article_sales'}:{})}});
+    const needsTaxRead=d.extracted_data?.tax_verification?.verified!==true;
+    const {data,error}=await db.functions.invoke('analyze-receipt',{body:{business_id:BID,document_id:d.id,mode:needsTaxRead?'tax_summary':'article_sales'}});
     if(error)throw error;if(data?.error)throw Error(data.error);
     updated++;
     const verified=data?.documents?.[0]?.tax_verification?.verified;
