@@ -5,6 +5,7 @@
 .card{background:#fff;border:1px solid var(--line);border-radius:15px;padding:19px 20px;margin:13px 0;box-shadow:0 3px 15px #1e293308}
 .card>h2{font-size:16px;font-weight:750;letter-spacing:-.2px;margin:0 0 12px}.card>h3{font-size:13px;margin:16px 0 8px}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:9px}.tile{min-width:0;min-height:76px;margin:0;background:#f8fafc;border:1px solid #e9eef3;border-radius:10px;padding:11px 13px;display:flex;flex-direction:column;justify-content:center;gap:3px}
+@media(min-width:1100px){#quickKpis{grid-template-columns:repeat(7,minmax(0,1fr))}}
 .tile small{font-size:11px;color:#64748b;font-weight:550;line-height:1.25}.tile b{font-size:clamp(17px,1.8vw,22px);font-weight:750;line-height:1.2;letter-spacing:-.4px;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
 #sales .tile:first-child{background:#eaf6f3;border-color:#c5e5db}#sales .tile:first-child b{color:#116d5c}
 #tax .tile{min-height:68px}#tax .tile b{font-size:18px}
@@ -594,7 +595,7 @@ async function refresh(){void loadWeeklyPurchase().catch(e=>E('purchasePeriod').
  const personnelLabel=personnelEstimated?'Personalkosten · Vormonat (Plan)':personnelCost===null?'Personalkosten · fehlen':'Personalkosten · Ist';
  const quoteLabel=quoteProvisional||personnelCost===null?'Personalquote · vorläufig':'Personalquote';
  const quoteValue=personnelCost!==null&&quoteNet>0?(100*personnelCost/quoteNet).toFixed(2)+' %':'Noch keine Daten';
- E('quickKpis').replaceChildren();for(const [label,value] of [['Bruttoumsatz',EUR(M?M.gross:gross)],['Nettoumsatz',M?.net!=null?EUR(M.net):netLabel],[personnelLabel,EUR(personnelCost)],[quoteLabel,quoteValue],['Ziel Personal','35 %'],['Bankguthaben',accountRows.length&&accountRows.every(x=>N(x.current_balance)!==null)?EUR(accountRows.reduce((a,x)=>a+N(x.current_balance),0)):'–']])tile(E('quickKpis'),label,value);
+ E('quickKpis').replaceChildren();for(const [label,value] of [['Bruttoumsatz',EUR(M?M.gross:gross)],['Nettoumsatz',M?.net!=null?EUR(M.net):netLabel],[personnelLabel,EUR(personnelCost)],[quoteLabel,quoteValue],['Ziel Wareneinsatz','26 %'],['Ziel Personal','35 %'],['Bankguthaben',accountRows.length&&accountRows.every(x=>N(x.current_balance)!==null)?EUR(accountRows.reduce((a,x)=>a+N(x.current_balance),0)):'–']])tile(E('quickKpis'),label,value);
  if(personnelEstimated)E('quickKpis').children[2].title='Vorläufige Monatskosten aus '+previousMonthName+'. Die Personalkosten des gewählten Monats ersetzen diesen Wert nach dem Import.';
  if(quoteProvisional&&quoteNet>0)E('quickKpis').children[3].title=(personnelEstimated?'Personalkosten aus '+previousMonthName+'; ':'')+(quickNet===null?'Nettoumsatz nur aus bisher erfassten Tagen.':'');
  showResultBridge({net:quickNet,personnel:personnelCost,purchases:purchaseCost,fixed:fixedCost,expenseCount:expenseRows.length,fixedCount:fixedRows.length,period:currentMonth,personnelEstimated,previousMonthName});renderProfitGoal({net:quickNet,personnel:personnelCost,fixed:fixedCost,expenseCount:expenseRows.length,fixedCount:fixedRows.length,period:currentMonth,personnelEstimated,previousMonthName});renderPurchaseItemsForCalc(docs);
