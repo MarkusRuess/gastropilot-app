@@ -617,6 +617,15 @@ function chooseDocumentDate(doc,sourceFile){
   E('uploadStatus').textContent='Original gesichert · Belegdatum auswählen: '+sourceFile.name;
  });
 }
+function handkassePeriod(name){
+ const months=['januar','februar','marz','april','mai','juni','juli','august','september','oktober','november','dezember'];
+ const normalized=String(name||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+ const match=normalized.match(/\bhandkasse\s+([a-z]+)\s+(20\d{2})\b/);
+ if(!match)return null;const month=months.indexOf(match[1]==='maerz'?'marz':match[1])+1;if(!month)return null;
+ const year=Number(match[2]),start=match[2]+'-'+String(month).padStart(2,'0')+'-01';
+ const end=new Date(Date.UTC(year,month,0)).toISOString().slice(0,10);
+ return {start,end};
+}
 async function secureOriginal(file){
  const digest=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',await file.arrayBuffer())),b=>b.toString(16).padStart(2,'0')).join('');
  const {data:prior,error:lookupError}=await db.from('documents').select('id,storage_path,status,document_type,extracted_data').eq('business_id',BID).contains('extracted_data',{source_sha256:digest}).order('created_at',{ascending:false}).limit(1);
@@ -626,11 +635,12 @@ async function secureOriginal(file){
  const path=BID+'/'+crypto.randomUUID()+'.'+ext;
  const upload=await db.storage.from('invoice-originals').upload(path,file,{contentType:file.type,upsert:false});
  if(upload.error)throw Error('Originaldatei konnte nicht hochgeladen werden: '+upload.error.message);
+ const period=file.type==='application/pdf'?handkassePeriod(file.name):null;
  const today=new Date().toLocaleDateString('en-CA',{timeZone:'Europe/Vienna'});
- const metadata={source_sha256:digest,original_name:file.name,original_files:[path],import_method:'automatic',import_warning:'Original gesichert; Erkennung ausstehend.'};
- const {data,error}=await db.from('documents').insert({business_id:BID,uploaded_by:user.id,document_type:'other',document_date:today,storage_path:path,status:'pending',extracted_data:metadata}).select('id,storage_path,status,document_type,extracted_data').single();
+ const metadata={source_sha256:digest,original_name:file.name,original_files:[path],import_method:'automatic',...(period?{period_start:period.start,period_end:period.end,document_class:'monthly_cash_ledger',import_warning:'Monatliche Handkasse: Zeitraum automatisch aus Dateiname erkannt; Einzelbuchungen noch zur Prüfung.'}:{import_warning:'Original gesichert; Erkennung ausstehend.'})};
+ const {data,error}=await db.from('documents').insert({business_id:BID,uploaded_by:user.id,document_type:'other',document_date:period?.end||today,storage_path:path,status:period?'reviewed':'pending',extracted_data:metadata}).select('id,storage_path,status,document_type,extracted_data').single();
  if(error){await db.storage.from('invoice-originals').remove([path]);throw error;}
- return data;
+ return {...data,periodArchived:!!period};
 }
 async function recognizePhotoGroup(files,intakes){
  if(files.length<2||!files.every(file=>file.type.startsWith('image/'))||files.every(file=>intakes.get(file)?.alreadyRecognized))return null;
@@ -650,6 +660,7 @@ async function recognizePhotoGroup(files,intakes){
   const entries=doc.image_indices.map(number=>({file:files[number-1],intake:intakes.get(files[number-1])}));
   const primary=entries.find(entry=>entry.intake?.document_type==='other')||entries[0];
   try{
+   if(doc.document_type==='monthly_report'&&/^\d{4}-\d{2}-\d{2}$/.test(doc.period_end||''))doc.date=doc.period_end;
    if(!/^\d{4}-\d{2}-\d{2}$/.test(doc.date||'')){
     const dates=[...new Set(entries.map(entry=>entry.intake?.document_type==='cash_report'?entry.intake.extracted_data?.date:null).filter(date=>/^\d{4}-\d{2}-\d{2}$/.test(date||'')))];
     doc.date=dates.length===1?dates[0]:await chooseDocumentDate(doc,primary.file);
@@ -732,6 +743,7 @@ async function process(){
    const setProgress=step=>{E('uploadStatus').textContent=(fileIndex+1)+'/'+files.length+' · '+file.name+' · '+step;};
    try{
     if(intake.alreadyRecognized){duplicate++;queue=queue.filter(f=>f!==file);continue;}
+    if(intake.periodArchived){saved++;queue=queue.filter(f=>f!==file);setProgress('Monatszeitraum '+intake.extracted_data.period_start+' bis '+intake.extracted_data.period_end+' automatisch archiviert.');continue;}
     setProgress('Original gesichert · Erkennung läuft …');
     const blobs=await withTimeout(pages(file,setProgress),90000,'Datei/PDF konnte nach 90 Sekunden nicht vorbereitet werden.');
     if(blobs.length>12)throw Error('PDF hat mehr als 12 Seiten');
@@ -740,6 +752,7 @@ async function process(){
     if(error)throw error;if(data?.error)throw Error(data.error);
     if(data?.documents?.length!==1)throw Error('Dokument nicht eindeutig erkannt. Original bleibt im Archiv.');
     const document=data.documents[0];candidate=document;let paymentStatus=null;
+    if(document.document_type==='monthly_report'&&/^\d{4}-\d{2}-\d{2}$/.test(document.period_end||''))document.date=document.period_end;
     if(!/^\d{4}-\d{2}-\d{2}$/.test(document.date||'')){
      document.date=await chooseDocumentDate(document,file);
      if(!document.date)throw Error('Datum noch offen; Original bleibt im Archiv.');
