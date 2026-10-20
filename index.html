@@ -209,7 +209,7 @@ async function loadMenuDashboard(){
 }
 E('menuDashboardTile').addEventListener('toggle',()=>{if(E('menuDashboardTile').open)void loadMenuDashboard()});
 const profitGoalSettingsKey='gastropilot:dashboard:profit-goal:'+BID;
-function renderProfitGoal({net,personnel,fixed,expenseCount,fixedCount,period}){
+function renderProfitGoal({net,personnel,fixed,expenseCount,fixedCount,period,personnelEstimated=false,previousMonthName=''}){
  const fixedInput=E('profitGoalFixedInput'),percentInput=E('profitGoalPercentInput');
  let settings={};try{settings=JSON.parse(localStorage.getItem(profitGoalSettingsKey)||'{}')}catch{}
  if(fixedInput.dataset.initialized!=='true'){fixedInput.value=String(settings.fixed??(fixed??''));fixedInput.dataset.initialized='true'}
@@ -218,10 +218,10 @@ function renderProfitGoal({net,personnel,fixed,expenseCount,fixedCount,period}){
  E('profitGoalNet').textContent=EUR(net);E('profitGoalStaff').textContent=EUR(personnel);E('profitGoalRecordedFixed').textContent=EUR(fixed);E('profitGoalAmount').textContent=EUR(profit);
  const required=personnel!=null&&fullFixed!=null&&percent<74? (personnel+fullFixed)/(1-0.26-percent/100):null;
  E('profitGoalRevenue').textContent=EUR(required);
- const inputChanged=()=>{localStorage.setItem(profitGoalSettingsKey,JSON.stringify({fixed:N(fixedInput.value),percent:N(percentInput.value)}));renderProfitGoal({net,personnel,fixed,expenseCount,fixedCount,period})};
- if(!fixedInput.dataset.bound){fixedInput.addEventListener('input',inputChanged);percentInput.addEventListener('input',inputChanged);fixedInput.dataset.bound='true'}
+ const inputChanged=()=>{localStorage.setItem(profitGoalSettingsKey,JSON.stringify({fixed:N(fixedInput.value),percent:N(percentInput.value)}));renderProfitGoal({net,personnel,fixed,expenseCount,fixedCount,period,personnelEstimated,previousMonthName})};
+ fixedInput.oninput=inputChanged;percentInput.oninput=inputChanged;
  const missing=(fixedCount||0)<3;
- E('profitGoalNote').textContent='Datenbasis '+period+'. '+(missing?'Im Archiv sind nur '+(fixedCount||0)+' Fixkostenpositionen erfasst; bitte die gesamte monatliche Summe oben eintragen. ':'Erfasste Fixkosten fließen ein. ')+(personnel==null?'Personalkosten fehlen für diesen Monat. ':'')+'Die konkreten Artikel-VK werden mit Rezeptur-EK in der Kalkulation berechnet.';
+ E('profitGoalNote').textContent='Datenbasis '+period+'. '+(personnelEstimated?'Personalkosten vorläufig aus '+previousMonthName+'; der Ist-Wert ersetzt sie nach dem Import. ':'')+(missing?'Im Archiv sind nur '+(fixedCount||0)+' Fixkostenpositionen erfasst; bitte die gesamte monatliche Summe oben eintragen. ':'Erfasste Fixkosten fließen ein. ')+(personnel==null?'Personalkosten fehlen für diesen Monat. ':'')+'Die konkreten Artikel-VK werden mit Rezeptur-EK in der Kalkulation berechnet.';
 }
 const parts=new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Vienna',year:'numeric',month:'2-digit'}).formatToParts(new Date());E('month').value=parts.find(x=>x.type==='year').value+'-'+parts.find(x=>x.type==='month').value;
 function tile(target,label,value){const box=document.createElement('div');box.className='tile';const a=document.createElement('small');a.textContent=label;const b=document.createElement('b');b.textContent=value;box.append(a,b);target.append(box);}
@@ -340,11 +340,11 @@ function renderPurchaseItemsForCalc(documents){
  const count=document.createElement('p');count.className='muted';count.textContent=invoices.reduce((n,d)=>n+d.extracted_data.purchase_items.length,0)+' gespeicherte Produktpositionen aus '+invoices.length+' Rechnungen.';
  host.append(count,list);
 }
-function showResultBridge({net,personnel,purchases,fixed,expenseCount,fixedCount,period}){
+function showResultBridge({net,personnel,purchases,fixed,expenseCount,fixedCount,period,personnelEstimated=false,previousMonthName=''}){
  const root=E('resultBridge');root.replaceChildren();
  const line=(label,value,style='',detail='')=>{const div=document.createElement('div');div.className='resultLine '+style;const left=document.createElement('div');left.className='resultLabel';left.textContent=label;if(detail){const sub=document.createElement('small');sub.textContent=detail;left.append(sub);}const right=document.createElement('strong');right.textContent=value;div.append(left,right);root.append(div);};
  line('Nettoumsatz',EUR(net));
- line('− Personalkosten',personnel===null?'Nicht erfasst':'− '+EUR(personnel));
+ line(personnelEstimated?'− Personalkosten · Vormonat (Plan)':'− Personalkosten',personnel===null?'Nicht erfasst':'− '+EUR(personnel));
  const remainder=net!==null&&personnel!==null?net-personnel:null;
  line('Verbleibt nach Personal',EUR(remainder),'highlight');
  line('− Erfasste Wareneinkäufe',purchases===null?'Noch nicht vollständig':'− '+EUR(purchases),'','Einkäufe ≠ tatsächlicher Wareneinsatz');
@@ -352,7 +352,7 @@ function showResultBridge({net,personnel,purchases,fixed,expenseCount,fixedCount
  const partial=remainder!==null?remainder-(purchases||0)-(fixed||0):null;
  line('Rechnerischer Zwischenstand',EUR(partial),'pending','Kein Gewinn: weitere Kosten und Warenverbrauch fehlen');
  line('Betriebsergebnis','Noch nicht berechenbar','','Erst nach vollständigem Wareneinsatz und allen Betriebskosten');
- E('resultCaution').textContent='Zeitraum '+period+' · '+expenseCount+' Kostenbuchungen und '+fixedCount+' Bank-Fixkosten erfasst. Einkauf, Bankzahlung und Rechnung können dieselbe Ausgabe betreffen. Der Zwischenstand zieht nur erfasste Positionen ab; die vollständige Kostenrechnung und Doppelbuchungsprüfung sind noch offen.';
+ E('resultCaution').textContent='Zeitraum '+period+' · '+(personnelEstimated?'Personalkosten vorläufig aus '+previousMonthName+'. ':'')+expenseCount+' Kostenbuchungen und '+fixedCount+' Bank-Fixkosten erfasst. Einkauf, Bankzahlung und Rechnung können dieselbe Ausgabe betreffen. Der Zwischenstand zieht nur erfasste Positionen ab; die vollständige Kostenrechnung und Doppelbuchungsprüfung sind noch offen.';
 }
 function renderAugust(A=null){
  const month=E('month').value,supported=month==='2026-08'||month==='2026-09';E('monthlyReference').classList.toggle('hidden',!supported);if(!supported)return;
@@ -574,19 +574,30 @@ async function refresh(){void loadWeeklyPurchase().catch(e=>E('purchasePeriod').
  E('tax').replaceChildren();for(const [label,key] of [['10 % brutto','g10'],['10 % netto','n10'],['20 % brutto','g20'],['20 % netto','n20']])tile(E('tax'),label,M?EUR(({g10:M.tax.find(x=>x.rate===10).gross,n10:M.tax.find(x=>x.rate===10).net,g20:M.tax.find(x=>x.rate===20).gross,n20:M.tax.find(x=>x.rate===20).net})[key]):taxRows.length?EUR(taxRows.reduce((a,x)=>a+x[key],0)):'–');
  E('taxNote').textContent=M?'BONit Monatsabschluss Z '+M.z_number+' · Steuergruppen aus Original.':taxRows.length+' von '+daily.length+' Tagesabrechnungen mit vollständig abgeglichenen 10/20-%-Werten. Angezeigt ist die Summe der geprüften Tage; fehlende Werte werden nicht ergänzt.';
  const personnelRows=personnel.data||[],expenseRows=expenses.data||[],accountRows=accounts.data||[],fixedRows=bankFixed.data||[];
- const octoberEstimate=E('month').value==='2026-10';
  let personnelCost=personnelRows.length&&personnelRows.every(x=>N(x.total_costs)!==null)?personnelRows.reduce((a,x)=>a+N(x.total_costs),0):null;
- if(octoberEstimate){
-  const {data:augPersonnel,error:augPersonnelError}=await db.from('personnel_costs').select('total_costs').eq('business_id',BID).eq('accounting_month','2026-08-01');
-  if(augPersonnelError)throw augPersonnelError;
-  personnelCost=augPersonnel?.length&&augPersonnel.every(x=>N(x.total_costs)!==null)?augPersonnel.reduce((a,x)=>a+N(x.total_costs),0):null;
+ let personnelEstimated=false;
+ const previousMonthStart=new Date(Date.UTC(Number(selectedMonth.slice(0,4)),Number(selectedMonth.slice(5,7))-2,1)).toISOString().slice(0,10);
+ const previousMonthName=new Intl.DateTimeFormat('de-AT',{month:'long',year:'numeric',timeZone:'UTC'}).format(new Date(previousMonthStart+'T00:00:00Z'));
+ if(personnelCost===null){
+  const {data:previousPersonnel,error:previousPersonnelError}=await db.from('personnel_costs').select('total_costs').eq('business_id',BID).eq('accounting_month',previousMonthStart);
+  if(previousPersonnelError)throw previousPersonnelError;
+  if(previousPersonnel?.length&&previousPersonnel.every(x=>N(x.total_costs)!==null)){
+   personnelCost=previousPersonnel.reduce((a,x)=>a+N(x.total_costs),0);
+   personnelEstimated=true;
+  }
  }
  const foodDrink=expenseRows.filter(x=>['food','drinks','beverages'].includes(String(x.category||'').toLowerCase()));
  const purchaseCost=foodDrink.length&&foodDrink.every(x=>N(x.net_amount)!==null)?foodDrink.reduce((a,x)=>a+N(x.net_amount),0):null;
  const fixedCost=fixedRows.length&&fixedRows.every(x=>N(x.amount)!==null)?fixedRows.reduce((a,x)=>a+Math.abs(N(x.amount)),0):null;
  const bankBalance=accountRows.length&&accountRows.every(x=>N(x.current_balance)!==null)?accountRows.reduce((a,x)=>a+N(x.current_balance),0):null;
- const currentMonth=E('month').value;const quickNet=M?M.net:net;E('quickKpis').replaceChildren();for(const [label,value] of [['Bruttoumsatz',EUR(M?M.gross:gross)],['Nettoumsatz',M?.net!=null?EUR(M.net):netLabel],['Personalkosten',EUR(personnelCost)],['Personalquote',personnelCost!==null&&quickNet>0?(100*personnelCost/quickNet).toFixed(2)+' %':'Noch keine Daten'],['Ziel Personal','35 %'],['Bankguthaben',accountRows.length&&accountRows.every(x=>N(x.current_balance)!==null)?EUR(accountRows.reduce((a,x)=>a+N(x.current_balance),0)):'–']])tile(E('quickKpis'),label,value);
- showResultBridge({net:quickNet,personnel:personnelCost,purchases:purchaseCost,fixed:fixedCost,expenseCount:expenseRows.length,fixedCount:fixedRows.length,period:currentMonth});renderProfitGoal({net:quickNet,personnel:personnelCost,fixed:fixedCost,expenseCount:expenseRows.length,fixedCount:fixedRows.length,period:currentMonth});renderPurchaseItemsForCalc(docs);
+ const currentMonth=E('month').value,quickNet=M?.net??net,quoteNet=quickNet??netPartial,quoteProvisional=personnelEstimated||quickNet===null;
+ const personnelLabel=personnelEstimated?'Personalkosten · Vormonat (Plan)':personnelCost===null?'Personalkosten · fehlen':'Personalkosten · Ist';
+ const quoteLabel=quoteProvisional||personnelCost===null?'Personalquote · vorläufig':'Personalquote';
+ const quoteValue=personnelCost!==null&&quoteNet>0?(100*personnelCost/quoteNet).toFixed(2)+' %':'Noch keine Daten';
+ E('quickKpis').replaceChildren();for(const [label,value] of [['Bruttoumsatz',EUR(M?M.gross:gross)],['Nettoumsatz',M?.net!=null?EUR(M.net):netLabel],[personnelLabel,EUR(personnelCost)],[quoteLabel,quoteValue],['Ziel Personal','35 %'],['Bankguthaben',accountRows.length&&accountRows.every(x=>N(x.current_balance)!==null)?EUR(accountRows.reduce((a,x)=>a+N(x.current_balance),0)):'–']])tile(E('quickKpis'),label,value);
+ if(personnelEstimated)E('quickKpis').children[2].title='Vorläufige Monatskosten aus '+previousMonthName+'. Die Personalkosten des gewählten Monats ersetzen diesen Wert nach dem Import.';
+ if(quoteProvisional&&quoteNet>0)E('quickKpis').children[3].title=(personnelEstimated?'Personalkosten aus '+previousMonthName+'; ':'')+(quickNet===null?'Nettoumsatz nur aus bisher erfassten Tagen.':'');
+ showResultBridge({net:quickNet,personnel:personnelCost,purchases:purchaseCost,fixed:fixedCost,expenseCount:expenseRows.length,fixedCount:fixedRows.length,period:currentMonth,personnelEstimated,previousMonthName});renderProfitGoal({net:quickNet,personnel:personnelCost,fixed:fixedCost,expenseCount:expenseRows.length,fixedCount:fixedRows.length,period:currentMonth,personnelEstimated,previousMonthName});renderPurchaseItemsForCalc(docs);
  const accountDates=accountRows.map(x=>x.balance_date).filter(Boolean),balanceDate=accountDates.length?accountDates.sort().at(-1):null;
  E('operating').replaceChildren();
  tile(E('operating'),'Erfasste Artikelzeilen',String(M?M.items.length:articles.length));
@@ -596,8 +607,8 @@ async function refresh(){void loadWeeklyPurchase().catch(e=>E('purchasePeriod').
  E('costs').replaceChildren();
  if(M?.post_personnel){tile(E('costs'),'Nach Personal verbleibend',EUR(M.post_personnel.remaining));tile(E('costs'),'Anteil nach Personal',Number(M.post_personnel.share).toFixed(2).replace('.',',')+' %');}
  for(const [label,value] of [
- [octoberEstimate?'Personal · August-Basis (Plan Oktober)':'Personal · erfasst',EUR(personnelCost)],
- [octoberEstimate?'Personalquote · August-Basis (Plan)':'Personalquote (Ziel 35 %)',personnelCost!==null&&(M?M.net:net)>0?(100*personnelCost/(M?M.net:net)).toFixed(1)+' %':'–'],
+ [personnelEstimated?'Personal · Vormonat (Plan)':'Personal · erfasst',EUR(personnelCost)],
+ [quoteProvisional?'Personalquote · vorläufig':'Personalquote (Ziel 35 %)',personnelCost!==null&&quoteNet>0?(100*personnelCost/quoteNet).toFixed(1)+' %':'–'],
  ['Einkäufe Speisen/Getränke · erfasst',EUR(purchaseCost)],
  ['Wareneinsatzquote (Ziel 26 %)','Inventur/Verbrauch fehlt'],
  ['Bank-Fixkosten · erfasst',EUR(fixedCost)],
