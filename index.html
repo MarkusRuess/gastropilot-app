@@ -688,6 +688,11 @@ async function autoArchive(doc,sourceFile,paymentStatus,intake=null,extraIntakes
   }
  }else{
   if(!x.supplier||!x.invoice_number){x.needs_review=true;x.import_warning='Lieferant oder Rechnungsnummer unvollständig; Original archiviert.';}
+  const purchased=Array.isArray(x.purchase_items)?x.purchase_items:[];
+  if(N(x.gross_total)>0&&!purchased.some(item=>N(item.line_net)>0||N(item.line_gross)>0||(N(item.line_net)===null&&N(item.line_gross)===null&&(N(item.unit_price_net)>0||N(item.unit_price_gross)>0)))){
+   x.needs_review=true;
+   x.import_warning='Rechnung archiviert, aber keine positiven Einkaufspositionen erkannt. Artikel und Preise vor der Kalkulation erneut aus dem Original lesen.';
+  }
   const {data,error}=await db.from('documents').select('id').eq('business_id',BID).eq('document_type','invoice').eq('supplier',x.supplier).eq('invoice_number',x.invoice_number).limit(1);
   if(error)throw error;if(x.supplier&&x.invoice_number&&data?.length)return await markDuplicate(data[0].id);
   if(!['offen','bezahlt'].includes(paymentStatus))throw Error('Bitte Offen oder Bezahlt wählen.');
@@ -910,7 +915,7 @@ async function process(){
     if(recognizedDoc.document_type==='invoice'){
      E('review').replaceChildren();
      E('uploadStatus').textContent=outcome==='bereits vorhanden'?'Rechnung bereits vorhanden – keine Doppelbuchung.':'✓ Rechnung erfolgreich gespeichert · Status: '+(paymentStatus==='bezahlt'?'Bezahlt':'Offen')+' · '+file.name;
-     const notice=recognizedDoc.createElement('div');notice.className='status';notice.setAttribute('role','status');notice.textContent=E('uploadStatus').textContent;E('review').append(notice);
+     const notice=document.createElement('div');notice.className='status';notice.setAttribute('role','status');notice.textContent=E('uploadStatus').textContent;E('review').append(notice);
     }
    }catch(e){
     failed++;const message=e.message||String(e);
