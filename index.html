@@ -476,7 +476,7 @@ function drawSlowArticles(){
   const metrics=document.createElement('div');metrics.className='metrics';
   for(const [label,value] of [['Menge',number.format(x.qty)],['Ø Preis',x.known&&x.qty>0?EUR(x.gross/x.qty):'–'],['Umsatz',x.known?EUR(x.gross):'fehlt'],['Anteil',x.known&&slowArticleTotal>0?percent.format(x.gross/slowArticleTotal):'–']]){
    const span=document.createElement('span');span.append(label+' ');const valueNode=document.createElement('b');valueNode.textContent=value;span.append(valueNode);metrics.append(span);
-  }card.append(metrics);if(x.variants.length>1){const detail=document.createElement('div');detail.className='metrics';detail.style.cssText='margin-top:4px;font-size:11px;opacity:.82';for(const v of x.variants){const span=document.createElement('span');span.textContent=v.label+' · '+number.format(v.qty)+' Stk · '+EUR(v.gross);detail.append(span);}card.append(detail);}host.append(card);
+  }card.append(metrics);if(Array.isArray(x.variants)&&x.variants.length>1){const detail=document.createElement('div');detail.className='metrics';detail.style.cssText='margin-top:4px;font-size:11px;opacity:.82';for(const v of x.variants){const span=document.createElement('span');span.textContent=v.label+' · '+number.format(v.qty)+' Stk · '+EUR(v.gross);detail.append(span);}card.append(detail);}host.append(card);
  }
  if(!slowArticleRows.length)host.textContent='Keine Artikeldaten für diesen Monat vorhanden.';
  E('slowPage').textContent=(slowArticlePage+1)+' / '+pages+' · '+slowArticleRows.length+' Artikel';E('slowPrev').disabled=slowArticlePage===0;E('slowNext').disabled=slowArticlePage>=pages-1;
