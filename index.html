@@ -451,18 +451,19 @@ async function refresh(){void loadWeeklyPurchase().catch(e=>E('purchasePeriod').
  db.from('cash_accounts').select('account_name,account_type,current_balance,balance_date').eq('business_id',BID),
  loadBankFixedCosts(db,BID,start,end)
  ]);for(const x of [personnel,expenses,accounts,bankFixed])if(x.error)throw x.error;
- const monthlyReports=docs.filter(d=>d.document_type==='monthly_report');const archive=new Map();for(const d of docs.filter(d=>d.document_type==='cash_report')){const prev=archive.get(d.document_date);if(!prev||prev.created_at<d.created_at)archive.set(d.document_date,d);}
+ const monthlyReports=docs.filter(d=>d.document_type==='monthly_report');const archive=new Map();for(const d of docs.filter(d=>d.document_type==='cash_report')){const prev=archive.get(d.document_date);const rank=x=>(['auto_imported','reviewed'].includes(x.status)?2:N(x.extracted_data?.gross_total)!==null?1:0);if(!prev||rank(d)>rank(prev)||(rank(d)===rank(prev)&&prev.created_at<d.created_at))archive.set(d.document_date,d);}
  const rows=new Map();for(const r of bonit){rows.set(r.closing_date,{date:r.closing_date,source:'BONit',gross:N(r.gross_amount),net:N(r.net_amount),cash:N(r.cash_amount),card:N(r.card_amount),receipts:N(r.receipt_count),paid:paidCount(r.raw_data)??paidCount(archive.get(r.closing_date)?.extracted_data),raw:r.raw_data});}
- for(const [day,d] of archive){if(rows.has(day))continue;const x=d.extracted_data||{};rows.set(day,{date:day,source:'Archiv',gross:N(x.gross_total),net:N(x.net_total),cash:N(x.cash_total),card:N(x.card_total),receipts:N(x.receipt_count),paid:paidCount(x),raw:x});}
+ const pendingReports=[...archive.values()].filter(d=>d.status==='auto_review'&&N(d.extracted_data?.gross_total)!==null&&!rows.has(d.document_date));
+ for(const [day,d] of archive){if(rows.has(day)||!['auto_imported','reviewed'].includes(d.status))continue;const x=d.extracted_data||{};rows.set(day,{date:day,source:'Archiv',gross:N(x.gross_total),net:N(x.net_total),cash:N(x.cash_total),card:N(x.card_total),receipts:N(x.receipt_count),paid:paidCount(x),raw:x});}
  const daily=[...rows.values()].sort((a,b)=>a.date.localeCompare(b.date)),gross=sum(daily,'gross'),net=sum(daily,'net'),cash=sum(daily,'cash'),card=sum(daily,'card');
- const paid=sum(daily,'paid');const recordedReceipts=sum(daily,'receipts');renderMonthOverview(daily,M);const paidDays=daily.filter(d=>d.paid!==null&&d.gross!==null);const coveredPaid=sum(paidDays,'paid');const coveredGross=sum(paidDays,'gross');const paidCoverage=paidDays.length===daily.length?'':' · '+paidDays.length+'/'+daily.length+' Tage';E('sales').replaceChildren();for(const [a,b] of [['Bruttoumsatz',EUR(M?M.gross:gross)],['Nettoumsatz',EUR(M?M.net:net)],['Bar',EUR(M?M.cash:cash)],['Karte',EUR(M?M.card:card)],['Tage',String(M?M.days:daily.length)],['Erfasste Bons',M?String(M.receipts):recordedReceipts!==null?String(recordedReceipts):'–'],['Bezahlte Bons',M?String(M.paid_receipts):coveredPaid!==null?String(coveredPaid)+paidCoverage:'Prüfung offen'],['Ø Bon',M?EUR(M.gross/M.paid_receipts):coveredPaid>0&&coveredGross!==null?EUR(coveredGross/coveredPaid)+paidCoverage:'Prüfung offen']])tile(E('sales'),a,b);
+ const paid=sum(daily,'paid');const recordedReceipts=sum(daily,'receipts');renderMonthOverview(daily,M);const paidDays=daily.filter(d=>d.paid!==null&&d.gross!==null);const coveredPaid=sum(paidDays,'paid');const coveredGross=sum(paidDays,'gross');const paidCoverage=paidDays.length===daily.length?'':' · '+paidDays.length+'/'+daily.length+' Tage';E('sales').replaceChildren();for(const [a,b] of [['Bruttoumsatz',EUR(M?M.gross:gross)],['Nettoumsatz',EUR(M?M.net:net)],['Bar',EUR(M?M.cash:cash)],['Karte',EUR(M?M.card:card)],['Tage',String(M?M.days:daily.length)],['Erfasste Bons',M?String(M.receipts):recordedReceipts!==null?String(recordedReceipts):'–'],['Bezahlte Bons',M?String(M.paid_receipts):coveredPaid!==null?String(coveredPaid)+paidCoverage:'Prüfung offen'],['Ø Bon',M?EUR(M.gross/M.paid_receipts):coveredPaid>0&&coveredGross!==null?EUR(coveredGross/coveredPaid)+paidCoverage:'Prüfung offen'],['Vorläufig · zur Prüfung',pendingReports.length?pendingReports.length+' Tag(e) · '+EUR(pendingReports.reduce((total,d)=>total+N(d.extracted_data?.gross_total),0)):'Keine']])tile(E('sales'),a,b);
  for(const [label,targetId,detail] of [['Top 20','topArticles','Umsatzstärkste Artikel ›'],['Selten verkauft','slowArticles','20 geringste Verkaufsmengen ›'],['Ergebnis','financeSection','Vom Nettoumsatz zum Ergebnis ›'],['Einkauf','weeklyPurchase','Empfehlung für nächste Woche ›']]){
   const button=document.createElement('button');button.type='button';button.className='tile article-launch-tile';button.setAttribute('aria-controls',targetId);
   const title=document.createElement('b');title.textContent=label;const hint=document.createElement('small');hint.textContent=detail;button.append(title,hint);
   button.onclick=()=>{const disclosure=E(targetId+'Disclosure');if(disclosure)disclosure.open=true;showMobilePanel(targetId);};E('sales').append(button);
  }
 
- const taxRows=[];for(const d of daily){const x=archive.get(d.date)?.extracted_data||{};const z=vat(x)||vat({...d.raw,gross_total:d.gross,net_total:d.net});if(z&&Math.abs(z.g10+z.g20-d.gross)<.03)taxRows.push(z);}
+ const taxRows=[];for(const d of daily){const stored=archive.get(d.date);const x=['auto_imported','reviewed'].includes(stored?.status)?stored.extracted_data||{}:{};const z=vat(x)||vat({...d.raw,gross_total:d.gross,net_total:d.net});if(z&&Math.abs(z.g10+z.g20-d.gross)<.03)taxRows.push(z);}
  E('tax').replaceChildren();for(const [label,key] of [['10 % brutto','g10'],['10 % netto','n10'],['20 % brutto','g20'],['20 % netto','n20']])tile(E('tax'),label,M?EUR(({g10:M.tax.find(x=>x.rate===10).gross,n10:M.tax.find(x=>x.rate===10).net,g20:M.tax.find(x=>x.rate===20).gross,n20:M.tax.find(x=>x.rate===20).net})[key]):taxRows.length?EUR(taxRows.reduce((a,x)=>a+x[key],0)):'–');
  E('taxNote').textContent=M?'BONit Monatsabschluss Z '+M.z_number+' · Steuergruppen aus Original.':taxRows.length+' von '+daily.length+' Tagesabrechnungen mit vollständig abgeglichenen 10/20-%-Werten. Angezeigt ist die Summe der geprüften Tage; fehlende Werte werden nicht ergänzt.';
  const personnelRows=personnel.data||[],expenseRows=expenses.data||[],accountRows=accounts.data||[],fixedRows=bankFixed.data||[];
@@ -521,7 +522,7 @@ async function autoArchive(doc,sourceFile,paymentStatus,intake=null){
  const x={...doc},kind=x.document_type;let existingIncompleteCash=null;
  async function markDuplicate(existingId){if(intake){const {error}=await db.from('documents').update({status:'reviewed',extracted_data:{...(intake.extracted_data||{}),duplicate_of:existingId,import_warning:'Original gesichert; bereits archivierter Beleg.'}}).eq('id',intake.id).eq('business_id',BID);if(error)throw error;}return 'bereits vorhanden';}
  if(!['cash_report','monthly_report','invoice'].includes(kind))throw Error('Dokumenttyp nicht sicher erkannt');
- if(!/^\d{4}-\d{2}-\d{2}$/.test(x.date||'')){x.date=new Date().toLocaleDateString('en-CA',{timeZone:'Europe/Vienna'});x.needs_review=true;x.import_warning='Belegdatum unklar; Erfassungsdatum als vorläufiges Archivdatum.';}
+ if(!/^\d{4}-\d{2}-\d{2}$/.test(x.date||''))throw Error('Belegdatum fehlt. Original bleibt im Archiv zur Prüfung.');
  if(N(x.gross_total)===null){x.needs_review=true;x.import_warning='Bruttobetrag noch nicht erkannt; Originaldatei archiviert, keine Umsatzverbuchung.';}
  if(N(x.gross_total)!==null&&N(x.net_total)!==null&&N(x.vat_total)!==null&&Math.abs(N(x.net_total)+N(x.vat_total)-N(x.gross_total))>.03){x.needs_review=true;x.import_warning='Brutto, Netto und Steuer weichen ab; nicht für Umsatzberechnung freigegeben.';}
  if(kind==='monthly_report'){
@@ -586,6 +587,19 @@ function chooseInvoicePayment(doc,sourceFile){
   choices.append(open,paid);wrap.append(choices,save,later);E('review').replaceChildren(wrap);E('uploadStatus').textContent='Rechnung erkannt · Zahlungsstatus auswählen: '+sourceFile.name;
  });
 }
+function chooseDocumentDate(doc,sourceFile){
+ return new Promise(resolve=>{
+  const wrap=document.createElement('div');wrap.className='review';
+  const title=document.createElement('h3');title.textContent='Belegdatum nicht erkannt';
+  const detail=document.createElement('p');detail.textContent='Original gesichert: '+sourceFile.name+'. Datum auf dem Beleg auswählen, damit der Umsatz dem richtigen Tag zugeordnet wird.';
+  const label=document.createElement('label');label.textContent='Datum auf dem Beleg';
+  const input=document.createElement('input');input.type='date';input.required=true;label.append(input);
+  const save=document.createElement('button');save.type='button';save.textContent='Datum übernehmen';save.onclick=()=>{if(input.value)resolve(input.value);else input.reportValidity();};
+  const later=document.createElement('button');later.type='button';later.textContent='Später prüfen';later.onclick=()=>resolve(null);
+  wrap.append(title,detail,label,save,later);E('review').replaceChildren(wrap);
+  E('uploadStatus').textContent='Original gesichert · Belegdatum auswählen: '+sourceFile.name;
+ });
+}
 async function secureOriginal(file){
  const digest=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',await file.arrayBuffer())),b=>b.toString(16).padStart(2,'0')).join('');
  const {data:prior,error:lookupError}=await db.from('documents').select('id,storage_path,status,document_type,extracted_data').eq('business_id',BID).contains('extracted_data',{source_sha256:digest}).order('created_at',{ascending:false}).limit(1);
@@ -622,10 +636,16 @@ async function process(){
     const blobs=await withTimeout(pages(file,setProgress),90000,'Datei/PDF konnte nach 90 Sekunden nicht vorbereitet werden.');
     if(blobs.length>12)throw Error('PDF hat mehr als 12 Seiten');
     const images=[];for(const blob of blobs)images.push({image_base64:await b64(blob),mime_type:'image/jpeg'});
-    const {data,error}=await withTimeout(db.functions.invoke('analyze-receipt',{body:{business_id:BID,mode:'auto',images}}),120000,'Die Erkennung antwortet nach 2 Minuten nicht.');
+    const {data,error}=await withTimeout(db.functions.invoke('analyze-receipt',{body:{business_id:BID,mode:'auto',defer_tax_verification:true,images}}),120000,'Die Erkennung antwortet nach 2 Minuten nicht.');
     if(error)throw error;if(data?.error)throw Error(data.error);
     if(data?.documents?.length!==1)throw Error('Dokument nicht eindeutig erkannt. Original bleibt im Archiv.');
     const document=data.documents[0];let paymentStatus=null;
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(document.date||'')){
+     document.date=await chooseDocumentDate(document,file);
+     if(!document.date)throw Error('Datum noch offen; Original bleibt im Archiv.');
+     document.needs_review=true;
+     document.import_warning='Belegdatum vom Betreiber nachgetragen.';
+    }
     if(document.document_type==='invoice'){
      paymentStatus=await chooseInvoicePayment(document,file);
      if(!paymentStatus)throw Error('Zahlungsstatus offen; Original bleibt im Archiv.');
