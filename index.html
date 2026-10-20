@@ -122,7 +122,10 @@ h2{font-size:17px;margin:10px 0}h3{font-size:14px}table{width:100%;border-collap
 .menu-dashboard-tile>summary b{font-size:clamp(17px,1.8vw,22px);line-height:1.2}
 .menu-dashboard-panel{padding:0 13px 13px}
 .menu-dashboard-scroll{max-height:440px;overflow:auto;border:1px solid var(--line);border-radius:8px}
-.menu-dashboard-scroll table{min-width:460px}
+.menu-dashboard-scroll table{min-width:460px;table-layout:fixed;width:100%}
+.menu-dashboard-scroll th:first-child,.menu-dashboard-scroll td:first-child{width:44%;overflow-wrap:anywhere}
+.menu-dashboard-scroll th:nth-child(2),.menu-dashboard-scroll td:nth-child(2){width:14%}
+.menu-dashboard-scroll th:nth-child(3),.menu-dashboard-scroll td:nth-child(3),.menu-dashboard-scroll th:nth-child(4),.menu-dashboard-scroll td:nth-child(4){width:21%}
 .menu-dashboard-scroll td:first-child{font-weight:650}
 .menu-dashboard-scroll td.new-price{font-weight:750;color:#116d5c}
 @media(max-width:650px){.menu-dashboard-tile>summary{min-height:68px;padding:9px 38px 9px 9px}.menu-dashboard-tile>summary b{font-size:17px}.menu-dashboard-panel{padding:0 9px 9px}.menu-dashboard-scroll table{min-width:0}.menu-dashboard-scroll tbody{grid-template-columns:1fr!important}.menu-dashboard-scroll tr{margin:0}.menu-dashboard-scroll td:first-child{display:block!important}.menu-dashboard-scroll td:first-child::before{display:none!important}}
@@ -142,7 +145,7 @@ import {loadBankFixedCosts} from './bank-costs-integration.js';
 const db=createClient('https://sjnwfwcpgwsavygewwzb.supabase.co','sb_publishable__tucXG-IQGUhibMqMSUzCw_5RnH_sbQ');
 const BID='6a5484d1-daf6-4263-897d-24cdf536aa29',E=id=>document.getElementById(id),N=v=>v==null||v===''?null:Number(v),EUR=v=>v==null||!Number.isFinite(v)?'–':new Intl.NumberFormat('de-AT',{style:'currency',currency:'EUR'}).format(v),D=v=>v?.split('-').reverse().join('.')||'–';
 let user=null,busy=false,selected=null,queue=[];
-const menuPriceKey=value=>String(value||'').toLocaleLowerCase('de-AT').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,' ').trim();
+const menuPriceKey=value=>String(value||'').toLocaleLowerCase('de-AT').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/ß/g,'ss').replace(/[^a-z0-9]+/g,' ').trim();
 function menuServing(name){
  const match=String(name).match(/(?:\d+[,.]\d+\s*l|\d+\s*\/\s*\d+\s*l?|\d+\s*cl|\d+\s*ml|\d+\s*(?:stk\.?|stuck|paar))/i);
  return match?match[0].replace(/\s+/g,' ').replace(/\./g,','):'–';
@@ -168,8 +171,10 @@ function menuProposal(name,price,proposals){
 }
 function renderMenuDashboard(items,proposals){
  const host=E('menuDashboardRows');host.replaceChildren();
- for(const item of items){
-  const current=Number(item.price),recommended=menuProposal(item.name,current,proposals),tr=document.createElement('tr');
+ const priority=item=>item.recommended>item.price?(/espresso|melange|cappuccino|verlangerter|cafe latte|kaffee late/.test(menuPriceKey(item.name))?2:1):0;
+ const ranked=items.map(item=>({...item,recommended:menuProposal(item.name,Number(item.price),proposals)})).sort((a,b)=>priority(b)-priority(a)||a.name.localeCompare(b.name,'de-AT'));
+ for(const item of ranked){
+  const current=Number(item.price),recommended=item.recommended,tr=document.createElement('tr');
   for(const [label,value] of [['Produkt',item.name],['Einheit',menuServing(item.name)],['Aktueller BONit-VK',EUR(current)],['Meine Empfehlung',EUR(recommended)]]){
    const td=document.createElement('td');td.dataset.label=label;td.textContent=value;
    if(label==='Meine Empfehlung'&&recommended>current)td.className='num new-price';
