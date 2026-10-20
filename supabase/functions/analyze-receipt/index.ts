@@ -203,15 +203,25 @@ function taxErrors(doc) {
  return [...new Set(errors)];
 }
 async function verifyPrintedTaxes(doc, images, apiKey) {
- const prompt = `Du siehst alle Originalseiten eines BONit-Tagesabschlusses vom ${doc.date}. Der Tagesgesamtumsatz ist ${doc.gross_total} Euro. Eine einzelne Speisen- oder Artikelgruppen-Zwischensumme (beispielsweise 399,37 Euro) ist NICHT der Gesamtumsatz. Suche zuerst die Seite mit der Überschrift "Gesamtumsatz brutto" und lies den gesamten direkt darunter gedruckten Summenblock Zeile für Zeile. Dort stehen die Steuerbeträge. Die anderen Seiten können Artikelgruppen und Artikelzeilen enthalten. Lies jede Seite, ohne verschiedene Tabellenzeilen oder Seiten zu vermischen.
+ const prompt = `Du siehst genau EINE Originalseite eines BONit-Tagesabschlusses vom ${doc.date}. Der Tagesgesamtumsatz ist ${doc.gross_total} Euro. Eine einzelne Speisen- oder Artikelgruppen-Zwischensumme (beispielsweise 399,37 Euro) ist NICHT der Gesamtumsatz. Falls diese Seite den Summenblock unter "Gesamtumsatz brutto" nicht enthält, gib für gross_total, net_total, vat_total und tax_breakdown null beziehungsweise [] zurück. Falls diese Seite die Artikelgruppenstatistik enthält, lies deren einzelne Gruppen; falls nicht, gib category_sales: [] zurück. Erfinde keine Werte von anderen Seiten.
 
 Für jede gedruckte Steuergruppe (zum Beispiel 10,00 und 20,00) übernimm aus der rechten Betragsspalte getrennt die Zeilen "brutto", "netto" und "Steuer". Die Zahl links (10,00 oder 20,00) ist der Steuersatz, kein Geldbetrag. Der erste Betrag einer Gruppe ist brutto, nicht netto. Lies außerdem die Gesamtzeilen für Brutto, Netto, Bar und Unbar. Übernimm ausdrücklich die gedruckten Zahlen; leite die Steuer nicht aus Artikeln, Warengruppen oder einem pauschalen Steuersatz ab. Unlesbare Werte sind null. Gib für JEDE Steuerzeile in printed_tax_lines Seitenzahl, gedrucktes Label, kind (gross/net/vat), rate und Betrag an. Lies zusätzlich jede Zeile der Artikelgruppenstatistik mit Originalbezeichnung und gedrucktem Umsatzbetrag in category_sales. Trenne Zwischensummen von Artikelgruppen. Bei Unsicherheit needs_review=true und Grund in notes. Antworte nur als JSON: {"date":"YYYY-MM-DD","gross_total":null,"net_total":null,"vat_total":null,"cash_total":null,"card_total":null,"other_payments_total":null,"receipt_count":null,"tax_breakdown":[{"rate":10,"gross":null,"net":null,"vat":null}],"printed_tax_lines":[{"page":1,"rate":10,"kind":"gross","label":"10,00 brutto","amount":null}],"category_sales":[{"name":"gedruckte Artikelgruppe","gross":null}],"needs_review":false,"notes":null}.`;
- const content = [];content.push({type:"input_text",text:prompt});
- images.forEach((image,index)=>{content.push({type:"input_text",text:"Originalseite "+(index+1)});content.push({type:"input_image",image_url:"data:"+image.mime_type+";base64,"+image.image_base64,detail:"high"});});
- const res = await fetch("https://api.openai.com/v1/responses",{method:"POST",headers:{Authorization:"Bearer "+apiKey,"Content-Type":"application/json"},body:JSON.stringify({model:"gpt-5.4-2026-03-05",reasoning:{effort:"low"},max_output_tokens:8000,store:false,text:{format:{type:"json_object"}},input:[{role:"user",content}]})});
- if(!res.ok) throw new Error("Automatische Steuer-Nachprüfung nicht verfügbar ("+res.status+")");
- const result=await res.json();if(result.status==="incomplete")throw new Error("Steuer-Nachprüfung unvollständig");
- const read=JSON.parse(cleanJson(getOutputText(result)));
+ const results=await Promise.allSettled(images.map(async (image,index)=>{
+  const content=[{type:"input_text",text:prompt+"\nDies ist Originalseite "+(index+1)+"."},{type:"input_image",image_url:"data:"+image.mime_type+";base64,"+image.image_base64,detail:"high"}];
+  const res=await fetch("https://api.openai.com/v1/responses",{method:"POST",headers:{Authorization:"Bearer "+apiKey,"Content-Type":"application/json"},body:JSON.stringify({model:"gpt-5.4-2026-03-05",reasoning:{effort:"low"},max_output_tokens:5000,store:false,text:{format:{type:"json_object"}},input:[{role:"user",content}]})});
+  if(!res.ok)throw new Error("Originalseite "+(index+1)+": Erkennung "+res.status);
+  const result=await res.json();if(result.status==="incomplete")throw new Error("Originalseite "+(index+1)+": unvollständig");
+  return {...JSON.parse(cleanJson(getOutputText(result))),source_page:index+1};
+ }));
+ const reads=results.filter((result): result is PromiseFulfilledResult<any>=>result.status==="fulfilled").map(result=>result.value);
+ if(!reads.length)throw new Error("Keine Originalseite konnte erneut gelesen werden");
+ const read=reads.find(row=>near(amount(row.gross_total),doc.gross_total)&&taxErrors({gross_total:amount(row.gross_total),net_total:amount(row.net_total),vat_total:amount(row.vat_total),tax_breakdown:normalizeTaxBreakdown(row.tax_breakdown)}).length===0)
+  ||reads.find(row=>near(amount(row.gross_total),doc.gross_total))
+  ||reads.find(row=>Array.isArray(row.tax_breakdown)&&row.tax_breakdown.length)
+  ||reads[0];
+ read.printed_tax_lines=(Array.isArray(read.printed_tax_lines)?read.printed_tax_lines:[]).map(line=>({...line,page:read.source_page}));
+ const allCategories=reads.flatMap(row=>Array.isArray(row.category_sales)?row.category_sales:[]);
+ const distinctCategories=allCategories.filter((row,index)=>allCategories.findIndex(other=>other.name===row.name&&other.gross===row.gross)===index);
  const candidate={...doc,gross_total:amount(read.gross_total),net_total:amount(read.net_total),vat_total:amount(read.vat_total),tax_breakdown:normalizeTaxBreakdown(read.tax_breakdown)};
  const errors=taxErrors(candidate);
  if(read.date&&read.date!==doc.date)errors.push("Datum der Steuerseite weicht ab");
@@ -219,13 +229,15 @@ Für jede gedruckte Steuergruppe (zum Beispiel 10,00 und 20,00) übernimm aus de
  if(read.needs_review)errors.push(textOrNull(read.notes)||"Gedruckte Steuerzeilen nicht eindeutig");
  if(!Array.isArray(read.printed_tax_lines)||read.printed_tax_lines.length<candidate.tax_breakdown.length*3)errors.push("Gedruckte Steuerzeilen nicht vollständig belegt");
  for(const row of candidate.tax_breakdown){for(const kind of ["gross","net","vat"]){const line=(read.printed_tax_lines||[]).find(l=>l.rate===row.rate&&l.kind===kind);if(!line||!near(amount(line.amount),row[kind],0.001))errors.push("Gedruckte Steuerzeile stimmt nicht mit übernommener Zahl überein");}}
- candidate.tax_verification={version:TAX_PIPELINE_VERSION,method:"printed_summary_second_read",model:"gpt-5.4-2026-03-05",verified:errors.length===0,errors,printed_tax_lines:read.printed_tax_lines||[],read_candidate:{gross_total:read.gross_total,net_total:read.net_total,vat_total:read.vat_total,tax_breakdown:read.tax_breakdown,category_sales:read.category_sales,notes:read.notes},checked_at:new Date().toISOString()};
+ candidate.tax_verification={version:TAX_PIPELINE_VERSION,method:"printed_summary_per_page",model:"gpt-5.4-2026-03-05",verified:errors.length===0,errors,printed_tax_lines:read.printed_tax_lines||[],read_candidate:{source_page:read.source_page,gross_total:read.gross_total,net_total:read.net_total,vat_total:read.vat_total,tax_breakdown:read.tax_breakdown,category_sales:distinctCategories,notes:read.notes},pages_read:reads.length,pages_total:images.length,checked_at:new Date().toISOString()};
  if(errors.length){doc.tax_verification=candidate.tax_verification;doc.needs_review=true;doc.notes=errors.join("; ");return doc;}
  for(const key of ["cash_total","card_total","other_payments_total","receipt_count"]){if(typeof read[key]==="number")candidate[key]=key==="receipt_count"?count(read[key]):amount(read[key]);}
  if(!near((candidate.cash_total||0)+(candidate.card_total||0)+(candidate.other_payments_total||0),candidate.gross_total))errors.push("Zahlungsarten passen nicht zum Umsatz");
- const categories=normalizeCategorySales(read.category_sales);
- if(categories.length&&categories.every(r=>r.gross!==null)&&near(categories.reduce((a,r)=>a+r.gross,0),candidate.gross_total)){candidate.category_sales=categories;}
- else if(categories.length)errors.push("Artikelgruppen nicht vollständig abgeglichen");
+ const categories=normalizeCategorySales(distinctCategories);
+ const groupsComplete=results.every(result=>result.status==="fulfilled")&&categories.length>0&&categories.every(r=>r.gross!==null)&&near(categories.reduce((a,r)=>a+r.gross,0),candidate.gross_total);
+ candidate.category_sales_verification={verified:groupsComplete,pages_read:reads.length,pages_total:images.length,checked_at:new Date().toISOString()};
+ if(groupsComplete)candidate.category_sales=categories;
+ else{candidate.category_sales_candidate=categories;errors.push("Artikelgruppen nicht vollständig abgeglichen");}
  candidate.vat_breakdown=candidate.tax_breakdown;
  candidate.needs_review=errors.length>0;
  candidate.tax_verification.verified=true;candidate.tax_verification.errors=[];candidate.document_validation_errors=[...errors];
