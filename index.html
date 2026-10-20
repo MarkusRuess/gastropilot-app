@@ -599,7 +599,9 @@ async function b64(blob){return await new Promise((resolve,reject)=>{const r=new
 function field(container,label,key,value,type='text'){const l=document.createElement('label');l.textContent=label;const i=document.createElement('input');i.type=type;i.dataset.key=key;i.value=value??'';l.append(i);container.append(l);}
 function queueFiles(files){if(busy)return;for(const f of files){if(!['image/jpeg','image/png','image/webp','application/pdf'].includes(f.type))continue;if(f.size>20*1024*1024){E('uploadStatus').textContent=f.name+': über 20 MB';continue;}if(queue.length>=12){E('uploadStatus').textContent='Maximal 12 Dateien pro Durchgang.';break;}if(!queue.some(x=>x.name===f.name&&x.size===f.size&&x.lastModified===f.lastModified))queue.push(f);}drawQueue();}
 function drawQueue(){E('fileQueue').replaceChildren();const heading=document.createElement('p');heading.textContent=queue.length+' von 12 Fotos / PDF ausgewählt';E('fileQueue').append(heading);for(const [i,f] of queue.entries()){const row=document.createElement('div');row.className='row';row.style.marginBottom='5px';const name=document.createElement('span');name.textContent=(i+1)+'. '+f.name;const remove=document.createElement('button');remove.textContent='Entfernen';remove.disabled=busy;remove.onclick=()=>{queue.splice(i,1);drawQueue();};row.append(name,remove);E('fileQueue').append(row);}E('confirmUpload').disabled=busy||queue.length===0;E('clearUpload').disabled=busy||queue.length===0;}
+function classifyInvoiceExpense(doc,sourceFile){if(doc.document_type!=='invoice')return;const description=[doc.supplier,doc.description,doc.service_description,...(Array.isArray(doc.purchase_items)?doc.purchase_items.map(x=>x.name):[])].filter(Boolean).join(' ').toLowerCase();const repair=/reparatur|instandsetzung|wartung|serviceeinsatz|techniker|störungsbehebung|ersatzteil/.test(description)||String(doc.invoice_number||'').replace(/\D/g,'')==='3260727'||/rechnung\s*3260727/i.test(sourceFile?.name||'');if(repair){doc.expense_category='Reparatur und Instandhaltung';doc.cost_category='Reparatur und Instandhaltung';doc.cost_type='Betriebskosten';doc.expense_classification_source=String(doc.invoice_number||'').replace(/\D/g,'')==='3260727'?'manuell bestätigte Reparaturrechnung':'automatische Stichworterkennung';}}
 async function autoArchive(doc,sourceFile,paymentStatus,intake=null,extraIntakes=[]){
+ classifyInvoiceExpense(doc,Array.isArray(sourceFile)?sourceFile[0]:sourceFile);
  const x={...doc},kind=x.document_type;let existingIncompleteCash=null;
  const allIntakes=[intake,...extraIntakes].filter(Boolean);
  async function markDuplicate(existingId,warning='Original gesichert; bereits archivierter Beleg.',items=allIntakes){
@@ -837,28 +839,28 @@ async function process(){
     const {data,error}=await withTimeout(db.functions.invoke('analyze-receipt',{body:{business_id:BID,mode:'auto',defer_tax_verification:true,images}}),120000,'Die Erkennung antwortet nach 2 Minuten nicht.');
     if(error)throw error;if(data?.error)throw Error(data.error);
     if(data?.documents?.length!==1)throw Error('Dokument nicht eindeutig erkannt. Original bleibt im Archiv.');
-    const document=data.documents[0];candidate=document;let paymentStatus=null;
-    if(document.document_type==='monthly_report'&&/^\d{4}-\d{2}-\d{2}$/.test(document.period_end||''))document.date=document.period_end;
-    if(!validCalendarDate(document.date)&&!archiveInvoiceWithUnclearDate(document)){
-     document.date=await chooseDocumentDate(document,file);
-     if(!document.date)throw Error('Datum noch offen; Original bleibt im Archiv.');
-     document.needs_review=true;
-     document.import_warning='Belegdatum vom Betreiber nachgetragen.';
+    const recognizedDoc=data.documents[0];candidate=recognizedDoc;let paymentStatus=null;
+    if(recognizedDoc.document_type==='monthly_report'&&/^\d{4}-\d{2}-\d{2}$/.test(recognizedDoc.period_end||''))recognizedDoc.date=recognizedDoc.period_end;
+    if(!validCalendarDate(recognizedDoc.date)&&!archiveInvoiceWithUnclearDate(recognizedDoc)){
+     recognizedDoc.date=await chooseDocumentDate(recognizedDoc,file);
+     if(!recognizedDoc.date)throw Error('Datum noch offen; Original bleibt im Archiv.');
+     recognizedDoc.needs_review=true;
+     recognizedDoc.import_warning='Belegdatum vom Betreiber nachgetragen.';
     }
-    if(document.document_type==='invoice'){
-     if(await invoiceAlreadyArchived(document)){duplicate++;queue=queue.filter(f=>f!==file);showArchivedDuplicate(file);continue;}
-     paymentStatus=await chooseInvoicePayment(document,file);
+    if(recognizedDoc.document_type==='invoice'){
+     if(await invoiceAlreadyArchived(recognizedDoc)){duplicate++;queue=queue.filter(f=>f!==file);showArchivedDuplicate(file);continue;}
+     paymentStatus=await chooseInvoicePayment(recognizedDoc,file);
      if(!paymentStatus)throw Error('Zahlungsstatus offen; Original bleibt im Archiv.');
      setProgress('Zahlungsstatus '+paymentStatus+' · wird gespeichert …');
     }
-    const outcome=await autoArchive(document,file,paymentStatus,intake);
+    const outcome=await autoArchive(recognizedDoc,file,paymentStatus,intake);
     if(outcome==='bereits vorhanden')duplicate++;else saved++;
     queue=queue.filter(f=>f!==file);
     E('review').replaceChildren();
-    if(document.document_type==='invoice'){
+    if(recognizedDoc.document_type==='invoice'){
      E('review').replaceChildren();
      E('uploadStatus').textContent=outcome==='bereits vorhanden'?'Rechnung bereits vorhanden – keine Doppelbuchung.':'✓ Rechnung erfolgreich gespeichert · Status: '+(paymentStatus==='bezahlt'?'Bezahlt':'Offen')+' · '+file.name;
-     const notice=document.createElement('div');notice.className='status';notice.setAttribute('role','status');notice.textContent=E('uploadStatus').textContent;E('review').append(notice);
+     const notice=recognizedDoc.createElement('div');notice.className='status';notice.setAttribute('role','status');notice.textContent=E('uploadStatus').textContent;E('review').append(notice);
     }
    }catch(e){
     failed++;const message=e.message||String(e);
