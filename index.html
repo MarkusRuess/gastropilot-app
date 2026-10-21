@@ -541,6 +541,18 @@ function renderTopArticles(rows,total,days,sourceDays){
  const monthLabel=new Intl.DateTimeFormat('de-AT',{month:'long',year:'numeric',timeZone:'UTC'}).format(new Date(E('month').value+'-01T12:00:00Z'));E('topArticleNote').textContent=monthLabel+' · '+sourceDays+' Verkaufstage mit belegten Artikelumsätzen'+(sourceDays<days?' ('+(days-sourceDays)+' Tagesabschlüsse ohne vollständige Artikeldaten; vorläufige Rangliste)':'')+' · Rangliste nach Artikel-Bruttoumsatz · Ø Preis = Artikelumsatz ÷ Menge · Anteil = Artikelumsatz ÷ Monats-Bruttoumsatz. Aktualisierung mit jedem neuen BONit-Import.';
  drawTopArticles();
 }
+function coffeeEkEstimate(name){
+ const n=String(name||'').toLocaleLowerCase('de-AT');
+ if(!/(espresso|melange|cappuccino|cappucino|café latte|cafe latte|kaffee lat|kaffee laté|caffè latte|caffe latte|verlängerter|verlangerter|brauner|macchiato)/i.test(n))return null;
+ const double=/(doppelt|espresso groß|espresso gross)/i.test(n);
+ const grams=double?16:8;
+ let milk=0;
+ if(/latte|laté/i.test(n))milk=200;
+ else if(/melange|cappuccino|cappucino/i.test(n))milk=100;
+ else if(/macchiato|brauner/i.test(n))milk=20;
+ const net=(428.39/12000)*grams+milk*1.30/1000;
+ return {net,grams,milk,assumption:milk>0};
+}
 function drawTopArticles(){
  const host=E('topArticleCards');host.replaceChildren();
  const number=new Intl.NumberFormat('de-AT',{maximumFractionDigits:2}),percent=new Intl.NumberFormat('de-AT',{style:'percent',maximumFractionDigits:2});
@@ -548,7 +560,7 @@ function drawTopArticles(){
   const card=document.createElement('div');card.className='top-article';
   const name=document.createElement('strong');name.textContent=(index+1)+'. '+x.name;card.append(name);
   const metrics=document.createElement('div');metrics.className='metrics';
-  for(const [label,value] of [['Menge',number.format(x.qty)],['Ø Preis',x.known&&x.qty>0?EUR(x.gross/x.qty):'–'],['EK Preis','Zuordnung offen'],['Umsatz',x.known?EUR(x.gross):'fehlt'],['Anteil',x.known&&topArticleTotal>0?percent.format(x.gross/topArticleTotal):'–']]){
+  for(const [label,value] of [['Menge',number.format(x.qty)],['Ø Preis',x.known&&x.qty>0?EUR(x.gross/x.qty):'–'],['EK Preis',coffeeEkEstimate(x.name)?EUR(coffeeEkEstimate(x.name).net)+' netto ca.':'Zuordnung offen'],['Umsatz',x.known?EUR(x.gross):'fehlt'],['Anteil',x.known&&topArticleTotal>0?percent.format(x.gross/topArticleTotal):'–']]){
    const span=document.createElement('span');span.append(label+' ');const valueNode=document.createElement('b');valueNode.textContent=value;span.append(valueNode);metrics.append(span);
   }
   card.append(metrics);host.append(card);
