@@ -833,7 +833,7 @@ function extractSupplierInvoiceRows(rawSheets){
   date:['rechnungsdatum','belegdatum','datum','invoice date','date'],
   supplier:['lieferant','lieferantenname','supplier','kreditor'],
   invoice:['rechnungsnummer','rechnungs nr','rechnungsnr','belegnummer','beleg nr','belegnr','invoice number','invoice no'],
-  gross:['bruttobetrag','betrag brutto','rechnungsbetrag','gesamtbetrag brutto','gesamt brutto','brutto gesamt','gross amount','invoice amount','total gross'],
+  gross:['bruttobetrag','betrag brutto','rechnungsbetrag','gesamtbetrag brutto','gesamt brutto','brutto gesamt','brutto','gross amount','invoice amount','total gross'],
   net:['nettobetrag','betrag netto','netto gesamt','net amount','total net'],
   vat:['ust betrag','mwst betrag','steuerbetrag','vat amount','tax amount'],
   status:['zahlungsstatus','payment status'],
@@ -1119,11 +1119,11 @@ async function archiveSpreadsheet(file,intake){
  const {data,error}=await db.from('documents').update({status,extracted_data:details}).eq('id',intake.id).eq('business_id',BID).eq('document_type','other').select('id').maybeSingle();
  if(error)throw error;if(!data)throw Error('XLSX konnte nicht im Archiv bestätigt werden. Original bleibt gesichert.');
  E('uploadStatus').textContent=detected.rows.length?'✓ '+booked+' Rechnungen als Betriebskosten gebucht · '+duplicates+' bereits vorhanden · '+EUR(total):'XLSX eingelesen und archiviert · keine automatische Buchung: '+detected.reason;
- return {booked,duplicates,needsReview:!detected.rows.length};
+ return {booked,duplicates,total,needsReview:!detected.rows.length};
 }
 async function process(){
  if(busy||!queue.length)return;if(!user){E('uploadStatus').textContent='Bitte anmelden.';return;}
- busy=true;drawQueue();E('review').replaceChildren();const files=[...queue];let saved=0,duplicate=0,failed=0,secured=0,spreadsheetSaved=0,xlsxBooked=0,xlsxDuplicates=0,xlsxReview=0;const errors=[],intakes=new Map();
+ busy=true;drawQueue();E('review').replaceChildren();const files=[...queue];let saved=0,duplicate=0,failed=0,secured=0,spreadsheetSaved=0,xlsxBooked=0,xlsxDuplicates=0,xlsxReview=0,xlsxTotal=0;const errors=[],intakes=new Map();
  try{
   for(const [fileIndex,file] of files.entries()){
    try{
@@ -1153,7 +1153,7 @@ async function process(){
    try{
     if(intake.alreadyRecognized){duplicate++;queue=queue.filter(f=>f!==file);if(isSpreadsheet(file))E('uploadStatus').textContent='XLSX bereits im Archiv · '+file.name;else showArchivedDuplicate(file);continue;}
     if(intake.periodArchived){saved++;queue=queue.filter(f=>f!==file);setProgress('Monatszeitraum '+intake.extracted_data.period_start+' bis '+intake.extracted_data.period_end+' automatisch archiviert.');continue;}
-    if(isSpreadsheet(file)){const imported=await archiveSpreadsheet(file,intake);saved++;spreadsheetSaved++;xlsxBooked+=imported.booked;xlsxDuplicates+=imported.duplicates;if(imported.needsReview)xlsxReview++;queue=queue.filter(f=>f!==file);continue;}
+    if(isSpreadsheet(file)){const imported=await archiveSpreadsheet(file,intake);saved++;spreadsheetSaved++;xlsxBooked+=imported.booked;xlsxDuplicates+=imported.duplicates;xlsxTotal+=imported.total;if(imported.needsReview)xlsxReview++;queue=queue.filter(f=>f!==file);continue;}
     setProgress('Original gesichert · Erkennung läuft …');
     const blobs=await withTimeout(pages(file,setProgress),90000,'Datei/PDF konnte nach 90 Sekunden nicht vorbereitet werden.');
     if(blobs.length>12)throw Error('PDF hat mehr als 12 Seiten');
@@ -1191,7 +1191,7 @@ async function process(){
     E('review').replaceChildren();
    }
   }
-  E('uploadStatus').textContent=(failed===0&&(saved>0||duplicate>0)?'✓ Verarbeitung abgeschlossen · ':'')+saved+' verarbeitet und archiviert · '+duplicate+' bereits vorhanden (keine Doppelbuchung) · '+failed+' zur Prüfung. '+(spreadsheetSaved?spreadsheetSaved+' XLSX eingelesen · '+xlsxBooked+' Rechnungen / '+'Betrag siehe Archiv'+' automatisch gebucht · '+xlsxDuplicates+' Duplikate übersprungen · '+xlsxReview+' Tabellen zur Prüfung. ':'')+(secured?'Originale wurden vor der Erkennung gesichert.':'');
+  E('uploadStatus').textContent=(failed===0&&(saved>0||duplicate>0)?'✓ Verarbeitung abgeschlossen · ':'')+saved+' verarbeitet und archiviert · '+duplicate+' bereits vorhanden (keine Doppelbuchung) · '+failed+' zur Prüfung. '+(spreadsheetSaved?spreadsheetSaved+' XLSX eingelesen · '+xlsxBooked+' Rechnungen · '+EUR(xlsxTotal)+' automatisch gebucht · '+xlsxDuplicates+' Duplikate übersprungen · '+xlsxReview+' Tabellen zur Prüfung. ':'')+(secured?'Originale wurden vor der Erkennung gesichert.':'');
   if(failed===0&&saved>0&&duplicate===0){E('review').replaceChildren();E('intake').scrollIntoView({behavior:'smooth',block:'start'});}
   for(const msg of errors){const p=document.createElement('p');p.className='warning';p.textContent=msg;E('review').append(p);}
   if(secured||saved||duplicate){await refresh();await loadWholeArchive();}
