@@ -592,15 +592,34 @@ function articleEkLabel(x){
 }
 function drawProfitability(){
  const host=E('profitCards');host.replaceChildren();
- const withEk=topArticleRows.map(x=>({...x,ek:articleEkForGroup(x)?.average})).filter(x=>Number.isFinite(x.ek)&&x.qty>0&&x.known);
- const covered=topArticleRows.filter(x=>articleEkForGroup(x)!==null).length;
- E('profitNote').textContent=covered+' von '+topArticleRows.length+' Top-Artikeln mit EK hinterlegt. Indikative Rechnung: Artikel-Bruttoumsatz / 1,20 minus Menge × EK netto. Einheitlicher 20%-USt-Ansatz; kein endgültiger Gewinn, ohne Personal, Fixkosten und weitere Zutaten. BONit-Artikelumsätze vor Verwendung mit Tagesabschlüssen abgleichen.';
- const results=withEk.map(x=>({...x,contribution:x.gross/1.2-x.qty*x.ek,unit:x.gross/1.2/x.qty-x.ek})).sort((a,b)=>b.contribution-a.contribution);
- const sections=[['Höchster kalkulatorischer Beitrag',results.slice(0,5)],['Niedrigster kalkulatorischer Beitrag',results.slice(-5).reverse()]];
- for(const [heading,items] of sections){
-  const block=document.createElement('div');block.className='top-article';const title=document.createElement('strong');title.textContent=heading;block.append(title);
-  for(const x of items){const p=document.createElement('div');p.style.marginTop='7px';p.textContent=x.name+' · '+EUR(x.contribution)+' gesamt · '+EUR(x.unit)+'/Stk. · EK '+EUR(x.ek);block.append(p);}
-  if(!items.length){const p=document.createElement('p');p.textContent='Noch keine vollständigen VK-/EK-Daten.';block.append(p);}
+ const coveredRows=topArticleRows.map(x=>({x,cost:articleEkForGroup(x)})).filter(v=>v.cost&&v.x.known&&v.x.qty>0);
+ const coverage=coveredRows.length;
+ const valid=coveredRows.map(({x,cost})=>{
+  const revenue=x.gross/1.2,contribution=revenue-cost.total;
+  return {...x,costTotal:cost.total,ek:cost.average,contribution,unit:contribution/x.qty,rate:revenue>0?cost.total/revenue:0};
+ });
+ const revenueCovered=valid.reduce((s,x)=>s+x.gross,0),totalGross=topArticleRows.reduce((s,x)=>s+(x.known?x.gross:0),0);
+ const pct=totalGross>0?Math.round(revenueCovered/totalGross*100):0;
+ E('profitNote').textContent='Automatisch aus BONit und hinterlegten EK · '+coverage+'/'+topArticleRows.length+' Artikel vollständig kalkuliert · '+pct+' % der Top-30-Umsätze abgedeckt. Näherung mit 20 % USt; Personal, Fixkosten, Garnitur und weitere Zutaten nicht enthalten. Fehlende EK werden nicht als Gewinn gewertet.';
+ const sections=[
+  ['Größter Deckungsbeitrag', [...valid].sort((a,b)=>b.contribution-a.contribution).slice(0,5),'Beitrag zum Ergebnis'],
+  ['Höchster Wareneinsatz', [...valid].sort((a,b)=>b.rate-a.rate).slice(0,5),'Kostentreiber zuerst prüfen']
+ ];
+ for(const [heading,items,subtitle] of sections){
+  const block=document.createElement('div');block.className='top-article';block.style.cssText='min-width:0;padding:14px;border:1px solid #dde6e9;border-radius:14px;background:#f7f9fa;';
+  const title=document.createElement('strong');title.textContent=heading;title.style.cssText='display:block;font-size:16px;margin-bottom:3px';block.append(title);
+  const hint=document.createElement('small');hint.textContent=subtitle;hint.style.cssText='display:block;color:#667789;margin-bottom:10px';block.append(hint);
+  for(const x of items){
+   const line=document.createElement('div');line.style.cssText='display:flex;align-items:center;justify-content:space-between;gap:12px;padding:9px 0;border-top:1px solid #e1e7eb;flex-wrap:wrap';
+   const left=document.createElement('div');left.style.cssText='flex:1 1 155px;min-width:0';
+   const name=document.createElement('strong');name.textContent=x.name;name.style.cssText='display:block;font-size:14px;overflow-wrap:anywhere';
+   const detail=document.createElement('small');detail.textContent='EK '+EUR(x.ek)+'/Stk. · '+x.qty.toLocaleString('de-AT')+' verkauft';detail.style.color='#667789';left.append(name,detail);
+   const right=document.createElement('div');right.style.cssText='text-align:right;white-space:nowrap';
+   const amount=document.createElement('strong');amount.textContent=heading==='Größter Deckungsbeitrag'?EUR(x.contribution):(x.rate*100).toLocaleString('de-AT',{maximumFractionDigits:1})+' %';
+   amount.style.cssText='display:block;font-size:16px;color:'+(x.rate>0.26?'#a05218':'#117763');
+   const sub=document.createElement('small');sub.textContent=heading==='Größter Deckungsbeitrag'?(x.rate*100).toFixed(1)+' % Wareneinsatz':EUR(x.contribution)+' Beitrag';sub.style.color='#667789';right.append(amount,sub);line.append(left,right);block.append(line);
+  }
+  if(!items.length){const p=document.createElement('p');p.textContent='Noch keine vollständig kalkulierten Artikel.';block.append(p);}
   host.append(block);
  }
 }
