@@ -192,13 +192,13 @@ function renderMenuDashboard(items,proposals){
   const current=Number(item.price),target=cost!==null?Math.ceil((cost/0.26*1.2)*10)/10:null;
   const oldRecommendation=menuProposal(item.name,current,proposals);
   return {...item,ek:cost,rate,targetVk:target,recommended:Math.max(current,oldRecommendation,target||0)};
- }).sort((a,b)=>(b.rate??-1)-(a.rate??-1)||a.name.localeCompare(b.name,'de-AT'));
+ }).sort((a,b)=>((a.rate===null?3:a.rate<=0.20?0:a.rate<=0.26?1:2)-(b.rate===null?3:b.rate<=0.20?0:b.rate<=0.26?1:2))||a.name.localeCompare(b.name,'de-AT'));
  for(const item of ranked){
   const card=document.createElement('article');card.className='menu-product-card';
   const tier=item.rate===null?'unknown':item.rate<=0.20?'top':item.rate<=0.26?'ok':'risk';
   card.classList.add('menu-margin-'+tier);
   const badge=document.createElement('span');badge.className='menu-margin-badge menu-margin-badge-'+tier;
-  badge.textContent=tier==='top'?'● Top-Marge':tier==='ok'?'● Im Ziel':tier==='risk'?'● Prüfen':'● EK offen';
+  badge.textContent=tier==='top'?'🟢 SEHR GUT':tier==='ok'?'🟡 GUT':tier==='risk'?'🔴 PRÜFEN':'⚪ EK FEHLT';
   card.append(badge);
   const heading=document.createElement('strong');heading.className='menu-product-name';heading.textContent=item.name;card.append(heading);
   const metrics=document.createElement('div');metrics.className='menu-product-metrics';
