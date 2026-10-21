@@ -187,7 +187,7 @@ function renderMenuDashboard(items,proposals){
  const host=E('menuDashboardRows');host.replaceChildren();
  const ranked=items.map(item=>{
   const ek=articleEkPrices.get(String(item.name||'').trim().toLocaleLowerCase('de-AT'));
-  const partialSodaCost=String(item.name||'').trim().toLocaleLowerCase('de-AT')==='weisse überschwemmung';
+  const partialSodaCost=false;
   const cost=Number.isFinite(ek)?ek:null;
   const rate=!partialSodaCost&&cost!==null&&Number(item.price)>0?cost/(Number(item.price)/1.2):null;
   const current=Number(item.price),target=cost!==null?Math.ceil((cost/0.26*1.2)*10)/10:null;
