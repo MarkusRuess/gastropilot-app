@@ -160,7 +160,7 @@ let user=null,busy=false,selected=null,queue=[];
 const menuPriceKey=value=>String(value||'').toLocaleLowerCase('de-AT').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/ß/g,'ss').replace(/[^a-z0-9]+/g,' ').trim();
 function menuServing(name){
  const match=String(name).match(/(?:\d+[,.]\d+\s*l|\d+\s*\/\s*\d+\s*l?|\d+\s*cl|\d+\s*ml|\d+\s*(?:stk\.?|stuck|paar))/i);
- return match?match[0].replace(/\s+/g,' ').replace(/\./g,','):'–';
+ return match?match[0].replace(/\s+/g,' ').replace(/\./g,','):'1 Stück';
 }
 function menuProposal(name,price,proposals){
  const key=menuPriceKey(name);
@@ -189,14 +189,16 @@ function renderMenuDashboard(items,proposals){
   const ek=articleEkPrices.get(String(item.name||'').trim().toLocaleLowerCase('de-AT'));
   const cost=Number.isFinite(ek)?ek:null;
   const rate=cost!==null&&Number(item.price)>0?cost/(Number(item.price)/1.2):null;
-  return {...item,ek:cost,rate,targetVk:cost!==null?Math.ceil((cost/0.26*1.2)*10)/10:null,recommended:menuProposal(item.name,Number(item.price),proposals)};
+  const current=Number(item.price),target=cost!==null?Math.ceil((cost/0.26*1.2)*10)/10:null;
+  const oldRecommendation=menuProposal(item.name,current,proposals);
+  return {...item,ek:cost,rate,targetVk:target,recommended:Math.max(current,oldRecommendation,target||0)};
  }).sort((a,b)=>(b.rate??-1)-(a.rate??-1)||a.name.localeCompare(b.name,'de-AT'));
  for(const item of ranked){
   const card=document.createElement('article');card.className='menu-product-card';
   const heading=document.createElement('strong');heading.className='menu-product-name';heading.textContent=item.name;card.append(heading);
   const metrics=document.createElement('div');metrics.className='menu-product-metrics';
   const current=Number(item.price),recommended=item.recommended;
-  const values=[['Einheit',menuServing(item.name)],['BONit-VK',EUR(current)],['EK netto',item.ek===null?'EK offen':EUR(item.ek)],['Wareneinsatz',item.rate===null?'–':(item.rate*100).toLocaleString('de-AT',{maximumFractionDigits:1})+' %'],['EK-Ziel-VK',item.targetVk===null?'–':EUR(item.targetVk)],['Empfehlung',EUR(recommended)]];
+  const values=[['Einheit',menuServing(item.name)],['BONit-VK',EUR(current)],['EK netto',item.ek===null?'EK offen':EUR(item.ek)],['Wareneinsatz',item.rate===null?'–':(item.rate*100).toLocaleString('de-AT',{maximumFractionDigits:1})+' %'],['VK für 26 % EK',item.targetVk===null?'–':EUR(item.targetVk)],['Empfehlung',EUR(recommended)]];
   for(const [label,value] of values){
    const metric=document.createElement('div');metric.className='menu-product-metric';
    const l=document.createElement('small');l.textContent=label;
