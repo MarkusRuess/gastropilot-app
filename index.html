@@ -144,19 +144,20 @@ h2{font-size:17px;margin:10px 0}h3{font-size:14px}table{width:100%;border-collap
 </style><style>.top-article-grid{grid-template-columns:1fr!important;gap:5px}.top-article{padding:7px 10px;min-height:0}.top-article strong{font-size:12px}.top-article .metrics{font-size:11px;margin-top:2px;gap:3px 12px}@media(min-width:1100px){.top-article-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}}</style></head><body>
 <header><strong>GastroPilot</strong><small>Dein Lokal. Deine Zahlen. Dein Überblick.</small></header>
 <main><section id="login" class="card"><h2>Anmelden</h2><form id="loginForm"><label>E-Mail<input id="email" type="email" autocomplete="username" required></label><label>Passwort<input id="password" type="password" autocomplete="current-password" required></label><button>Anmelden</button></form><p id="loginMsg" class="status"></p></section>
-<div id="app" class="hidden"><div class="row"><h2>Das Friedrich · Betriebssteuerung</h2><div id="monthOverview" class="month-overview" role="region" aria-label="Monatsübersicht"><div class="month-overview-head"><div><small>Monatsübersicht</small><strong id="monthOverviewTitle">Monat auswählen</strong></div><div class="month-controls"><button id="monthPrev" type="button" aria-label="Vorheriger Monat">‹</button><label class="month-input-label"><span class="visually-hidden">Monat auswählen</span><input id="month" type="month" aria-label="Monat auswählen"></label><button id="monthNext" type="button" aria-label="Nächster Monat">›</button></div></div><div id="monthOverviewStats" class="month-overview-stats"></div><details id="monthCalendar"><summary>Tagesübersicht</summary><div id="monthCalendarGrid" class="month-calendar-grid" aria-label="Kalender des ausgewählten Monats"></div><div id="monthDayDetail" class="month-day-detail" aria-live="polite"></div><p class="month-calendar-note">Beträge brutto in € · — = kein Tagesabschluss erfasst</p></details></div><button id="refresh">Aktualisieren</button><button id="logout">Abmelden</button></div><p id="summary" class="muted">Lade Archiv …</p><div class="grid" id="quickKpis"></div><a class="tile article-launch-tile" href="kalkulation.html" style="text-decoration:none"><small>Artikelkalkulation</small><b>Kalkulation</b><small>Gesamtziel: max. 26 % Wareneinsatz · Grün ≤20 % · Gelb ≤26 % · Rot &gt;26 %</small></a><details id="costAlertsTile" class="tile menu-dashboard-tile"><summary><b>EK-Preiswarnungen</b><small id="costAlertsCount">Neue Lieferanten-Preiserhöhungen ab 5 %</small></summary><div class="menu-dashboard-panel"><div id="costAlertsRows" class="muted">Preiswarnungen werden geladen …</div></div></details><details id="menuDashboardTile" class="tile menu-dashboard-tile"><summary><b>Getränke &amp; Speisekarte</b></summary><div class="menu-dashboard-panel"><div class="menu-dashboard-scroll menu-card-scroll"><div id="menuDashboardRows" class="menu-product-grid"></div></div></div></details><details id="profitGoalTile" class="tile profit-goal-tile"><summary><small>Personal + Fixkosten + Gewinn</small><b>Gewinnziel</b><small>Monatliche Zielpreise ansehen <span aria-hidden="true">⌄</span></small></summary><div class="profit-goal-panel"><p class="muted">Orientierung für den ausgewählten Monat. Gewinnquote und vollständige Fixkosten kannst du hier ergänzen.</p><div class="profit-goal-metrics"><div><small>Nettoumsatz</small><strong id="profitGoalNet">–</strong></div><div><small>Personalkosten</small><strong id="profitGoalStaff">–</strong></div><div><small>Erfasste Fixkosten</small><strong id="profitGoalRecordedFixed">–</strong></div><div><small>Monatliches Gewinnziel</small><strong id="profitGoalAmount">–</strong></div><div class="profit-goal-required"><small>Ziel-Nettoumsatz inkl. 26 % Wareneinsatz, Personal, Fixkosten und Gewinn</small><strong id="profitGoalRevenue">–</strong></div></div><div class="profit-goal-inputs"><label>Vollständige Fixkosten pro Monat (€)<input id="profitGoalFixedInput" type="number" min="0" step="0.01" inputmode="decimal"></label><label>Gewinnziel vom Nettoumsatz (%)<input id="profitGoalPercentInput" type="number" min="0" max="80" step="0.5" inputmode="decimal" value="10"></label></div><p id="profitGoalNote" class="muted"></p><a class="profit-goal-link" href="kalkulation.html">VK-Empfehlungen für BONit-Artikel öffnen →</a></div></details><nav id="quickNav" class="quickNav"><button type="button" data-target="monthlyReference">Monat</button><button type="button" data-target="intake">Upload</button><button type="button" data-target="financeSection">Finanzen</button><button type="button" data-target="weeklyPurchase">Einkauf</button><button type="button" data-target="topArticles">Top 30</button><button type="button" data-target="slowArticles">Selten verkauft</button><button type="button" data-target="centralArchive">Archiv</button></nav>
-<section class="card" id="intake"><h2>📷 Ein zentraler Eingang für ALLE Unterlagen</h2><p class="section-intro">Kassenabschlüsse, BONit, Lieferantenrechnungen, Personalunterlagen und andere Dokumente. Fotos nacheinander aufnehmen oder bis zu 12 Fotos, PDF- oder XLSX-Dateien gemeinsam auswählen. <strong>Ein Klick startet die Verarbeitung. Für jede Rechnung Offen oder Bezahlt wählen und danach Rechnung speichern. XLSX-Tabellenblätter werden im Archiv angezeigt; Finanzwerte daraus werden erst nach Zuordnung gebucht.</strong></p><div class="row upload-actions"><button id="camera" type="button">📷 Foto aufnehmen</button><button id="fileButton" type="button">📄 Fotos / PDF / XLSX auswählen oder hierher ziehen</button></div><input id="cameraInput" class="hidden" type="file" accept="image/*" capture="environment"><input id="fileInput" class="hidden" type="file" accept="image/jpeg,image/png,image/webp,application/pdf,.xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" multiple><div id="fileQueue" class="muted"></div><div class="row"><button id="confirmUpload" type="button" disabled>Automatisch erkennen & speichern</button><button id="clearUpload" type="button" disabled>Auswahl leeren</button></div><p id="uploadStatus" class="status muted">Dateien auswählen und anschließend einmal auf „Automatisch erkennen & speichern“ klicken.</p><div id="review"></div></section>
+<div id="app" class="hidden"><section id="businessSwitchCard" class="card" aria-label="Betrieb wechseln"><div id="gp-business-switch"></div><p id="businessSwitchStatus" class="muted" role="status"></p></section><div class="row"><h2 id="activeBusinessTitle">GastroPilot · Betriebssteuerung</h2><div id="monthOverview" class="month-overview" role="region" aria-label="Monatsübersicht"><div class="month-overview-head"><div><small>Monatsübersicht</small><strong id="monthOverviewTitle">Monat auswählen</strong></div><div class="month-controls"><button id="monthPrev" type="button" aria-label="Vorheriger Monat">‹</button><label class="month-input-label"><span class="visually-hidden">Monat auswählen</span><input id="month" type="month" aria-label="Monat auswählen"></label><button id="monthNext" type="button" aria-label="Nächster Monat">›</button></div></div><div id="monthOverviewStats" class="month-overview-stats"></div><details id="monthCalendar"><summary>Tagesübersicht</summary><div id="monthCalendarGrid" class="month-calendar-grid" aria-label="Kalender des ausgewählten Monats"></div><div id="monthDayDetail" class="month-day-detail" aria-live="polite"></div><p class="month-calendar-note">Beträge brutto in € · — = kein Tagesabschluss erfasst</p></details></div><button id="refresh">Aktualisieren</button><button id="logout">Abmelden</button></div><p id="summary" class="muted">Lade Archiv …</p><div class="grid" id="quickKpis"></div><a id="kalkulationLink" class="tile article-launch-tile" href="kalkulation.html" style="text-decoration:none"><small>Artikelkalkulation</small><b>Kalkulation</b><small>Gesamtziel: max. 26 % Wareneinsatz · Grün ≤20 % · Gelb ≤26 % · Rot &gt;26 %</small></a><details id="costAlertsTile" class="tile menu-dashboard-tile"><summary><b>EK-Preiswarnungen</b><small id="costAlertsCount">Neue Lieferanten-Preiserhöhungen ab 5 %</small></summary><div class="menu-dashboard-panel"><div id="costAlertsRows" class="muted">Preiswarnungen werden geladen …</div></div></details><details id="menuDashboardTile" class="tile menu-dashboard-tile"><summary><b>Getränke &amp; Speisekarte</b></summary><div class="menu-dashboard-panel"><div class="menu-dashboard-scroll menu-card-scroll"><div id="menuDashboardRows" class="menu-product-grid"></div></div></div></details><details id="profitGoalTile" class="tile profit-goal-tile"><summary><small>Personal + Fixkosten + Gewinn</small><b>Gewinnziel</b><small>Monatliche Zielpreise ansehen <span aria-hidden="true">⌄</span></small></summary><div class="profit-goal-panel"><p class="muted">Orientierung für den ausgewählten Monat. Gewinnquote und vollständige Fixkosten kannst du hier ergänzen.</p><div class="profit-goal-metrics"><div><small>Nettoumsatz</small><strong id="profitGoalNet">–</strong></div><div><small>Personalkosten</small><strong id="profitGoalStaff">–</strong></div><div><small>Erfasste Fixkosten</small><strong id="profitGoalRecordedFixed">–</strong></div><div><small>Monatliches Gewinnziel</small><strong id="profitGoalAmount">–</strong></div><div class="profit-goal-required"><small>Ziel-Nettoumsatz inkl. 26 % Wareneinsatz, Personal, Fixkosten und Gewinn</small><strong id="profitGoalRevenue">–</strong></div></div><div class="profit-goal-inputs"><label>Vollständige Fixkosten pro Monat (€)<input id="profitGoalFixedInput" type="number" min="0" step="0.01" inputmode="decimal"></label><label>Gewinnziel vom Nettoumsatz (%)<input id="profitGoalPercentInput" type="number" min="0" max="80" step="0.5" inputmode="decimal" value="10"></label></div><p id="profitGoalNote" class="muted"></p><a class="profit-goal-link" href="kalkulation.html">VK-Empfehlungen für BONit-Artikel öffnen →</a></div></details><nav id="quickNav" class="quickNav"><button type="button" data-target="monthlyReference">Monat</button><button type="button" data-target="intake">Upload</button><button type="button" data-target="financeSection">Finanzen</button><button type="button" data-target="weeklyPurchase">Einkauf</button><button type="button" data-target="topArticles">Top 30</button><button type="button" data-target="slowArticles">Selten verkauft</button><button type="button" data-target="centralArchive">Archiv</button></nav>
+<section class="card" id="intake"><h2 id="intakeBusinessTitle">📷 Unterlagen hochladen</h2><p class="section-intro">Kassenabschlüsse, BONit, Lieferantenrechnungen, Personalunterlagen und andere Dokumente. Fotos nacheinander aufnehmen oder bis zu 12 Fotos, PDF- oder Excel-Dateien gemeinsam auswählen. <strong>Ein Klick startet die Verarbeitung. Für jede Rechnung Offen oder Bezahlt wählen und danach Rechnung speichern. Eindeutige Lieferantenrechnungen aus Excel werden als Betriebskosten erfasst. Andere Tabellen bleiben zur Prüfung im Archiv.</strong></p><div class="row upload-actions"><button id="camera" type="button">📷 Foto aufnehmen</button><button id="fileButton" type="button">📄 Fotos / PDF / Excel auswählen oder hierher ziehen</button></div><input id="cameraInput" class="hidden" type="file" accept="image/*" capture="environment"><input id="fileInput" class="hidden" type="file" accept="image/jpeg,image/png,image/webp,application/pdf,.xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" multiple><div id="fileQueue" class="muted"></div><div class="row"><button id="confirmUpload" type="button" disabled>Automatisch erkennen & speichern</button><button id="clearUpload" type="button" disabled>Auswahl leeren</button></div><p id="uploadStatus" class="status muted">Dateien auswählen und anschließend einmal auf „Automatisch erkennen & speichern“ klicken.</p><div id="review"></div></section>
 <section class="card" id="monthlyReference"><h2 id="monthlyTitle">BONit Monatsabschluss</h2><p class="muted">BONit Periodischer Abschluss · Monatsreferenz, keine Addition zu Tagesumsätzen.</p><div class="grid" id="augKpis"></div><h3>Artikelgruppen · Bruttoumsatz und Anteil</h3><div class="scroll"><table><thead><tr><th>Artikelgruppe</th><th class="num">Brutto</th><th class="num">Anteil</th></tr></thead><tbody id="augGroups"></tbody></table></div><h3>Stundenumsätze</h3><div id="augHours" class="scroll"></div><h3>Artikel · Menge, Einzelpreis, Umsatz</h3><p class="muted">Auszug der eindeutig lesbaren Artikelzeilen. Weitere Artikel aus dem Original werden schrittweise ergänzt; keine erfundenen Positionen.</p><div class="scroll"><table><thead><tr><th>Artikel</th><th class="num">Menge</th><th class="num">Preis</th><th class="num">Brutto</th></tr></thead><tbody id="augItems"></tbody></table></div><h3>Tischumsätze</h3><div class="scroll"><table><thead><tr><th>Tisch</th><th class="num">Brutto</th></tr></thead><tbody id="augTables"></tbody></table></div></section><section class="card" id="salesSection"><h2>Umsatz · Original BONit</h2><div class="grid" id="sales"></div><h3>10 % und 20 % direkt unter Bruttoumsatz</h3><div class="grid" id="tax"></div><p id="taxNote" class="muted"></p></section>
 <section class="card"><h2>Artikel & Preise · Stoßzeiten</h2><p class="muted">Artikelmengen, Verkaufspreise und Stundenverteilung werden aus den gespeicherten BONit-Originaldaten ausgewertet, soweit diese Felder vorliegen.</p><div class="grid" id="operating"></div><h3>Umsatz nach Stunden</h3><div id="hours" class="muted">Keine verifizierten Stundenwerte im Archiv.</div></section><section class="card" id="financeSection"><h2>Personal · Wareneinsatz · Liquidität · Ergebnis</h2><div class="grid" id="costs"></div><details id="financeSectionDisclosure"><summary class="top-articles-launch"><span><strong>Vom Nettoumsatz zum Ergebnis</strong><small>Personal · Einkäufe · Fixkosten · Zwischenstand</small></span><span class="top-articles-chevron" aria-hidden="true">⌄</span></summary><div class="top-articles-content"><div id="resultBridge" class="resultBridge"></div><p id="resultCaution" class="muted"></p><p class="muted">Personalziel 35 % und Wareneinsatzziel 26 % vom Nettoumsatz. Fehlende Belege bleiben offen – keine Schätzungen.</p></div></details><details class="purchaseCalcDisclosure"><summary>Gespeicherte Einkaufspreise für Kalkulation</summary><div id="purchaseItemsCalc"></div></details></section>
 <section class="card"><details id="dailyArchiveDisclosure"><summary class="top-articles-launch"><span><strong>Originalabrechnungen und Tagesumsätze</strong><small>Einzeltage · Brutto · Netto · Bar · Karte · Bons</small></span><span class="top-articles-chevron" aria-hidden="true">⌄</span></summary><div class="top-articles-content"><div id="dailyArchiveTotals" class="grid" style="margin:12px 0;grid-template-columns:repeat(auto-fit,minmax(145px,1fr))"></div><div class="scroll"><table><thead><tr><th>Datum</th><th>Quelle</th><th class="num">Brutto</th><th class="num">Netto</th><th class="num">Bar</th><th class="num">Karte</th><th class="num">Bons</th></tr></thead><tbody id="days"></tbody></table></div></div></details></section>
 <section class="card" id="weeklyPurchase"><details id="weeklyPurchaseDisclosure"><summary class="top-articles-launch"><span><strong>Einkauf · nächste Woche</strong><small>Bier · Kaffee · Wein · Prosecco</small></span><span class="top-articles-chevron" aria-hidden="true">⌄</span></summary><div class="top-articles-content"><p id="purchasePeriod" class="muted"></p><div class="row"><label>Fass (Liter)<input id="purchaseKeg" type="number" min="1" value="50" style="width:70px"></label><label>Kaffeedose (g)<input id="purchaseCan" type="number" min="1" value="1000" style="width:80px"></label><label>Kaffee je Portion (g)<input id="purchaseDose" type="number" min="1" value="8" style="width:65px"></label></div><p class="muted">Bedarf vor Lagerabzug · gleiche Verkaufsmenge wie in der letzten abgeschlossenen Woche. Gebindegrößen sind einstellbare Annahmen. Ohne bestätigte Verkaufsdaten keine Hochrechnung.</p><div id="purchaseCards" class="top-article-grid"></div></div></details></section><section class="card" id="topArticles"><details id="topArticlesDisclosure"><summary class="top-articles-launch"><span><strong>Top 30 Artikel · Umsatz</strong><small>Menge · Ø Preis · Umsatzanteil</small></span><span class="top-articles-chevron" aria-hidden="true">⌄</span></summary><div class="top-articles-content"><p class="muted" id="topArticleNote"></p><div id="topArticleCards" class="top-article-grid"></div><div class="row" style="margin-top:8px"><button type="button" id="articlePrev">‹</button><small id="articlePage"></small><button type="button" id="articleNext">›</button></div></div></details></section><section class="card" id="profitability"><details open><summary class="top-articles-launch"><span><strong>Rentabilität · Priorität 1</strong><small>EK-Abdeckung · kalkulatorischer Artikelbeitrag</small></span><span class="top-articles-chevron" aria-hidden="true">⌄</span></summary><div class="top-articles-content"><p class="muted" id="profitNote">Artikel und Einkaufspreise werden abgeglichen.</p><div id="profitCards" class="top-article-grid"></div></div></details></section><section class="card" id="slowArticles"><details id="slowArticlesDisclosure"><summary class="top-articles-launch"><span><strong>Top 30 · Selten verkauft</strong><small>Geringste Verkaufsmenge · BONit</small></span><span class="top-articles-chevron" aria-hidden="true">⌄</span></summary><div class="top-articles-content"><p class="muted" id="slowArticleNote"></p><div id="slowArticleCards" class="top-article-grid"></div><div class="row" style="margin-top:8px"><button type="button" id="slowPrev">‹</button><small id="slowPage"></small><button type="button" id="slowNext">›</button></div></div></details></section>
-<section class="card" id="centralArchive"><details id="centralArchiveDisclosure"><summary class="top-articles-launch"><span><strong>Gesamtarchiv · Alle Geschäftsunterlagen</strong><small>BONit · Lieferanten · Bank · Personal · XLSX · Kosten</small></span><span class="top-articles-chevron" aria-hidden="true">⌄</span></summary><div class="top-articles-content"><p class="muted">Vorhandene Daten aus BONit, Lieferanten, Bank und Personal. Originalbestände bleiben getrennt; keine doppelte Umsatz- oder Kostenbuchung.</p><div class="grid" id="archiveTotals"></div><div class="row" style="margin:15px 0"><button type="button" id="archiveLoad">Gesamtarchiv aktualisieren</button><select id="archiveFilter" aria-label="Archivbereich"><option value="all">Alle Bereiche</option><option value="bonit">BONit</option><option value="invoice">Rechnungen</option><option value="spreadsheet">XLSX-Dateien</option><option value="price_reference">EK-Preisfotos</option><option value="other">Ungeklärte Fotos</option><option value="bank">Bank</option><option value="personnel">Personal</option><option value="expense">Kosten</option></select></div><p class="muted" id="archiveState"></p><div class="scroll"><table><thead><tr><th>Datum</th><th>Bereich</th><th>Beleg / Beschreibung</th><th class="num">Betrag</th><th>Status</th></tr></thead><tbody id="allArchiveRows"></tbody></table></div></div></details></section><section class="card"><h2>Dokumentenarchiv</h2><div id="archive"></div></section></div></main>
-<script type="module">
+<section class="card" id="centralArchive"><details id="centralArchiveDisclosure"><summary class="top-articles-launch"><span><strong>Gesamtarchiv · Alle Geschäftsunterlagen</strong><small>BONit · Lieferanten · Bank · Personal · Excel · Kosten</small></span><span class="top-articles-chevron" aria-hidden="true">⌄</span></summary><div class="top-articles-content"><p class="muted">Vorhandene Daten aus BONit, Lieferanten, Bank und Personal. Originalbestände bleiben getrennt; keine doppelte Umsatz- oder Kostenbuchung.</p><div class="grid" id="archiveTotals"></div><div class="row" style="margin:15px 0"><button type="button" id="archiveLoad">Gesamtarchiv aktualisieren</button><select id="archiveFilter" aria-label="Archivbereich"><option value="all">Alle Bereiche</option><option value="bonit">BONit</option><option value="invoice">Rechnungen</option><option value="spreadsheet">Excel-Dateien</option><option value="price_reference">EK-Preisfotos</option><option value="other">Ungeklärte Fotos</option><option value="bank">Bank</option><option value="personnel">Personal</option><option value="expense">Kosten</option></select></div><p class="muted" id="archiveState"></p><div class="scroll"><table><thead><tr><th>Datum</th><th>Bereich</th><th>Beleg / Beschreibung</th><th class="num">Betrag</th><th>Status</th></tr></thead><tbody id="allArchiveRows"></tbody></table></div></div></details></section><section class="card"><h2>Dokumentenarchiv</h2><div id="archive"></div></section></div></main>
+<script src="./business-switch.js"></script><script type="module">
 import {createClient} from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 import {loadBankFixedCosts} from './bank-costs-integration.js';
 const db=createClient('https://sjnwfwcpgwsavygewwzb.supabase.co','sb_publishable__tucXG-IQGUhibMqMSUzCw_5RnH_sbQ');
-const BID='6a5484d1-daf6-4263-897d-24cdf536aa29',E=id=>document.getElementById(id),N=v=>v==null||v===''?null:Number(v),EUR=v=>v==null||!Number.isFinite(v)?'–':new Intl.NumberFormat('de-AT',{style:'currency',currency:'EUR'}).format(v),D=v=>v?.split('-').reverse().join('.')||'–';
+let BID=null,authorizedBusinesses=[],switchingBusiness=false;const E=id=>document.getElementById(id),N=v=>v==null||v===''?null:Number(v),EUR=v=>v==null||!Number.isFinite(v)?'–':new Intl.NumberFormat('de-AT',{style:'currency',currency:'EUR'}).format(v),D=v=>v?.split('-').reverse().join('.')||'–';
 let user=null,busy=false,selected=null,queue=[];
+function businessLabel(name){return String(name||'GastroPilot').includes('Judith')?'Judith und die Torten':String(name||'GastroPilot').includes('Friedrich')?'Das Friedrich':String(name||'GastroPilot');}function setBusinessHeader(name){const label=businessLabel(name);E('activeBusinessTitle').textContent=label+' · Betriebssteuerung';E('intakeBusinessTitle').textContent='📷 Unterlagen für '+label+' hochladen';document.title='GastroPilot · '+label;const calc=E('kalkulationLink');if(calc){const judith=label==='Judith und die Torten';if(judith){calc.removeAttribute('href');calc.setAttribute('aria-disabled','true');calc.querySelector('b').textContent='Kalkulation · Judith';calc.querySelectorAll('small')[1].textContent='Nach dem ersten Artikel- und Preisimport verfügbar';}else{calc.href='kalkulation.html';calc.removeAttribute('aria-disabled');calc.querySelector('b').textContent='Kalkulation';calc.querySelectorAll('small')[1].textContent='Gesamtziel: max. 26 % Wareneinsatz · Grün ≤20 % · Gelb ≤26 % · Rot >26 %';}}}
 const menuPriceKey=value=>String(value||'').toLocaleLowerCase('de-AT').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/ß/g,'ss').replace(/[^a-z0-9]+/g,' ').trim();
 function menuServing(name){
  const match=String(name).match(/(?:\d+[,.]\d+\s*l|\d+\s*\/\s*\d+\s*l?|\d+\s*cl|\d+\s*ml|\d+\s*(?:stk\.?|stuck|paar))/i);
@@ -298,7 +299,7 @@ async function loadWholeArchive(){
    ['invoice','documents','id,document_date,document_type,supplier,invoice_number,status,storage_path,extracted_data'],
    ['bank','bank_transactions','id,booking_date,payee,description,amount,match_status,account_name'],
    ['personnel','personnel_costs','id,accounting_month,employee_name,total_costs,payment_status'],
-   ['expense','expenses','id,expense_date,supplier,description,net_amount,gross_amount,payment_status'],
+   ['expense','expenses','id,document_id,source_invoice_key,expense_date,supplier,description,net_amount,gross_amount,payment_status'],
    ['personnel','employee_archive_files','id,created_at,original_name,accounting_month,processing_status']
   ];
   const results=await Promise.all(specs.map(async([type,table,fields])=>{
@@ -307,7 +308,10 @@ async function loadWholeArchive(){
     if(q.error)throw Error(table+': '+q.error.message);all.push(...(q.data||[]));if((q.data||[]).length<1000)break;from+=1000;
    }return {type,table,rows:all};
   }));
-  archiveData=[];for(const {type,table,rows} of results)for(const x of rows){
+  const invoiceDocs=(results.find(result=>result.table==='documents')?.rows||[]).filter(row=>row.document_type==='invoice');
+  const invoiceDocumentIds=new Set(invoiceDocs.map(row=>row.id));
+  const invoiceKeys=new Set(invoiceDocs.filter(row=>row.supplier&&row.invoice_number).map(row=>invoiceIdentity(row.supplier,row.invoice_number)));
+  archiveData=[];for(const {type,table,rows} of results)for(const x of rows){if(table==='expenses'&&(invoiceDocumentIds.has(x.document_id)||x.source_invoice_key&&invoiceKeys.has(x.source_invoice_key)))continue;
    if(table==='documents'){
     const kind=x.document_type==='invoice'?'invoice':x.document_type==='other'&&x.extracted_data?.document_class==='spreadsheet'?'spreadsheet':x.document_type==='other'&&x.extracted_data?.document_class==='purchase_price_reference'?'price_reference':x.document_type==='other'?'other':'bonit';
     archiveData.push({id:x.id,type:kind,date:x.document_date||'',name:kind==='invoice'?(x.supplier||'Lieferant')+' · '+(x.invoice_number||'ohne Nummer'):kind==='spreadsheet'?x.extracted_data?.original_name||'Tabelle.xlsx':kind==='price_reference'?(x.supplier||'Lieferant')+' · '+(x.extracted_data?.purchase_items?.length||0)+' EK-Preise aus Fotos':kind==='other'?(x.extracted_data?.original_name||'Originalfoto')+' · '+(x.extracted_data?.import_warning||'Erkennung ausstehend'):'BONit '+(x.document_type||'Beleg'),amount:['price_reference','spreadsheet'].includes(kind)?null:N(x.extracted_data?.gross_total),status:x.status||'archiviert',supplier:x.supplier,storage_path:x.storage_path||null,extracted_data:x.extracted_data||{}});
@@ -318,7 +322,7 @@ async function loadWholeArchive(){
    else archiveData.push({type:'expense',date:x.expense_date,name:(x.supplier||'')+' · '+(x.description||'Betriebskosten'),amount:N(x.gross_amount),status:x.payment_status||'erfasst'});
   }
   archiveData.sort((a,b)=>b.date.localeCompare(a.date));
-  E('archiveTotals').replaceChildren();for(const [key,label] of [['bonit','BONit Belege'],['invoice','Lieferantenbelege'],['spreadsheet','XLSX-Dateien'],['price_reference','EK-Preisfotos'],['bank','Bankbuchungen'],['personnel','Personalunterlagen & Kosten'],['expense','Kostenbuchungen'],['other','Ungeklärte Fotos']])tile(E('archiveTotals'),label,String(archiveData.filter(x=>x.type===key).length));
+  E('archiveTotals').replaceChildren();for(const [key,label] of [['bonit','BONit Belege'],['invoice','Lieferantenbelege'],['spreadsheet','Excel-Dateien'],['price_reference','EK-Preisfotos'],['bank','Bankbuchungen'],['personnel','Personalunterlagen & Kosten'],['expense','Kostenbuchungen'],['other','Ungeklärte Fotos']])tile(E('archiveTotals'),label,String(archiveData.filter(x=>x.type===key).length));
   showArchive();
   E('archiveState').textContent=archiveData.length+' archivierte Datensätze aus allen Zeiträumen geladen. Bankbuchungen und Rechnungen sind getrennte Quellen, keine addierte Kostenrechnung.';
  }catch(err){E('archiveState').textContent='Archivabruf fehlgeschlagen: '+err.message;}
@@ -352,9 +356,22 @@ async function saveInvoicePaymentStatus(invoiceDoc,paymentStatus,controls){
  controls.dataset.saving='true';buttons.forEach(button=>button.disabled=true);
  if(state){state.classList.remove('error','current-paid','current-open');state.textContent='Speichert …';}
  try{
-  const updated={...(invoiceDoc.extracted_data||{}),payment_status:paymentStatus,payment_status_updated_at:new Date().toISOString()};
+  const previous=invoiceDoc.extracted_data||{},updated={...previous,payment_status:paymentStatus,payment_status_updated_at:new Date().toISOString()};
+  const key=invoiceDoc.supplier&&invoiceDoc.invoice_number?invoiceIdentity(invoiceDoc.supplier,invoiceDoc.invoice_number):null;
+  const searches=[db.from('expenses').select('id').eq('business_id',BID).eq('document_id',invoiceDoc.id)];
+  if(key)searches.push(db.from('expenses').select('id').eq('business_id',BID).eq('source_invoice_key',key));
+  const matches=await Promise.all(searches);
+  for(const match of matches)if(match.error)throw match.error;
+  const expenseIds=[...new Set(matches.flatMap(match=>(match.data||[]).map(row=>row.id)))];
   const {data,error}=await db.from('documents').update({extracted_data:updated}).eq('id',invoiceDoc.id).eq('business_id',BID).select('id').maybeSingle();
   if(error)throw error;if(!data)throw Error('Keine Änderung gespeichert. Bitte Anmeldung und Berechtigung prüfen.');
+  if(expenseIds.length){
+   const expenseUpdate=await db.from('expenses').update({payment_status:paymentStatus==='bezahlt'?'paid':'open',paid_at:null}).eq('business_id',BID).in('id',expenseIds);
+   if(expenseUpdate.error){
+    const rollback=await db.from('documents').update({extracted_data:previous}).eq('id',invoiceDoc.id).eq('business_id',BID);
+    throw Error('Kostenstatus nicht aktualisiert: '+expenseUpdate.error.message+(rollback.error?' · Belegstatus muss manuell geprüft werden.':''));
+   }
+  }
   invoiceDoc.extracted_data=updated;
   if(state){state.textContent=paymentStatus==='bezahlt'?'Bezahlt':'Offen';state.classList.add(paymentStatus==='bezahlt'?'current-paid':'current-open');}
   buttons.forEach(button=>button.classList.toggle('selected',button.textContent.trim()===(paymentStatus==='bezahlt'?'Bezahlt':'Offen')));
@@ -366,6 +383,7 @@ async function saveInvoicePaymentStatus(invoiceDoc,paymentStatus,controls){
 }
 function appendSpreadsheetPreview(container,record){
  const sheets=record.extracted_data?.spreadsheet_sheets||[];
+ const importSummary=document.createElement('p');importSummary.className='muted';const booked=Number(record.extracted_data?.auto_booked_count||0),amount=Number(record.extracted_data?.auto_booked_total||0);importSummary.textContent=booked?'Automatisch als Betriebskosten gebucht: '+booked+' Rechnungen · '+EUR(amount):Number(record.extracted_data?.auto_skipped_duplicates||0)?'Keine neue Buchung · '+record.extracted_data.auto_skipped_duplicates+' Rechnungen bereits erfasst.':record.extracted_data?.import_warning||'Noch keine automatische Buchung.';container.append(importSummary);
  const details=document.createElement('details');details.className='archiveProducts';
  const summary=document.createElement('summary');summary.textContent=sheets.length+' Tabellenblätter · Vorschau';details.append(summary);
  for(const sheet of sheets){
@@ -375,7 +393,7 @@ function appendSpreadsheetPreview(container,record){
   const wrap=document.createElement('div');wrap.className='scroll';wrap.style.maxHeight='220px';wrap.append(table);details.append(wrap);
  }
  container.append(details);
- if(record.storage_path){const button=document.createElement('button');button.type='button';button.className='archiveOpenButton';button.textContent='XLSX herunterladen';button.onclick=async()=>{
+ if(record.storage_path){const button=document.createElement('button');button.type='button';button.className='archiveOpenButton';button.textContent='Tabelle herunterladen';button.onclick=async()=>{
   button.disabled=true;try{const {data,error}=await db.storage.from('invoice-originals').createSignedUrl(record.storage_path,300);if(error)throw error;const a=document.createElement('a');a.href=data.signedUrl;a.target='_blank';a.rel='noopener';a.download=record.extracted_data?.original_name||'Tabelle.xlsx';document.body.append(a);a.click();a.remove();}catch(error){E('archiveState').textContent='XLSX konnte nicht geöffnet werden: '+error.message;}finally{button.disabled=false;}
  };container.append(button);}
 }
@@ -793,21 +811,131 @@ async function image(file){return await new Promise((resolve,reject)=>{const url
 function withTimeout(promise,ms,message){let timer;return Promise.race([promise,new Promise((_,reject)=>{timer=setTimeout(()=>reject(Error(message)),ms);})]).finally(()=>clearTimeout(timer));}
 async function pages(file,onProgress=()=>{}){if(file.type!=='application/pdf'){onProgress('Foto wird vorbereitet …');return [await image(file)];}onProgress('PDF wird geöffnet …');const pdfjs=await import('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.min.mjs');pdfjs.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.worker.min.mjs';const pdf=await pdfjs.getDocument({data:new Uint8Array(await file.arrayBuffer())}).promise;if(pdf.numPages>12)throw Error('Maximal 12 PDF-Seiten');const out=[];for(let i=1;i<=pdf.numPages;i++){onProgress('PDF-Seite '+i+'/'+pdf.numPages+' wird umgewandelt …');const page=await pdf.getPage(i),base=page.getViewport({scale:1}),v=page.getViewport({scale:Math.min(2,2200/Math.max(base.width,base.height))}),canvas=document.createElement('canvas');canvas.width=Math.round(v.width);canvas.height=Math.round(v.height);await page.render({canvasContext:canvas.getContext('2d'),viewport:v}).promise;out.push(await new Promise((resolve,reject)=>canvas.toBlob(b=>b?resolve(b):reject(Error('PDF-Seite '+i+' konnte nicht umgewandelt werden')),'image/jpeg',.85)));}return out;}
 async function b64(blob){return await new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(String(r.result).split(',')[1]);r.onerror=()=>reject(Error('Datei nicht lesbar'));r.readAsDataURL(blob);});}
-const isSpreadsheet=file=>/\.xlsx$/i.test(file?.name||'');
+const isSpreadsheet=file=>/\.(xlsx|xls)$/i.test(file?.name||'');
 async function parseSpreadsheet(file){
  const XLSX=await import('https://cdn.sheetjs.com/xlsx-0.20.3/package/xlsx.mjs');
- const workbook=XLSX.read(new Uint8Array(await file.arrayBuffer()),{type:'array',sheetRows:201,cellDates:true});
- if(!workbook.SheetNames?.length)throw Error('Die XLSX enthält kein Tabellenblatt.');
+ const workbook=XLSX.read(new Uint8Array(await file.arrayBuffer()),{type:'array',sheetRows:5001,cellDates:true});
+ if(!workbook.SheetNames?.length)throw Error('Die Excel-Datei enthält kein Tabellenblatt.');
  if(workbook.SheetNames.length>50)throw Error('Mehr als 50 Tabellenblätter. Original bleibt im Archiv zur Prüfung.');
- return workbook.SheetNames.map(name=>{
+ const sheets=[],rawSheets=[];
+ for(const name of workbook.SheetNames){
   const rows=XLSX.utils.sheet_to_json(workbook.Sheets[name],{header:1,defval:'',raw:false,blankrows:false});
-  return {name,rows_read:rows.length,truncated:rows.length>=200,preview:rows.slice(0,20).map(row=>row.slice(0,20).map(value=>String(value??'').slice(0,300)))};
- });
+  const limited=rows.slice(0,5000).map(row=>row.slice(0,60));
+  rawSheets.push({name,rows:limited,truncated:rows.length>=5001});
+  sheets.push({name,rows_read:rows.length,truncated:rows.length>=5001,preview:limited.slice(0,20).map(row=>row.slice(0,20).map(value=>String(value??'').slice(0,300)))});
+ }
+ return {sheets,rawSheets};
+}
+function invoiceIdentity(supplier,invoice){const normalize=value=>String(value??'').trim().replace(/\s+/g,' ').toLocaleLowerCase('de-AT');return normalize(supplier)+'|'+normalize(invoice);}
+function spreadsheetHeaderKey(value){return String(value??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/ß/g,'ss').replace(/[^a-z0-9]+/g,' ').trim();}
+function spreadsheetNumber(value){
+ if(typeof value==='number')return Number.isFinite(value)?value:null;
+ let s=String(value??'').trim();if(!s)return null;
+ const negative=/^\(.*\)$/.test(s);s=s.replace(/[()\s€]/g,'').replace(/eur/ig,'');
+ const comma=s.lastIndexOf(','),dot=s.lastIndexOf('.');
+ if(comma>=0&&dot>=0){if(comma>dot)s=s.replace(/\./g,'').replace(',','.');else s=s.replace(/,/g,'');}
+ else if(comma>=0)s=s.replace(/\./g,'').replace(',','.');
+ else if((s.match(/\./g)||[]).length>1){const parts=s.split('.');const last=parts.pop();s=parts.join('')+'.'+last;}
+ const n=Number(s);if(!Number.isFinite(n))return null;return negative?-Math.abs(n):n;
+}
+function spreadsheetDate(value){
+ let date=null;
+ if(value instanceof Date&&!Number.isNaN(value.getTime()))date=value.getFullYear()+'-'+String(value.getMonth()+1).padStart(2,'0')+'-'+String(value.getDate()).padStart(2,'0');
+ else if(typeof value==='number'&&value>20000&&value<100000){const d=new Date(Date.UTC(1899,11,30)+Math.floor(value)*86400000);date=d.toISOString().slice(0,10);}
+ else{const s=String(value??'').trim();let m=s.match(/^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})$/);if(m)date=m[1]+'-'+m[2].padStart(2,'0')+'-'+m[3].padStart(2,'0');else{m=s.match(/^(\d{1,2})[./-](\d{1,2})[./-](\d{4})$/);if(m)date=m[3]+'-'+m[2].padStart(2,'0')+'-'+m[1].padStart(2,'0');}}
+ if(!date)return null;
+ const [year,month,day]=date.split('-').map(Number),check=new Date(Date.UTC(year,month-1,day));
+ return check.getUTCFullYear()===year&&check.getUTCMonth()===month-1&&check.getUTCDate()===day?date:null;
+}
+function extractSupplierInvoiceRows(rawSheets){
+ const aliases={
+  date:['rechnungsdatum','belegdatum','datum','invoice date','date'],
+  supplier:['lieferant','lieferantenname','supplier','kreditor'],
+  invoice:['rechnungsnummer','rechnungs nr','rechnungsnr','belegnummer','beleg nr','belegnr','invoice number','invoice no'],
+  gross:['bruttobetrag','betrag brutto','rechnungsbetrag','gesamtbetrag brutto','gesamt brutto','brutto gesamt','brutto','gross amount','invoice amount','total gross'],
+  net:['nettobetrag','betrag netto','netto gesamt','netto','net amount','total net'],
+  vat:['ust betrag','mwst betrag','ust','mwst','steuerbetrag','vat amount','tax amount'],
+  status:['zahlungsstatus','payment status'],
+  category:['kostenart','kostenkategorie','kategorie','cost category'],
+  description:['beschreibung','bezeichnung','leistung','artikel','description','verwendungszweck'],
+  due:['faelligkeitsdatum','faelligkeit','due date']
+ };
+ const normalizedAliases=Object.fromEntries(Object.entries(aliases).map(([key,values])=>[key,new Set(values.map(spreadsheetHeaderKey))]));
+ const candidates=[];
+ for(const sheet of rawSheets||[]){
+  const rows=sheet.rows||[];let headerIndex=-1,columns=null;
+  for(let i=0;i<Math.min(rows.length,20);i++){
+   const header=(rows[i]||[]).map(spreadsheetHeaderKey);
+   const map={};for(const [key,set] of Object.entries(normalizedAliases))map[key]=header.findIndex(value=>set.has(value));
+   if(['date','supplier','invoice','gross'].every(key=>map[key]>=0)){headerIndex=i;columns=map;break;}
+  }
+  if(headerIndex>=0)candidates.push({sheet,headerIndex,columns});
+ }
+ if(!candidates.length)return {rows:[],reason:'Keine eindeutige Lieferantenrechnungs-Tabelle erkannt.'};
+ if((rawSheets||[]).some(sheet=>sheet.truncated))return {rows:[],reason:'Mindestens ein Tabellenblatt hat mehr als 5.000 Zeilen; zur Sicherheit wurde nichts automatisch gebucht.'};
+ if(candidates.length!==(rawSheets||[]).filter(sheet=>(sheet.rows||[]).some(row=>(row||[]).some(value=>String(value??'').trim()))).length)return {rows:[],reason:'Nicht alle befüllten Tabellenblätter haben dieselbe eindeutig erkennbare Rechnungsstruktur.'};
+ const result=[],seen=new Set();
+ for(const {sheet,headerIndex,columns} of candidates){
+  const rows=sheet.rows||[];
+  for(let i=headerIndex+1;i<rows.length;i++){
+   const row=rows[i]||[];if(!row.some(value=>String(value??'').trim()))continue;
+   const date=spreadsheetDate(row[columns.date]),supplier=String(row[columns.supplier]??'').trim(),invoice=String(row[columns.invoice]??'').trim(),gross=spreadsheetNumber(row[columns.gross]);
+   if(!date||!supplier||!invoice||gross===null||gross<=0)return {rows:[],reason:'Mindestens eine Rechnungszeile hat kein gültiges Datum, keinen Lieferanten, keine Rechnungsnummer oder keinen positiven Bruttobetrag.'};
+   const key=invoiceIdentity(supplier,invoice);if(seen.has(key))return {rows:[],reason:'Eine Rechnungsnummer kommt mehrfach vor. Die Tabelle bleibt zur Prüfung, damit keine Summe doppelt gebucht wird.'};seen.add(key);
+   const net=columns.net>=0?spreadsheetNumber(row[columns.net]):null,vat=columns.vat>=0?spreadsheetNumber(row[columns.vat]):null;
+   if((columns.net>=0&&net===null)||(columns.vat>=0&&vat===null))return {rows:[],reason:'Netto- oder Steuerbetrag ist in mindestens einer Rechnungszeile leer oder ungültig.'};
+   if(net!==null&&vat!==null&&Math.abs(net+vat-gross)>.03)return {rows:[],reason:'Netto + Steuer stimmt bei mindestens einer Zeile nicht mit Brutto überein.'};
+   let payment='open',paymentNeedsReview=columns.status<0;
+   if(columns.status>=0){
+    const state=spreadsheetHeaderKey(row[columns.status]);
+    if(!state){payment='open';paymentNeedsReview=true;}
+    else if(/^(bezahlt|bezahlt am|paid|beglichen|erledigt)$/.test(state))payment='paid';
+    else if(/^(offen|unbezahlt|faellig|faellig zur zahlung|open|unpaid|due)$/.test(state))payment='open';
+    else return {rows:[],reason:'Unbekannter Zahlungsstatus in der Tabelle: '+String(row[columns.status])};
+   }
+   const desc=columns.description>=0?String(row[columns.description]??'').trim():'';
+   const rawCategory=columns.category>=0?spreadsheetHeaderKey(row[columns.category]):'';
+   const category=rawCategory.includes('lebensmittel')||rawCategory==='food'?'food':rawCategory.includes('getraenk')||rawCategory==='drinks'?'drinks':rawCategory.includes('miete')||rawCategory==='rent'?'rent':rawCategory.includes('energie')||rawCategory.includes('strom')||rawCategory.includes('gas')?'energy':rawCategory.includes('versicherung')||rawCategory==='insurance'?'insurance':rawCategory.includes('personal')||rawCategory==='personnel'?'personnel':rawCategory.includes('verpack')||rawCategory.includes('nonfood')||rawCategory==='nonfood'?'nonfood':'other';
+   const due=columns.due>=0?spreadsheetDate(row[columns.due]):null;
+   result.push({date,supplier,invoice,gross,net,vat,payment,paymentNeedsReview,description:desc,category,due,sheet:sheet.name,row:i+1});
+  }
+ }
+ return result.length?{rows:result,reason:''}:{rows:[],reason:'Die erkannte Tabelle enthält keine Rechnungszeilen.'};
 }
 function field(container,label,key,value,type='text'){const l=document.createElement('label');l.textContent=label;const i=document.createElement('input');i.type=type;i.dataset.key=key;i.value=value??'';l.append(i);container.append(l);}
 function queueFiles(files){if(busy)return;for(const f of files){if(!isSpreadsheet(f)&&!['image/jpeg','image/png','image/webp','application/pdf'].includes(f.type))continue;if(f.size>20*1024*1024){E('uploadStatus').textContent=f.name+': über 20 MB';continue;}if(queue.length>=12){E('uploadStatus').textContent='Maximal 12 Dateien pro Durchgang.';break;}if(!queue.some(x=>x.name===f.name&&x.size===f.size&&x.lastModified===f.lastModified))queue.push(f);}drawQueue();}
 function drawQueue(){E('fileQueue').replaceChildren();const heading=document.createElement('p');heading.textContent=queue.length+' von 12 Fotos / PDF / XLSX ausgewählt';E('fileQueue').append(heading);for(const [i,f] of queue.entries()){const row=document.createElement('div');row.className='row';row.style.marginBottom='5px';const name=document.createElement('span');name.textContent=(i+1)+'. '+f.name;const remove=document.createElement('button');remove.textContent='Entfernen';remove.disabled=busy;remove.onclick=()=>{queue.splice(i,1);drawQueue();};row.append(name,remove);E('fileQueue').append(row);}E('confirmUpload').disabled=busy||queue.length===0;E('clearUpload').disabled=busy||queue.length===0;}
 function classifyInvoiceExpense(doc,sourceFile){if(doc.document_type!=='invoice')return;const description=[doc.supplier,doc.description,doc.service_description,...(Array.isArray(doc.purchase_items)?doc.purchase_items.map(x=>x.name):[])].filter(Boolean).join(' ').toLowerCase();const repair=/reparatur|instandsetzung|wartung|serviceeinsatz|techniker|störungsbehebung|ersatzteil/.test(description)||String(doc.invoice_number||'').replace(/\D/g,'')==='3260727'||/rechnung\s*3260727/i.test(sourceFile?.name||'');if(repair){doc.expense_category='Reparatur und Instandhaltung';doc.cost_category='Reparatur und Instandhaltung';doc.cost_type='Betriebskosten';doc.expense_classification_source=String(doc.invoice_number||'').replace(/\D/g,'')==='3260727'?'manuell bestätigte Reparaturrechnung':'automatische Stichworterkennung';}}
+function invoiceExpenseCategory(doc){
+ const text=[doc?.expense_category,doc?.cost_category,doc?.supplier,doc?.description,doc?.service_description,...(Array.isArray(doc?.purchase_items)?doc.purchase_items.map(item=>item.name):[])].filter(Boolean).join(' ').toLocaleLowerCase('de-AT');
+ if(/mehl|eier|butter|schokolade|lebensmittel|speise|obst|milch|fleisch|transgourmet|metro|dermann/.test(text))return 'food';
+ if(/getraenk|wein|kaffee|saft|wasser|bier/.test(text))return 'drinks';
+ if(/miete|pacht/.test(text))return 'rent';
+ if(/strom|gas|energie|winterhalter/.test(text))return 'energy';
+ if(/versicherung/.test(text))return 'insurance';
+ if(/lohn|gehalt|personal/.test(text))return 'personnel';
+ if(/verpack|reparatur|instandhaltung|wartung|service|ersatzteil|nonfood/.test(text))return 'nonfood';
+ if(/eigent[uü]mer|privatentnahme/.test(text))return 'owner';
+ return 'other';
+}
+async function autoBookInvoiceExpense(doc,documentId){
+ if(!documentId||doc?.needs_review||!validCalendarDate(doc?.date)||!doc?.supplier||!doc?.invoice_number)return false;
+ const gross=N(doc.gross_total),net=N(doc.net_total),vat=N(doc.vat_total);
+ if(!(gross>0)||net!==null&&vat!==null&&Math.abs(net+vat-gross)>.03)return false;
+ const payment=doc.payment_status==='bezahlt'?'paid':doc.payment_status==='offen'?'open':null;
+ if(!payment)return false;
+ const description='Rechnung '+String(doc.invoice_number).trim()+' · '+String(doc.description||doc.service_description||doc.supplier).trim();
+ const key=invoiceIdentity(doc.supplier,doc.invoice_number);
+ const [byDocument,byInvoice]=await Promise.all([
+  db.from('expenses').select('id').eq('business_id',BID).eq('document_id',documentId).limit(1),
+  db.from('expenses').select('id').eq('business_id',BID).eq('source_invoice_key',key).limit(1)
+ ]);
+ if(byDocument.error||byInvoice.error)throw byDocument.error||byInvoice.error;
+ if(byDocument.data?.length||byInvoice.data?.length)return false;
+ const row={business_id:BID,document_id:documentId,source_invoice_key:key,expense_date:doc.date,accounting_month:doc.date.slice(0,7)+'-01',category:invoiceExpenseCategory(doc),description,supplier:doc.supplier,gross_amount:gross,net_amount:net,vat_amount:vat,payment_status:payment,paid_at:null,due_date:validCalendarDate(doc.due_date)?doc.due_date:null};
+ const result=await db.from('expenses').insert(row);if(result.error){if(result.error.code==='23505')return false;throw result.error;}
+ return true;
+}
 async function autoArchive(doc,sourceFile,paymentStatus,intake=null,extraIntakes=[]){
  classifyInvoiceExpense(doc,Array.isArray(sourceFile)?sourceFile[0]:sourceFile);
  const x={...doc},kind=x.document_type;let existingIncompleteCash=null;
@@ -881,6 +1009,7 @@ async function autoArchive(doc,sourceFile,paymentStatus,intake=null,extraIntakes
    if(intake){const {data,error}=await db.from('documents').update(record).eq('id',intake.id).eq('business_id',BID).select('id').maybeSingle();if(error||!data)throw error||Error('Archivdatensatz konnte nicht aktualisiert werden.');if(extraIntakes.length)await markDuplicate(intake.id,'Original gehört zum gemeinsam erkannten Beleg.',extraIntakes);}
    else{const {error}=await db.from('documents').insert({...record,business_id:BID,uploaded_by:user.id,storage_path:paths[0]});if(error)throw error;}
   }
+  if(kind==='invoice'&&intake)await autoBookInvoiceExpense(x,intake.id);
  }catch(e){if(!intake&&paths.length)await db.storage.from('invoice-originals').remove(paths);throw e;}
  return 'gespeichert';
 }
@@ -929,10 +1058,10 @@ async function secureOriginal(file){
  const digest=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',await file.arrayBuffer())),b=>b.toString(16).padStart(2,'0')).join('');
  const {data:prior,error:lookupError}=await db.from('documents').select('id,storage_path,status,document_type,extracted_data').eq('business_id',BID).contains('extracted_data',{source_sha256:digest}).order('created_at',{ascending:false}).limit(1);
  if(lookupError)throw lookupError;
- if(prior?.length)return {...prior[0],alreadyRecognized:prior[0].document_type!=='other'||prior[0].status==='reviewed'};
- const ext=isSpreadsheet(file)?'xlsx':file.type==='application/pdf'?'pdf':file.type==='image/png'?'png':file.type==='image/webp'?'webp':'jpg';
+ if(prior?.length)return {...prior[0],alreadyRecognized:prior[0].document_type!=='other'||['reviewed','auto_imported'].includes(prior[0].status)};
+ const ext=isSpreadsheet(file)?(String(file.name).toLowerCase().endsWith('.xls')?'xls':'xlsx'):file.type==='application/pdf'?'pdf':file.type==='image/png'?'png':file.type==='image/webp'?'webp':'jpg';
  const path=BID+'/'+crypto.randomUUID()+'.'+ext;
- const upload=await db.storage.from('invoice-originals').upload(path,file,{contentType:isSpreadsheet(file)?'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':file.type,upsert:false});
+ const upload=await db.storage.from('invoice-originals').upload(path,file,{contentType:isSpreadsheet(file)?(ext==='xls'?'application/vnd.ms-excel':'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'):file.type,upsert:false});
  if(upload.error)throw Error('Originaldatei konnte nicht hochgeladen werden: '+upload.error.message);
  const period=file.type==='application/pdf'?handkassePeriod(file.name):null;
  const today=new Date().toLocaleDateString('en-CA',{timeZone:'Europe/Vienna'});
@@ -1014,16 +1143,39 @@ async function retrySavedPhotoGroup(){
  finally{busy=false;drawQueue();}
 }
 async function archiveSpreadsheet(file,intake){
- E('uploadStatus').textContent='XLSX-Tabellenblätter werden gelesen · '+file.name;
- const sheets=await withTimeout(parseSpreadsheet(file),60000,'XLSX-Lesen dauerte zu lange. Original bleibt im Archiv.');
- const details={...(intake.extracted_data||{}),document_class:'spreadsheet',spreadsheet_sheets:sheets,import_warning:'Tabellenblätter archiviert und als Vorschau eingelesen. Keine automatische Umsatz- oder Kostenbuchung.',processed_at:new Date().toISOString()};
- const {data,error}=await db.from('documents').update({status:'reviewed',extracted_data:details}).eq('id',intake.id).eq('business_id',BID).eq('document_type','other').select('id').maybeSingle();
- if(error)throw error;if(!data)throw Error('XLSX konnte nicht im Archiv bestätigt werden. Original bleibt gesichert.');
- E('uploadStatus').textContent='✓ XLSX archiviert · '+sheets.length+' Tabellenblätter · '+file.name;
+ E('uploadStatus').textContent='Excel wird gelesen und auf eindeutige Rechnungszeilen geprüft · '+file.name;
+ const parsed=await withTimeout(parseSpreadsheet(file),60000,'Excel-Lesen dauerte zu lange. Original bleibt im Archiv.');
+ const detected=extractSupplierInvoiceRows(parsed.rawSheets);
+ let booked=0,duplicates=0,total=0;
+ if(detected.rows.length){
+  for(const row of detected.rows){
+   const description='XLSX import · Rechnung '+row.invoice+' · '+(row.description||'Lieferantenrechnung');
+   const key=invoiceIdentity(row.supplier,row.invoice);
+   const priorExpense=await db.from('expenses').select('id').eq('business_id',BID).eq('source_invoice_key',key).limit(1);
+   if(priorExpense.error)throw priorExpense.error;
+   if(priorExpense.data?.length){duplicates++;continue;}
+   const priorInvoice=await db.from('documents').select('id').eq('business_id',BID).eq('document_type','invoice').eq('supplier',row.supplier).eq('invoice_number',row.invoice).limit(1);
+   if(priorInvoice.error)throw priorInvoice.error;
+   if(priorInvoice.data?.length){duplicates++;continue;}
+   const expense={business_id:BID,document_id:intake.id,source_invoice_key:key,expense_date:row.date,accounting_month:row.date.slice(0,7)+'-01',category:row.category,description,supplier:row.supplier,gross_amount:row.gross,net_amount:row.net,vat_amount:row.vat,payment_status:row.payment,paid_at:null,due_date:row.due};
+   const savedExpense=await db.from('expenses').insert(expense);
+   if(savedExpense.error){if(savedExpense.error.code==='23505'){duplicates++;continue;}throw savedExpense.error;}
+   booked++;total+=row.gross;
+  }
+ }
+ const fallback=detected.rows.length?detected.reason:'Keine automatische Buchung: '+detected.reason;
+ const paymentNote=detected.rows.some(row=>row.paymentNeedsReview)?' Zahlungsstatus fehlte teilweise; betroffene Rechnungen wurden vorsorglich als offen erfasst.':'';
+ const warning=booked?'Lieferantenrechnungen automatisch als Betriebskosten übernommen.'+paymentNote:duplicates?'Keine neue Buchung; '+duplicates+' Rechnungen waren bereits erfasst.':'Tabellen wurden eingelesen und archiviert, aber nicht gebucht. '+fallback;
+ const details={...(intake.extracted_data||{}),original_name:file.name,document_class:'spreadsheet',spreadsheet_sheets:parsed.sheets,auto_booked_count:booked,auto_booked_total:Number(total.toFixed(2)),auto_skipped_duplicates:duplicates,auto_invoice_numbers:detected.rows.map(row=>row.invoice),import_warning:warning,processed_at:new Date().toISOString()};
+ const status=detected.rows.length?'auto_imported':'auto_review';
+ const {data,error}=await db.from('documents').update({status,extracted_data:details}).eq('id',intake.id).eq('business_id',BID).eq('document_type','other').select('id').maybeSingle();
+ if(error)throw error;if(!data)throw Error('Excel-Datei konnte nicht im Archiv bestätigt werden. Original bleibt gesichert.');
+ E('uploadStatus').textContent=detected.rows.length?'✓ '+booked+' Rechnungen als Betriebskosten gebucht · '+duplicates+' bereits vorhanden · '+EUR(total):'Excel eingelesen und archiviert · keine automatische Buchung: '+detected.reason;
+ return {booked,duplicates,total,needsReview:!detected.rows.length};
 }
 async function process(){
  if(busy||!queue.length)return;if(!user){E('uploadStatus').textContent='Bitte anmelden.';return;}
- busy=true;drawQueue();E('review').replaceChildren();const files=[...queue];let saved=0,duplicate=0,failed=0,secured=0,spreadsheetSaved=0;const errors=[],intakes=new Map();
+ busy=true;drawQueue();E('review').replaceChildren();const files=[...queue];let saved=0,duplicate=0,failed=0,secured=0,spreadsheetSaved=0,xlsxBooked=0,xlsxDuplicates=0,xlsxReview=0,xlsxTotal=0;const errors=[],intakes=new Map();
  try{
   for(const [fileIndex,file] of files.entries()){
    try{
@@ -1051,9 +1203,9 @@ async function process(){
    let intake=intakes.get(file);if(!intake)continue;let candidate=null;
    const setProgress=step=>{E('uploadStatus').textContent=(fileIndex+1)+'/'+files.length+' · '+file.name+' · '+step;};
    try{
-    if(intake.alreadyRecognized){duplicate++;queue=queue.filter(f=>f!==file);if(isSpreadsheet(file))E('uploadStatus').textContent='XLSX bereits im Archiv · '+file.name;else showArchivedDuplicate(file);continue;}
+    if(intake.alreadyRecognized){if(intake.document_type==='invoice')await autoBookInvoiceExpense({...intake.extracted_data,date:intake.document_date,supplier:intake.extracted_data?.supplier||intake.supplier,invoice_number:intake.extracted_data?.invoice_number||intake.invoice_number},intake.id);duplicate++;queue=queue.filter(f=>f!==file);if(isSpreadsheet(file))E('uploadStatus').textContent='Excel-Datei bereits im Archiv · '+file.name;else showArchivedDuplicate(file);continue;}
     if(intake.periodArchived){saved++;queue=queue.filter(f=>f!==file);setProgress('Monatszeitraum '+intake.extracted_data.period_start+' bis '+intake.extracted_data.period_end+' automatisch archiviert.');continue;}
-    if(isSpreadsheet(file)){await archiveSpreadsheet(file,intake);saved++;spreadsheetSaved++;queue=queue.filter(f=>f!==file);continue;}
+    if(isSpreadsheet(file)){const imported=await archiveSpreadsheet(file,intake);saved++;spreadsheetSaved++;xlsxBooked+=imported.booked;xlsxDuplicates+=imported.duplicates;xlsxTotal+=imported.total;if(imported.needsReview)xlsxReview++;queue=queue.filter(f=>f!==file);continue;}
     setProgress('Original gesichert · Erkennung läuft …');
     const blobs=await withTimeout(pages(file,setProgress),90000,'Datei/PDF konnte nach 90 Sekunden nicht vorbereitet werden.');
     if(blobs.length>12)throw Error('PDF hat mehr als 12 Seiten');
@@ -1091,7 +1243,7 @@ async function process(){
     E('review').replaceChildren();
    }
   }
-  E('uploadStatus').textContent=(failed===0&&(saved>0||duplicate>0)?'✓ Verarbeitung abgeschlossen · ':'')+saved+' verarbeitet und archiviert · '+duplicate+' bereits vorhanden (keine Doppelbuchung) · '+failed+' zur Prüfung. '+(spreadsheetSaved?spreadsheetSaved+' XLSX als Tabellenblätter eingelesen, ohne Finanzbuchung. ':'')+(secured?'Originale wurden vor der Erkennung gesichert.':'');
+  E('uploadStatus').textContent=(failed===0&&(saved>0||duplicate>0)?'✓ Verarbeitung abgeschlossen · ':'')+saved+' verarbeitet und archiviert · '+duplicate+' bereits vorhanden (keine Doppelbuchung) · '+failed+' zur Prüfung. '+(spreadsheetSaved?spreadsheetSaved+' XLSX eingelesen · '+xlsxBooked+' Rechnungen · '+EUR(xlsxTotal)+' automatisch gebucht · '+xlsxDuplicates+' Duplikate übersprungen · '+xlsxReview+' Tabellen zur Prüfung. ':'')+(secured?'Originale wurden vor der Erkennung gesichert.':'');
   if(failed===0&&saved>0&&duplicate===0){E('review').replaceChildren();E('intake').scrollIntoView({behavior:'smooth',block:'start'});}
   for(const msg of errors){const p=document.createElement('p');p.className='warning';p.textContent=msg;E('review').append(p);}
   if(secured||saved||duplicate){await refresh();await loadWholeArchive();}
@@ -1117,7 +1269,8 @@ uploadDropZone.addEventListener('dragover',e=>{if(Array.from(e.dataTransfer?.typ
 uploadDropZone.addEventListener('dragleave',()=>uploadDropZone.classList.remove('dragging'));
 uploadDropZone.addEventListener('drop',e=>{e.preventDefault();uploadDropZone.classList.remove('dragging');const files=[...(e.dataTransfer?.files||[])];if(files.length){queueFiles(files);if(files.length===1&&(/\.pdf$/i.test(files[0].name)||isSpreadsheet(files[0])))void process();}});
 document.addEventListener('paste',e=>{if(!E('app').classList.contains('hidden')&&!/^(INPUT|TEXTAREA)$/.test(document.activeElement?.tagName||'')){const file=[...(e.clipboardData?.files||[])].find(x=>x.type==='application/pdf'||/\.pdf$/i.test(x.name));if(file){e.preventDefault();void startDesktopPdf(file)}}});
-async function enter(){const {data,error}=await db.auth.getSession();if(error)throw error;const u=data?.session?.user;if(!u)return false;const membership=await db.from('business_members').select('business_id').eq('business_id',BID).eq('user_id',u.id).limit(1);if(membership.error)throw new Error('Betriebszugriff konnte nicht geprüft werden: '+membership.error.message);if(!membership.data?.length)throw new Error('Für dieses Konto fehlt die Freigabe für Das Friedrich.');user=u;E('login').classList.add('hidden');E('app').classList.remove('hidden');await refresh();await loadWholeArchive();showMobilePanel('monthlyReference');return true;}
+async function enter(){const {data,error}=await db.auth.getSession();if(error)throw error;const u=data?.session?.user;if(!u)return false;const membership=await db.from('business_members').select('business_id,role,businesses(name)').eq('user_id',u.id);if(membership.error)throw new Error('Betriebszugriff konnte nicht geprüft werden: '+membership.error.message);if(!membership.data?.length)throw new Error('Für dieses Konto ist kein Betrieb freigegeben.');authorizedBusinesses=membership.data;const member=window.GastroPilotBusiness.choose(authorizedBusinesses);if(!member)throw new Error('Kein freigegebener Betrieb verfügbar.');BID=member.business_id;window.GastroPilotBusiness.render(authorizedBusinesses,BID);setBusinessHeader(member.businesses?.name);user=u;E('login').classList.add('hidden');E('app').classList.remove('hidden');await refresh();await loadWholeArchive();showMobilePanel('monthlyReference');return true;}
+window.addEventListener('gastropilot:business-change',event=>{const next=event.detail?.businessId;if(!user||!authorizedBusinesses.some(member=>member.business_id===next)||next===BID)return;if(busy){localStorage.setItem('gastropilot-selected-business',BID);E('businessSwitchStatus').textContent='Bitte den laufenden Upload abschließen, bevor du den Betrieb wechselst.';window.GastroPilotBusiness.render(authorizedBusinesses,BID);return;}localStorage.setItem('gastropilot-selected-business',next);window.location.reload();});
 E('loginForm').onsubmit=async e=>{e.preventDefault();const button=E('loginForm').querySelector('button');button.disabled=true;E('loginMsg').textContent='Anmeldung wird geprüft …';try{const {data,error}=await Promise.race([db.auth.signInWithPassword({email:E('email').value.trim(),password:E('password').value}),new Promise((_,reject)=>setTimeout(()=>reject(new Error('Anmeldeserver antwortet nicht (15 Sekunden). Bitte Netzwerk prüfen.')),15000))]);if(error)throw error;if(!data?.session)throw new Error('Keine Sitzung erhalten.');const ok=await enter();if(!ok)throw new Error('Anmeldung erfolgreich, aber die Sitzung wurde nicht geladen.');E('loginMsg').textContent='';}catch(err){const m=String(err.message||err);E('loginMsg').textContent=/invalid login credentials/i.test(m)?'E-Mail oder Passwort wurde von Supabase nicht akzeptiert. Bitte die bisherigen GastroPilot-Zugangsdaten verwenden.':m;}finally{button.disabled=false;}};
 for(const b of document.querySelectorAll('#quickNav button'))b.onclick=()=>showMobilePanel(b.dataset.target);E('archiveLoad').onclick=loadWholeArchive;E('archiveFilter').onchange=showArchive;
 const retryButton=document.createElement('button');retryButton.type='button';retryButton.textContent='Gesicherte Fotos gemeinsam erkennen';retryButton.onclick=retrySavedPhotoGroup;E('confirmUpload').after(retryButton);
