@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>GastroPilot · Judith Gesamtanalyse</title>
+<style>
+:root{font:14px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif;color:#172a3a;background:#f2f4f7}*{box-sizing:border-box}body{margin:0}header{background:#183749;color:white;padding:18px max(16px,calc((100vw - 1100px)/2))}header strong{font-size:22px}header small{display:block;color:#d1e1e8}main{max-width:1100px;margin:auto;padding:16px 16px 45px}.card{background:white;border:1px solid #e5eaf0;border-radius:14px;padding:16px;margin:12px 0;box-shadow:0 3px 12px #1e293308}h1{font-size:23px;margin:0 0 6px}h2{font-size:18px;margin:0 0 7px}p{margin:6px 0 12px}.muted{color:#637589;font-size:12px}.status{color:#8c3308}.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.row a{color:#087f70;font-weight:750}.source{border:1px solid #dbe5eb;border-radius:12px;padding:12px;margin:14px 0}.source h2{overflow-wrap:anywhere}.tab{border-top:1px solid #e5eaf0;padding:8px 0}.tab summary{cursor:pointer;font-weight:700;padding:6px 0}.search{width:100%;padding:11px;margin:8px 0 11px;border:1px solid #b7c7d1;border-radius:8px;font:inherit}.records{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:8px;max-height:520px;overflow:auto}.record{border:1px solid #e5eaf0;background:#f8fafc;border-radius:9px;padding:10px;min-width:0;overflow-wrap:anywhere}.record strong{display:block;margin-bottom:6px}.record dl{margin:0;display:grid;grid-template-columns:minmax(85px,38%) minmax(0,1fr);gap:3px 8px}.record dt{font-size:11px;color:#526475}.record dd{margin:0;font-size:12px}.record-note{color:#7b5d19;background:#fff8e8;border-radius:8px;padding:9px;font-size:12px}@media(max-width:600px){.records{grid-template-columns:1fr;max-height:580px}h1{font-size:20px}.card{padding:13px}}
+</style></head><body><header><strong>GastroPilot</strong><small>Judith und die Torten · J.W. GmbH</small></header><main>
+<div class="card"><div class="row"><h1>Judith · Gesamtanalyse</h1><a id="back" href="index.html">← Judith öffnen</a></div><p>Die aus ChatGPT übernommenen Arbeitsunterlagen sind hier als Quellenstand sichtbar. Rechnungsmonat, Zahlungsmonat und Kassenumsatz bleiben getrennt. Diese Ansicht erzeugt keine zusätzliche Kosten- oder Umsatzbuchung.</p><p id="status" class="status" role="status">Zugriff und Quellen werden geprüft …</p></div>
+<div id="sources" class="card" hidden></div></main>
+<script type="module">
+import {createClient} from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+const db=createClient('https://sjnwfwcpgwsavygewwzb.supabase.co','sb_publishable__tucXG-IQGUhibMqMSUzCw_5RnH_sbQ');
+const $=id=>document.getElementById(id);
+function csvRows(source){
+ const rows=[];let row=[],field='',quoted=false;
+ for(let i=0;i<source.length;i++){
+  const ch=source[i];
+  if(ch==='"'){if(quoted&&source[i+1]==='"'){field+='"';i++;}else quoted=!quoted;}
+  else if(ch===','&&!quoted){row.push(field);field='';}
+  else if((ch==='\n'||ch==='\r')&&!quoted){if(ch==='\r'&&source[i+1]==='\n')i++;row.push(field);if(row.some(Boolean))rows.push(row);row=[];field='';}
+  else field+=ch;
+ }
+ row.push(field);if(row.some(Boolean))rows.push(row);
+ return rows;
+}
+function showTab(tab,host){
+ const rows=csvRows(tab.csv||'').map(row=>row.slice(1));
+ const header=rows.find(row=>/^(Monat|Lieferant|Rechnungsmonat|Datum|Buchungsdatum|Leistungsmonat|Rate|Kennzahl|Quellentyp|Produkt|Kundennummer|Prüfung|Quelle|Produkt-\/Artikelschlüssel)$/i.test(String(row[0]||'').trim()))||[];
+ const wrap=document.createElement('details');wrap.className='tab';
+ const title=document.createElement('summary');title.textContent=tab.name+' · '+rows.length+' Zeilen';wrap.append(title);
+ const search=document.createElement('input');search.className='search';search.type='search';search.placeholder='In '+tab.name+' suchen';search.setAttribute('aria-label','In '+tab.name+' suchen');wrap.append(search);
+ const count=document.createElement('p');count.className='muted';wrap.append(count);
+ const list=document.createElement('div');list.className='records';wrap.append(list);
+ const normalized=rows.filter(row=>row.some(value=>String(value).trim())&&row!==header&&row!==rows[0]);
+ const draw=()=>{
+  list.replaceChildren();const needle=search.value.trim().toLocaleLowerCase('de-AT');
+  const filtered=normalized.filter(row=>row.join(' ').toLocaleLowerCase('de-AT').includes(needle));count.textContent=filtered.length+' Zeilen'+(needle?' gefunden':'');
+  for(const values of filtered.slice(0,150)){
+   const card=document.createElement('div');card.className='record';const heading=document.createElement('strong');heading.textContent=values.find(value=>String(value).trim())||'Eintrag';card.append(heading);
+   const detail=document.createElement('dl');for(let i=1;i<values.length;i++){if(!String(values[i]??'').trim())continue;const label=document.createElement('dt');label.textContent=header[i]||'Angabe '+(i+1);const value=document.createElement('dd');value.textContent=values[i];detail.append(label,value);}card.append(detail);list.append(card);
+  }
+  if(filtered.length>150){const note=document.createElement('p');note.className='muted';note.textContent='150 Zeilen angezeigt. Suche verwenden, um weitere Einträge zu finden.';list.append(note);}
+ };
+ search.addEventListener('input',draw);wrap.addEventListener('toggle',()=>{if(wrap.open)draw()});host.append(wrap);
+}
+async function start(){
+ const {data:session,error:authError}=await db.auth.getSession();if(authError)throw authError;if(!session.session?.user)throw Error('Bitte zuerst in GastroPilot anmelden.');
+ const membership=await db.from('business_members').select('business_id,businesses(name)').eq('user_id',session.session.user.id);
+ if(membership.error)throw membership.error;
+ const judith=membership.data?.find(member=>member.businesses?.name?.includes('Judith'));if(!judith)throw Error('Für Judith ist dieses Konto nicht freigegeben.');
+ $('back').onclick=()=>sessionStorage.setItem('gastropilot-open-business',judith.business_id);
+ const response=await db.from('documents').select('id,extracted_data').eq('business_id',judith.business_id).eq('document_type','other').contains('extracted_data',{document_class:'analysis_snapshot'});
+ if(response.error)throw response.error;
+ const sources=$('sources');sources.hidden=false;sources.replaceChildren();
+ for(const source of response.data||[]){
+  const data=source.extracted_data||{},section=document.createElement('section');section.className='source';
+  const heading=document.createElement('h2');heading.textContent=data.original_name||'Arbeitsunterlage';section.append(heading);
+  const meta=document.createElement('p');meta.className='muted';meta.textContent='Quellenstand Version '+(data.source_version_id||'–')+' · '+(data.tabs?.length||0)+' Tabellenblätter · Arbeitskopie aus ChatGPT';section.append(meta);
+  const note=document.createElement('p');note.className='record-note';note.textContent='Originaldatei noch nicht im GastroPilot-Speicher. Werte bleiben Referenz und werden nicht automatisch gebucht.';section.append(note);
+  for(const tab of data.tabs||[])showTab(tab,section);sources.append(section);
+ }
+ $('status').textContent=(response.data?.length||0)+' Judith-Arbeitsunterlagen geladen.';
+}
+start().catch(error=>{$('status').textContent='Gesamtanalyse nicht verfügbar: '+error.message;});
+</script></body></html>
