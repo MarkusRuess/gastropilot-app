@@ -30,7 +30,7 @@ h2{font-size:17px;margin:10px 0}h3{font-size:14px}table{width:100%;border-collap
 .menu-metric-warning{color:#ad5b18}
 @media(max-width:650px){.menu-product-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.menu-product-card{padding:10px}.menu-product-name{font-size:13px}.menu-product-metrics{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.menu-product-metric b{font-size:13px}}
 @media(max-width:360px){.menu-product-grid{grid-template-columns:1fr}}
-</style><style>
+.menu-product-card{position:relative}.menu-margin-badge{display:inline-block;font-size:11px;font-weight:750;border-radius:999px;padding:3px 8px;margin-bottom:8px}.menu-margin-badge-top{background:#d7f3e6;color:#096b47}.menu-margin-badge-ok{background:#fff0c2;color:#7d5800}.menu-margin-badge-risk{background:#fbe0df;color:#a52727}.menu-margin-badge-unknown{background:#e7ebef;color:#586572}.menu-margin-top{border-left:4px solid #15966a}.menu-margin-ok{border-left:4px solid #dca62e}.menu-margin-risk{border-left:4px solid #d64a45}.menu-margin-unknown{border-left:4px solid #9aa6b2}</style><style>
 .quickNav{display:none}
 @media(max-width:680px){
 #quickKpis{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin:9px 0}
@@ -195,6 +195,11 @@ function renderMenuDashboard(items,proposals){
  }).sort((a,b)=>(b.rate??-1)-(a.rate??-1)||a.name.localeCompare(b.name,'de-AT'));
  for(const item of ranked){
   const card=document.createElement('article');card.className='menu-product-card';
+  const tier=item.rate===null?'unknown':item.rate<=0.20?'top':item.rate<=0.26?'ok':'risk';
+  card.classList.add('menu-margin-'+tier);
+  const badge=document.createElement('span');badge.className='menu-margin-badge menu-margin-badge-'+tier;
+  badge.textContent=tier==='top'?'● Top-Marge':tier==='ok'?'● Im Ziel':tier==='risk'?'● Prüfen':'● EK offen';
+  card.append(badge);
   const heading=document.createElement('strong');heading.className='menu-product-name';heading.textContent=item.name;card.append(heading);
   const metrics=document.createElement('div');metrics.className='menu-product-metrics';
   const current=Number(item.price),recommended=item.recommended;
