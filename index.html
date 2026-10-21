@@ -548,7 +548,7 @@ function drawTopArticles(){
   const card=document.createElement('div');card.className='top-article';
   const name=document.createElement('strong');name.textContent=(index+1)+'. '+x.name;card.append(name);
   const metrics=document.createElement('div');metrics.className='metrics';
-  for(const [label,value] of [['Menge',number.format(x.qty)],['Ø Preis',x.known&&x.qty>0?EUR(x.gross/x.qty):'–'],['Umsatz',x.known?EUR(x.gross):'fehlt'],['Anteil',x.known&&topArticleTotal>0?percent.format(x.gross/topArticleTotal):'–']]){
+  for(const [label,value] of [['Menge',number.format(x.qty)],['Ø Preis',x.known&&x.qty>0?EUR(x.gross/x.qty):'–'],['EK Preis','Zuordnung offen'],['Umsatz',x.known?EUR(x.gross):'fehlt'],['Anteil',x.known&&topArticleTotal>0?percent.format(x.gross/topArticleTotal):'–']]){
    const span=document.createElement('span');span.append(label+' ');const valueNode=document.createElement('b');valueNode.textContent=value;span.append(valueNode);metrics.append(span);
   }
   card.append(metrics);host.append(card);
