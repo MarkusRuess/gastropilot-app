@@ -187,23 +187,24 @@ function renderMenuDashboard(items,proposals){
  const host=E('menuDashboardRows');host.replaceChildren();
  const ranked=items.map(item=>{
   const ek=articleEkPrices.get(String(item.name||'').trim().toLocaleLowerCase('de-AT'));
+  const partialSodaCost=String(item.name||'').trim().toLocaleLowerCase('de-AT')==='weisse überschwemmung';
   const cost=Number.isFinite(ek)?ek:null;
-  const rate=cost!==null&&Number(item.price)>0?cost/(Number(item.price)/1.2):null;
+  const rate=!partialSodaCost&&cost!==null&&Number(item.price)>0?cost/(Number(item.price)/1.2):null;
   const current=Number(item.price),target=cost!==null?Math.ceil((cost/0.26*1.2)*10)/10:null;
   const oldRecommendation=menuProposal(item.name,current,proposals);
-  return {...item,ek:cost,rate,targetVk:target,recommended:Math.max(current,oldRecommendation,target||0)};
+  return {...item,ek:cost,rate,partialSodaCost,targetVk:target,recommended:Math.max(current,oldRecommendation,target||0)};
  }).sort((a,b)=>((a.rate===null?3:a.rate<=0.20?0:a.rate<=0.26?1:2)-(b.rate===null?3:b.rate<=0.20?0:b.rate<=0.26?1:2))||a.name.localeCompare(b.name,'de-AT'));
  for(const item of ranked){
   const card=document.createElement('article');card.className='menu-product-card';
   const tier=item.rate===null?'unknown':item.rate<=0.20?'top':item.rate<=0.26?'ok':'risk';
   card.classList.add('menu-margin-'+tier);
   const badge=document.createElement('span');badge.className='menu-margin-badge menu-margin-badge-'+tier;
-  badge.textContent=tier==='top'?'🟢 SEHR GUT':tier==='ok'?'🟡 GUT':tier==='risk'?'🔴 PRÜFEN':'⚪ EK FEHLT';
+  badge.textContent=item.partialSodaCost?'⚪ SODA-EK FEHLT':tier==='top'?'🟢 SEHR GUT':tier==='ok'?'🟡 GUT':tier==='risk'?'🔴 PRÜFEN':'⚪ EK FEHLT';
   card.append(badge);
   const heading=document.createElement('strong');heading.className='menu-product-name';heading.textContent=item.name;card.append(heading);
   const metrics=document.createElement('div');metrics.className='menu-product-metrics';
   const current=Number(item.price),recommended=item.recommended;
-  const values=[['BONit VK',EUR(current)],['EK netto',item.ek===null?'EK offen':EUR(item.ek)],['Wareneinsatz',item.rate===null?'–':(item.rate*100).toLocaleString('de-AT',{maximumFractionDigits:1})+' %'],['Empfohlener VK',EUR(recommended)]];
+  const values=[['BONit VK',EUR(current)],['EK netto',item.partialSodaCost?EUR(item.ek)+' + Soda':item.ek===null?'EK offen':EUR(item.ek)],['Wareneinsatz',item.rate===null?'–':(item.rate*100).toLocaleString('de-AT',{maximumFractionDigits:1})+' %'],['Empfohlener VK',EUR(recommended)]];
   for(const [label,value] of values){
    const metric=document.createElement('div');metric.className='menu-product-metric';
    const l=document.createElement('small');l.textContent=label;
