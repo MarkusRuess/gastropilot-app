@@ -1300,8 +1300,8 @@ async function enter(){
  if(!membership.data?.length)throw new Error('Für dieses Konto ist kein Betrieb freigegeben.');
  authorizedBusinesses=membership.data;user=u;E('login').classList.add('hidden');
  E('homeMonth').value=E('month').value;
- const next=sessionStorage.getItem('gastropilot-open-business');sessionStorage.removeItem('gastropilot-open-business');
- const member=authorizedBusinesses.find(x=>x.business_id===next);
+ const requested=new URLSearchParams(location.search).get('betrieb');const next=sessionStorage.getItem('gastropilot-open-business');sessionStorage.removeItem('gastropilot-open-business');
+ const member=(requested==='friedrich'?authorizedBusinesses.find(x=>x.businesses?.name?.includes('Friedrich')):null)||authorizedBusinesses.find(x=>x.business_id===next);
  if(member)await openBusiness(member);else await showHome();
  return true;
 }
