@@ -311,7 +311,7 @@ async function loadWholeArchive(){
   archiveData=[];for(const {type,table,rows} of results)for(const x of rows){
    if(table==='documents'){
     const kind=x.document_type==='invoice'?'invoice':x.document_type==='other'&&x.extracted_data?.document_class==='spreadsheet'?'spreadsheet':x.document_type==='other'&&x.extracted_data?.document_class==='purchase_price_reference'?'price_reference':x.document_type==='other'?'other':'bonit';
-    archiveData.push({id:x.id,type:kind,date:x.document_date||'',name:kind==='invoice'?(x.supplier||'Lieferant')+' · '+(x.invoice_number||'ohne Nummer'):kind==='spreadsheet'?x.extracted_data?.original_name||'Tabelle.xlsx':kind==='price_reference'?(x.supplier||'Lieferant')+' · '+(x.extracted_data?.purchase_items?.length||0)+' EK-Preise aus Fotos':kind==='other'?(x.extracted_data?.original_name||'Originalfoto')+' · '+(x.extracted_data?.import_warning||'Erkennung ausstehend'):'BONit '+(x.document_type||'Beleg'),amount:['price_reference','spreadsheet'].includes(kind)?null:N(x.extracted_data?.gross_total),status:x.status||'archiviert',supplier:x.supplier,storage_path:x.storage_path||null,extracted_data:x.extracted_data||{}});
+    archiveData.push({id:x.id,type:kind,date:x.document_date||'',name:kind==='invoice'?(x.supplier||'Lieferant')+' · '+(x.invoice_number||'ohne Nummer'):kind==='spreadsheet'?x.extracted_data?.original_name||'Tabelle.xlsx':kind==='price_reference'?(x.supplier||'Lieferant')+' · '+(x.extracted_data?.purchase_items?.length||0)+' EK-Preise aus Fotos':kind==='other'?(x.extracted_data?.original_name||'Originalfoto')+' · '+(x.extracted_data?.import_warning||'Erkennung ausstehend'):'BONit '+(x.document_type||'Beleg'),amount:kind==='price_reference'?null:kind==='spreadsheet'?N(x.extracted_data?.auto_booked_total):N(x.extracted_data?.gross_total),status:x.status||'archiviert',supplier:x.supplier,storage_path:x.storage_path||null,extracted_data:x.extracted_data||{}});
    }else if(table==='bonit_daily_closings')archiveData.push({type:'bonit',date:x.closing_date,name:'BONit Tagesabschluss Z '+(x.z_number||'–'),amount:N(x.gross_amount),status:'Original'});
    else if(table==='bank_transactions')archiveData.push({type:'bank',date:x.booking_date,name:(x.account_name||'Bank')+' · '+(x.payee||x.description||'Buchung'),amount:N(x.amount),status:x.match_status||'nicht zugeordnet'});
    else if(table==='personnel_costs')archiveData.push({type:'personnel',date:x.accounting_month,name:'Personalkosten · '+(x.employee_name||'Mitarbeiter'),amount:N(x.total_costs),status:x.payment_status||'erfasst'});
@@ -367,6 +367,7 @@ async function saveInvoicePaymentStatus(invoiceDoc,paymentStatus,controls){
 }
 function appendSpreadsheetPreview(container,record){
  const sheets=record.extracted_data?.spreadsheet_sheets||[];
+ const importSummary=document.createElement('p');importSummary.className='muted';const booked=Number(record.extracted_data?.auto_booked_count||0),amount=Number(record.extracted_data?.auto_booked_total||0);importSummary.textContent=booked?'Automatisch als Betriebskosten gebucht: '+booked+' Rechnungen · '+EUR(amount):record.extracted_data?.import_warning||'Noch keine automatische Buchung.';container.append(importSummary);
  const details=document.createElement('details');details.className='archiveProducts';
  const summary=document.createElement('summary');summary.textContent=sheets.length+' Tabellenblätter · Vorschau';details.append(summary);
  for(const sheet of sheets){
@@ -797,13 +798,89 @@ async function b64(blob){return await new Promise((resolve,reject)=>{const r=new
 const isSpreadsheet=file=>/\.xlsx$/i.test(file?.name||'');
 async function parseSpreadsheet(file){
  const XLSX=await import('https://cdn.sheetjs.com/xlsx-0.20.3/package/xlsx.mjs');
- const workbook=XLSX.read(new Uint8Array(await file.arrayBuffer()),{type:'array',sheetRows:201,cellDates:true});
+ const workbook=XLSX.read(new Uint8Array(await file.arrayBuffer()),{type:'array',sheetRows:5001,cellDates:true});
  if(!workbook.SheetNames?.length)throw Error('Die XLSX enthält kein Tabellenblatt.');
  if(workbook.SheetNames.length>50)throw Error('Mehr als 50 Tabellenblätter. Original bleibt im Archiv zur Prüfung.');
- return workbook.SheetNames.map(name=>{
+ const sheets=[],rawSheets=[];
+ for(const name of workbook.SheetNames){
   const rows=XLSX.utils.sheet_to_json(workbook.Sheets[name],{header:1,defval:'',raw:false,blankrows:false});
-  return {name,rows_read:rows.length,truncated:rows.length>=200,preview:rows.slice(0,20).map(row=>row.slice(0,20).map(value=>String(value??'').slice(0,300)))};
- });
+  const limited=rows.slice(0,5000).map(row=>row.slice(0,60));
+  rawSheets.push({name,rows:limited,truncated:rows.length>=5001});
+  sheets.push({name,rows_read:rows.length,truncated:rows.length>=5001,preview:limited.slice(0,20).map(row=>row.slice(0,20).map(value=>String(value??'').slice(0,300)))});
+ }
+ return {sheets,rawSheets};
+}
+function spreadsheetHeaderKey(value){return String(value??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/ß/g,'ss').replace(/[^a-z0-9]+/g,' ').trim();}
+function spreadsheetNumber(value){
+ if(typeof value==='number')return Number.isFinite(value)?value:null;
+ let s=String(value??'').trim();if(!s)return null;
+ const negative=/^\(.*\)$/.test(s);s=s.replace(/[()\s€]/g,'').replace(/eur/ig,'');
+ const comma=s.lastIndexOf(','),dot=s.lastIndexOf('.');
+ if(comma>=0&&dot>=0){if(comma>dot)s=s.replace(/\./g,'').replace(',','.');else s=s.replace(/,/g,'');}
+ else if(comma>=0)s=s.replace(/\./g,'').replace(',','.');
+ else if((s.match(/\./g)||[]).length>1){const parts=s.split('.');const last=parts.pop();s=parts.join('')+'.'+last;}
+ const n=Number(s);if(!Number.isFinite(n))return null;return negative?-Math.abs(n):n;
+}
+function spreadsheetDate(value){
+ if(value instanceof Date&&!Number.isNaN(value.getTime()))return value.getFullYear()+'-'+String(value.getMonth()+1).padStart(2,'0')+'-'+String(value.getDate()).padStart(2,'0');
+ if(typeof value==='number'&&value>20000&&value<100000){const d=new Date(Date.UTC(1899,11,30)+Math.floor(value)*86400000);return d.toISOString().slice(0,10);}
+ const s=String(value??'').trim();let m=s.match(/^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})/);if(m)return m[1]+'-'+m[2].padStart(2,'0')+'-'+m[3].padStart(2,'0');
+ m=s.match(/^(\d{1,2})[./-](\d{1,2})[./-](\d{4})$/);if(m)return m[3]+'-'+m[2].padStart(2,'0')+'-'+m[1].padStart(2,'0');
+ return null;
+}
+function extractSupplierInvoiceRows(rawSheets){
+ const aliases={
+  date:['rechnungsdatum','belegdatum','datum','invoice date','date'],
+  supplier:['lieferant','lieferantenname','supplier','kreditor'],
+  invoice:['rechnungsnummer','rechnungs nr','rechnungsnr','belegnummer','beleg nr','belegnr','invoice number','invoice no'],
+  gross:['bruttobetrag','betrag brutto','rechnungsbetrag','gesamtbetrag brutto','gesamt brutto','brutto gesamt','gross amount','invoice amount','total gross'],
+  net:['nettobetrag','betrag netto','netto gesamt','net amount','total net'],
+  vat:['ust betrag','mwst betrag','steuerbetrag','vat amount','tax amount'],
+  status:['zahlungsstatus','payment status'],
+  category:['kostenart','kostenkategorie','kategorie','cost category'],
+  description:['beschreibung','bezeichnung','leistung','artikel','description','verwendungszweck'],
+  due:['faelligkeitsdatum','faelligkeit','due date']
+ };
+ const normalizedAliases=Object.fromEntries(Object.entries(aliases).map(([key,values])=>[key,new Set(values.map(spreadsheetHeaderKey))]));
+ const candidates=[];
+ for(const sheet of rawSheets||[]){
+  const rows=sheet.rows||[];let headerIndex=-1,columns=null;
+  for(let i=0;i<Math.min(rows.length,20);i++){
+   const header=(rows[i]||[]).map(spreadsheetHeaderKey);
+   const map={};for(const [key,set] of Object.entries(normalizedAliases))map[key]=header.findIndex(value=>set.has(value));
+   if(['date','supplier','invoice','gross'].every(key=>map[key]>=0)){headerIndex=i;columns=map;break;}
+  }
+  if(headerIndex>=0)candidates.push({sheet,headerIndex,columns});
+ }
+ if(!candidates.length)return {rows:[],reason:'Keine eindeutige Lieferantenrechnungs-Tabelle erkannt.'};
+ if((rawSheets||[]).some(sheet=>sheet.truncated))return {rows:[],reason:'Mindestens ein Tabellenblatt hat mehr als 5.000 Zeilen; zur Sicherheit wurde nichts automatisch gebucht.'};
+ if(candidates.length!==(rawSheets||[]).filter(sheet=>(sheet.rows||[]).some(row=>(row||[]).some(value=>String(value??'').trim()))).length)return {rows:[],reason:'Nicht alle befüllten Tabellenblätter haben dieselbe eindeutig erkennbare Rechnungsstruktur.'};
+ const result=[],seen=new Set();
+ for(const {sheet,headerIndex,columns} of candidates){
+  const rows=sheet.rows||[];
+  for(let i=headerIndex+1;i<rows.length;i++){
+   const row=rows[i]||[];if(!row.some(value=>String(value??'').trim()))continue;
+   const date=spreadsheetDate(row[columns.date]),supplier=String(row[columns.supplier]??'').trim(),invoice=String(row[columns.invoice]??'').trim(),gross=spreadsheetNumber(row[columns.gross]);
+   if(!date||!supplier||!invoice||gross===null||gross<=0)return {rows:[],reason:'Mindestens eine Rechnungszeile hat kein gültiges Datum, keinen Lieferanten, keine Rechnungsnummer oder keinen positiven Bruttobetrag.'};
+   const key=(supplier+'|'+invoice).toLocaleLowerCase('de-AT');if(seen.has(key))return {rows:[],reason:'Eine Rechnungsnummer kommt mehrfach vor. Die Tabelle bleibt zur Prüfung, damit keine Summe doppelt gebucht wird.'};seen.add(key);
+   const net=columns.net>=0?spreadsheetNumber(row[columns.net]):null,vat=columns.vat>=0?spreadsheetNumber(row[columns.vat]):null;
+   if(net!==null&&vat!==null&&Math.abs(net+vat-gross)>.03)return {rows:[],reason:'Netto + Steuer stimmt bei mindestens einer Zeile nicht mit Brutto überein.'};
+   let payment='open',paymentNeedsReview=columns.status<0;
+   if(columns.status>=0){
+    const state=spreadsheetHeaderKey(row[columns.status]);
+    if(!state){payment='open';paymentNeedsReview=true;}
+    else if(/^(bezahlt|bezahlt am|paid|beglichen|erledigt)$/.test(state))payment='paid';
+    else if(/^(offen|unbezahlt|faellig|faellig zur zahlung|open|unpaid|due)$/.test(state))payment='open';
+    else return {rows:[],reason:'Unbekannter Zahlungsstatus in der Tabelle: '+String(row[columns.status])};
+   }
+   const desc=columns.description>=0?String(row[columns.description]??'').trim():'';
+   const rawCategory=columns.category>=0?spreadsheetHeaderKey(row[columns.category]):'';
+   const category=rawCategory.includes('lebensmittel')||rawCategory==='food'?'food':rawCategory.includes('getraenk')||rawCategory==='drinks'?'drinks':rawCategory.includes('miete')||rawCategory==='rent'?'rent':rawCategory.includes('energie')||rawCategory.includes('strom')||rawCategory.includes('gas')?'energy':rawCategory.includes('versicherung')||rawCategory==='insurance'?'insurance':rawCategory.includes('personal')||rawCategory==='personnel'?'personnel':rawCategory.includes('verpack')||rawCategory.includes('nonfood')||rawCategory==='nonfood'?'nonfood':'other';
+   const due=columns.due>=0?spreadsheetDate(row[columns.due]):null;
+   result.push({date,supplier,invoice,gross,net,vat,payment,paymentNeedsReview,description:desc,category,due,sheet:sheet.name,row:i+1});
+  }
+ }
+ return result.length?{rows:result,reason:''}:{rows:[],reason:'Die erkannte Tabelle enthält keine Rechnungszeilen.'};
 }
 function field(container,label,key,value,type='text'){const l=document.createElement('label');l.textContent=label;const i=document.createElement('input');i.type=type;i.dataset.key=key;i.value=value??'';l.append(i);container.append(l);}
 function queueFiles(files){if(busy)return;for(const f of files){if(!isSpreadsheet(f)&&!['image/jpeg','image/png','image/webp','application/pdf'].includes(f.type))continue;if(f.size>20*1024*1024){E('uploadStatus').textContent=f.name+': über 20 MB';continue;}if(queue.length>=12){E('uploadStatus').textContent='Maximal 12 Dateien pro Durchgang.';break;}if(!queue.some(x=>x.name===f.name&&x.size===f.size&&x.lastModified===f.lastModified))queue.push(f);}drawQueue();}
@@ -930,7 +1007,7 @@ async function secureOriginal(file){
  const digest=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',await file.arrayBuffer())),b=>b.toString(16).padStart(2,'0')).join('');
  const {data:prior,error:lookupError}=await db.from('documents').select('id,storage_path,status,document_type,extracted_data').eq('business_id',BID).contains('extracted_data',{source_sha256:digest}).order('created_at',{ascending:false}).limit(1);
  if(lookupError)throw lookupError;
- if(prior?.length)return {...prior[0],alreadyRecognized:prior[0].document_type!=='other'||prior[0].status==='reviewed'};
+ if(prior?.length)return {...prior[0],alreadyRecognized:prior[0].document_type!=='other'||['reviewed','auto_imported'].includes(prior[0].status)};
  const ext=isSpreadsheet(file)?'xlsx':file.type==='application/pdf'?'pdf':file.type==='image/png'?'png':file.type==='image/webp'?'webp':'jpg';
  const path=BID+'/'+crypto.randomUUID()+'.'+ext;
  const upload=await db.storage.from('invoice-originals').upload(path,file,{contentType:isSpreadsheet(file)?'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':file.type,upsert:false});
@@ -1015,16 +1092,38 @@ async function retrySavedPhotoGroup(){
  finally{busy=false;drawQueue();}
 }
 async function archiveSpreadsheet(file,intake){
- E('uploadStatus').textContent='XLSX-Tabellenblätter werden gelesen · '+file.name;
- const sheets=await withTimeout(parseSpreadsheet(file),60000,'XLSX-Lesen dauerte zu lange. Original bleibt im Archiv.');
- const details={...(intake.extracted_data||{}),document_class:'spreadsheet',spreadsheet_sheets:sheets,import_warning:'Tabellenblätter archiviert und als Vorschau eingelesen. Keine automatische Umsatz- oder Kostenbuchung.',processed_at:new Date().toISOString()};
- const {data,error}=await db.from('documents').update({status:'reviewed',extracted_data:details}).eq('id',intake.id).eq('business_id',BID).eq('document_type','other').select('id').maybeSingle();
+ E('uploadStatus').textContent='XLSX wird gelesen und auf eindeutige Rechnungszeilen geprüft · '+file.name;
+ const parsed=await withTimeout(parseSpreadsheet(file),60000,'XLSX-Lesen dauerte zu lange. Original bleibt im Archiv.');
+ const detected=extractSupplierInvoiceRows(parsed.rawSheets);
+ let booked=0,duplicates=0,total=0;
+ if(detected.rows.length){
+  for(const row of detected.rows){
+   const description='XLSX import · Rechnung '+row.invoice+' · '+(row.description||'Lieferantenrechnung');
+   const priorExpense=await db.from('expenses').select('id').eq('business_id',BID).eq('supplier',row.supplier).eq('expense_date',row.date).eq('description',description).eq('gross_amount',row.gross).limit(1);
+   if(priorExpense.error)throw priorExpense.error;
+   if(priorExpense.data?.length){duplicates++;continue;}
+   const priorInvoice=await db.from('documents').select('id').eq('business_id',BID).eq('document_type','invoice').eq('supplier',row.supplier).eq('invoice_number',row.invoice).limit(1);
+   if(priorInvoice.error)throw priorInvoice.error;
+   if(priorInvoice.data?.length){duplicates++;continue;}
+   const expense={business_id:BID,document_id:intake.id,expense_date:row.date,accounting_month:row.date.slice(0,7)+'-01',category:row.category,description,supplier:row.supplier,gross_amount:row.gross,net_amount:row.net,vat_amount:row.vat,payment_status:row.payment,paid_at:row.payment==='paid'?row.date:null,due_date:row.due};
+   const savedExpense=await db.from('expenses').insert(expense);
+   if(savedExpense.error)throw savedExpense.error;
+   booked++;total+=row.gross;
+  }
+ }
+ const fallback=detected.rows.length?detected.reason:'Keine automatische Buchung: '+detected.reason;
+ const paymentNote=detected.rows.some(row=>row.paymentNeedsReview)?' Zahlungsstatus fehlte teilweise; betroffene Rechnungen wurden vorsorglich als offen erfasst.':'';
+ const warning=detected.rows.length?(fallback||paymentNote||'Lieferantenrechnungen automatisch in die Betriebskosten übernommen.')+paymentNote:'Tabellen wurden eingelesen und archiviert, aber nicht gebucht. '+fallback;
+ const details={...(intake.extracted_data||{}),original_name:file.name,document_class:'spreadsheet',spreadsheet_sheets:parsed.sheets,auto_booked_count:booked,auto_booked_total:Number(total.toFixed(2)),auto_skipped_duplicates:duplicates,auto_invoice_numbers:detected.rows.map(row=>row.invoice),import_warning:warning,processed_at:new Date().toISOString()};
+ const status=detected.rows.length?'auto_imported':'auto_review';
+ const {data,error}=await db.from('documents').update({status,extracted_data:details}).eq('id',intake.id).eq('business_id',BID).eq('document_type','other').select('id').maybeSingle();
  if(error)throw error;if(!data)throw Error('XLSX konnte nicht im Archiv bestätigt werden. Original bleibt gesichert.');
- E('uploadStatus').textContent='✓ XLSX archiviert · '+sheets.length+' Tabellenblätter · '+file.name;
+ E('uploadStatus').textContent=detected.rows.length?'✓ '+booked+' Rechnungen als Betriebskosten gebucht · '+duplicates+' bereits vorhanden · '+EUR(total):'XLSX eingelesen und archiviert · keine automatische Buchung: '+detected.reason;
+ return {booked,duplicates,needsReview:!detected.rows.length};
 }
 async function process(){
  if(busy||!queue.length)return;if(!user){E('uploadStatus').textContent='Bitte anmelden.';return;}
- busy=true;drawQueue();E('review').replaceChildren();const files=[...queue];let saved=0,duplicate=0,failed=0,secured=0,spreadsheetSaved=0;const errors=[],intakes=new Map();
+ busy=true;drawQueue();E('review').replaceChildren();const files=[...queue];let saved=0,duplicate=0,failed=0,secured=0,spreadsheetSaved=0,xlsxBooked=0,xlsxDuplicates=0,xlsxReview=0;const errors=[],intakes=new Map();
  try{
   for(const [fileIndex,file] of files.entries()){
    try{
@@ -1054,7 +1153,7 @@ async function process(){
    try{
     if(intake.alreadyRecognized){duplicate++;queue=queue.filter(f=>f!==file);if(isSpreadsheet(file))E('uploadStatus').textContent='XLSX bereits im Archiv · '+file.name;else showArchivedDuplicate(file);continue;}
     if(intake.periodArchived){saved++;queue=queue.filter(f=>f!==file);setProgress('Monatszeitraum '+intake.extracted_data.period_start+' bis '+intake.extracted_data.period_end+' automatisch archiviert.');continue;}
-    if(isSpreadsheet(file)){await archiveSpreadsheet(file,intake);saved++;spreadsheetSaved++;queue=queue.filter(f=>f!==file);continue;}
+    if(isSpreadsheet(file)){const imported=await archiveSpreadsheet(file,intake);saved++;spreadsheetSaved++;xlsxBooked+=imported.booked;xlsxDuplicates+=imported.duplicates;if(imported.needsReview)xlsxReview++;queue=queue.filter(f=>f!==file);continue;}
     setProgress('Original gesichert · Erkennung läuft …');
     const blobs=await withTimeout(pages(file,setProgress),90000,'Datei/PDF konnte nach 90 Sekunden nicht vorbereitet werden.');
     if(blobs.length>12)throw Error('PDF hat mehr als 12 Seiten');
@@ -1092,7 +1191,7 @@ async function process(){
     E('review').replaceChildren();
    }
   }
-  E('uploadStatus').textContent=(failed===0&&(saved>0||duplicate>0)?'✓ Verarbeitung abgeschlossen · ':'')+saved+' verarbeitet und archiviert · '+duplicate+' bereits vorhanden (keine Doppelbuchung) · '+failed+' zur Prüfung. '+(spreadsheetSaved?spreadsheetSaved+' XLSX als Tabellenblätter eingelesen, ohne Finanzbuchung. ':'')+(secured?'Originale wurden vor der Erkennung gesichert.':'');
+  E('uploadStatus').textContent=(failed===0&&(saved>0||duplicate>0)?'✓ Verarbeitung abgeschlossen · ':'')+saved+' verarbeitet und archiviert · '+duplicate+' bereits vorhanden (keine Doppelbuchung) · '+failed+' zur Prüfung. '+(spreadsheetSaved?spreadsheetSaved+' XLSX eingelesen · '+xlsxBooked+' Rechnungen / '+'Betrag siehe Archiv'+' automatisch gebucht · '+xlsxDuplicates+' Duplikate übersprungen · '+xlsxReview+' Tabellen zur Prüfung. ':'')+(secured?'Originale wurden vor der Erkennung gesichert.':'');
   if(failed===0&&saved>0&&duplicate===0){E('review').replaceChildren();E('intake').scrollIntoView({behavior:'smooth',block:'start'});}
   for(const msg of errors){const p=document.createElement('p');p.className='warning';p.textContent=msg;E('review').append(p);}
   if(secured||saved||duplicate){await refresh();await loadWholeArchive();}
