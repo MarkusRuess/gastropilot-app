@@ -63,6 +63,7 @@ function octoberCost(article){
  if(/villacher.*bier/.test(key)){const v=directCost(article);return v>0?{cost:v,note:'Brau Union · Fass 50 l; 5 % Schankverlust',kind:'belegt'}:null}
  if(/espresso klein/.test(key)){const p=octoberIngredient(/illy classico kaffeebohnen/,{invoice:true});return p?{cost:n(p.unit_price_net)*.008,note:'Illy · 8 g pro Portion; weitere Zutaten/Schwund fehlen',kind:'Teilkosten'}:null}
  if(/espresso gross/.test(key)){const p=octoberIngredient(/illy classico kaffeebohnen/,{invoice:true});return p?{cost:n(p.unit_price_net)*.016,note:'Illy · 16 g geschätzt; weitere Zutaten/Schwund fehlen',kind:'Teilkosten'}:null}
+ if(/espresso macchiato|verlangerter|melange|cappuccino|cafe latte/.test(key)){const p=octoberIngredient(/illy classico kaffeebohnen/,{invoice:true});return p?{cost:n(p.unit_price_net)*.008,note:'Illy · 8 g Bohnen je Portion als Ansatz; Milch, Zucker und Schwund fehlen',kind:'Teilkosten'}:null}
  if(/coca cola.*0\s*33/.test(key)){const p=octoberIngredient(/coca cola (coke|zero).*24x33cl/,{invoice:true});return p?{cost:n(p.unit_price_net)/24,note:'Brau Union · Kiste / 24',kind:'belegt'}:null}
  if(/voslauer.*0\s*33/.test(key)){const p=octoberIngredient(/voslauer prickelnd.*24x33cl/,{invoice:true});return p?{cost:n(p.unit_price_net)/24,note:'Brau Union · Kiste / 24',kind:'belegt'}:null}
  if(/gosser.*radler|gosser.*alkoholfrei/.test(key)){const p=octoberIngredient(/gosser.*(radler|naturgold)/,{photo:true});return p?{cost:n(p.unit_price_net),note:'Transgourmet · Netto-Preisfoto',kind:'Preisfoto'}:null}
