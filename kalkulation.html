@@ -61,8 +61,8 @@ function octoberIngredient(pattern,{photo=false,invoice=false}={}){
 function octoberCost(article){
  const key=octoberKey(article);
  if(/villacher.*bier/.test(key)){const v=directCost(article);return v>0?{cost:v,note:'Brau Union · Fass 50 l; 5 % Schankverlust',kind:'belegt'}:null}
- if(/espresso klein/.test(key)){const p=octoberIngredient(/illy classico kaffeebohnen/,{invoice:true});return p?{cost:n(p.unit_price_net)*.008,note:'Illy · 8 g pro Portion',kind:'belegt'}:null}
- if(/espresso gross/.test(key)){const p=octoberIngredient(/illy classico kaffeebohnen/,{invoice:true});return p?{cost:n(p.unit_price_net)*.016,note:'Illy · 16 g geschätzt',kind:'Schätzung'}:null}
+ if(/espresso klein/.test(key)){const p=octoberIngredient(/illy classico kaffeebohnen/,{invoice:true});return p?{cost:n(p.unit_price_net)*.008,note:'Illy · 8 g pro Portion; weitere Zutaten/Schwund fehlen',kind:'Teilkosten'}:null}
+ if(/espresso gross/.test(key)){const p=octoberIngredient(/illy classico kaffeebohnen/,{invoice:true});return p?{cost:n(p.unit_price_net)*.016,note:'Illy · 16 g geschätzt; weitere Zutaten/Schwund fehlen',kind:'Teilkosten'}:null}
  if(/coca cola.*0\s*33/.test(key)){const p=octoberIngredient(/coca cola (coke|zero).*24x33cl/,{invoice:true});return p?{cost:n(p.unit_price_net)/24,note:'Brau Union · Kiste / 24',kind:'belegt'}:null}
  if(/voslauer.*0\s*33/.test(key)){const p=octoberIngredient(/voslauer prickelnd.*24x33cl/,{invoice:true});return p?{cost:n(p.unit_price_net)/24,note:'Brau Union · Kiste / 24',kind:'belegt'}:null}
  if(/gosser.*radler|gosser.*alkoholfrei/.test(key)){const p=octoberIngredient(/gosser.*(radler|naturgold)/,{photo:true});return p?{cost:n(p.unit_price_net),note:'Transgourmet · Netto-Preisfoto',kind:'Preisfoto'}:null}
@@ -76,10 +76,10 @@ function drawOctoberAnalysis(menu){
  const search=E('octoberSearch').value.trim().toLocaleLowerCase('de-AT'),rows=octoberSales.filter(a=>!search||a.name.toLocaleLowerCase('de-AT').includes(search));
  host.replaceChildren();let priced=0,estimated=0;
  for(const a of rows){const m=octoberMenu(a.name,menu),price=a.price??n(m?.printed_gross_price),cost=octoberCost(a.name),vat=/brotchen|br(o|ö)tchen|baguette|toast|teller|wurst|torte|schnitte|macaron|kuchen|semmel|speise|strudel/.test(octoberKey(a.name))?10:20;
-  const wes=cost&&price>0?cost.cost/(price/(1+vat/100))*100:null,math=cost?Math.ceil(cost.cost/.26*(1+vat/100)*10-1e-8)/10:null;
+  const wes=cost&&price>0?cost.cost/(price/(1+vat/100))*100:null,math=cost&&cost.kind!=='Teilkosten'?Math.ceil(cost.cost/.26*(1+vat/100)*10-1e-8)/10:null;
   if(cost)priced++;if(cost?.kind==='Schätzung'||a.unverifiedDays.size)estimated++;
   const state=cost?cost.kind:'EK/Rezeptur fehlt',quality=a.unverifiedDays.size?' · '+a.unverifiedDays.size+' Tag(e) Artikelprüfung offen':'';
-  const cells=[a.name,String(a.quantity).replace('.',','),money(price),money(cost?.cost),wes==null?'–':wes.toLocaleString('de-AT',{maximumFractionDigits:1})+' %',money(math),money(n(m?.proposed_gross_price)),state+quality];
+  const cells=[a.name,String(a.quantity).replace('.',','),money(price),money(cost?.cost),wes==null?'–':(cost.kind==='Teilkosten'?'mind. ':'')+wes.toLocaleString('de-AT',{maximumFractionDigits:1})+' %',money(math),money(n(m?.proposed_gross_price)),state+quality];
   const tr=document.createElement('tr');for(const value of cells){const td=document.createElement('td');td.textContent=value;tr.append(td)}if(cost)tr.title=cost.note;host.append(tr)
  }
  const stats=E('octoberStats');stats.replaceChildren();for(const [label,value] of [['Verkaufte Artikel',String(octoberSales.length)],['Mit EK-Ansatz',String(octoberSales.filter(a=>octoberCost(a.name)).length)],['Ohne EK-Ansatz',String(octoberSales.filter(a=>!octoberCost(a.name)).length)]]){const box=document.createElement('div');box.className='tile';const small=document.createElement('small');small.textContent=label;const strong=document.createElement('b');strong.textContent=value;box.append(small,strong);stats.append(box)}
