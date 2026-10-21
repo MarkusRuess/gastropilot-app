@@ -356,9 +356,22 @@ async function saveInvoicePaymentStatus(invoiceDoc,paymentStatus,controls){
  controls.dataset.saving='true';buttons.forEach(button=>button.disabled=true);
  if(state){state.classList.remove('error','current-paid','current-open');state.textContent='Speichert …';}
  try{
-  const updated={...(invoiceDoc.extracted_data||{}),payment_status:paymentStatus,payment_status_updated_at:new Date().toISOString()};
+  const previous=invoiceDoc.extracted_data||{},updated={...previous,payment_status:paymentStatus,payment_status_updated_at:new Date().toISOString()};
+  const key=invoiceDoc.supplier&&invoiceDoc.invoice_number?invoiceIdentity(invoiceDoc.supplier,invoiceDoc.invoice_number):null;
+  const searches=[db.from('expenses').select('id').eq('business_id',BID).eq('document_id',invoiceDoc.id)];
+  if(key)searches.push(db.from('expenses').select('id').eq('business_id',BID).eq('source_invoice_key',key));
+  const matches=await Promise.all(searches);
+  for(const match of matches)if(match.error)throw match.error;
+  const expenseIds=[...new Set(matches.flatMap(match=>(match.data||[]).map(row=>row.id)))];
   const {data,error}=await db.from('documents').update({extracted_data:updated}).eq('id',invoiceDoc.id).eq('business_id',BID).select('id').maybeSingle();
   if(error)throw error;if(!data)throw Error('Keine Änderung gespeichert. Bitte Anmeldung und Berechtigung prüfen.');
+  if(expenseIds.length){
+   const expenseUpdate=await db.from('expenses').update({payment_status:paymentStatus==='bezahlt'?'paid':'open',paid_at:null}).eq('business_id',BID).in('id',expenseIds);
+   if(expenseUpdate.error){
+    const rollback=await db.from('documents').update({extracted_data:previous}).eq('id',invoiceDoc.id).eq('business_id',BID);
+    throw Error('Kostenstatus nicht aktualisiert: '+expenseUpdate.error.message+(rollback.error?' · Belegstatus muss manuell geprüft werden.':''));
+   }
+  }
   invoiceDoc.extracted_data=updated;
   if(state){state.textContent=paymentStatus==='bezahlt'?'Bezahlt':'Offen';state.classList.add(paymentStatus==='bezahlt'?'current-paid':'current-open');}
   buttons.forEach(button=>button.classList.toggle('selected',button.textContent.trim()===(paymentStatus==='bezahlt'?'Bezahlt':'Offen')));
