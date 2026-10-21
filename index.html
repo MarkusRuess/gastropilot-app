@@ -23,7 +23,7 @@ h2{font-size:17px;margin:10px 0}h3{font-size:14px}table{width:100%;border-collap
 .menu-product-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:10px;padding:2px}
 .menu-product-card{min-width:0;padding:13px 14px;border:1px solid var(--line);border-radius:14px;background:var(--card,#f7f9fa);box-shadow:0 1px 2px rgba(0,0,0,.035)}
 .menu-product-name{display:block;font-size:15px;line-height:1.35;margin-bottom:11px;overflow-wrap:anywhere}
-.menu-product-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px 8px}
+.menu-product-metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 8px}
 .menu-product-metric{min-width:0;display:flex;flex-direction:column;gap:3px}
 .menu-product-metric small{font-size:11px;color:var(--muted,#65758a);line-height:1.2}
 .menu-product-metric b{font-size:14px;line-height:1.25;overflow-wrap:anywhere}
@@ -198,7 +198,7 @@ function renderMenuDashboard(items,proposals){
   const heading=document.createElement('strong');heading.className='menu-product-name';heading.textContent=item.name;card.append(heading);
   const metrics=document.createElement('div');metrics.className='menu-product-metrics';
   const current=Number(item.price),recommended=item.recommended;
-  const values=[['Einheit',menuServing(item.name)],['BONit-VK',EUR(current)],['EK netto',item.ek===null?'EK offen':EUR(item.ek)],['Wareneinsatz',item.rate===null?'–':(item.rate*100).toLocaleString('de-AT',{maximumFractionDigits:1})+' %'],['VK für 26 % EK',item.targetVk===null?'–':EUR(item.targetVk)],['Empfehlung',EUR(recommended)]];
+  const values=[['BONit VK',EUR(current)],['EK netto',item.ek===null?'EK offen':EUR(item.ek)],['Wareneinsatz',item.rate===null?'–':(item.rate*100).toLocaleString('de-AT',{maximumFractionDigits:1})+' %'],['Empfohlener VK',EUR(recommended)]];
   for(const [label,value] of values){
    const metric=document.createElement('div');metric.className='menu-product-metric';
    const l=document.createElement('small');l.textContent=label;
