@@ -186,7 +186,7 @@ function menuProposal(name,price,proposals){
 function renderMenuDashboard(items,proposals){
  const host=E('menuDashboardRows');host.replaceChildren();
  const ranked=items.map(item=>{
-  const ek=articleEkPrices.get(String(item.name||'').trim().toLocaleLowerCase('de-AT'));
+  const ek=getArticleEk(item.name);
   const partialSodaCost=false;
   const cost=Number.isFinite(ek)?ek:null;
   const rate=!partialSodaCost&&cost!==null&&Number(item.price)>0?cost/(Number(item.price)/1.2):null;
@@ -599,11 +599,34 @@ async function loadArticleEkPrices(){
  if(error)throw error;
  articleEkPrices=new Map((data||[]).map(x=>[String(x.article_name).trim().toLocaleLowerCase('de-AT'),Number(x.cost_net)]));
 }
+function getArticleEk(name){
+ const key=String(name||'').trim().toLocaleLowerCase('de-AT');
+ if(articleEkPrices.has(key))return articleEkPrices.get(key);
+ const normalized=key.normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,' ').trim();
+ const aliases=[
+  [/grauburgunder.*neumeister|neumeister.*grauburgunder/, '1/8 Grauburgunder Neumeister Straden'],
+  [/keringer.*heideboden|heideboden.*keringer/, '1/8 Keringer Heideboden Cuvee'],
+  [/campari.*spritz/, 'Campari Spritz'],
+  [/campari.*orange/, 'Campari Orange'],
+  [/campari.*soda/, 'Campari Soda'],
+  [/gosser.*naturgold/, 'Gösser Naturgold alkoholfrei 0,33l'],
+  [/gosser.*naturradler/, 'Gösser Naturradler Zitrone 0,33l'],
+  [/hollinger.*apfel/, 'Höllinger Naturtrüb Apfelsaft 1l'],
+  [/happy day.*orange/, 'Happy Day Orangensaft 100% 1l']
+ ];
+ for(const [pattern,canonical] of aliases){
+  if(pattern.test(normalized)){
+   const v=articleEkPrices.get(canonical.toLocaleLowerCase('de-AT'));
+   if(Number.isFinite(v))return v;
+  }
+ }
+ return null;
+}
 function articleEkForGroup(x){
  const variants=x.variants||[{articleName:x.name,qty:x.qty}];
  let cost=0,qty=0;
  for(const v of variants){
-  const price=articleEkPrices.get(String(v.articleName||'').trim().toLocaleLowerCase('de-AT'));
+  const price=getArticleEk(v.articleName);
   if(!Number.isFinite(price))return null;
   const n=Number(v.qty)||0;cost+=n*price;qty+=n;
  }
