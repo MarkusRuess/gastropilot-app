@@ -299,7 +299,7 @@ async function loadWholeArchive(){
    ['invoice','documents','id,document_date,document_type,supplier,invoice_number,status,storage_path,extracted_data'],
    ['bank','bank_transactions','id,booking_date,payee,description,amount,match_status,account_name'],
    ['personnel','personnel_costs','id,accounting_month,employee_name,total_costs,payment_status'],
-   ['expense','expenses','id,expense_date,supplier,description,net_amount,gross_amount,payment_status'],
+   ['expense','expenses','id,document_id,expense_date,supplier,description,net_amount,gross_amount,payment_status'],
    ['personnel','employee_archive_files','id,created_at,original_name,accounting_month,processing_status']
   ];
   const results=await Promise.all(specs.map(async([type,table,fields])=>{
@@ -308,7 +308,8 @@ async function loadWholeArchive(){
     if(q.error)throw Error(table+': '+q.error.message);all.push(...(q.data||[]));if((q.data||[]).length<1000)break;from+=1000;
    }return {type,table,rows:all};
   }));
-  archiveData=[];for(const {type,table,rows} of results)for(const x of rows){
+  const invoiceDocumentIds=new Set((results.find(result=>result.table==='documents')?.rows||[]).filter(row=>row.document_type==='invoice').map(row=>row.id));
+  archiveData=[];for(const {type,table,rows} of results)for(const x of rows){if(table==='expenses'&&invoiceDocumentIds.has(x.document_id))continue;
    if(table==='documents'){
     const kind=x.document_type==='invoice'?'invoice':x.document_type==='other'&&x.extracted_data?.document_class==='spreadsheet'?'spreadsheet':x.document_type==='other'&&x.extracted_data?.document_class==='purchase_price_reference'?'price_reference':x.document_type==='other'?'other':'bonit';
     archiveData.push({id:x.id,type:kind,date:x.document_date||'',name:kind==='invoice'?(x.supplier||'Lieferant')+' · '+(x.invoice_number||'ohne Nummer'):kind==='spreadsheet'?x.extracted_data?.original_name||'Tabelle.xlsx':kind==='price_reference'?(x.supplier||'Lieferant')+' · '+(x.extracted_data?.purchase_items?.length||0)+' EK-Preise aus Fotos':kind==='other'?(x.extracted_data?.original_name||'Originalfoto')+' · '+(x.extracted_data?.import_warning||'Erkennung ausstehend'):'BONit '+(x.document_type||'Beleg'),amount:['price_reference','spreadsheet'].includes(kind)?null:N(x.extracted_data?.gross_total),status:x.status||'archiviert',supplier:x.supplier,storage_path:x.storage_path||null,extracted_data:x.extracted_data||{}});
@@ -886,6 +887,31 @@ function field(container,label,key,value,type='text'){const l=document.createEle
 function queueFiles(files){if(busy)return;for(const f of files){if(!isSpreadsheet(f)&&!['image/jpeg','image/png','image/webp','application/pdf'].includes(f.type))continue;if(f.size>20*1024*1024){E('uploadStatus').textContent=f.name+': über 20 MB';continue;}if(queue.length>=12){E('uploadStatus').textContent='Maximal 12 Dateien pro Durchgang.';break;}if(!queue.some(x=>x.name===f.name&&x.size===f.size&&x.lastModified===f.lastModified))queue.push(f);}drawQueue();}
 function drawQueue(){E('fileQueue').replaceChildren();const heading=document.createElement('p');heading.textContent=queue.length+' von 12 Fotos / PDF / XLSX ausgewählt';E('fileQueue').append(heading);for(const [i,f] of queue.entries()){const row=document.createElement('div');row.className='row';row.style.marginBottom='5px';const name=document.createElement('span');name.textContent=(i+1)+'. '+f.name;const remove=document.createElement('button');remove.textContent='Entfernen';remove.disabled=busy;remove.onclick=()=>{queue.splice(i,1);drawQueue();};row.append(name,remove);E('fileQueue').append(row);}E('confirmUpload').disabled=busy||queue.length===0;E('clearUpload').disabled=busy||queue.length===0;}
 function classifyInvoiceExpense(doc,sourceFile){if(doc.document_type!=='invoice')return;const description=[doc.supplier,doc.description,doc.service_description,...(Array.isArray(doc.purchase_items)?doc.purchase_items.map(x=>x.name):[])].filter(Boolean).join(' ').toLowerCase();const repair=/reparatur|instandsetzung|wartung|serviceeinsatz|techniker|störungsbehebung|ersatzteil/.test(description)||String(doc.invoice_number||'').replace(/\D/g,'')==='3260727'||/rechnung\s*3260727/i.test(sourceFile?.name||'');if(repair){doc.expense_category='Reparatur und Instandhaltung';doc.cost_category='Reparatur und Instandhaltung';doc.cost_type='Betriebskosten';doc.expense_classification_source=String(doc.invoice_number||'').replace(/\D/g,'')==='3260727'?'manuell bestätigte Reparaturrechnung':'automatische Stichworterkennung';}}
+function invoiceExpenseCategory(doc){
+ const text=[doc?.expense_category,doc?.cost_category,doc?.supplier,doc?.description,doc?.service_description,...(Array.isArray(doc?.purchase_items)?doc.purchase_items.map(item=>item.name):[])].filter(Boolean).join(' ').toLocaleLowerCase('de-AT');
+ if(/mehl|eier|butter|schokolade|lebensmittel|speise|obst|milch|fleisch|transgourmet|metro|dermann/.test(text))return 'food';
+ if(/getraenk|wein|kaffee|saft|wasser|bier/.test(text))return 'drinks';
+ if(/miete|pacht/.test(text))return 'rent';
+ if(/strom|gas|energie|winterhalter/.test(text))return 'energy';
+ if(/versicherung/.test(text))return 'insurance';
+ if(/lohn|gehalt|personal/.test(text))return 'personnel';
+ if(/verpack|reparatur|instandhaltung|wartung|service|ersatzteil|nonfood/.test(text))return 'nonfood';
+ if(/eigent[uü]mer|privatentnahme/.test(text))return 'owner';
+ return 'other';
+}
+async function autoBookInvoiceExpense(doc,documentId){
+ if(!documentId||doc?.needs_review||!validCalendarDate(doc?.date)||!doc?.supplier||!doc?.invoice_number)return false;
+ const gross=N(doc.gross_total),net=N(doc.net_total),vat=N(doc.vat_total);
+ if(!(gross>0)||net!==null&&vat!==null&&Math.abs(net+vat-gross)>.03)return false;
+ const payment=doc.payment_status==='bezahlt'?'paid':doc.payment_status==='offen'?'open':null;
+ if(!payment)return false;
+ const description='Rechnung '+String(doc.invoice_number).trim()+' · '+String(doc.description||doc.service_description||doc.supplier).trim();
+ const existing=await db.from('expenses').select('id').eq('business_id',BID).eq('document_id',documentId).limit(1);
+ if(existing.error)throw existing.error;if(existing.data?.length)return false;
+ const row={business_id:BID,document_id:documentId,expense_date:doc.date,accounting_month:doc.date.slice(0,7)+'-01',category:invoiceExpenseCategory(doc),description,supplier:doc.supplier,gross_amount:gross,net_amount:net,vat_amount:vat,payment_status:payment,paid_at:payment==='paid'?doc.date:null,due_date:validCalendarDate(doc.due_date)?doc.due_date:null};
+ const result=await db.from('expenses').insert(row);if(result.error)throw result.error;
+ return true;
+}
 async function autoArchive(doc,sourceFile,paymentStatus,intake=null,extraIntakes=[]){
  classifyInvoiceExpense(doc,Array.isArray(sourceFile)?sourceFile[0]:sourceFile);
  const x={...doc},kind=x.document_type;let existingIncompleteCash=null;
@@ -959,6 +985,7 @@ async function autoArchive(doc,sourceFile,paymentStatus,intake=null,extraIntakes
    if(intake){const {data,error}=await db.from('documents').update(record).eq('id',intake.id).eq('business_id',BID).select('id').maybeSingle();if(error||!data)throw error||Error('Archivdatensatz konnte nicht aktualisiert werden.');if(extraIntakes.length)await markDuplicate(intake.id,'Original gehört zum gemeinsam erkannten Beleg.',extraIntakes);}
    else{const {error}=await db.from('documents').insert({...record,business_id:BID,uploaded_by:user.id,storage_path:paths[0]});if(error)throw error;}
   }
+  if(kind==='invoice'&&intake)await autoBookInvoiceExpense(x,intake.id);
  }catch(e){if(!intake&&paths.length)await db.storage.from('invoice-originals').remove(paths);throw e;}
  return 'gespeichert';
 }
@@ -1151,7 +1178,7 @@ async function process(){
    let intake=intakes.get(file);if(!intake)continue;let candidate=null;
    const setProgress=step=>{E('uploadStatus').textContent=(fileIndex+1)+'/'+files.length+' · '+file.name+' · '+step;};
    try{
-    if(intake.alreadyRecognized){duplicate++;queue=queue.filter(f=>f!==file);if(isSpreadsheet(file))E('uploadStatus').textContent='XLSX bereits im Archiv · '+file.name;else showArchivedDuplicate(file);continue;}
+    if(intake.alreadyRecognized){if(intake.document_type==='invoice')await autoBookInvoiceExpense({...intake.extracted_data,date:intake.document_date,supplier:intake.extracted_data?.supplier||intake.supplier,invoice_number:intake.extracted_data?.invoice_number||intake.invoice_number},intake.id);duplicate++;queue=queue.filter(f=>f!==file);if(isSpreadsheet(file))E('uploadStatus').textContent='XLSX bereits im Archiv · '+file.name;else showArchivedDuplicate(file);continue;}
     if(intake.periodArchived){saved++;queue=queue.filter(f=>f!==file);setProgress('Monatszeitraum '+intake.extracted_data.period_start+' bis '+intake.extracted_data.period_end+' automatisch archiviert.');continue;}
     if(isSpreadsheet(file)){const imported=await archiveSpreadsheet(file,intake);saved++;spreadsheetSaved++;xlsxBooked+=imported.booked;xlsxDuplicates+=imported.duplicates;xlsxTotal+=imported.total;if(imported.needsReview)xlsxReview++;queue=queue.filter(f=>f!==file);continue;}
     setProgress('Original gesichert · Erkennung läuft …');
