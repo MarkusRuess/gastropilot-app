@@ -28,7 +28,10 @@ begin
       references public.documents (id, business_id)
       on delete set null (document_id);
   end if;
-end $$;
+end $;
+
+create index if not exists expenses_document_business_idx
+  on public.expenses (document_id, business_id);
 
 -- Keep the archive private and preserve the existing photo/PDF MIME types.
 update storage.buckets
