@@ -529,7 +529,7 @@ function groupTopArticles(rows){
   const family=articleFamily(x.name),key=family.key;
   if(!groups.has(key))groups.set(key,{name:family.name,qty:0,gross:0,known:true,variants:[]});
   const g=groups.get(key);g.qty+=Number(x.qty)||0;g.gross+=Number(x.gross)||0;g.known=g.known&&x.known;
-  const v=g.variants.find(v=>v.label===family.variant);if(v){v.qty+=Number(x.qty)||0;v.gross+=Number(x.gross)||0;}else g.variants.push({label:family.variant,qty:Number(x.qty)||0,gross:Number(x.gross)||0});
+  const v=g.variants.find(v=>v.articleName===x.name);if(v){v.qty+=Number(x.qty)||0;v.gross+=Number(x.gross)||0;}else g.variants.push({label:family.variant,articleName:x.name,qty:Number(x.qty)||0,gross:Number(x.gross)||0});
  }
  return [...groups.values()];
 }
@@ -559,14 +559,24 @@ async function loadArticleEkPrices(){
  if(error)throw error;
  articleEkPrices=new Map((data||[]).map(x=>[String(x.article_name).trim().toLocaleLowerCase('de-AT'),Number(x.cost_net)]));
 }
-function articleEkLabel(name){
- const v=articleEkPrices.get(String(name||'').trim().toLocaleLowerCase('de-AT'));
- return Number.isFinite(v)?EUR(v)+' netto':'EK offen';
+function articleEkForGroup(x){
+ const variants=x.variants||[{articleName:x.name,qty:x.qty}];
+ let cost=0,qty=0;
+ for(const v of variants){
+  const price=articleEkPrices.get(String(v.articleName||'').trim().toLocaleLowerCase('de-AT'));
+  if(!Number.isFinite(price))return null;
+  const n=Number(v.qty)||0;cost+=n*price;qty+=n;
+ }
+ return qty>0?{average:cost/qty,total:cost}:null;
+}
+function articleEkLabel(x){
+ const v=articleEkForGroup(x);
+ return v?EUR(v.average)+' netto Ø':'EK offen';
 }
 function drawProfitability(){
  const host=E('profitCards');host.replaceChildren();
- const withEk=topArticleRows.map(x=>({...x,ek:articleEkPrices.get(String(x.name||'').trim().toLocaleLowerCase('de-AT'))})).filter(x=>Number.isFinite(x.ek)&&x.qty>0&&x.known);
- const covered=topArticleRows.filter(x=>Number.isFinite(articleEkPrices.get(String(x.name||'').trim().toLocaleLowerCase('de-AT')))).length;
+ const withEk=topArticleRows.map(x=>({...x,ek:articleEkForGroup(x)?.average})).filter(x=>Number.isFinite(x.ek)&&x.qty>0&&x.known);
+ const covered=topArticleRows.filter(x=>articleEkForGroup(x)!==null).length;
  E('profitNote').textContent=covered+' von '+topArticleRows.length+' Top-Artikeln mit EK hinterlegt. Indikative Rechnung: Artikel-Bruttoumsatz / 1,20 minus Menge × EK netto. Einheitlicher 20%-USt-Ansatz; kein endgültiger Gewinn, ohne Personal, Fixkosten und weitere Zutaten. BONit-Artikelumsätze vor Verwendung mit Tagesabschlüssen abgleichen.';
  const results=withEk.map(x=>({...x,contribution:x.gross/1.2-x.qty*x.ek,unit:x.gross/1.2/x.qty-x.ek})).sort((a,b)=>b.contribution-a.contribution);
  const sections=[['Höchster kalkulatorischer Beitrag',results.slice(0,5)],['Niedrigster kalkulatorischer Beitrag',results.slice(-5).reverse()]];
@@ -584,7 +594,7 @@ function drawTopArticles(){
   const card=document.createElement('div');card.className='top-article';
   const name=document.createElement('strong');name.textContent=(index+1)+'. '+x.name;card.append(name);
   const metrics=document.createElement('div');metrics.className='metrics';
-  for(const [label,value] of [['Menge',number.format(x.qty)],['Ø Preis',x.known&&x.qty>0?EUR(x.gross/x.qty):'–'],['EK Preis',articleEkLabel(x.name)],['Umsatz',x.known?EUR(x.gross):'fehlt'],['Anteil',x.known&&topArticleTotal>0?percent.format(x.gross/topArticleTotal):'–']]){
+  for(const [label,value] of [['Menge',number.format(x.qty)],['Ø Preis',x.known&&x.qty>0?EUR(x.gross/x.qty):'–'],['EK Preis',articleEkLabel(x)],['Umsatz',x.known?EUR(x.gross):'fehlt'],['Anteil',x.known&&topArticleTotal>0?percent.format(x.gross/topArticleTotal):'–']]){
    const span=document.createElement('span');span.append(label+' ');const valueNode=document.createElement('b');valueNode.textContent=value;span.append(valueNode);metrics.append(span);
   }
   card.append(metrics);host.append(card);
