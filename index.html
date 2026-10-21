@@ -553,6 +553,16 @@ function coffeeEkEstimate(name){
  const net=(428.39/12000)*grams+milk*1.30/1000;
  return {net,grams,milk,assumption:milk>0};
 }
+let articleEkPrices=new Map();
+async function loadArticleEkPrices(){
+ const {data,error}=await db.from('gp_article_costs').select('article_name,cost_net').eq('business_id',BID);
+ if(error)throw error;
+ articleEkPrices=new Map((data||[]).map(x=>[String(x.article_name).trim().toLocaleLowerCase('de-AT'),Number(x.cost_net)]));
+}
+function articleEkLabel(name){
+ const v=articleEkPrices.get(String(name||'').trim().toLocaleLowerCase('de-AT'));
+ return Number.isFinite(v)?EUR(v)+' netto':'EK offen';
+}
 function drawTopArticles(){
  const host=E('topArticleCards');host.replaceChildren();
  const number=new Intl.NumberFormat('de-AT',{maximumFractionDigits:2}),percent=new Intl.NumberFormat('de-AT',{style:'percent',maximumFractionDigits:2});
@@ -560,7 +570,7 @@ function drawTopArticles(){
   const card=document.createElement('div');card.className='top-article';
   const name=document.createElement('strong');name.textContent=(index+1)+'. '+x.name;card.append(name);
   const metrics=document.createElement('div');metrics.className='metrics';
-  for(const [label,value] of [['Menge',number.format(x.qty)],['Ø Preis',x.known&&x.qty>0?EUR(x.gross/x.qty):'–'],['EK Preis',coffeeEkEstimate(x.name)?EUR(coffeeEkEstimate(x.name).net)+' netto ca.':'Zuordnung offen'],['Umsatz',x.known?EUR(x.gross):'fehlt'],['Anteil',x.known&&topArticleTotal>0?percent.format(x.gross/topArticleTotal):'–']]){
+  for(const [label,value] of [['Menge',number.format(x.qty)],['Ø Preis',x.known&&x.qty>0?EUR(x.gross/x.qty):'–'],['EK Preis',articleEkLabel(x.name)],['Umsatz',x.known?EUR(x.gross):'fehlt'],['Anteil',x.known&&topArticleTotal>0?percent.format(x.gross/topArticleTotal):'–']]){
    const span=document.createElement('span');span.append(label+' ');const valueNode=document.createElement('b');valueNode.textContent=value;span.append(valueNode);metrics.append(span);
   }
   card.append(metrics);host.append(card);
@@ -570,7 +580,7 @@ function drawTopArticles(){
  E('articlePrev').hidden=true;E('articleNext').hidden=true;
 }
 E('articlePrev').hidden=true;E('articleNext').hidden=true;
-async function refresh(){void loadWeeklyPurchase().catch(e=>E('purchasePeriod').textContent='Einkaufsdaten konnten nicht geladen werden: '+e.message);
+async function refresh(){await loadArticleEkPrices().catch(e=>{console.warn('EK-Preise nicht geladen',e);articleEkPrices=new Map();});void loadWeeklyPurchase().catch(e=>E('purchasePeriod').textContent='Einkaufsdaten konnten nicht geladen werden: '+e.message);
  const [start,end]=dateRange();E('summary').textContent='Archiv wird abgeglichen …';
  try{
  let M=null;const selectedMonth=E('month').value;
