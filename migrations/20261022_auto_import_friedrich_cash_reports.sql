@@ -39,15 +39,15 @@ begin
 
   if coalesce((v_data->>'needs_review')::boolean, true) is true
      or coalesce((v_data #>> '{tax_verification,verified}')::boolean, false) is not true
-     or coalesce(v_data->>'date', '') !~ '^\\d{4}-\\d{2}-\\d{2}$'
+     or coalesce(v_data->>'date', '') !~ '^\d{4}-\d{2}-\d{2}$'
      or new.document_date is null
      or (v_data->>'date')::date <> new.document_date
-     or coalesce(v_data->>'gross_total', '') !~ '^\\d+(\\.\\d{1,2})?$'
-     or coalesce(v_data->>'net_total', '') !~ '^\\d+(\\.\\d{1,2})?$'
-     or coalesce(v_data->>'vat_total', '') !~ '^\\d+(\\.\\d{1,2})?$'
-     or coalesce(v_data->>'cash_total', '') !~ '^\\d+(\\.\\d{1,2})?$'
-     or coalesce(v_data->>'card_total', '') !~ '^\\d+(\\.\\d{1,2})?$'
-     or coalesce(v_data->>'receipt_count', '') !~ '^\\d+$'
+     or coalesce(v_data->>'gross_total', '') !~ '^\d+(\.\d{1,2})?$'
+     or coalesce(v_data->>'net_total', '') !~ '^\d+(\.\d{1,2})?$'
+     or coalesce(v_data->>'vat_total', '') !~ '^\d+(\.\d{1,2})?$'
+     or coalesce(v_data->>'cash_total', '') !~ '^\d+(\.\d{1,2})?$'
+     or coalesce(v_data->>'card_total', '') !~ '^\d+(\.\d{1,2})?$'
+     or coalesce(v_data->>'receipt_count', '') !~ '^\d+$'
      or jsonb_typeof(v_data->'sales_items') <> 'array' then
     update public.documents
        set status = 'auto_review',
@@ -66,7 +66,7 @@ begin
   v_cash := (v_data->>'cash_total')::numeric;
   v_card := (v_data->>'card_total')::numeric;
   v_other := case
-    when coalesce(v_data->>'other_payments_total', '') ~ '^\\d+(\\.\\d{1,2})?$'
+    when coalesce(v_data->>'other_payments_total', '') ~ '^\d+(\.\d{1,2})?$'
       then (v_data->>'other_payments_total')::numeric
     else 0
   end;
@@ -91,9 +91,9 @@ begin
   loop
     v_item_name := nullif(btrim(v_item->>'name'), '');
     if v_item_name is null
-       or coalesce(v_item->>'quantity', '') !~ '^\\d+(\\.\\d{1,3})?$'
+       or coalesce(v_item->>'quantity', '') !~ '^\d+(\.\d{1,3})?$'
        or (coalesce(v_item->>'gross_amount', '') <> ''
-           and (v_item->>'gross_amount') !~ '^\\d+(\\.\\d{1,2})?$') then
+           and (v_item->>'gross_amount') !~ '^\d+(\.\d{1,2})?$') then
       update public.documents
          set status = 'auto_review',
              extracted_data = v_data || jsonb_build_object(
@@ -161,7 +161,7 @@ begin
     v_item_name := btrim(v_item->>'name');
     v_qty := (v_item->>'quantity')::numeric;
     v_item_gross := case
-      when coalesce(v_item->>'gross_amount', '') ~ '^\\d+(\\.\\d{1,2})?$'
+      when coalesce(v_item->>'gross_amount', '') ~ '^\d+(\.\d{1,2})?$'
         then (v_item->>'gross_amount')::numeric
       else null
     end;
