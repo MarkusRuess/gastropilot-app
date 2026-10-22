@@ -721,7 +721,7 @@ function drawTopArticles(){
  if(!topArticleRows.length)host.textContent='Keine Artikeldaten für diesen Monat vorhanden.';
  drawProfitability();
  const covered=topArticleRows.filter(x=>articleEkForGroup(x)!==null).length;
- E('topArticleNote').textContent+=' · EK netto aus Lieferantenpreisen/Rezeptkalkulation: '+covered+'/'+topArticleRows.length+' Artikel; ≈ bedeutet vorläufiger Rezept-EK. Fehlende EK bleiben offen.';
+ E('topArticleNote').textContent=E('topArticleNote').textContent.split(' · EK netto aus Lieferantenpreisen/Rezeptkalkulation:')[0]+' · EK netto aus Lieferantenpreisen/Rezeptkalkulation: '+covered+'/'+topArticleRows.length+' Artikel; ≈ bedeutet vorläufiger Rezept-EK. Fehlende EK bleiben offen.';
  E('articlePage').textContent=topArticleRows.length+' Artikel · eine Liste';
  E('articlePrev').hidden=true;E('articleNext').hidden=true;
 }
