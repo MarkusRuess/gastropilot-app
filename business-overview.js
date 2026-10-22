@@ -19,7 +19,7 @@ const paidCount=raw=>{
 const monthEnd=month=>new Date(Date.UTC(Number(month.slice(0,4)),Number(month.slice(5,7)),1)).toISOString().slice(0,10);
 const result=(value,context)=>{if(value.error)throw new Error(context+': '+value.error.message);return value.data||[];};
 
-export async function loadBusinessMetrics(db,businessId,month){
+export async function loadBusinessMetrics(db,businessId,month,isJudith=false){
  if(!/^\d{4}-(0[1-9]|1[0-2])$/.test(month))throw new Error('Ungültiger Monat.');
  const start=month+'-01',end=monthEnd(month);
  const [salesResult,documentsResult,staffResult,costResult,ratioResult,summaryResult]=await Promise.all([
@@ -40,9 +40,9 @@ export async function loadBusinessMetrics(db,businessId,month){
   const previous=days.get(row.document_date);
   if(previous&&previous.created_at>=row.created_at)continue;
   const raw=row.extracted_data||{};
-  days.set(row.document_date,{gross:number(raw.gross_total),net:number(raw.net_total),paid:paidCount(raw),created_at:row.created_at});
+  days.set(row.document_date,{gross:number(raw.gross_total),net:number(raw.net_total),paid:isJudith?number(raw.receipt_count):paidCount(raw),created_at:row.created_at});
  }
- for(const row of sales)days.set(row.closing_date,{gross:number(row.gross_amount),net:number(row.net_amount),paid:paidCount(row.raw_data)??days.get(row.closing_date)?.paid??null});
+ for(const row of sales)days.set(row.closing_date,{gross:number(row.gross_amount),net:number(row.net_amount),paid:isJudith?number(row.receipt_count):paidCount(row.raw_data)??days.get(row.closing_date)?.paid??null});
  const daily=[...days.values()],summary=summaryResult.data?.summary;
  const gross=number(summary?.gross)??total(daily,'gross');
  const net=number(ratioResult.data?.net_revenue)??number(summary?.net)??total(daily,'net');
@@ -96,13 +96,15 @@ export async function renderBusinessOverview(db,members,month,host,onSelect){
  });
  await Promise.all(cards.map(async({member,hint,values})=>{
   try{
-   const [data,history]=await Promise.all([loadBusinessMetrics(db,member.business_id,month),loadPersonnelAverage(db,member.business_id,month)]);
+   const isJudith=member.businesses.name.includes('Judith');
+   const [data,history]=await Promise.all([loadBusinessMetrics(db,member.business_id,month,isJudith),loadPersonnelAverage(db,member.business_id,month)]);
    if(!host.isConnected||document.getElementById('homeMonth')?.value!==month)return;
    values[0].textContent=euro(data.gross);values[1].textContent=euro(data.average);
    values[2].textContent=percent(history.exact??history.average);values[3].textContent=percent(data.goods);
    values[4].textContent=percent(history.average);
    hint.textContent=data.gross===null?'Noch keine Umsätze erfasst':data.hasSummary?'Geprüfter Monatsabschluss':data.days+' Tag(e) erfasst · bisheriger Stand';
-   values[1].title=data.average===null?'Bezahlte Bons und zugehöriger Umsatz fehlen.':data.paidDays+' Tag(e) mit bezahlten Bons.';
+   values[1].previousElementSibling.textContent=isJudith?'Ø Bon · Belege':'Ø bezahlter Bon';
+   values[1].title=data.average===null?(isJudith?'Beleganzahl oder Umsatz fehlen.':'Bezahlte Bons und zugehöriger Umsatz fehlen.'):(isJudith?'Umsatz / Belege aus ':'Umsatz / bezahlte Bons aus ')+data.paidDays+' Tag(en).';
    values[2].previousElementSibling.textContent=history.exact===null?'Personalquote · vorläufig':'Personalquote · exakt';
    values[2].title=history.exact===null?'Vorläufiger Durchschnitt aus '+history.count+' abgeschlossenen Monaten mit Nettoumsatz und Personalkosten. Die exakte Monatsquote folgt mit dem Monatsabschluss.':'Personalkosten dieses Monats / Nettoumsatz.';
    values[4].title='Arithmetischer Durchschnitt aus '+history.count+' abgeschlossenen Monaten mit Nettoumsatz und Personalkosten.';
