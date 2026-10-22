@@ -661,7 +661,7 @@ function articleEkForGroup(x){
   if(!Number.isFinite(price))return null;
   const source=articleEkSources.get(key)||{};
   const note=String(source.note||'');
-  provisional=provisional||source.basis==='recipe_estimate'||/Achtung: Verkauf als|Dosierung noch zu bestatigen/i.test(note);
+  provisional=provisional||source.basis==='recipe_estimate'||/Achtung: Verkauf als|Dosierung noch zu bestatigen/i.test(note)||(key.includes('valdobbiadene')&&/Hofer Vino Frizzante/i.test(note));
   sources.add(note.includes('Preisliste')||note.includes('Preisübersicht')||note.includes('Screenshot')?'Lieferantenpreisliste':source.basis==='recipe_estimate'?'Rezeptkalkulation':note.includes('Rechnung')?'Lieferantenrechnung':'Hinterlegter Einkaufspreis');
   const n=Number(v.qty)||0;cost+=n*price;qty+=n;
  }
