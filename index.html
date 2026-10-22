@@ -614,48 +614,62 @@ function coffeeEkEstimate(name){
  const net=(428.39/12000)*grams+milk*1.30/1000;
  return {net,grams,milk,assumption:milk>0};
 }
-let articleEkPrices=new Map();
+let articleEkPrices=new Map(),articleEkSources=new Map();
 async function loadArticleEkPrices(){
- const {data,error}=await db.from('gp_article_costs').select('article_name,cost_net').eq('business_id',BID);
+ const {data,error}=await db.from('gp_article_costs').select('article_name,cost_net,cost_basis,source_note').eq('business_id',BID);
  if(error)throw error;
- articleEkPrices=new Map((data||[]).map(x=>[String(x.article_name).trim().toLocaleLowerCase('de-AT'),Number(x.cost_net)]));
+ articleEkPrices=new Map();articleEkSources=new Map();
+ for(const x of data||[]){
+  const key=String(x.article_name||'').trim().toLocaleLowerCase('de-AT'),price=Number(x.cost_net);
+  if(!key||!Number.isFinite(price)||price<0)continue;
+  articleEkPrices.set(key,price);
+  articleEkSources.set(key,{basis:x.cost_basis||'',note:x.source_note||''});
+ }
 }
-function getArticleEk(name){
- const key=String(name||'').trim().toLocaleLowerCase('de-AT');
- if(articleEkPrices.has(key))return articleEkPrices.get(key);
+function resolveArticleEkKey(name){
+ // BONit-Monatsdateien enthalten teils die Artikelnummer vor dem Namen.
+ const key=String(name||'').replace(/^\s*\d+\s*·\s*/,'').trim().toLocaleLowerCase('de-AT');
+ if(articleEkPrices.has(key))return key;
  const normalized=key.normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,' ').trim();
+ const bottle=/(?:0 75\s*l|0 7\s*l|flasche|bouteille)/.test(normalized);
  const aliases=[
-  [/grauburgunder.*neumeister|neumeister.*grauburgunder/, '1/8 Grauburgunder Neumeister Straden'],
-  [/keringer.*heideboden|heideboden.*keringer/, '1/8 Keringer Heideboden Cuvee'],
+  [/grauburgunder.*neumeister|neumeister.*grauburgunder/, bottle?'Neumeister Grauburgunder Straden 0,75l':'1/8 Grauburgunder Neumeister Straden'],
+  [/keringer.*heideboden|heideboden.*keringer/, bottle?'Keringer Heideboden Cuvee 0,75l':'1/8 Keringer Heideboden Cuvee'],
   [/campari.*spritz/, 'Campari Spritz'],
   [/campari.*orange/, 'Campari Orange'],
   [/campari.*soda/, 'Campari Soda'],
   [/gosser.*naturgold/, 'Gösser Naturgold alkoholfrei 0,33l'],
   [/gosser.*naturradler/, 'Gösser Naturradler Zitrone 0,33l'],
-  [/hollinger.*apfel/, 'Höllinger Naturtrüb Apfelsaft 1l'],
-  [/happy day.*orange/, 'Happy Day Orangensaft 100% 1l']
+  [/sarti.*spritz/, 'Sarti Spritzer'],
+  [/aperol.*spritz/, 'Aperol Spritzer']
  ];
  for(const [pattern,canonical] of aliases){
-  if(pattern.test(normalized)){
-   const v=articleEkPrices.get(canonical.toLocaleLowerCase('de-AT'));
-   if(Number.isFinite(v))return v;
-  }
+  const match=canonical.toLocaleLowerCase('de-AT');
+  if(pattern.test(normalized)&&articleEkPrices.has(match))return match;
  }
  return null;
 }
+function getArticleEk(name){
+ const key=resolveArticleEkKey(name);
+ return key===null?null:articleEkPrices.get(key);
+}
 function articleEkForGroup(x){
  const variants=x.variants||[{articleName:x.name,qty:x.qty}];
- let cost=0,qty=0;
+ let cost=0,qty=0,provisional=false;const sources=new Set();
  for(const v of variants){
-  const price=getArticleEk(v.articleName);
+  const key=resolveArticleEkKey(v.articleName),price=key===null?null:articleEkPrices.get(key);
   if(!Number.isFinite(price))return null;
+  const source=articleEkSources.get(key)||{};
+  const note=String(source.note||'');
+  provisional=provisional||source.basis==='recipe_estimate'||/Achtung: Verkauf als|Dosierung noch zu bestatigen/i.test(note);
+  sources.add(note.includes('Preisliste')||note.includes('Preisübersicht')||note.includes('Screenshot')?'Lieferantenpreisliste':source.basis==='recipe_estimate'?'Rezeptkalkulation':note.includes('Rechnung')?'Lieferantenrechnung':'Hinterlegter Einkaufspreis');
   const n=Number(v.qty)||0;cost+=n*price;qty+=n;
  }
- return qty>0?{average:cost/qty,total:cost}:null;
+ return qty>0?{average:cost/qty,total:cost,provisional,sources:[...sources]}:null;
 }
 function articleEkLabel(x){
  const v=articleEkForGroup(x);
- return v?EUR(v.average)+' netto Ø':'EK offen';
+ return v?(v.provisional?'≈ ':'')+EUR(v.average):'EK offen';
 }
 function drawProfitability(){
  const host=E('profitCards');host.replaceChildren();
@@ -697,13 +711,17 @@ function drawTopArticles(){
   const card=document.createElement('div');card.className='top-article';
   const name=document.createElement('strong');name.textContent=(index+1)+'. '+x.name;card.append(name);
   const metrics=document.createElement('div');metrics.className='metrics';
-  for(const [label,value] of [['Menge',number.format(x.qty)],['Ø Preis',x.known&&x.qty>0?EUR(x.gross/x.qty):'–'],['EK Preis',articleEkLabel(x)],['Umsatz',x.known?EUR(x.gross):'fehlt'],['Anteil',x.known&&topArticleTotal>0?percent.format(x.gross/topArticleTotal):'–']]){
-   const span=document.createElement('span');span.append(label+' ');const valueNode=document.createElement('b');valueNode.textContent=value;span.append(valueNode);metrics.append(span);
+  for(const [label,value] of [['Menge',number.format(x.qty)],['Ø Preis',x.known&&x.qty>0?EUR(x.gross/x.qty):'–'],['EK netto',articleEkLabel(x)],['Umsatz',x.known?EUR(x.gross):'fehlt'],['Anteil',x.known&&topArticleTotal>0?percent.format(x.gross/topArticleTotal):'–']]){
+   const span=document.createElement('span');span.append(label+' ');
+   if(label==='EK netto'){const cost=articleEkForGroup(x);span.title=cost?cost.sources.join(' / ')+(cost.provisional?' · kalkulierter/geschätzter EK':''):'Kein verlässlicher EK für alle Varianten vorhanden';}
+   const valueNode=document.createElement('b');valueNode.textContent=value;span.append(valueNode);metrics.append(span);
   }
   card.append(metrics);host.append(card);
  }
  if(!topArticleRows.length)host.textContent='Keine Artikeldaten für diesen Monat vorhanden.';
  drawProfitability();
+ const covered=topArticleRows.filter(x=>articleEkForGroup(x)!==null).length;
+ E('topArticleNote').textContent+=' · EK netto aus Lieferantenpreisen/Rezeptkalkulation: '+covered+'/'+topArticleRows.length+' Artikel; ≈ bedeutet vorläufiger Rezept-EK. Fehlende EK bleiben offen.';
  E('articlePage').textContent=topArticleRows.length+' Artikel · eine Liste';
  E('articlePrev').hidden=true;E('articleNext').hidden=true;
 }
