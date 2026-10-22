@@ -205,7 +205,7 @@ function renderMenuDashboard(items,proposals){
   const badge=document.createElement('span');badge.className='menu-margin-badge menu-margin-badge-'+tier;
   badge.textContent=item.partialSodaCost?'⚪ SODA-EK FEHLT':tier==='top'?'🟢 SEHR GUT':tier==='ok'?'🟡 GUT':tier==='risk'?'🔴 PRÜFEN':'⚪ EK FEHLT';
   card.append(badge);
-  const heading=document.createElement('strong');heading.className='menu-product-name';heading.textContent=item.name;card.append(heading);
+  const heading=document.createElement('strong');heading.className='menu-product-name';heading.textContent=/^1\/8 Aumann Harterberg Reserve 2021$/i.test(item.name)?'1/8 Aumann Harterberg Reserve':item.name;card.append(heading);
   const metrics=document.createElement('div');metrics.className='menu-product-metrics';
   const current=Number(item.price),recommended=item.recommended;
   const values=[['BONit VK',EUR(current)],['EK netto',item.partialSodaCost?EUR(item.ek)+' + Soda':item.ek===null?'EK offen':EUR(item.ek)],['Wareneinsatz',item.rate===null?'–':(item.rate*100).toLocaleString('de-AT',{maximumFractionDigits:1})+' %'],['Empfohlener VK',EUR(recommended)]];
