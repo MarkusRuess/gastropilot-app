@@ -187,7 +187,7 @@ header{position:sticky;top:0;z-index:60}
 <script src="./business-switch.js"></script><script type="module">
 import {createClient} from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 import {loadBankFixedCosts} from './bank-costs-integration.js';
-import {renderBusinessOverview,loadPersonnelAverage,JUDITH_PERSONNEL_REFERENCE} from './business-overview.js?v=20261022-judithquote';
+import {renderBusinessOverview,loadPersonnelAverage,JUDITH_PERSONNEL_REFERENCE} from './business-overview.js?v=20261022-judithquote-plan';
 const db=createClient('https://sjnwfwcpgwsavygewwzb.supabase.co','sb_publishable__tucXG-IQGUhibMqMSUzCw_5RnH_sbQ');
 let BID=null,authorizedBusinesses=[],switchingBusiness=false;const E=id=>document.getElementById(id),N=v=>v==null||v===''?null:Number(v),EUR=v=>v==null||!Number.isFinite(v)?'–':new Intl.NumberFormat('de-AT',{style:'currency',currency:'EUR'}).format(v),D=v=>v?.split('-').reverse().join('.')||'–';
 let user=null,busy=false,selected=null,queue=[];
@@ -842,15 +842,17 @@ async function refresh(){await loadArticleEkPrices().catch(e=>{console.warn('EK-
  const fixedCost=fixedRows.length&&fixedRows.every(x=>N(x.amount)!==null)?fixedRows.reduce((a,x)=>a+Math.abs(N(x.amount)),0):null;
  const bankBalance=accountRows.length&&accountRows.every(x=>N(x.current_balance)!==null)?accountRows.reduce((a,x)=>a+N(x.current_balance),0):null;
  const currentMonth=E('month').value,quickNet=M?.net??net,history=await loadPersonnelAverage(db,BID,currentMonth);
- const quoteProvisional=history.exact===null,quoteHistorical=isJudith&&quoteProvisional&&history.average===null;
- const quoteRatio=history.exact??history.average??(quoteHistorical?JUDITH_PERSONNEL_REFERENCE.ratio:null);
+ const quoteProvisional=history.exact===null,planRatio=isJudith&&personnelEstimated&&personnelCost!==null&&quickNet>0?100*personnelCost/quickNet:null;
+ const quoteHistorical=isJudith&&quoteProvisional&&planRatio===null&&history.average===null;
+ const quoteRatio=history.exact??planRatio??history.average??(quoteHistorical?JUDITH_PERSONNEL_REFERENCE.ratio:null);
+ const averageRatio=planRatio??history.average;
  const personnelLabel=personnelEstimated?'Personalkosten · Vormonat (Plan)':personnelCost===null?'Personalkosten · fehlen':'Personalkosten · Ist';
- const quoteLabel=quoteHistorical?'Personalquote · vorläufig (Jan–Jul)':quoteProvisional?'Personalquote · vorläufig':'Personalquote · exakt';
+ const quoteLabel=planRatio!==null?'Personalquote · vorläufig (Plan)':quoteHistorical?'Personalquote · vorläufig (Jan–Jul)':quoteProvisional?'Personalquote · vorläufig':'Personalquote · exakt';
  const quoteValue=quoteRatio===null?'Noch keine Daten':quoteRatio.toFixed(2)+' %';
- E('quickKpis').replaceChildren();for(const [label,value] of [['Bruttoumsatz',EUR(M?M.gross:gross)],['Nettoumsatz',M?.net!=null?EUR(M.net):netLabel],[personnelLabel,EUR(personnelCost)],['Ziel Personal','35 %'],[quoteLabel,quoteValue],['Ø Personalquote im Jahr · '+history.count+' Monate',history.average===null?'–':history.average.toFixed(2)+' %'],['Ziel Wareneinsatz','26 %'],['Bankguthaben',accountRows.length&&accountRows.every(x=>N(x.current_balance)!==null)?EUR(accountRows.reduce((a,x)=>a+N(x.current_balance),0)):'–']])tile(E('quickKpis'),label,value);
+ E('quickKpis').replaceChildren();for(const [label,value] of [['Bruttoumsatz',EUR(M?M.gross:gross)],['Nettoumsatz',M?.net!=null?EUR(M.net):netLabel],[personnelLabel,EUR(personnelCost)],['Ziel Personal','35 %'],[quoteLabel,quoteValue],[planRatio!==null?'Ø Personalquote · vorläufiger Plan':'Ø Personalquote im Jahr · '+history.count+' Monate',averageRatio===null?'–':averageRatio.toFixed(2)+' %'],['Ziel Wareneinsatz','26 %'],['Bankguthaben',accountRows.length&&accountRows.every(x=>N(x.current_balance)!==null)?EUR(accountRows.reduce((a,x)=>a+N(x.current_balance),0)):'–']])tile(E('quickKpis'),label,value);
  if(personnelEstimated)E('quickKpis').children[2].title='Vorläufige Monatskosten aus '+previousMonthName+'. Die Personalkosten des gewählten Monats ersetzen diesen Wert nach dem Import.';
- E('quickKpis').children[4].title=quoteHistorical?'Vorläufige Referenz '+JUDITH_PERSONNEL_REFERENCE.period+': 149.196 € Personal / 298.214 € Nettoumsatz. Früherer Analysewert, nicht erneut gegen Original-BWA geprüft. Die exakte Monatsquote folgt nach dem Monatsabschluss.':quoteProvisional?'Vorläufiger Durchschnitt aus '+history.count+' abgeschlossenen Monaten. Die exakte Monatsquote folgt nach dem Monatsabschluss.':'Personalkosten dieses Monats / Nettoumsatz.';
- E('quickKpis').children[5].title='Arithmetischer Durchschnitt aus '+history.count+' abgeschlossenen Monaten mit Nettoumsatz und Personalkosten.';
+ E('quickKpis').children[4].title=planRatio!==null?'Personalkosten des Vormonats / bisher erfasster Nettoumsatz dieses Monats. Vorläufig, keine Oktober-Ist-Kosten.':quoteHistorical?'Vorläufige Referenz '+JUDITH_PERSONNEL_REFERENCE.period+': 149.196 € Personal / 298.214 € Nettoumsatz. Früherer Analysewert, nicht erneut gegen Original-BWA geprüft. Die exakte Monatsquote folgt nach dem Monatsabschluss.':quoteProvisional?'Vorläufiger Durchschnitt aus '+history.count+' abgeschlossenen Monaten. Die exakte Monatsquote folgt nach dem Monatsabschluss.':'Personalkosten dieses Monats / Nettoumsatz.';
+ E('quickKpis').children[5].title=planRatio!==null?'Aktuelle Planquote: Personalkosten des Vormonats / bisher erfasster Nettoumsatz. Kein Jahresdurchschnitt.':'Arithmetischer Durchschnitt aus '+history.count+' abgeschlossenen Monaten mit Nettoumsatz und Personalkosten.';
  showResultBridge({net:quickNet,personnel:personnelCost,purchases:purchaseCost,fixed:fixedCost,expenseCount:expenseRows.length,fixedCount:fixedRows.length,period:currentMonth,personnelEstimated,previousMonthName});renderProfitGoal({net:quickNet,personnel:personnelCost,fixed:fixedCost,expenseCount:expenseRows.length,fixedCount:fixedRows.length,period:currentMonth,personnelEstimated,previousMonthName});renderPurchaseItemsForCalc(docs);
  const accountDates=accountRows.map(x=>x.balance_date).filter(Boolean),balanceDate=accountDates.length?accountDates.sort().at(-1):null;
  E('operating').replaceChildren();
@@ -863,7 +865,7 @@ async function refresh(){await loadArticleEkPrices().catch(e=>{console.warn('EK-
  for(const [label,value] of [
  [personnelEstimated?'Personal · Vormonat (Plan)':'Personal · erfasst',EUR(personnelCost)],
  [quoteLabel,quoteRatio===null?'–':quoteRatio.toFixed(1)+' %'],
- ['Ø Personalquote im Jahr · '+history.count+' Monate',history.average===null?'–':history.average.toFixed(1)+' %'],
+ [planRatio!==null?'Ø Personalquote · vorläufiger Plan':'Ø Personalquote im Jahr · '+history.count+' Monate',averageRatio===null?'–':averageRatio.toFixed(1)+' %'],
  ['Einkäufe Speisen/Getränke · erfasst',EUR(purchaseCost)],
  ['Wareneinsatzquote (Ziel 26 %)','Inventur/Verbrauch fehlt'],
  ['Bank-Fixkosten · erfasst',EUR(fixedCost)],
