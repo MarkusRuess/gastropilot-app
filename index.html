@@ -1280,7 +1280,7 @@ async function loadRecentUploads(){
   item.className='uploadReceipt '+(failed?'error':done||duplicate?'done':'pending');
   const left=document.createElement('div'),name=document.createElement('strong'),detail=document.createElement('small'),badge=document.createElement('span');
   name.textContent=[row.supplier, row.invoice_number].filter(Boolean).join(' · ')||meta.original_name||'Gesichertes Original';
-  const time=new Intl.DateTimeFormat('de-AT',{timeZone:'Europe/Vienna',day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}).format(new Date(row.created_at));
+  const time=new Intl.DateTimeFormat('de-AT',{timeZone:'Europe/Vienna',day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit'}).format(new Date(row.created_at));
   detail.textContent=time+' · '+(meta.original_name||'Beleg')+(meta.import_warning?' · '+meta.import_warning:'');
   badge.className='uploadBadge';
   badge.textContent=duplicate?'✓ Bereits vorhanden':failed?'⚠ Lesen fehlgeschlagen':review?'⚠ Gelesen · prüfen':done?'✓ Gelesen & archiviert':'✓ Gesichert · Lesen ausstehend';
