@@ -3,6 +3,8 @@ const number=value=>value===null||value===undefined||value===''?null:Number.isFi
 const total=(rows,key)=>rows.length&&rows.every(row=>number(row[key])!==null)?rows.reduce((sum,row)=>sum+number(row[key]),0):null;
 const euro=value=>value===null?'–':new Intl.NumberFormat('de-AT',{style:'currency',currency:'EUR'}).format(value);
 const percent=value=>value===null?'–':new Intl.NumberFormat('de-AT',{maximumFractionDigits:1,minimumFractionDigits:1}).format(value)+' %';
+// Vorläufige Referenz aus der Judith-Gesamtanalyse Jan–Jul 2026; bisher nicht erneut anhand der BWA geprüft.
+export const JUDITH_PERSONNEL_REFERENCE={ratio:100*149196/298214,period:'Jan–Jul 2026'};
 const paidCount=raw=>{
  if(!raw||typeof raw!=='object')return null;
  for(const key of ['paid_receipt_count','paid_receipts','paidReceiptCount','paidReceipts','receipts_paid','paid_bons']){
@@ -106,14 +108,15 @@ export async function renderBusinessOverview(db,members,month,host,onSelect){
    const [data,history]=await Promise.all([loadBusinessMetrics(db,member.business_id,month,isJudith),loadPersonnelAverage(db,member.business_id,month)]);
    if(!host.isConnected||document.getElementById('homeMonth')?.value!==month)return;
    values[0].textContent=euro(data.gross);values[1].textContent=euro(data.average);
-   values[2].textContent=percent(history.exact??history.average);values[3].textContent=percent(data.goods);
+   const historicalReference=isJudith&&history.exact===null&&history.average===null;
+   values[2].textContent=percent(history.exact??history.average??(historicalReference?JUDITH_PERSONNEL_REFERENCE.ratio:null));values[3].textContent=percent(data.goods);
    values[4].textContent=percent(history.average);
    if(isJudith){values[5].textContent=euro(data.net);values[6].textContent=data.receipts===null?'–':new Intl.NumberFormat('de-AT').format(data.receipts);values[7].textContent=euro(data.personnelPlan);values[7].title='Personalkosten des Vormonats als Planwert; Oktober-Ist-Kosten folgen mit der Abrechnung.';}
    hint.textContent=data.gross===null?'Noch keine Umsätze erfasst':data.hasSummary?'Geprüfter Monatsabschluss':data.days+' Tag(e) erfasst · bisheriger Stand';
    values[1].previousElementSibling.textContent=isJudith?'Ø Bon · Belege':'Ø bezahlter Bon';
    values[1].title=data.average===null?(isJudith?'Beleganzahl oder Umsatz fehlen.':'Bezahlte Bons und zugehöriger Umsatz fehlen.'):(isJudith?'Umsatz / Belege aus ':'Umsatz / bezahlte Bons aus ')+data.paidDays+' Tag(en).';
-   values[2].previousElementSibling.textContent=history.exact===null?'Personalquote · vorläufig':'Personalquote · exakt';
-   values[2].title=history.exact===null?'Vorläufiger Durchschnitt aus '+history.count+' abgeschlossenen Monaten mit Nettoumsatz und Personalkosten. Die exakte Monatsquote folgt mit dem Monatsabschluss.':'Personalkosten dieses Monats / Nettoumsatz.';
+   values[2].previousElementSibling.textContent=historicalReference?'Personalquote · vorläufig (Jan–Jul)':history.exact===null?'Personalquote · vorläufig':'Personalquote · exakt';
+   values[2].title=historicalReference?'Vorläufige Referenz '+JUDITH_PERSONNEL_REFERENCE.period+': 149.196 € Personal / 298.214 € Nettoumsatz. Früherer Analysewert, nicht erneut gegen Original-BWA geprüft. Die exakte Monatsquote folgt nach dem Monatsabschluss.':history.exact===null?'Vorläufiger Durchschnitt aus '+history.count+' abgeschlossenen Monaten mit Nettoumsatz und Personalkosten. Die exakte Monatsquote folgt mit dem Monatsabschluss.':'Personalkosten dieses Monats / Nettoumsatz.';
    values[4].title='Arithmetischer Durchschnitt aus '+history.count+' abgeschlossenen Monaten mit Nettoumsatz und Personalkosten.';
    values[4].previousElementSibling.textContent='Ø Personalquote im Jahr · '+history.count+' Monate';
    values[3].title=data.goods===null?'Geprüfte Lagerveränderung, Netto-Einkäufe oder Nettoumsatz fehlen.':'Netto-Einkäufe plus Lagerveränderung / Nettoumsatz.';
