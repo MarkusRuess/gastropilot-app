@@ -70,11 +70,11 @@ export async function loadPersonnelAverage(db,businessId,month){
  const staff=result(staffResult,'Personalkosten im Jahresverlauf');
  const inputs=result(ratioResult,'Nettoumsatz im Jahresverlauf');
  const summaries=result(summaryResult,'Monatsabschlüsse im Jahresverlauf');
- const payroll=new Map(),revenues=new Map();
- for(const row of staff){const key=String(row.accounting_month).slice(0,7),cost=number(row.total_costs);if(cost!==null)payroll.set(key,(payroll.get(key)||0)+cost)}
+ const payroll=new Map(),revenues=new Map(),incomplete=new Set();
+ for(const row of staff){const key=String(row.accounting_month).slice(0,7),cost=number(row.total_costs);if(cost===null)incomplete.add(key);else payroll.set(key,(payroll.get(key)||0)+cost)}
  for(const row of summaries){const net=number(row.summary?.net);if(net>0)revenues.set(String(row.month_start).slice(0,7),net)}
  for(const row of inputs){const net=number(row.net_revenue);if(net>0)revenues.set(String(row.month).slice(0,7),net)}
- const ratios=[...payroll].filter(([key])=>revenues.has(key)).map(([key,cost])=>({month:key,ratio:100*cost/revenues.get(key)}));
+ const ratios=[...payroll].filter(([key])=>revenues.has(key)&&!incomplete.has(key)).map(([key,cost])=>({month:key,ratio:100*cost/revenues.get(key)}));
  return {average:ratios.length?ratios.reduce((sum,row)=>sum+row.ratio,0)/ratios.length:null,count:ratios.length,exact:ratios.find(row=>row.month===month)?.ratio??null};
 }
 
