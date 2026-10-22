@@ -56,6 +56,28 @@ export async function loadBusinessMetrics(db,businessId,month){
  return {gross,average,personnel,goods,days:daily.length,paidDays:paidDays.length,hasSummary:gross!==null&&!!summary};
 }
 
+// Jahresdurchschnitt nur aus abgeschlossenen Monaten mit Nettoumsatz und Personalkosten.
+export async function loadPersonnelAverage(db,businessId,month){
+ const todayMonth=new Date().toLocaleDateString('sv-SE',{timeZone:'Europe/Vienna'}).slice(0,7);
+ const through=month<todayMonth?month:new Date(Date.UTC(Number(todayMonth.slice(0,4)),Number(todayMonth.slice(5,7))-1,1)).toISOString().slice(0,7);
+ const start=month.slice(0,4)+'-01-01',end=monthEnd(through);
+ if(through<month.slice(0,4)+'-01')return {average:null,count:0,exact:null};
+ const [staffResult,ratioResult,summaryResult]=await Promise.all([
+  db.from('personnel_costs').select('accounting_month,total_costs').eq('business_id',businessId).gte('accounting_month',start).lt('accounting_month',end),
+  db.from('monthly_cost_ratio_inputs').select('month,net_revenue').eq('business_id',businessId).gte('month',start).lt('month',end),
+  db.from('monthly_bonit_summaries').select('month_start,summary').eq('business_id',businessId).gte('month_start',start).lt('month_start',end)
+ ]);
+ const staff=result(staffResult,'Personalkosten im Jahresverlauf');
+ const inputs=result(ratioResult,'Nettoumsatz im Jahresverlauf');
+ const summaries=result(summaryResult,'Monatsabschlüsse im Jahresverlauf');
+ const payroll=new Map(),revenues=new Map();
+ for(const row of staff){const key=String(row.accounting_month).slice(0,7),cost=number(row.total_costs);if(cost!==null)payroll.set(key,(payroll.get(key)||0)+cost)}
+ for(const row of summaries){const net=number(row.summary?.net);if(net>0)revenues.set(String(row.month_start).slice(0,7),net)}
+ for(const row of inputs){const net=number(row.net_revenue);if(net>0)revenues.set(String(row.month).slice(0,7),net)}
+ const ratios=[...payroll].filter(([key])=>revenues.has(key)).map(([key,cost])=>({month:key,ratio:100*cost/revenues.get(key)}));
+ return {average:ratios.length?ratios.reduce((sum,row)=>sum+row.ratio,0)/ratios.length:null,count:ratios.length,exact:ratios.find(row=>row.month===month)?.ratio??null};
+}
+
 export async function renderBusinessOverview(db,members,month,host,onSelect){
  host.replaceChildren();
  const allowed=(members||[]).filter(member=>member.business_id&&member.businesses?.name);
@@ -65,7 +87,7 @@ export async function renderBusinessOverview(db,members,month,host,onSelect){
   const heading=document.createElement('h2');heading.textContent=name;
   const hint=document.createElement('span');hint.className='homeHint';hint.textContent='Monatsdaten werden geladen …';
   const metrics=document.createElement('div');metrics.className='homeMetrics';
-  for(const label of ['Umsatz brutto','Ø bezahlter Bon','Personalquote','Wareneinsatzquote']){
+  for(const label of ['Umsatz brutto','Ø bezahlter Bon','Personalquote','Wareneinsatzquote','Ø Personalquote im Jahr']){
    const box=document.createElement('div');box.className='homeMetric';const small=document.createElement('small');small.textContent=label;const strong=document.createElement('strong');strong.textContent='–';box.append(small,strong);metrics.append(box);
   }
   const action=document.createElement('span');action.className='homeOpen';action.textContent='Betrieb öffnen →';
@@ -74,13 +96,17 @@ export async function renderBusinessOverview(db,members,month,host,onSelect){
  });
  await Promise.all(cards.map(async({member,hint,values})=>{
   try{
-   const data=await loadBusinessMetrics(db,member.business_id,month);
+   const [data,history]=await Promise.all([loadBusinessMetrics(db,member.business_id,month),loadPersonnelAverage(db,member.business_id,month)]);
    if(!host.isConnected||document.getElementById('homeMonth')?.value!==month)return;
    values[0].textContent=euro(data.gross);values[1].textContent=euro(data.average);
-   values[2].textContent=percent(data.personnel);values[3].textContent=percent(data.goods);
+   values[2].textContent=percent(history.exact??history.average);values[3].textContent=percent(data.goods);
+   values[4].textContent=percent(history.average);
    hint.textContent=data.gross===null?'Noch keine Umsätze erfasst':data.hasSummary?'Geprüfter Monatsabschluss':data.days+' Tag(e) erfasst · bisheriger Stand';
    values[1].title=data.average===null?'Bezahlte Bons und zugehöriger Umsatz fehlen.':data.paidDays+' Tag(e) mit bezahlten Bons.';
-   values[2].title=data.personnel===null?'Nettoumsatz oder Personalkosten für diesen Monat fehlen.':'Personalkosten dieses Monats / Nettoumsatz.';
+   values[2].previousElementSibling.textContent=history.exact===null?'Personalquote · vorläufig':'Personalquote · exakt';
+   values[2].title=history.exact===null?'Vorläufiger Durchschnitt aus '+history.count+' abgeschlossenen Monaten mit Nettoumsatz und Personalkosten. Die exakte Monatsquote folgt mit dem Monatsabschluss.':'Personalkosten dieses Monats / Nettoumsatz.';
+   values[4].title='Arithmetischer Durchschnitt aus '+history.count+' abgeschlossenen Monaten mit Nettoumsatz und Personalkosten.';
+   values[4].previousElementSibling.textContent='Ø Personalquote im Jahr · '+history.count+' Monate';
    values[3].title=data.goods===null?'Geprüfte Lagerveränderung, Netto-Einkäufe oder Nettoumsatz fehlen.':'Netto-Einkäufe plus Lagerveränderung / Nettoumsatz.';
   }catch(error){hint.textContent='Kennzahlen konnten nicht geladen werden';values[0].title=error.message;}
  }));
