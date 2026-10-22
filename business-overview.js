@@ -108,17 +108,18 @@ export async function renderBusinessOverview(db,members,month,host,onSelect){
    const [data,history]=await Promise.all([loadBusinessMetrics(db,member.business_id,month,isJudith),loadPersonnelAverage(db,member.business_id,month)]);
    if(!host.isConnected||document.getElementById('homeMonth')?.value!==month)return;
    values[0].textContent=euro(data.gross);values[1].textContent=euro(data.average);
-   const historicalReference=isJudith&&history.exact===null&&history.average===null;
-   values[2].textContent=percent(history.exact??history.average??(historicalReference?JUDITH_PERSONNEL_REFERENCE.ratio:null));values[3].textContent=percent(data.goods);
-   values[4].textContent=percent(history.average);
+   const planRatio=isJudith&&history.exact===null&&data.personnelPlan!==null&&data.net>0?100*data.personnelPlan/data.net:null;
+   const historicalReference=isJudith&&history.exact===null&&planRatio===null&&history.average===null;
+   values[2].textContent=percent(history.exact??planRatio??history.average??(historicalReference?JUDITH_PERSONNEL_REFERENCE.ratio:null));values[3].textContent=percent(data.goods);
+   values[4].textContent=percent(planRatio??history.average);
    if(isJudith){values[5].textContent=euro(data.net);values[6].textContent=data.receipts===null?'–':new Intl.NumberFormat('de-AT').format(data.receipts);values[7].textContent=euro(data.personnelPlan);values[7].title='Personalkosten des Vormonats als Planwert; Oktober-Ist-Kosten folgen mit der Abrechnung.';}
    hint.textContent=data.gross===null?'Noch keine Umsätze erfasst':data.hasSummary?'Geprüfter Monatsabschluss':data.days+' Tag(e) erfasst · bisheriger Stand';
    values[1].previousElementSibling.textContent=isJudith?'Ø Bon · Belege':'Ø bezahlter Bon';
    values[1].title=data.average===null?(isJudith?'Beleganzahl oder Umsatz fehlen.':'Bezahlte Bons und zugehöriger Umsatz fehlen.'):(isJudith?'Umsatz / Belege aus ':'Umsatz / bezahlte Bons aus ')+data.paidDays+' Tag(en).';
-   values[2].previousElementSibling.textContent=historicalReference?'Personalquote · vorläufig (Jan–Jul)':history.exact===null?'Personalquote · vorläufig':'Personalquote · exakt';
-   values[2].title=historicalReference?'Vorläufige Referenz '+JUDITH_PERSONNEL_REFERENCE.period+': 149.196 € Personal / 298.214 € Nettoumsatz. Früherer Analysewert, nicht erneut gegen Original-BWA geprüft. Die exakte Monatsquote folgt nach dem Monatsabschluss.':history.exact===null?'Vorläufiger Durchschnitt aus '+history.count+' abgeschlossenen Monaten mit Nettoumsatz und Personalkosten. Die exakte Monatsquote folgt mit dem Monatsabschluss.':'Personalkosten dieses Monats / Nettoumsatz.';
-   values[4].title='Arithmetischer Durchschnitt aus '+history.count+' abgeschlossenen Monaten mit Nettoumsatz und Personalkosten.';
-   values[4].previousElementSibling.textContent='Ø Personalquote im Jahr · '+history.count+' Monate';
+   values[2].previousElementSibling.textContent=planRatio!==null?'Personalquote · vorläufig (Plan)':historicalReference?'Personalquote · vorläufig (Jan–Jul)':history.exact===null?'Personalquote · vorläufig':'Personalquote · exakt';
+   values[2].title=planRatio!==null?'Personalkosten des Vormonats / bisher erfasster Nettoumsatz dieses Monats. Vorläufig, keine Oktober-Ist-Kosten.':historicalReference?'Vorläufige Referenz '+JUDITH_PERSONNEL_REFERENCE.period+': 149.196 € Personal / 298.214 € Nettoumsatz. Früherer Analysewert, nicht erneut gegen Original-BWA geprüft. Die exakte Monatsquote folgt nach dem Monatsabschluss.':history.exact===null?'Vorläufiger Durchschnitt aus '+history.count+' abgeschlossenen Monaten mit Nettoumsatz und Personalkosten. Die exakte Monatsquote folgt mit dem Monatsabschluss.':'Personalkosten dieses Monats / Nettoumsatz.';
+   values[4].title=planRatio!==null?'Aktuelle Planquote: Personalkosten des Vormonats / bisher erfasster Nettoumsatz. Kein Jahresdurchschnitt.':'Arithmetischer Durchschnitt aus '+history.count+' abgeschlossenen Monaten mit Nettoumsatz und Personalkosten.';
+   values[4].previousElementSibling.textContent=planRatio!==null?'Ø Personalquote · vorläufiger Plan':'Ø Personalquote im Jahr · '+history.count+' Monate';
    values[3].title=data.goods===null?'Geprüfte Lagerveränderung, Netto-Einkäufe oder Nettoumsatz fehlen.':'Netto-Einkäufe plus Lagerveränderung / Nettoumsatz.';
   }catch(error){hint.textContent='Kennzahlen konnten nicht geladen werden';values[0].title=error.message;}
  }));
