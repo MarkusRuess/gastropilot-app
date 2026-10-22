@@ -142,8 +142,38 @@ h2{font-size:17px;margin:10px 0}h3{font-size:14px}table{width:100%;border-collap
 .menu-dashboard-scroll td.new-price{font-weight:750;color:#116d5c}
 @media(max-width:650px){.menu-dashboard-tile>summary{min-height:68px;padding:9px 38px 9px 9px}.menu-dashboard-tile>summary b{font-size:17px;overflow-wrap:anywhere}.menu-dashboard-panel{padding:0 9px 9px}.menu-dashboard-scroll table{min-width:0;table-layout:auto}.menu-dashboard-scroll tbody{grid-template-columns:minmax(0,1fr)!important}.menu-dashboard-scroll tr{margin:0;width:100%}.menu-dashboard-scroll td,.menu-dashboard-scroll td:first-child{width:100%!important;max-width:none}.menu-dashboard-scroll td:first-child{display:block!important;font-size:15px!important;line-height:1.35}.menu-dashboard-scroll td:first-child::before{display:none!important}.menu-dashboard-scroll td:not(:first-child){font-size:14px!important}.menu-dashboard-scroll td::before{font-size:12px!important;flex-basis:48%}}
 @media(max-width:480px){#app tbody{grid-template-columns:minmax(0,1fr)}#app tbody tr{padding:10px 12px}#app tbody td{font-size:14px;line-height:1.35}#app tbody td::before{font-size:12px}#app .tile b{font-size:17px}#app .tile small{font-size:12px}#app .top-articles-launch strong{font-size:16px}#app .top-articles-launch small{font-size:12px}.menu-dashboard-scroll tbody{grid-template-columns:minmax(0,1fr)!important}}
-</style><style>.top-article-grid{grid-template-columns:1fr!important;gap:5px}.top-article{padding:7px 10px;min-height:0}.top-article strong{font-size:12px}.top-article .metrics{font-size:11px;margin-top:2px;gap:3px 12px}@media(min-width:1100px){.top-article-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}}</style></head><body>
-<header><button id="gpHeaderHome" type="button" aria-label="GastroPilot – zur Betriebswahl" style="appearance:none;background:transparent;border:0;padding:0;color:inherit;text-align:left;cursor:pointer;display:block"><strong>GastroPilot</strong><small>Dein Lokal. Deine Zahlen. Dein Überblick.</small></button></header>
+</style><style>.top-article-grid{grid-template-columns:1fr!important;gap:5px}.top-article{padding:7px 10px;min-height:0}.top-article strong{font-size:12px}.top-article .metrics{font-size:11px;margin-top:2px;gap:3px 12px}@media(min-width:1100px){.top-article-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}}</style><style>
+/* Desktop-Betriebsübersicht und immer erreichbare Betriebswahl. */
+header{position:sticky;top:0;z-index:60}
+.gpHeaderBar{max-width:1200px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:18px}
+#gpHeaderSwitch{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+#gpHeaderSwitch.hidden{display:none}
+#gpHeaderSwitch button{background:#fff;color:#173247;border:1px solid #d7e1e7;border-radius:9px;padding:9px 13px;font-size:13px;font-weight:700;min-height:40px;cursor:pointer}
+#gpHeaderSwitch button[aria-current="page"]{background:#087f70;color:#fff;border-color:#087f70}
+#gpHeaderSwitch button:focus-visible{outline:3px solid #75d5c6;outline-offset:2px}
+@media(min-width:681px){
+ #businessHome{max-width:1200px;margin:0 auto}
+ #businessHome>.card{padding:26px 30px}
+ .homeHead{display:grid;grid-template-columns:minmax(0,1fr) minmax(160px,210px) auto;align-items:end;gap:18px}
+ .homeHead h1{font-size:27px;line-height:1.2;margin:0;color:#172a3a}
+ .homeHead p{font-size:14px;color:#526475;margin:7px 0 0}
+ .homeHead label{font-size:13px;font-weight:700;min-width:0}
+ .homeHead input{display:block;width:100%;min-height:42px;margin-top:6px}
+ .homeGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;margin-top:24px}
+ .homeBusiness{display:block;width:100%;height:100%;min-width:0;text-align:left;background:#fff;color:#172a3a;border:1px solid #dce5eb;border-radius:16px;padding:22px;cursor:pointer;box-shadow:0 4px 18px #1e293308}
+ .homeBusiness:hover,.homeBusiness:focus-visible{border-color:#087f70;outline:2px solid #087f7033}
+ .homeBusiness h2{font-size:20px;margin:0 0 6px;color:#172a3a}
+ .homeBusiness .homeHint{display:block;color:#64748b;font-size:13px;min-height:20px}
+ .homeMetrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:17px 0}
+ .homeMetric{display:block;min-width:0;background:#f5f8fa;border-radius:10px;padding:12px}
+ .homeMetric small{display:block;color:#526475;font-size:12px}
+ .homeMetric strong{display:block;color:#172a3a;font-size:19px;line-height:1.3;overflow-wrap:anywhere}
+ .homeOpen{color:#087f70;font-size:13px;font-weight:750}
+ .homeFoot{font-size:12px;color:#64748b;line-height:1.5;margin:15px 0 0}
+}
+@media(max-width:800px){.gpHeaderBar{flex-wrap:wrap}#gpHeaderSwitch{width:100%}#gpHeaderSwitch button{flex:1;padding:8px 5px;font-size:12px}}
+</style></head><body>
+<header><div class="gpHeaderBar"><button id="gpHeaderHome" type="button" aria-label="GastroPilot – zur Betriebsübersicht" style="appearance:none;background:transparent;border:0;padding:0;color:inherit;text-align:left;cursor:pointer;display:block"><strong>GastroPilot</strong><small>Dein Lokal. Deine Zahlen. Dein Überblick.</small></button><nav id="gpHeaderSwitch" class="hidden" aria-label="Betrieb wechseln"></nav></div></header>
 <main><section id="login" class="card"><h2>Anmelden</h2><form id="loginForm"><label>E-Mail<input id="email" type="email" autocomplete="username" required></label><label>Passwort<input id="password" type="password" autocomplete="current-password" required></label><button>Anmelden</button></form><p id="loginMsg" class="status"></p></section>
 <section id="businessHome" class="hidden" aria-label="Betriebsübersicht"><div class="card"><div class="homeHead"><div><h1>Beide Betriebe im Blick</h1><p>Monatswerte je Betrieb · Betrieb antippen für Details</p></div><label>Monat<input id="homeMonth" type="month" aria-label="Monat der Betriebsübersicht"></label><button id="homeLogout" type="button">Abmelden</button></div><div id="homeCards" class="homeGrid" aria-live="polite"></div><p class="homeFoot">Umsatz brutto; Personal- und Wareneinsatzquote vom Nettoumsatz. Ø Bon nur aus Tagen mit zugeordneten bezahlten Bons. Wareneinsatz nur mit erfassten Netto-Einkäufen und geprüfter Lagerveränderung.</p><p id="homeStatus" class="muted" role="status"></p></div></section>
 <div id="app" class="hidden"><section id="businessSwitchCard" class="card" aria-label="Betrieb wechseln"><button id="backHome" type="button" class="secondary">← Beide Betriebe</button><div id="gp-business-switch"></div><p id="businessSwitchStatus" class="muted" role="status"></p></section><a id="judithAnalysisLink" class="tile article-launch-tile hidden" href="judith-gesamtanalyse.html" style="text-decoration:none"><small>Übernommene Arbeitsunterlagen</small><b>Judith · Gesamtanalyse</b><small>Rechnungen · Zahlungen · Kassa · Einkaufspreise · Prüfhinweise →</small></a><div class="row"><h2 id="activeBusinessTitle">GastroPilot · Betriebssteuerung</h2><div id="monthOverview" class="month-overview" role="region" aria-label="Monatsübersicht"><div class="month-overview-head"><div><small>Monatsübersicht</small><strong id="monthOverviewTitle">Monat auswählen</strong></div><div class="month-controls"><button id="monthPrev" type="button" aria-label="Vorheriger Monat">‹</button><label class="month-input-label"><span class="visually-hidden">Monat auswählen</span><input id="month" type="month" aria-label="Monat auswählen"></label><button id="monthNext" type="button" aria-label="Nächster Monat">›</button></div></div><div id="monthOverviewStats" class="month-overview-stats"></div><details id="monthCalendar"><summary>Tagesübersicht</summary><div id="monthCalendarGrid" class="month-calendar-grid" aria-label="Kalender des ausgewählten Monats"></div><div id="monthDayDetail" class="month-day-detail" aria-live="polite"></div><p class="month-calendar-note">Beträge brutto in € · — = kein Tagesabschluss erfasst</p></details></div><button id="refresh">Aktualisieren</button><button id="logout">Abmelden</button></div><p id="summary" class="muted">Lade Archiv …</p><div class="grid" id="quickKpis"></div><a id="kalkulationLink" class="tile article-launch-tile" href="kalkulation.html" style="text-decoration:none"><small>Artikelkalkulation</small><b>Kalkulation</b><small>Gesamtziel: max. 26 % Wareneinsatz · Grün ≤20 % · Gelb ≤26 % · Rot &gt;26 %</small></a><details id="costAlertsTile" class="tile menu-dashboard-tile"><summary><b>EK-Preiswarnungen</b><small id="costAlertsCount">Neue Lieferanten-Preiserhöhungen ab 5 %</small></summary><div class="menu-dashboard-panel"><div id="costAlertsRows" class="muted">Preiswarnungen werden geladen …</div></div></details><details id="menuDashboardTile" class="tile menu-dashboard-tile"><summary><b>Getränke &amp; Speisekarte</b></summary><div class="menu-dashboard-panel"><div class="menu-dashboard-scroll menu-card-scroll"><div id="menuDashboardRows" class="menu-product-grid"></div></div></div></details><details id="profitGoalTile" class="tile profit-goal-tile"><summary><small>Personal + Fixkosten + Gewinn</small><b>Gewinnziel</b><small>Monatliche Zielpreise ansehen <span aria-hidden="true">⌄</span></small></summary><div class="profit-goal-panel"><p class="muted">Orientierung für den ausgewählten Monat. Gewinnquote und vollständige Fixkosten kannst du hier ergänzen.</p><div class="profit-goal-metrics"><div><small>Nettoumsatz</small><strong id="profitGoalNet">–</strong></div><div><small>Personalkosten</small><strong id="profitGoalStaff">–</strong></div><div><small>Erfasste Fixkosten</small><strong id="profitGoalRecordedFixed">–</strong></div><div><small>Monatliches Gewinnziel</small><strong id="profitGoalAmount">–</strong></div><div class="profit-goal-required"><small>Ziel-Nettoumsatz inkl. 26 % Wareneinsatz, Personal, Fixkosten und Gewinn</small><strong id="profitGoalRevenue">–</strong></div></div><div class="profit-goal-inputs"><label>Vollständige Fixkosten pro Monat (€)<input id="profitGoalFixedInput" type="number" min="0" step="0.01" inputmode="decimal"></label><label>Gewinnziel vom Nettoumsatz (%)<input id="profitGoalPercentInput" type="number" min="0" max="80" step="0.5" inputmode="decimal" value="10"></label></div><p id="profitGoalNote" class="muted"></p><a class="profit-goal-link" href="kalkulation.html">VK-Empfehlungen für BONit-Artikel öffnen →</a></div></details><nav id="quickNav" class="quickNav"><button type="button" data-target="monthlyReference">Monat</button><button type="button" data-target="intake">Upload</button><button type="button" data-target="financeSection">Finanzen</button><button type="button" data-target="weeklyPurchase">Einkauf</button><button type="button" data-target="topArticles">Top 30</button><button type="button" data-target="slowArticles">Selten verkauft</button><button type="button" data-target="centralArchive">Archiv</button></nav>
@@ -160,6 +190,26 @@ import {renderBusinessOverview} from './business-overview.js';
 const db=createClient('https://sjnwfwcpgwsavygewwzb.supabase.co','sb_publishable__tucXG-IQGUhibMqMSUzCw_5RnH_sbQ');
 let BID=null,authorizedBusinesses=[],switchingBusiness=false;const E=id=>document.getElementById(id),N=v=>v==null||v===''?null:Number(v),EUR=v=>v==null||!Number.isFinite(v)?'–':new Intl.NumberFormat('de-AT',{style:'currency',currency:'EUR'}).format(v),D=v=>v?.split('-').reverse().join('.')||'–';
 let user=null,busy=false,selected=null,queue=[];
+function renderTopBusinessNav(){
+ const host=E('gpHeaderSwitch');host.replaceChildren();
+ if(!user||!authorizedBusinesses.length){host.classList.add('hidden');return;}
+ host.classList.remove('hidden');
+ const onHome=!E('businessHome').classList.contains('hidden');
+ const make=(label,current,action)=>{
+  const button=document.createElement('button');button.type='button';button.textContent=label;
+  if(current)button.setAttribute('aria-current','page');
+  button.addEventListener('click',action);host.append(button);
+ };
+ make('Übersicht',onHome,()=>{void showHome();});
+ for(const member of authorizedBusinesses){
+  make(businessLabel(member.businesses?.name),!onHome&&member.business_id===BID,()=>{
+   if(!onHome&&member.business_id===BID)return;
+   if(busy){E('businessSwitchStatus').textContent='Bitte den laufenden Upload abschließen.';return;}
+   if(!E('app').classList.contains('hidden'))E('homeMonth').value=E('month').value;
+   void openBusiness(member);
+  });
+ }
+}
 function businessLabel(name){return String(name||'GastroPilot').includes('Judith')?'Judith und die Torten':String(name||'GastroPilot').includes('Friedrich')?'Das Friedrich':String(name||'GastroPilot');}function setBusinessHeader(name){const label=businessLabel(name);E('activeBusinessTitle').textContent=label+' · Betriebssteuerung';E('intakeBusinessTitle').textContent='📷 Unterlagen für '+label+' hochladen';document.title='GastroPilot · '+label;const calc=E('kalkulationLink');if(calc){const judith=label==='Judith und die Torten';if(judith){calc.removeAttribute('href');calc.setAttribute('aria-disabled','true');calc.querySelector('b').textContent='Kalkulation · Judith';calc.querySelectorAll('small')[1].textContent='Nach dem ersten Artikel- und Preisimport verfügbar';}else{calc.href='kalkulation.html';calc.removeAttribute('aria-disabled');calc.querySelector('b').textContent='Kalkulation';calc.querySelectorAll('small')[1].textContent='Gesamtziel: max. 26 % Wareneinsatz · Grün ≤20 % · Gelb ≤26 % · Rot >26 %';}}E('judithAnalysisLink').classList.toggle('hidden',label!=='Judith und die Torten');}
 const menuPriceKey=value=>String(value||'').toLocaleLowerCase('de-AT').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/ß/g,'ss').replace(/[^a-z0-9]+/g,' ').trim();
 function menuServing(name){
@@ -1302,7 +1352,7 @@ let openingBusiness=false;
 async function showHome(){
  if(busy){E('businessSwitchStatus').textContent='Bitte den laufenden Upload abschließen.';return;}
  if(!E('app').classList.contains('hidden'))E('homeMonth').value=E('month').value;
- E('app').classList.add('hidden');E('businessHome').classList.remove('hidden');document.title='GastroPilot · Beide Betriebe';
+ E('app').classList.add('hidden');E('businessHome').classList.remove('hidden');document.title='GastroPilot · Beide Betriebe';renderTopBusinessNav();
  const subtitle=document.querySelector('header small');if(subtitle)subtitle.textContent='Friedrich · Judith und die Torten';
  E('homeStatus').textContent='Monatswerte werden geladen …';
  try{await renderBusinessOverview(db,authorizedBusinesses,E('homeMonth').value,E('homeCards'),openBusiness);E('homeStatus').textContent='Fehlende Werte bleiben leer, bis die Unterlagen erfasst sind.';}
@@ -1314,7 +1364,7 @@ async function openBusiness(member){
  try{
   BID=member.business_id;localStorage.setItem(window.GastroPilotBusiness.key,BID);
   E('month').value=E('homeMonth').value;window.GastroPilotBusiness.render(authorizedBusinesses,BID);
-  setBusinessHeader(member.businesses?.name);E('businessHome').classList.add('hidden');E('app').classList.remove('hidden');
+  setBusinessHeader(member.businesses?.name);E('businessHome').classList.add('hidden');E('app').classList.remove('hidden');renderTopBusinessNav();
   await refresh();await loadWholeArchive();showMobilePanel('monthlyReference');window.scrollTo(0,0);
  }catch(error){E('businessSwitchStatus').textContent='Betrieb konnte nicht geladen werden: '+error.message;}
  finally{openingBusiness=false;}
@@ -1342,7 +1392,7 @@ const retryButton=document.createElement('button');retryButton.type='button';ret
 const cardTables=()=>{document.querySelectorAll('#app table').forEach(table=>{const labels=[...table.querySelectorAll('thead th')].map(x=>x.textContent.trim());table.querySelectorAll('tbody tr').forEach(tr=>{[...tr.children].forEach((td,i)=>{if(!td.dataset.label)td.dataset.label=labels[i]||'';});});});};
 const cardObserver=new MutationObserver(cardTables);
 document.querySelectorAll('#app tbody').forEach(el=>cardObserver.observe(el,{childList:true,subtree:true}));
-cardTables();E('gpHeaderHome').onclick=()=>{if(!user)return;const current=authorizedBusinesses.find(m=>m.business_id===BID);const inApp=!E('app').classList.contains('hidden');const target=authorizedBusinesses.find(m=>m.business_id!==BID&&m.businesses?.name?.includes(current?.businesses?.name?.includes('Judith')?'Friedrich':'Judith'))||authorizedBusinesses.find(m=>m.businesses?.name?.includes('Friedrich'));if(inApp&&target){if(busy){E('businessSwitchStatus').textContent='Bitte zuerst den laufenden Upload abschließen.';return;}E('homeMonth').value=E('month').value;void openBusiness(target);}else void showHome();};E('backHome').onclick=showHome;E('homeMonth').onchange=showHome;const signOut=async()=>{await db.auth.signOut();user=null;authorizedBusinesses=[];sessionStorage.removeItem('gastropilot-open-business');E('app').classList.add('hidden');E('businessHome').classList.add('hidden');E('login').classList.remove('hidden');};E('homeLogout').onclick=signOut;E('refresh').onclick=async()=>{await refresh();await loadWholeArchive();};E('month').onchange=()=>{monthSelectedDay=null;void refresh();};E('monthPrev').onclick=()=>moveOverviewMonth(-1);E('monthNext').onclick=()=>moveOverviewMonth(1);E('logout').onclick=signOut;enter().catch(e=>E('loginMsg').textContent='Anmeldung: '+e.message);
+cardTables();E('gpHeaderHome').onclick=()=>{if(user)void showHome()};E('backHome').onclick=showHome;E('homeMonth').onchange=showHome;const signOut=async()=>{await db.auth.signOut();user=null;authorizedBusinesses=[];sessionStorage.removeItem('gastropilot-open-business');E('app').classList.add('hidden');E('businessHome').classList.add('hidden');E('login').classList.remove('hidden');renderTopBusinessNav();};E('homeLogout').onclick=signOut;E('refresh').onclick=async()=>{await refresh();await loadWholeArchive();};E('month').onchange=()=>{monthSelectedDay=null;void refresh();};E('monthPrev').onclick=()=>moveOverviewMonth(-1);E('monthNext').onclick=()=>moveOverviewMonth(1);E('logout').onclick=signOut;enter().catch(e=>E('loginMsg').textContent='Anmeldung: '+e.message);
 let autoRefreshing=false;
 async function refreshVisibleDashboard(){if(!user||E('app').classList.contains('hidden')||document.hidden||busy||autoRefreshing)return;autoRefreshing=true;try{await refresh();}finally{autoRefreshing=false;}}
 // Keine zeitgesteuerte Aktualisierung: neue BONit-Abschlüsse werden beim nächsten Laden oder bei der nächsten bewussten Aktualisierung übernommen.
