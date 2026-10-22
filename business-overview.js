@@ -22,16 +22,18 @@ const result=(value,context)=>{if(value.error)throw new Error(context+': '+value
 export async function loadBusinessMetrics(db,businessId,month,isJudith=false){
  if(!/^\d{4}-(0[1-9]|1[0-2])$/.test(month))throw new Error('Ungültiger Monat.');
  const start=month+'-01',end=monthEnd(month);
- const [salesResult,documentsResult,staffResult,costResult,ratioResult,summaryResult]=await Promise.all([
+ const previousMonthStart=new Date(Date.UTC(Number(month.slice(0,4)),Number(month.slice(5,7))-2,1)).toISOString().slice(0,10);
+ const [salesResult,documentsResult,staffResult,costResult,ratioResult,summaryResult,planStaffResult]=await Promise.all([
   db.from('bonit_daily_closings').select('closing_date,gross_amount,net_amount,receipt_count,raw_data').eq('business_id',businessId).gte('closing_date',start).lt('closing_date',end),
   db.from('documents').select('document_date,document_type,status,created_at,extracted_data').eq('business_id',businessId).gte('document_date',start).lt('document_date',end).in('document_type',['cash_report']),
   db.from('personnel_costs').select('total_costs').eq('business_id',businessId).eq('accounting_month',start),
   db.from('expenses').select('category,net_amount').eq('business_id',businessId).gte('expense_date',start).lt('expense_date',end).in('category',['food','drinks','beverages']),
   db.from('monthly_cost_ratio_inputs').select('net_revenue,inventory_change').eq('business_id',businessId).eq('month',start).maybeSingle(),
-  ['2026-08','2026-09'].includes(month)?db.from('monthly_bonit_summaries').select('summary').eq('business_id',businessId).eq('month_start',start).maybeSingle():Promise.resolve({data:null,error:null})
+  ['2026-08','2026-09'].includes(month)?db.from('monthly_bonit_summaries').select('summary').eq('business_id',businessId).eq('month_start',start).maybeSingle():Promise.resolve({data:null,error:null}),
+  isJudith?db.from('personnel_costs').select('total_costs').eq('business_id',businessId).eq('accounting_month',previousMonthStart):Promise.resolve({data:[],error:null})
  ]);
  const sales=result(salesResult,'Umsätze'),documents=result(documentsResult,'Tagesabschlüsse');
- const staff=result(staffResult,'Personal'),costs=result(costResult,'Einkäufe');
+ const staff=result(staffResult,'Personal'),costs=result(costResult,'Einkäufe'),planStaff=result(planStaffResult,'Personal Vormonat');
  if(ratioResult.error)throw new Error('Monatswerte: '+ratioResult.error.message);
  if(summaryResult.error)throw new Error('Monatsabschluss: '+summaryResult.error.message);
  const days=new Map();
@@ -40,12 +42,14 @@ export async function loadBusinessMetrics(db,businessId,month,isJudith=false){
   const previous=days.get(row.document_date);
   if(previous&&previous.created_at>=row.created_at)continue;
   const raw=row.extracted_data||{};
-  days.set(row.document_date,{gross:number(raw.gross_total),net:number(raw.net_total),paid:isJudith?number(raw.receipt_count):paidCount(raw),created_at:row.created_at});
+  days.set(row.document_date,{gross:number(raw.gross_total),net:number(raw.net_total),receipts:number(raw.receipt_count),paid:isJudith?number(raw.receipt_count):paidCount(raw),created_at:row.created_at});
  }
- for(const row of sales)days.set(row.closing_date,{gross:number(row.gross_amount),net:number(row.net_amount),paid:isJudith?number(row.receipt_count):paidCount(row.raw_data)??days.get(row.closing_date)?.paid??null});
+ for(const row of sales)days.set(row.closing_date,{gross:number(row.gross_amount),net:number(row.net_amount),receipts:number(row.receipt_count),paid:isJudith?number(row.receipt_count):paidCount(row.raw_data)??days.get(row.closing_date)?.paid??null});
  const daily=[...days.values()],summary=summaryResult.data?.summary;
  const gross=number(summary?.gross)??total(daily,'gross');
  const net=number(ratioResult.data?.net_revenue)??number(summary?.net)??total(daily,'net');
+ const receipts=total(daily,'receipts');
+ const personnelPlan=planStaff.length?total(planStaff,'total_costs'):null;
  const paidDays=daily.filter(row=>row.paid!==null&&row.gross!==null);
  const paid=total(paidDays,'paid'),coveredGross=total(paidDays,'gross');
  const average=paid>0&&coveredGross!==null?coveredGross/paid:null;
@@ -53,7 +57,7 @@ export async function loadBusinessMetrics(db,businessId,month,isJudith=false){
  const personnel=net>0&&staffAmount!==null?100*staffAmount/net:null;
  const purchases=total(costs,'net_amount'),inventory=number(ratioResult.data?.inventory_change);
  const goods=net>0&&purchases!==null&&inventory!==null?100*(purchases+inventory)/net:null;
- return {gross,average,personnel,goods,days:daily.length,paidDays:paidDays.length,hasSummary:gross!==null&&!!summary};
+ return {gross,net,receipts,average,personnel,personnelPlan,goods,days:daily.length,paidDays:paidDays.length,hasSummary:gross!==null&&!!summary};
 }
 
 // Jahresdurchschnitt nur aus abgeschlossenen Monaten mit Nettoumsatz und Personalkosten.
@@ -87,7 +91,9 @@ export async function renderBusinessOverview(db,members,month,host,onSelect){
   const heading=document.createElement('h2');heading.textContent=name;
   const hint=document.createElement('span');hint.className='homeHint';hint.textContent='Monatsdaten werden geladen …';
   const metrics=document.createElement('div');metrics.className='homeMetrics';
-  for(const label of ['Umsatz brutto','Ø bezahlter Bon','Personalquote','Wareneinsatzquote','Ø Personalquote im Jahr']){
+  const isJudith=name==='Judith und die Torten';
+  const labels=['Umsatz brutto','Ø bezahlter Bon','Personalquote','Wareneinsatzquote','Ø Personalquote im Jahr',...(isJudith?['Nettoumsatz','Belege','Personal · Vormonat (Plan)']:[])];
+  for(const label of labels){
    const box=document.createElement('div');box.className='homeMetric';const small=document.createElement('small');small.textContent=label;const strong=document.createElement('strong');strong.textContent='–';box.append(small,strong);metrics.append(box);
   }
   const action=document.createElement('span');action.className='homeOpen';action.textContent='Betrieb öffnen →';
@@ -102,6 +108,7 @@ export async function renderBusinessOverview(db,members,month,host,onSelect){
    values[0].textContent=euro(data.gross);values[1].textContent=euro(data.average);
    values[2].textContent=percent(history.exact??history.average);values[3].textContent=percent(data.goods);
    values[4].textContent=percent(history.average);
+   if(isJudith){values[5].textContent=euro(data.net);values[6].textContent=data.receipts===null?'–':new Intl.NumberFormat('de-AT').format(data.receipts);values[7].textContent=euro(data.personnelPlan);values[7].title='Personalkosten des Vormonats als Planwert; Oktober-Ist-Kosten folgen mit der Abrechnung.';}
    hint.textContent=data.gross===null?'Noch keine Umsätze erfasst':data.hasSummary?'Geprüfter Monatsabschluss':data.days+' Tag(e) erfasst · bisheriger Stand';
    values[1].previousElementSibling.textContent=isJudith?'Ø Bon · Belege':'Ø bezahlter Bon';
    values[1].title=data.average===null?(isJudith?'Beleganzahl oder Umsatz fehlen.':'Bezahlte Bons und zugehöriger Umsatz fehlen.'):(isJudith?'Umsatz / Belege aus ':'Umsatz / bezahlte Bons aus ')+data.paidDays+' Tag(en).';
