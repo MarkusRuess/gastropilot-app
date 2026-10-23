@@ -137,7 +137,7 @@ export async function renderBusinessOverview(db,members,month,host,onSelect){
    const progress=actual===null||monthlyTarget<=0?null:100*actual/monthlyTarget;
    values[values.length-2].textContent=euro(monthlyTarget);
    values[values.length-2].previousElementSibling.textContent='Monatsziel · brutto';
-   values[values.length-1].textContent=actual===null?'–':actual>=monthlyTarget?'Ziel erreicht ✓':percent(progress)+' erreicht';
+   values[values.length-1].textContent=progress===null?'–':percent(progress)+' erreicht'+(progress>=100?' ✓':'');
    values[values.length-1].previousElementSibling.textContent='Zielerreichung · '+remainingDays+' Kalendertage übrig';
    const progressTrack=values[values.length-1].parentElement.querySelector('.homeProgress');
    if(progressTrack){const capped=Math.max(0,Math.min(100,progress??0));progressTrack.querySelector('.homeProgressFill').style.width=capped+'%';progressTrack.dataset.level=progress===null?'unknown':progress>=100?'complete':progress>=70?'high':progress>=50?'mid':'low';progressTrack.setAttribute('aria-valuetext',progress===null?'Umsatzdaten fehlen':percent(progress)+' erreicht');if(progress===null)progressTrack.removeAttribute('aria-valuenow');else progressTrack.setAttribute('aria-valuenow',String(Math.round(capped)));}
