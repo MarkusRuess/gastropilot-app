@@ -892,7 +892,18 @@ async function refresh(){if(E('recipeCostTile')&&!E('recipeCostTile').classList.
   }
   const note=document.createElement('small');note.className='muted';note.textContent='ÖGK, DB, DZ, Kommunalsteuer und weitere Abgaben sind derzeit nur als gemeinsame Arbeitgeberkosten gespeichert. Eine getrennte Aufschlüsselung erfolgt erst mit den entsprechenden Abrechnungswerten. Bruttolohn enthält Arbeitnehmerabzüge; diese nicht zusätzlich als Kosten zählen.';levies.append(note);
   const heading=document.createElement('small');heading.className='muted';heading.textContent='Mitarbeiter · '+shownMonth.slice(0,7)+(personnelEstimated?' (Vormonat / Plan)':'');host.append(heading);
-  for(const person of detailRows){const line=document.createElement('div');line.style.cssText='display:flex;justify-content:space-between;gap:10px;align-items:start;padding:7px 0;border-bottom:1px solid var(--line,#ddd)';const left=document.createElement('div');const name=document.createElement('b');name.textContent=person.employee_name||'Ohne Namen';const sub=document.createElement('small');sub.className='muted';sub.style.display='block';sub.textContent='Brutto '+EUR(N(person.gross_salary))+' · DG-Kosten '+EUR(N(person.employer_costs));left.append(name,sub);const total=document.createElement('strong');total.textContent=EUR(N(person.total_costs));line.append(left,total);host.append(line);}
+  for(const person of detailRows){
+   const card=document.createElement('details');card.style.cssText='border:1px solid var(--line,#ddd);border-radius:10px;padding:9px 11px;background:var(--card,#fff)';
+   const summary=document.createElement('summary');summary.style.cssText='cursor:pointer;display:flex;justify-content:space-between;gap:12px;align-items:center';
+   const name=document.createElement('b');name.textContent=person.employee_name||'Ohne Namen';
+   const total=document.createElement('strong');total.textContent=EUR(N(person.total_costs));
+   summary.append(name,total);card.append(summary);
+   const info=document.createElement('div');info.style.cssText='display:grid;gap:5px;margin-top:10px;font-size:13px';
+   for(const [label,value] of [['Bruttolohn / Bruttogehalt',person.gross_salary],['Dienstgeberkosten inklusive Abgaben',person.employer_costs],['Gesamter Personalaufwand',person.total_costs]]){
+    const line=document.createElement('div');line.style.cssText='display:flex;justify-content:space-between;gap:10px';const caption=document.createElement('span');caption.textContent=label;const amount=document.createElement('b');amount.textContent=EUR(N(value));line.append(caption,amount);info.append(line);
+   }
+   const hint=document.createElement('small');hint.className='muted';hint.textContent='Lohnzettel-Werte. Weitere Einzelabgaben werden nur angezeigt, wenn sie getrennt erfasst sind.';info.append(hint);card.append(info);host.append(card);
+  }
   if(!detailRows.length){const msg=document.createElement('p');msg.className='muted';msg.textContent='Für diesen Monat sind noch keine Mitarbeiterabrechnungen vorhanden.';host.append(msg);}
  }
  const personnelLabel=personnelEstimated?'Personalkosten · Vormonat (Plan)':personnelCost===null?'Personalkosten · fehlen':'Personalkosten · Ist';
