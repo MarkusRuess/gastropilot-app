@@ -3,6 +3,16 @@ const number=value=>value===null||value===undefined||value===''?null:Number.isFi
 const total=(rows,key)=>rows.length&&rows.every(row=>number(row[key])!==null)?rows.reduce((sum,row)=>sum+number(row[key]),0):null;
 const euro=value=>value===null?'–':new Intl.NumberFormat('de-AT',{style:'currency',currency:'EUR'}).format(value);
 const percent=value=>value===null?'–':new Intl.NumberFormat('de-AT',{maximumFractionDigits:1,minimumFractionDigits:1}).format(value)+' %';
+const TICKET_TARGETS={friedrich:22,judith:100};
+function setProgress(track,progress){
+ if(!track)return;
+ const capped=Math.max(0,Math.min(100,progress??0));
+ track.querySelector('.homeProgressFill').style.width=capped+'%';
+ track.dataset.level=progress===null?'unknown':progress>=100?'complete':progress>=70?'high':progress>=50?'mid':'low';
+ track.setAttribute('aria-valuetext',progress===null?'Umsatzdaten fehlen':percent(progress)+' erreicht');
+ if(progress===null)track.removeAttribute('aria-valuenow');
+ else track.setAttribute('aria-valuenow',String(Math.round(capped)));
+}
 // Vorläufige Referenz aus der Judith-Gesamtanalyse Jan–Jul 2026; bisher nicht erneut anhand der BWA geprüft.
 export const JUDITH_PERSONNEL_REFERENCE={ratio:100*149196/298214,period:'Jan–Jul 2026'};
 // Vorläufige Monatsziele brutto; bewusst getrennt von echten Ist-Zahlen.
@@ -105,7 +115,8 @@ export async function renderBusinessOverview(db,members,month,host,onSelect){
   const labels=['Umsatz brutto','Ø Bon','Personalquote · vorläufig','Wareneinkäufe · laufender Monat','Ø Personalquote im Jahr / Plan','Nettoumsatz','Belege','Personal · Vormonat (Plan)','Monatsziel · brutto','Zielerreichung · verbleibende Tage'];
   for(const label of labels){
    const box=document.createElement('div');box.className='homeMetric';const small=document.createElement('small');small.textContent=label;const strong=document.createElement('strong');strong.textContent='–';box.append(small,strong);
-   if(label.startsWith('Zielerreichung')){const track=document.createElement('span');track.className='homeProgress';track.setAttribute('role','progressbar');track.setAttribute('aria-label','Monatsziel erreicht');track.setAttribute('aria-valuemin','0');track.setAttribute('aria-valuemax','100');const fill=document.createElement('span');fill.className='homeProgressFill';track.append(fill);box.append(track);}
+   if(label==='Ø Bon'){const target=document.createElement('span');target.className='homeTicketTarget';target.textContent='Soll '+euro(TICKET_TARGETS[isJudith?'judith':'friedrich']);box.append(target);}
+   if(label.startsWith('Zielerreichung')||label==='Ø Bon'){const track=document.createElement('span');track.className='homeProgress';track.setAttribute('role','progressbar');track.setAttribute('aria-label',label==='Ø Bon'?'Ø Bon Soll erreicht':'Monatsziel erreicht');track.setAttribute('aria-valuemin','0');track.setAttribute('aria-valuemax','100');const fill=document.createElement('span');fill.className='homeProgressFill';track.append(fill);box.append(track);}
    metrics.append(box);
   }
   const goal=SALES_TARGETS[isJudith?'judith':'friedrich'];for(const [index,value] of [[metrics.children.length-2,goal.breakEven],[metrics.children.length-1,goal.profit5000]]){const box=metrics.children[index];box.querySelector('strong').textContent=euro(value);box.title=goal.note;}const action=document.createElement('span');action.className='homeOpen';action.textContent='Betrieb öffnen →';
@@ -118,6 +129,11 @@ export async function renderBusinessOverview(db,members,month,host,onSelect){
    const [data,history,purchaseRows,goalRow]=await Promise.all([loadBusinessMetrics(db,member.business_id,month,isJudith),loadPersonnelAverage(db,member.business_id,month),db.from('expenses').select('category,net_amount,expense_date,accounting_month').eq('business_id',member.business_id).in('category',['food','drinks','beverages']),db.from('gp_revenue_targets').select('target_monthly_gross,estimated_food_cost_pct').eq('business_id',member.business_id).maybeSingle()]);
    if(!host.isConnected||document.getElementById('homeMonth')?.value!==month)return;
    values[0].textContent=euro(data.gross);values[1].textContent=euro(data.average);
+   const ticketTarget=TICKET_TARGETS[isJudith?'judith':'friedrich'];
+   const ticketProgress=data.average===null?null:100*data.average/ticketTarget;
+   const ticketBox=values[1].parentElement;
+   ticketBox.querySelector('.homeTicketTarget').textContent='Soll '+euro(ticketTarget)+(ticketProgress===null?'':' · '+percent(ticketProgress));
+   setProgress(ticketBox.querySelector('.homeProgress'),ticketProgress);
    const planRatio=isJudith&&history.exact===null&&data.personnelPlan!==null&&data.net>0?100*data.personnelPlan/data.net:null;
    const historicalReference=isJudith&&history.exact===null&&planRatio===null&&history.average===null;
    values[2].textContent=percent(history.exact??planRatio??history.average??(historicalReference?JUDITH_PERSONNEL_REFERENCE.ratio:null));
@@ -139,8 +155,7 @@ export async function renderBusinessOverview(db,members,month,host,onSelect){
    values[values.length-2].previousElementSibling.textContent='Monatsziel · brutto';
    values[values.length-1].textContent=progress===null?'–':percent(progress)+' erreicht'+(progress>=100?' ✓':'');
    values[values.length-1].previousElementSibling.textContent='Zielerreichung · '+remainingDays+' Kalendertage übrig';
-   const progressTrack=values[values.length-1].parentElement.querySelector('.homeProgress');
-   if(progressTrack){const capped=Math.max(0,Math.min(100,progress??0));progressTrack.querySelector('.homeProgressFill').style.width=capped+'%';progressTrack.dataset.level=progress===null?'unknown':progress>=100?'complete':progress>=70?'high':progress>=50?'mid':'low';progressTrack.setAttribute('aria-valuetext',progress===null?'Umsatzdaten fehlen':percent(progress)+' erreicht');if(progress===null)progressTrack.removeAttribute('aria-valuenow');else progressTrack.setAttribute('aria-valuenow',String(Math.round(capped)));}
+   setProgress(values[values.length-1].parentElement.querySelector('.homeProgress'),progress);
    values[values.length-1].title=missing===null?'Umsatzdaten fehlen.':actual>=monthlyTarget?'Monatsziel erreicht.':euro(missing)+' fehlen zum Monatsziel; '+(remainingDays?euro(missing/remainingDays)+' pro verbleibendem Kalendertag.':'Monat abgelaufen.');
    values[values.length-2].title=missing===null?'Noch keine Umsätze erfasst.':euro(missing)+' fehlen zum Monatsziel.';
    values[4].textContent=percent(planRatio??history.average);
