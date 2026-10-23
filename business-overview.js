@@ -10,8 +10,8 @@ export const JUDITH_PERSONNEL_REFERENCE={ratio:100*149196/298214,period:'Jan–J
 // 26 % Wareneinsatz, 10 % USt angenommen. Friedrich: Personal 18.000 netto,
 // Fixkosten rund 5.000 netto, 26 % Wareneinsatz und pauschal 15 % Misch-USt.
 export const SALES_TARGETS={
- judith:{breakEven:40300,profit5000:47700,note:'Plan: September-Personal 19.958,75 €, Miete 4.130,11 €, sonstige Fixkosten 3.000 €, Wareneinsatz 26 %, angenommene USt 10 %.'},
- friedrich:{breakEven:35800,profit5000:43500,note:'Plan: Personal 18.000 €, Fixkosten rund 5.000 €, Wareneinsatz 26 %, angenommene Misch-USt 15 %. Noch nicht vollständig abgestimmt.'}
+ judith:{breakEven:60000,profit5000:60000,note:'Plan: September-Personal 19.958,75 €, Miete 4.130,11 €, sonstige Fixkosten 3.000 €, Wareneinsatz 26 %, angenommene USt 10 %.'},
+ friedrich:{breakEven:50000,profit5000:50000,note:'Plan: Personal 18.000 €, Fixkosten rund 5.000 €, Wareneinsatz 26 %, angenommene Misch-USt 15 %. Noch nicht vollständig abgestimmt.'}
 };
 const paidCount=raw=>{
  if(!raw||typeof raw!=='object')return null;
@@ -102,7 +102,7 @@ export async function renderBusinessOverview(db,members,month,host,onSelect){
   const hint=document.createElement('span');hint.className='homeHint';hint.textContent='Monatsdaten werden geladen …';
   const metrics=document.createElement('div');metrics.className='homeMetrics';
   const isJudith=name==='Judith und die Torten';
-  const labels=['Umsatz brutto','Ø bezahlter Bon','Personalquote','Wareneinsatzquote','Ø Personalquote im Jahr',...(isJudith?['Nettoumsatz','Belege','Personal · Vormonat (Plan)']:[]),'SOLLUMSATZ · Kostendeckung (Plan)','SOLLUMSATZ · 5.000 € Gewinn (Plan)'];
+  const labels=['Umsatz brutto','Ø bezahlter Bon','Personalquote','Wareneinkäufe Ist / Ziel 26 %','Ø Personalquote im Jahr',...(isJudith?['Nettoumsatz','Belege','Personal · Vormonat (Plan)']:[]),'SOLLUMSATZ · Kostendeckung (Plan)','SOLLUMSATZ · 5.000 € Gewinn (Plan)'];
   for(const label of labels){
    const box=document.createElement('div');box.className='homeMetric';const small=document.createElement('small');small.textContent=label;const strong=document.createElement('strong');strong.textContent='–';box.append(small,strong);metrics.append(box);
   }
@@ -113,12 +113,22 @@ export async function renderBusinessOverview(db,members,month,host,onSelect){
  await Promise.all(cards.map(async({member,hint,values})=>{
   try{
    const isJudith=member.businesses.name.includes('Judith');
-   const [data,history]=await Promise.all([loadBusinessMetrics(db,member.business_id,month,isJudith),loadPersonnelAverage(db,member.business_id,month)]);
+   const [data,history,purchaseRows,goalRow]=await Promise.all([loadBusinessMetrics(db,member.business_id,month,isJudith),loadPersonnelAverage(db,member.business_id,month),db.from('expenses').select('category,net_amount,expense_date,accounting_month').eq('business_id',member.business_id).in('category',['food','drinks','beverages']),db.from('gp_revenue_targets').select('target_monthly_gross,estimated_food_cost_pct').eq('business_id',member.business_id).maybeSingle()]);
    if(!host.isConnected||document.getElementById('homeMonth')?.value!==month)return;
    values[0].textContent=euro(data.gross);values[1].textContent=euro(data.average);
    const planRatio=isJudith&&history.exact===null&&data.personnelPlan!==null&&data.net>0?100*data.personnelPlan/data.net:null;
    const historicalReference=isJudith&&history.exact===null&&planRatio===null&&history.average===null;
-   values[2].textContent=percent(history.exact??planRatio??history.average??(historicalReference?JUDITH_PERSONNEL_REFERENCE.ratio:null));values[3].textContent=percent(data.goods);
+   values[2].textContent=percent(history.exact??planRatio??history.average??(historicalReference?JUDITH_PERSONNEL_REFERENCE.ratio:null));
+   const relevantPurchases=(purchaseRows.data||[]).filter(x=>String(x.accounting_month||x.expense_date||'').slice(0,7)===month);
+   const purchaseNet=relevantPurchases.length&&relevantPurchases.every(x=>number(x.net_amount)!==null)?total(relevantPurchases,'net_amount'):null;
+   const purchaseRatio=data.net>0&&purchaseNet!==null?100*purchaseNet/data.net:null;
+   const target=number(goalRow.data?.estimated_food_cost_pct)??26;
+   values[3].textContent=purchaseRatio===null?'Ist – / Ziel '+percent(target):'Ist '+percent(purchaseRatio)+' / Ziel '+percent(target);
+   values[3].previousElementSibling.textContent='Wareneinkäufe · laufender Monat';
+   values[3].title='Vorläufige Einkaufsquote: erfasste Netto-Wareneinkäufe / Nettoumsatz. Noch kein tatsächlicher Verbrauch; fehlende Rechnungen und Lagerbewegungen können die Quote verfälschen.';
+   const monthlyTarget=number(goalRow.data?.target_monthly_gross)??(isJudith?60000:50000);
+   values[values.length-2].textContent=euro(monthlyTarget);values[values.length-1].textContent=euro(monthlyTarget);
+   values[values.length-2].previousElementSibling.textContent='SOLLUMSATZ · Monatsziel (vorläufig)';values[values.length-1].previousElementSibling.textContent='SOLLUMSATZ · Monatsziel (vorläufig)';
    values[4].textContent=percent(planRatio??history.average);
    if(isJudith){values[5].textContent=euro(data.net);values[6].textContent=data.receipts===null?'–':new Intl.NumberFormat('de-AT').format(data.receipts);values[7].textContent=euro(data.personnelPlan);values[7].title='Personalkosten des Vormonats als Planwert; Oktober-Ist-Kosten folgen mit der Abrechnung.';}
    hint.textContent=data.gross===null?'Noch keine Umsätze erfasst':data.hasSummary?'Geprüfter Monatsabschluss':data.days+' Tag(e) erfasst · bisheriger Stand';
@@ -128,7 +138,7 @@ export async function renderBusinessOverview(db,members,month,host,onSelect){
    values[2].title=planRatio!==null?'Personalkosten des Vormonats / bisher erfasster Nettoumsatz dieses Monats. Vorläufig, keine Oktober-Ist-Kosten.':historicalReference?'Vorläufige Referenz '+JUDITH_PERSONNEL_REFERENCE.period+': 149.196 € Personal / 298.214 € Nettoumsatz. Früherer Analysewert, nicht erneut gegen Original-BWA geprüft. Die exakte Monatsquote folgt nach dem Monatsabschluss.':history.exact===null?'Vorläufiger Durchschnitt aus '+history.count+' abgeschlossenen Monaten mit Nettoumsatz und Personalkosten. Die exakte Monatsquote folgt mit dem Monatsabschluss.':'Personalkosten dieses Monats / Nettoumsatz.';
    values[4].title=planRatio!==null?'Aktuelle Planquote: Personalkosten des Vormonats / bisher erfasster Nettoumsatz. Kein Jahresdurchschnitt.':'Arithmetischer Durchschnitt aus '+history.count+' abgeschlossenen Monaten mit Nettoumsatz und Personalkosten.';
    values[4].previousElementSibling.textContent=planRatio!==null?'Ø Personalquote · vorläufiger Plan':'Ø Personalquote im Jahr · '+history.count+' Monate';
-   values[3].title=data.goods===null?'Geprüfte Lagerveränderung, Netto-Einkäufe oder Nettoumsatz fehlen.':'Netto-Einkäufe plus Lagerveränderung / Nettoumsatz.';
+   
   }catch(error){hint.textContent='Kennzahlen konnten nicht geladen werden';values[0].title=error.message;}
  }));
 }
