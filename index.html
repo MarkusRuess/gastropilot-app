@@ -785,7 +785,32 @@ function drawTopArticles(){
  E('articlePrev').hidden=true;E('articleNext').hidden=true;
 }
 E('articlePrev').hidden=true;E('articleNext').hidden=true;
-async function refresh(){await loadArticleEkPrices().catch(e=>{console.warn('EK-Preise nicht geladen',e);articleEkPrices=new Map();});void loadWeeklyPurchase().catch(e=>E('purchasePeriod').textContent='Einkaufsdaten konnten nicht geladen werden: '+e.message);
+async function loadJudithRecipes(){
+ const host=E('recipeCostRows');if(!host||!BID)return;
+ host.textContent='Rezepturen werden geladen …';
+ try{
+ const {data:recipes,error}=await db.from('gp_recipes').select('id,name,yield_qty,yield_unit,labor_minutes,setup_percent,packaging_net').eq('business_id',BID).order('name');
+ if(error)throw error;host.replaceChildren();
+ if(!recipes?.length){host.textContent='Noch keine Rezepturen hinterlegt.';return;}
+ for(const recipe of recipes){
+ const {data:lines,error:le}=await db.from('gp_recipe_ingredients').select('ingredient_name,quantity,unit,fallback_price_net,matched_ingredient_id').eq('recipe_id',recipe.id);
+ if(le)throw le;
+ const ids=[...new Set((lines||[]).map(x=>x.matched_ingredient_id).filter(Boolean))];
+ let catalog=[];if(ids.length){const {data,error:ce}=await db.from('gp_ingredient_catalog').select('id,current_price_net').in('id',ids);if(ce)throw ce;catalog=data||[];}
+ const prices=new Map(catalog.map(x=>[x.id,x]));
+ let total=0,missing=0,live=0;
+ for(const line of lines||[]){const p=prices.get(line.matched_ingredient_id);const value=p?.current_price_net??line.fallback_price_net;if(value==null)missing++;else total+=Number(line.quantity)*Number(value);if(p?.current_price_net!=null)live++;}
+ const card=document.createElement('div');card.className='tile';card.style.padding='12px';
+ const heading=document.createElement('b');heading.textContent=recipe.name;card.append(heading);
+ const summary=document.createElement('p');summary.textContent=recipe.yield_qty+' '+recipe.yield_unit+' · '+(lines||[]).length+' Zutaten · Wareneinsatz '+(missing?'unvollständig':EUR(total))+(missing?' · '+missing+' Preise fehlen':' · '+EUR(total/Number(recipe.yield_qty))+'/Stück');card.append(summary);
+ const info=document.createElement('small');info.className='muted';info.textContent=live+' aktuelle EK-Preise · übrige Rezeptblattwerte vorläufig · Personal/Gemeinkosten noch nicht eingerechnet';card.append(info);
+ const details=document.createElement('details');const sum=document.createElement('summary');sum.textContent='Zutaten anzeigen';details.append(sum);
+ for(const line of lines||[]){const p=document.createElement('p');const cp=prices.get(line.matched_ingredient_id);p.textContent=line.ingredient_name+' · '+line.quantity+' '+line.unit+' · '+EUR(cp?.current_price_net??line.fallback_price_net)+' / '+line.unit+(cp?.current_price_net!=null?' (Lieferant)':' (Rezeptblatt)');details.append(p);}
+ card.append(details);host.append(card);
+ }
+ }catch(e){host.textContent='Rezeptdaten konnten nicht geladen werden: '+e.message;}
+}
+async function refresh(){if(E('recipeCostTile')&&!E('recipeCostTile').classList.contains('hidden'))void loadJudithRecipes();await loadArticleEkPrices().catch(e=>{console.warn('EK-Preise nicht geladen',e);articleEkPrices=new Map();});void loadWeeklyPurchase().catch(e=>E('purchasePeriod').textContent='Einkaufsdaten konnten nicht geladen werden: '+e.message);
  const [start,end]=dateRange();E('summary').textContent='Archiv wird abgeglichen …';
  try{
  let M=null;const selectedMonth=E('month').value;
