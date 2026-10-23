@@ -104,7 +104,9 @@ export async function renderBusinessOverview(db,members,month,host,onSelect){
   const isJudith=name==='Judith und die Torten';
   const labels=['Umsatz brutto','Ø Bon','Personalquote · vorläufig','Wareneinkäufe · laufender Monat','Ø Personalquote im Jahr / Plan','Nettoumsatz','Belege','Personal · Vormonat (Plan)','Monatsziel · brutto','Zielerreichung · verbleibende Tage'];
   for(const label of labels){
-   const box=document.createElement('div');box.className='homeMetric';const small=document.createElement('small');small.textContent=label;const strong=document.createElement('strong');strong.textContent='–';box.append(small,strong);metrics.append(box);
+   const box=document.createElement('div');box.className='homeMetric';const small=document.createElement('small');small.textContent=label;const strong=document.createElement('strong');strong.textContent='–';box.append(small,strong);
+   if(label.startsWith('Zielerreichung')){const track=document.createElement('span');track.className='homeProgress';track.setAttribute('role','progressbar');track.setAttribute('aria-label','Monatsziel erreicht');track.setAttribute('aria-valuemin','0');track.setAttribute('aria-valuemax','100');const fill=document.createElement('span');fill.className='homeProgressFill';track.append(fill);box.append(track);}
+   metrics.append(box);
   }
   const goal=SALES_TARGETS[isJudith?'judith':'friedrich'];for(const [index,value] of [[metrics.children.length-2,goal.breakEven],[metrics.children.length-1,goal.profit5000]]){const box=metrics.children[index];box.querySelector('strong').textContent=euro(value);box.title=goal.note;}const action=document.createElement('span');action.className='homeOpen';action.textContent='Betrieb öffnen →';
   card.append(heading,hint,metrics,action);card.addEventListener('click',()=>onSelect(member));host.append(card);
@@ -132,11 +134,13 @@ export async function renderBusinessOverview(db,members,month,host,onSelect){
    const today=new Intl.DateTimeFormat('sv-SE',{timeZone:'Europe/Vienna',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
    const remainingDays=month===today.slice(0,7)?Math.max(0,daysInMonth-Number(today.slice(8))):month<today.slice(0,7)?0:daysInMonth;
    const actual=number(data.gross),missing=actual===null?null:Math.max(0,monthlyTarget-actual);
-   const progress=actual===null?null:100*actual/monthlyTarget;
+   const progress=actual===null||monthlyTarget<=0?null:100*actual/monthlyTarget;
    values[values.length-2].textContent=euro(monthlyTarget);
    values[values.length-2].previousElementSibling.textContent='Monatsziel · brutto';
-   values[values.length-1].textContent=actual===null?'–':actual>=monthlyTarget?'Ziel erreicht ✓':percent(progress)+' erreicht';
+   values[values.length-1].textContent=progress===null?'–':percent(progress)+' erreicht'+(progress>=100?' ✓':'');
    values[values.length-1].previousElementSibling.textContent='Zielerreichung · '+remainingDays+' Kalendertage übrig';
+   const progressTrack=values[values.length-1].parentElement.querySelector('.homeProgress');
+   if(progressTrack){const capped=Math.max(0,Math.min(100,progress??0));progressTrack.querySelector('.homeProgressFill').style.width=capped+'%';progressTrack.dataset.level=progress===null?'unknown':progress>=100?'complete':progress>=70?'high':progress>=50?'mid':'low';progressTrack.setAttribute('aria-valuetext',progress===null?'Umsatzdaten fehlen':percent(progress)+' erreicht');if(progress===null)progressTrack.removeAttribute('aria-valuenow');else progressTrack.setAttribute('aria-valuenow',String(Math.round(capped)));}
    values[values.length-1].title=missing===null?'Umsatzdaten fehlen.':actual>=monthlyTarget?'Monatsziel erreicht.':euro(missing)+' fehlen zum Monatsziel; '+(remainingDays?euro(missing/remainingDays)+' pro verbleibendem Kalendertag.':'Monat abgelaufen.');
    values[values.length-2].title=missing===null?'Noch keine Umsätze erfasst.':euro(missing)+' fehlen zum Monatsziel.';
    values[4].textContent=percent(planRatio??history.average);
