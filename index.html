@@ -194,6 +194,14 @@ header{position:sticky;top:0;z-index:60}
  #homeCards .homeMetric strong{font-size:17px}
 }
 </style>
+<style id="unified-detail-kpis">
+/* Einheitliches Raster und gleiche Höhen der Betriebs-Kennzahlen */
+#quickKpis.grid{grid-template-columns:repeat(4,minmax(0,1fr));align-items:stretch;gap:12px}
+#quickKpis>.tile,#quickKpis .tile{box-sizing:border-box;display:flex;flex-direction:column;justify-content:space-between;min-width:0;height:92px;min-height:92px;padding:12px 15px;border:1px solid #dfe7ec;border-radius:12px;background:#f7f9fb}
+#quickKpis .tile small{display:block;min-height:2.5em;line-height:1.25;font-size:12px}
+#quickKpis .tile b{display:block;margin-top:5px;font-size:clamp(18px,1.2vw,21px);line-height:1.2;letter-spacing:0;overflow-wrap:normal;white-space:nowrap}
+@media(max-width:900px){#quickKpis.grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}#quickKpis>.tile,#quickKpis .tile{height:84px;min-height:84px;padding:10px 12px}#quickKpis .tile small{font-size:11px}#quickKpis .tile b{font-size:17px}}
+</style>
 </head><body>
 <header><div class="gpHeaderBar"><button id="gpHeaderHome" type="button" aria-label="GastroPilot – zur Betriebsübersicht" style="appearance:none;background:transparent;border:0;padding:0;color:inherit;text-align:left;cursor:pointer;display:block"><strong>GastroPilot</strong><small>Dein Lokal. Deine Zahlen. Dein Überblick.</small></button><nav id="gpHeaderSwitch" class="hidden" aria-label="Betrieb wechseln"></nav></div></header>
 <main><section id="login" class="card"><h2>Anmelden</h2><form id="loginForm"><label>E-Mail<input id="email" type="email" autocomplete="username" required></label><label>Passwort<input id="password" type="password" autocomplete="current-password" required></label><button>Anmelden</button></form><p id="loginMsg" class="status"></p></section>
