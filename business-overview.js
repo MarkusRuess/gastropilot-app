@@ -5,6 +5,14 @@ const euro=value=>value===null?'–':new Intl.NumberFormat('de-AT',{style:'curre
 const percent=value=>value===null?'–':new Intl.NumberFormat('de-AT',{maximumFractionDigits:1,minimumFractionDigits:1}).format(value)+' %';
 // Vorläufige Referenz aus der Judith-Gesamtanalyse Jan–Jul 2026; bisher nicht erneut anhand der BWA geprüft.
 export const JUDITH_PERSONNEL_REFERENCE={ratio:100*149196/298214,period:'Jan–Jul 2026'};
+// Vorläufige Monatsziele brutto; bewusst getrennt von echten Ist-Zahlen.
+// Judith: Personal 19.958,75 netto + Miete 4.130,11 netto + sonstige Fixkosten 3.000 netto,
+// 26 % Wareneinsatz, 10 % USt angenommen. Friedrich: Personal 18.000 netto,
+// Fixkosten rund 5.000 netto, 26 % Wareneinsatz und pauschal 15 % Misch-USt.
+export const SALES_TARGETS={
+ judith:{breakEven:40300,profit5000:47700,note:'Plan: September-Personal 19.958,75 €, Miete 4.130,11 €, sonstige Fixkosten 3.000 €, Wareneinsatz 26 %, angenommene USt 10 %.'},
+ friedrich:{breakEven:35800,profit5000:43500,note:'Plan: Personal 18.000 €, Fixkosten rund 5.000 €, Wareneinsatz 26 %, angenommene Misch-USt 15 %. Noch nicht vollständig abgestimmt.'}
+};
 const paidCount=raw=>{
  if(!raw||typeof raw!=='object')return null;
  for(const key of ['paid_receipt_count','paid_receipts','paidReceiptCount','paidReceipts','receipts_paid','paid_bons']){
@@ -94,11 +102,11 @@ export async function renderBusinessOverview(db,members,month,host,onSelect){
   const hint=document.createElement('span');hint.className='homeHint';hint.textContent='Monatsdaten werden geladen …';
   const metrics=document.createElement('div');metrics.className='homeMetrics';
   const isJudith=name==='Judith und die Torten';
-  const labels=['Umsatz brutto','Ø bezahlter Bon','Personalquote','Wareneinsatzquote','Ø Personalquote im Jahr',...(isJudith?['Nettoumsatz','Belege','Personal · Vormonat (Plan)']:[])];
+  const labels=['Umsatz brutto','Ø bezahlter Bon','Personalquote','Wareneinsatzquote','Ø Personalquote im Jahr',...(isJudith?['Nettoumsatz','Belege','Personal · Vormonat (Plan)']:[]),'SOLLUMSATZ · Kostendeckung (Plan)','SOLLUMSATZ · 5.000 € Gewinn (Plan)'];
   for(const label of labels){
    const box=document.createElement('div');box.className='homeMetric';const small=document.createElement('small');small.textContent=label;const strong=document.createElement('strong');strong.textContent='–';box.append(small,strong);metrics.append(box);
   }
-  const action=document.createElement('span');action.className='homeOpen';action.textContent='Betrieb öffnen →';
+  const goal=SALES_TARGETS[isJudith?'judith':'friedrich'];for(const [index,value] of [[metrics.children.length-2,goal.breakEven],[metrics.children.length-1,goal.profit5000]]){const box=metrics.children[index];box.querySelector('strong').textContent=euro(value);box.title=goal.note;}const action=document.createElement('span');action.className='homeOpen';action.textContent='Betrieb öffnen →';
   card.append(heading,hint,metrics,action);card.addEventListener('click',()=>onSelect(member));host.append(card);
   return {member,hint,values:[...metrics.querySelectorAll('strong')]};
  });
