@@ -102,7 +102,7 @@ export async function renderBusinessOverview(db,members,month,host,onSelect){
   const hint=document.createElement('span');hint.className='homeHint';hint.textContent='Monatsdaten werden geladen …';
   const metrics=document.createElement('div');metrics.className='homeMetrics';
   const isJudith=name==='Judith und die Torten';
-  const labels=['Umsatz brutto','Ø bezahlter Bon','Personalquote','Wareneinkäufe Ist / Ziel 26 %','Ø Personalquote im Jahr',...(isJudith?['Nettoumsatz','Belege','Personal · Vormonat (Plan)']:[]),'SOLLUMSATZ · Kostendeckung (Plan)','SOLLUMSATZ · 5.000 € Gewinn (Plan)'];
+  const labels=['Umsatz brutto','Ø bezahlter Bon','Personalquote','Wareneinkäufe Ist / Ziel 26 %','Ø Personalquote im Jahr',...(isJudith?['Nettoumsatz','Belege','Personal · Vormonat (Plan)']:[]),'Monatsziel · brutto','Zielerreichung · verbleibende Tage'];
   for(const label of labels){
    const box=document.createElement('div');box.className='homeMetric';const small=document.createElement('small');small.textContent=label;const strong=document.createElement('strong');strong.textContent='–';box.append(small,strong);metrics.append(box);
   }
@@ -127,8 +127,18 @@ export async function renderBusinessOverview(db,members,month,host,onSelect){
    values[3].previousElementSibling.textContent='Wareneinkäufe · laufender Monat';
    values[3].title='Vorläufige Einkaufsquote: erfasste Netto-Wareneinkäufe / Nettoumsatz. Noch kein tatsächlicher Verbrauch; fehlende Rechnungen und Lagerbewegungen können die Quote verfälschen.';
    const monthlyTarget=number(goalRow.data?.target_monthly_gross)??(isJudith?60000:50000);
-   values[values.length-2].textContent=euro(monthlyTarget);values[values.length-1].textContent=euro(monthlyTarget);
-   values[values.length-2].previousElementSibling.textContent='SOLLUMSATZ · Monatsziel (vorläufig)';values[values.length-1].previousElementSibling.textContent='SOLLUMSATZ · Monatsziel (vorläufig)';
+   const monthStart=new Date(Number(month.slice(0,4)),Number(month.slice(5,7))-1,1);
+   const daysInMonth=new Date(Number(month.slice(0,4)),Number(month.slice(5,7)),0).getDate();
+   const today=new Intl.DateTimeFormat('sv-SE',{timeZone:'Europe/Vienna',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
+   const remainingDays=month===today.slice(0,7)?Math.max(0,daysInMonth-Number(today.slice(8))):month<today.slice(0,7)?0:daysInMonth;
+   const actual=number(data.gross),missing=actual===null?null:Math.max(0,monthlyTarget-actual);
+   const progress=actual===null?null:100*actual/monthlyTarget;
+   values[values.length-2].textContent=euro(monthlyTarget);
+   values[values.length-2].previousElementSibling.textContent='Monatsziel · brutto';
+   values[values.length-1].textContent=actual===null?'–':actual>=monthlyTarget?'Ziel erreicht ✓':percent(progress)+' erreicht';
+   values[values.length-1].previousElementSibling.textContent='Zielerreichung · '+remainingDays+' Kalendertage übrig';
+   values[values.length-1].title=missing===null?'Umsatzdaten fehlen.':actual>=monthlyTarget?'Monatsziel erreicht.':euro(missing)+' fehlen zum Monatsziel; '+(remainingDays?euro(missing/remainingDays)+' pro verbleibendem Kalendertag.':'Monat abgelaufen.');
+   values[values.length-2].title=missing===null?'Noch keine Umsätze erfasst.':euro(missing)+' fehlen zum Monatsziel.';
    values[4].textContent=percent(planRatio??history.average);
    if(isJudith){values[5].textContent=euro(data.net);values[6].textContent=data.receipts===null?'–':new Intl.NumberFormat('de-AT').format(data.receipts);values[7].textContent=euro(data.personnelPlan);values[7].title='Personalkosten des Vormonats als Planwert; Oktober-Ist-Kosten folgen mit der Abrechnung.';}
    hint.textContent=data.gross===null?'Noch keine Umsätze erfasst':data.hasSummary?'Geprüfter Monatsabschluss':data.days+' Tag(e) erfasst · bisheriger Stand';
