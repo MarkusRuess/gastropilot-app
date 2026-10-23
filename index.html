@@ -189,7 +189,7 @@ header{position:sticky;top:0;z-index:60}
 <script src="./business-switch.js"></script><script type="module">
 import {createClient} from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 import {loadBankFixedCosts} from './bank-costs-integration.js';
-import {renderBusinessOverview,loadPersonnelAverage,JUDITH_PERSONNEL_REFERENCE,SALES_TARGETS} from './business-overview.js?v=20261023-sollumsatz';
+import {renderBusinessOverview,loadPersonnelAverage,JUDITH_PERSONNEL_REFERENCE,SALES_TARGETS} from './business-overview.js?v=20261023-einkaufsquote';
 const db=createClient('https://sjnwfwcpgwsavygewwzb.supabase.co','sb_publishable__tucXG-IQGUhibMqMSUzCw_5RnH_sbQ');
 let BID=null,authorizedBusinesses=[],switchingBusiness=false;const E=id=>document.getElementById(id),N=v=>v==null||v===''?null:Number(v),EUR=v=>v==null||!Number.isFinite(v)?'–':new Intl.NumberFormat('de-AT',{style:'currency',currency:'EUR'}).format(v),D=v=>v?.split('-').reverse().join('.')||'–';
 let user=null,busy=false,selected=null,queue=[];
@@ -1458,6 +1458,8 @@ uploadDropZone.addEventListener('dragleave',()=>uploadDropZone.classList.remove(
 uploadDropZone.addEventListener('drop',e=>{e.preventDefault();uploadDropZone.classList.remove('dragging');const files=[...(e.dataTransfer?.files||[])];if(files.length){queueFiles(files);if(files.length===1&&(/\.pdf$/i.test(files[0].name)||isSpreadsheet(files[0])))void process();}});
 document.addEventListener('paste',e=>{if(!E('app').classList.contains('hidden')&&!/^(INPUT|TEXTAREA)$/.test(document.activeElement?.tagName||'')){const file=[...(e.clipboardData?.files||[])].find(x=>x.type==='application/pdf'||/\.pdf$/i.test(x.name));if(file){e.preventDefault();void startDesktopPdf(file)}}});
 let openingBusiness=false;
+let homeAutoRefreshRunning=false;
+setInterval(async()=>{if(homeAutoRefreshRunning||!user||document.hidden||E('businessHome').classList.contains('hidden')||busy)return;homeAutoRefreshRunning=true;try{await renderBusinessOverview(db,authorizedBusinesses,E('homeMonth').value,E('homeCards'),openBusiness);}catch(error){E('homeStatus').textContent='Automatische Aktualisierung fehlgeschlagen: '+error.message;}finally{homeAutoRefreshRunning=false;}},60000);
 async function showHome(){
  if(busy){E('businessSwitchStatus').textContent='Bitte den laufenden Upload abschließen.';return;}
  if(!E('app').classList.contains('hidden'))E('homeMonth').value=E('month').value;
