@@ -558,9 +558,7 @@ function renderPurchaseItemsForCalc(documents){
  const count=document.createElement('p');count.className='muted';count.textContent=invoices.reduce((n,d)=>n+d.extracted_data.purchase_items.length,0)+' gespeicherte Produktpositionen aus '+invoices.length+' Rechnungen.';
  host.append(count,list);
 }
-function renderMonthlyCostOverview({gross,net,personnel,personnelEstimated,previousMonthName,expenses,docs,fixed,fixedCount,period}){
- const host=E('monthlyCostOverviewRows');host.replaceChildren();
- const line=(label,value,detail='')=>{const div=document.createElement('div');div.className='resultLine';const left=document.createElement('span');left.textContent=label;left.className='resultLabel';if(detail){const small=document.createElement('small');small.textContent=detail;left.append(small);}const right=document.createElement('strong');right.textContent=value;div.append(left,right);host.append(div);};
+function summarizeGoodsPurchases(expenses,docs){
  const invoiceDocs=new Map((docs||[]).filter(d=>d.document_type==='invoice').map(d=>[d.id,d]));
  let purchaseNet=0,purchaseCount=0,unclassified=0;
  const invoiceIds=new Set();
@@ -575,14 +573,21 @@ function renderMonthlyCostOverview({gross,net,personnel,personnelEstimated,previ
   for(const group of groups){const amount=N(group.net);if(amount!==null&&included.test(String(group.name||''))){purchaseNet+=amount;matched=true;}}
   if(matched){purchaseCount++;if(row.document_id)invoiceIds.add(row.document_id);}else unclassified++;
  }
+ return {purchaseNet,purchaseCount,unclassified,invoiceCount:invoiceIds.size};
+}
+function renderMonthlyCostOverview({gross,net,personnel,personnelEstimated,previousMonthName,expenses,docs,fixed,fixedCount,period}){
+ const host=E('monthlyCostOverviewRows');host.replaceChildren();
+ const line=(label,value,detail='')=>{const div=document.createElement('div');div.className='resultLine';const left=document.createElement('span');left.textContent=label;left.className='resultLabel';if(detail){const small=document.createElement('small');small.textContent=detail;left.append(small);}const right=document.createElement('strong');right.textContent=value;div.append(left,right);host.append(div);};
+ const {purchaseNet,purchaseCount,unclassified,invoiceCount}=summarizeGoodsPurchases(expenses,docs);
  line('BONit-Umsatz brutto',EUR(gross));
  line('BONit-Umsatz netto',EUR(net),'Grundlage für die Kostenbetrachtung');
  line('Erfasste Wareneinkäufe netto',purchaseCount?EUR(purchaseNet):'Noch keine zugeordnet',purchaseCount+' Buchungen · Einkauf ist nicht Warenverbrauch');
  line(personnelEstimated?'Personalkosten · Vormonat (Plan)':'Personalkosten · Ist',personnel===null?'Noch nicht erfasst':EUR(personnel),personnelEstimated?'Referenz: '+previousMonthName:'Aus Lohnabrechnungen des gewählten Monats');
  line('Bank-Fixkosten · Zahlungen',fixed===null?'Noch nicht vollständig':EUR(fixed),fixedCount+' Bankbuchungen · Zahlbeträge, keine Netto-Kostenrechnung');
- line('Ergebnis','Noch nicht belastbar','Lagerbestand, fehlende Belege und Netto-Fixkosten offen');
+ const provisional=net!==null&&personnel!==null&&purchaseCount&&fixed!==null?net-personnel-purchaseNet-fixed:null;
+ line('Vorläufiges Ergebnis',provisional===null?'Noch nicht berechenbar':EUR(provisional),'Umsatz netto − Personal − erfasster Waren-EK netto − Bank-Fixkostenzahlungen');
  E('monthlyCostOverviewHint').textContent=period+' · '+(purchaseCount?EUR(purchaseNet)+' erfasste Waren-EK netto':'Einkäufe noch offen');
- E('monthlyCostOverviewNote').textContent='Vorläufig: '+invoiceIds.size+' zugeordnete Rechnungsbelege, '+unclassified+' gemischte Buchung(en) ohne sichere Warentrennung. Rechnungen ohne Kostenbuchung fehlen. Bankzahlungen können bereits erfasste Rechnungen betreffen und werden nicht nochmals abgezogen. Bei laufendem Monat sind Umsatz und Einkäufe nur bis zum zuletzt erfassten Tag enthalten; Personal aus dem Vormonat ist ein voller Monatswert.';
+ E('monthlyCostOverviewNote').textContent='Vorläufig: '+invoiceCount+' zugeordnete Rechnungsbelege, '+unclassified+' gemischte Buchung(en) ohne sichere Warentrennung. Rechnungen ohne Kostenbuchung fehlen. Bank-Zahlbeträge können Umsatzsteuer enthalten; bereits erfasste Warenrechnungen werden nicht nochmals als Einkauf abgezogen. Das ist keine Gewinnermittlung. Bei laufendem Monat sind Umsatz und Einkäufe nur bis zum zuletzt erfassten Tag enthalten; Personal aus dem Vormonat ist ein voller Monatswert.';
 }
 function showResultBridge({net,personnel,purchases,fixed,expenseCount,fixedCount,period,personnelEstimated=false,previousMonthName=''}){
  const root=E('resultBridge');root.replaceChildren();
@@ -592,11 +597,10 @@ function showResultBridge({net,personnel,purchases,fixed,expenseCount,fixedCount
  const remainder=net!==null&&personnel!==null?net-personnel:null;
  line('Verbleibt nach Personal',EUR(remainder),'highlight');
  line('− Erfasste Wareneinkäufe',purchases===null?'Noch nicht vollständig':'− '+EUR(purchases),'','Einkäufe ≠ tatsächlicher Wareneinsatz');
- line('− Erfasste Bank-Fixkosten',fixed===null?'Noch nicht vollständig':'− '+EUR(fixed),'','Nur bisher zugeordnete Kosten, nicht alle Fixkosten');
- const partial=remainder!==null?remainder-(purchases||0)-(fixed||0):null;
- line('Rechnerischer Zwischenstand',EUR(partial),'pending','Kein Gewinn: weitere Kosten und Warenverbrauch fehlen');
- line('Betriebsergebnis','Noch nicht berechenbar','','Erst nach vollständigem Wareneinsatz und allen Betriebskosten');
- E('resultCaution').textContent='Zeitraum '+period+' · '+(personnelEstimated?'Personalkosten vorläufig aus '+previousMonthName+'. ':'')+expenseCount+' Kostenbuchungen und '+fixedCount+' Bank-Fixkosten erfasst. Einkauf, Bankzahlung und Rechnung können dieselbe Ausgabe betreffen. Der Zwischenstand zieht nur erfasste Positionen ab; die vollständige Kostenrechnung und Doppelbuchungsprüfung sind noch offen.';
+ line('− Erfasste Bank-Fixkosten',fixed===null?'Noch nicht vollständig':'− '+EUR(fixed),'','Bank-Zahlbeträge; nicht alle Fixkosten und nicht vollständig netto');
+ const partial=remainder!==null&&purchases!==null&&fixed!==null?remainder-purchases-fixed:null;
+ line('Vorläufiges Ergebnis',partial===null?'Noch nicht berechenbar':EUR(partial),'pending','Netto-Umsatz − Personal − erfasster Waren-EK netto − Bank-Fixkostenzahlungen; kein gesicherter Gewinn');
+ E('resultCaution').textContent='Zeitraum '+period+' · '+(personnelEstimated?'Personalkosten vorläufig aus '+previousMonthName+'. ':'')+expenseCount+' Kostenbuchungen und '+fixedCount+' Bank-Fixkosten erfasst. Einkauf, Bankzahlung und Rechnung können dieselbe Ausgabe betreffen. Das vorläufige Ergebnis verwendet Bank-Zahlbeträge und teils Vormonats-Personal bei laufendem Monatsumsatz; es ist keine Gewinnermittlung. Fehlende Rechnungen und Lagerbestand bleiben offen.';
 }
 function renderAugust(A=null){
  const month=E('month').value,supported=month==='2026-08'||month==='2026-09';E('monthlyReference').classList.toggle('hidden',!supported);if(!supported)return;
@@ -964,8 +968,8 @@ async function refresh(){if(E('recipeCostTile')&&!E('recipeCostTile').classList.
    personnelEstimated=true;
   }
  }
- const foodDrink=expenseRows.filter(x=>['food','drinks','beverages'].includes(String(x.category||'').toLowerCase()));
- const purchaseCost=foodDrink.length&&foodDrink.every(x=>N(x.net_amount)!==null)?foodDrink.reduce((a,x)=>a+N(x.net_amount),0):null;
+ const goodsSummary=summarizeGoodsPurchases(expenseRows,docs);
+ const purchaseCost=goodsSummary.purchaseCount?goodsSummary.purchaseNet:null;
  const fixedCost=fixedRows.length&&fixedRows.every(x=>N(x.amount)!==null)?fixedRows.reduce((a,x)=>a+Math.abs(N(x.amount)),0):null;
  const bankBalance=accountRows.length&&accountRows.every(x=>N(x.current_balance)!==null)?accountRows.reduce((a,x)=>a+N(x.current_balance),0):null;
  const currentMonth=E('month').value,quickNet=M?.net??net,history=await loadPersonnelAverage(db,BID,currentMonth);
