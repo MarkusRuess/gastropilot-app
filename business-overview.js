@@ -40,7 +40,7 @@ export async function loadBusinessMetrics(db,businessId,month,isJudith=false){
   db.from('expenses').select('category,net_amount').eq('business_id',businessId).gte('expense_date',start).lt('expense_date',end).in('category',['food','drinks','beverages']),
   db.from('monthly_cost_ratio_inputs').select('net_revenue,inventory_change').eq('business_id',businessId).eq('month',start).maybeSingle(),
   ['2026-08','2026-09'].includes(month)?db.from('monthly_bonit_summaries').select('summary').eq('business_id',businessId).eq('month_start',start).maybeSingle():Promise.resolve({data:null,error:null}),
-  isJudith?db.from('personnel_costs').select('total_costs').eq('business_id',businessId).eq('accounting_month',previousMonthStart):Promise.resolve({data:[],error:null})
+  db.from('personnel_costs').select('total_costs').eq('business_id',businessId).eq('accounting_month',previousMonthStart)
  ]);
  const sales=result(salesResult,'Umsätze'),documents=result(documentsResult,'Tagesabschlüsse');
  const staff=result(staffResult,'Personal'),costs=result(costResult,'Einkäufe'),planStaff=result(planStaffResult,'Personal Vormonat');
@@ -102,7 +102,7 @@ export async function renderBusinessOverview(db,members,month,host,onSelect){
   const hint=document.createElement('span');hint.className='homeHint';hint.textContent='Monatsdaten werden geladen …';
   const metrics=document.createElement('div');metrics.className='homeMetrics';
   const isJudith=name==='Judith und die Torten';
-  const labels=['Umsatz brutto','Ø bezahlter Bon','Personalquote','Wareneinkäufe Ist / Ziel 26 %','Ø Personalquote im Jahr',...(isJudith?['Nettoumsatz','Belege','Personal · Vormonat (Plan)']:[]),'Monatsziel · brutto','Zielerreichung · verbleibende Tage'];
+  const labels=['Umsatz brutto','Ø Bon','Personalquote · vorläufig','Wareneinkäufe · laufender Monat','Ø Personalquote im Jahr / Plan','Nettoumsatz','Belege','Personal · Vormonat (Plan)','Monatsziel · brutto','Zielerreichung · verbleibende Tage'];
   for(const label of labels){
    const box=document.createElement('div');box.className='homeMetric';const small=document.createElement('small');small.textContent=label;const strong=document.createElement('strong');strong.textContent='–';box.append(small,strong);metrics.append(box);
   }
@@ -140,14 +140,14 @@ export async function renderBusinessOverview(db,members,month,host,onSelect){
    values[values.length-1].title=missing===null?'Umsatzdaten fehlen.':actual>=monthlyTarget?'Monatsziel erreicht.':euro(missing)+' fehlen zum Monatsziel; '+(remainingDays?euro(missing/remainingDays)+' pro verbleibendem Kalendertag.':'Monat abgelaufen.');
    values[values.length-2].title=missing===null?'Noch keine Umsätze erfasst.':euro(missing)+' fehlen zum Monatsziel.';
    values[4].textContent=percent(planRatio??history.average);
-   if(isJudith){values[5].textContent=euro(data.net);values[6].textContent=data.receipts===null?'–':new Intl.NumberFormat('de-AT').format(data.receipts);values[7].textContent=euro(data.personnelPlan);values[7].title='Personalkosten des Vormonats als Planwert; Oktober-Ist-Kosten folgen mit der Abrechnung.';}
+   values[5].textContent=euro(data.net);values[6].textContent=data.receipts===null?'–':new Intl.NumberFormat('de-AT').format(data.receipts);values[7].textContent=euro(data.personnelPlan);values[7].title='Personalkosten des Vormonats als Planwert; Ist-Kosten des ausgewählten Monats folgen mit der Abrechnung.';
    hint.textContent=data.gross===null?'Noch keine Umsätze erfasst':data.hasSummary?'Geprüfter Monatsabschluss':data.days+' Tag(e) erfasst · bisheriger Stand';
-   values[1].previousElementSibling.textContent=isJudith?'Ø Bon · Belege':'Ø bezahlter Bon';
+   values[1].previousElementSibling.textContent='Ø Bon';
    values[1].title=data.average===null?(isJudith?'Beleganzahl oder Umsatz fehlen.':'Bezahlte Bons und zugehöriger Umsatz fehlen.'):(isJudith?'Umsatz / Belege aus ':'Umsatz / bezahlte Bons aus ')+data.paidDays+' Tag(en).';
-   values[2].previousElementSibling.textContent=planRatio!==null?'Personalquote · vorläufig (Plan)':historicalReference?'Personalquote · vorläufig (Jan–Jul)':history.exact===null?'Personalquote · vorläufig':'Personalquote · exakt';
+   values[2].previousElementSibling.textContent='Personalquote · vorläufig';
    values[2].title=planRatio!==null?'Personalkosten des Vormonats / bisher erfasster Nettoumsatz dieses Monats. Vorläufig, keine Oktober-Ist-Kosten.':historicalReference?'Vorläufige Referenz '+JUDITH_PERSONNEL_REFERENCE.period+': 149.196 € Personal / 298.214 € Nettoumsatz. Früherer Analysewert, nicht erneut gegen Original-BWA geprüft. Die exakte Monatsquote folgt nach dem Monatsabschluss.':history.exact===null?'Vorläufiger Durchschnitt aus '+history.count+' abgeschlossenen Monaten mit Nettoumsatz und Personalkosten. Die exakte Monatsquote folgt mit dem Monatsabschluss.':'Personalkosten dieses Monats / Nettoumsatz.';
    values[4].title=planRatio!==null?'Aktuelle Planquote: Personalkosten des Vormonats / bisher erfasster Nettoumsatz. Kein Jahresdurchschnitt.':'Arithmetischer Durchschnitt aus '+history.count+' abgeschlossenen Monaten mit Nettoumsatz und Personalkosten.';
-   values[4].previousElementSibling.textContent=planRatio!==null?'Ø Personalquote · vorläufiger Plan':'Ø Personalquote im Jahr · '+history.count+' Monate';
+   values[4].previousElementSibling.textContent='Ø Personalquote im Jahr / Plan';
    
   }catch(error){hint.textContent='Kennzahlen konnten nicht geladen werden';values[0].title=error.message;}
  }));
