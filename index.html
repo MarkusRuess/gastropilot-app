@@ -189,7 +189,7 @@ header{position:sticky;top:0;z-index:60}
 <script src="./business-switch.js"></script><script type="module">
 import {createClient} from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 import {loadBankFixedCosts} from './bank-costs-integration.js';
-import {renderBusinessOverview,loadPersonnelAverage,JUDITH_PERSONNEL_REFERENCE,SALES_TARGETS} from './business-overview.js?v=20261023-einkaufsquote';
+import {renderBusinessOverview,loadPersonnelAverage,JUDITH_PERSONNEL_REFERENCE,SALES_TARGETS} from './business-overview.js?v=20261023-zielerreichung';
 const db=createClient('https://sjnwfwcpgwsavygewwzb.supabase.co','sb_publishable__tucXG-IQGUhibMqMSUzCw_5RnH_sbQ');
 let BID=null,authorizedBusinesses=[],switchingBusiness=false;const E=id=>document.getElementById(id),N=v=>v==null||v===''?null:Number(v),EUR=v=>v==null||!Number.isFinite(v)?'–':new Intl.NumberFormat('de-AT',{style:'currency',currency:'EUR'}).format(v),D=v=>v?.split('-').reverse().join('.')||'–';
 let user=null,busy=false,selected=null,queue=[];
