@@ -105,6 +105,19 @@ export async function loadPersonnelAverage(db,businessId,month){
 export async function renderBusinessOverview(db,members,month,host,onSelect){
  host.replaceChildren();
  const allowed=(members||[]).filter(member=>member.business_id&&member.businesses?.name);
+ let combined=document.getElementById('combinedGrossHome');
+ if(!combined){
+  combined=document.createElement('button');combined.id='combinedGrossHome';combined.type='button';combined.className='combinedGrossHome';
+  combined.innerHTML='<span>Gesamtumsatz beider Betriebe · brutto</span><strong>–</strong><small hidden></small>';
+  host.before(combined);
+  combined.addEventListener('click',()=>{const detail=combined.querySelector('small');detail.hidden=!detail.hidden;combined.setAttribute('aria-expanded',String(!detail.hidden));});
+ }
+ const bothAllowed=['Friedrich','Judith'].every(name=>allowed.some(member=>member.businesses.name.includes(name)));
+ combined.hidden=!bothAllowed;
+ combined.querySelector('strong').textContent='Wird geladen …';
+ combined.querySelector('small').hidden=true;
+ combined.setAttribute('aria-expanded','false');
+ combined.disabled=true;
  const cards=allowed.map(member=>{
   const name=member.businesses.name.includes('Friedrich')?'Das Friedrich':member.businesses.name.includes('Judith')?'Judith und die Torten':member.businesses.name;
   const card=document.createElement('button');card.type='button';card.className='homeBusiness';
@@ -123,7 +136,7 @@ export async function renderBusinessOverview(db,members,month,host,onSelect){
   card.append(heading,hint,metrics,action);card.addEventListener('click',()=>onSelect(member));host.append(card);
   return {member,hint,values:[...metrics.querySelectorAll('strong')]};
  });
- await Promise.all(cards.map(async({member,hint,values})=>{
+ const combinedRows=await Promise.all(cards.map(async({member,hint,values})=>{
   try{
    const isJudith=member.businesses.name.includes('Judith');
    const [data,history,purchaseRows,goalRow]=await Promise.all([loadBusinessMetrics(db,member.business_id,month,isJudith),loadPersonnelAverage(db,member.business_id,month),db.from('expenses').select('category,net_amount,expense_date,accounting_month').eq('business_id',member.business_id).in('category',['food','drinks','beverages']),db.from('gp_revenue_targets').select('target_monthly_gross,estimated_food_cost_pct').eq('business_id',member.business_id).maybeSingle()]);
@@ -167,7 +180,14 @@ export async function renderBusinessOverview(db,members,month,host,onSelect){
    values[2].title=planRatio!==null?'Personalkosten des Vormonats / bisher erfasster Nettoumsatz dieses Monats. Vorläufig, keine Oktober-Ist-Kosten.':historicalReference?'Vorläufige Referenz '+JUDITH_PERSONNEL_REFERENCE.period+': 149.196 € Personal / 298.214 € Nettoumsatz. Früherer Analysewert, nicht erneut gegen Original-BWA geprüft. Die exakte Monatsquote folgt nach dem Monatsabschluss.':history.exact===null?'Vorläufiger Durchschnitt aus '+history.count+' abgeschlossenen Monaten mit Nettoumsatz und Personalkosten. Die exakte Monatsquote folgt mit dem Monatsabschluss.':'Personalkosten dieses Monats / Nettoumsatz.';
    values[4].title=planRatio!==null?'Aktuelle Planquote: Personalkosten des Vormonats / bisher erfasster Nettoumsatz. Kein Jahresdurchschnitt.':'Arithmetischer Durchschnitt aus '+history.count+' abgeschlossenen Monaten mit Nettoumsatz und Personalkosten.';
    values[4].previousElementSibling.textContent='Ø Personalquote im Jahr / Plan';
-   
-  }catch(error){hint.textContent='Kennzahlen konnten nicht geladen werden';values[0].title=error.message;}
+   return {name:member.businesses.name,gross:data.gross};
+  }catch(error){hint.textContent='Kennzahlen konnten nicht geladen werden';values[0].title=error.message;return null;}
  }));
+ if(!bothAllowed||!host.isConnected||document.getElementById('homeMonth')?.value!==month)return;
+ const friedrich=combinedRows.find(row=>row?.name.includes('Friedrich'));
+ const judith=combinedRows.find(row=>row?.name.includes('Judith'));
+ const valid=friedrich?.gross!==null&&friedrich?.gross!==undefined&&judith?.gross!==null&&judith?.gross!==undefined;
+ combined.querySelector('strong').textContent=valid?euro(friedrich.gross+judith.gross):'–';
+ combined.querySelector('small').textContent=valid?'Das Friedrich '+euro(friedrich.gross)+' + Judith und die Torten '+euro(judith.gross):'Für mindestens einen Betrieb fehlen die Bruttoumsätze dieses Monats.';
+ combined.disabled=false;
 }
