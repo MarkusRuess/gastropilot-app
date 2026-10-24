@@ -1561,7 +1561,7 @@ uploadDropZone.addEventListener('drop',e=>{e.preventDefault();uploadDropZone.cla
 document.addEventListener('paste',e=>{if(!E('app').classList.contains('hidden')&&!/^(INPUT|TEXTAREA)$/.test(document.activeElement?.tagName||'')){const file=[...(e.clipboardData?.files||[])].find(x=>x.type==='application/pdf'||/\.pdf$/i.test(x.name));if(file){e.preventDefault();void startDesktopPdf(file)}}});
 let openingBusiness=false;
 let homeAutoRefreshRunning=false;
-setInterval(async()=>{if(homeAutoRefreshRunning||!user||document.hidden||E('businessHome').classList.contains('hidden')||busy)return;homeAutoRefreshRunning=true;try{await renderBusinessOverview(db,authorizedBusinesses,E('homeMonth').value,E('homeCards'),openBusiness);}catch(error){E('homeStatus').textContent='Automatische Aktualisierung fehlgeschlagen: '+error.message;}finally{homeAutoRefreshRunning=false;}},60000);
+// Kein periodisches Nachladen der Startseite; Aktualisierung erfolgt beim Öffnen.
 async function showHome(){
  if(busy){E('businessSwitchStatus').textContent='Bitte den laufenden Upload abschließen.';return;}
  if(!E('app').classList.contains('hidden'))E('homeMonth').value=E('month').value;
@@ -1609,5 +1609,5 @@ cardTables();E('gpHeaderHome').onclick=()=>{if(user)void showHome()};E('backHome
 let autoRefreshing=false;
 async function refreshVisibleDashboard(){if(!user||E('app').classList.contains('hidden')||document.hidden||busy||autoRefreshing)return;autoRefreshing=true;try{await refresh();}finally{autoRefreshing=false;}}
 // Keine zeitgesteuerte Aktualisierung: neue BONit-Abschlüsse werden beim nächsten Laden oder bei der nächsten bewussten Aktualisierung übernommen.
-document.addEventListener('visibilitychange',()=>{if(!document.hidden)void refreshVisibleDashboard();});
+// Kein automatisches Nachladen beim Wechsel zurück zur App.
 </script><script>setTimeout(()=>{const f=document.getElementById('loginForm'),m=document.getElementById('loginMsg');if(f&&!f.onsubmit&&m)m.textContent='Die Anwendung konnte nicht geladen werden. Bitte Seite neu laden. Falls diese Meldung bleibt, ist die Programm-Bibliothek blockiert.'},4500);window.addEventListener('error',e=>{const m=document.getElementById('loginMsg');if(m)m.textContent='Ladefehler: '+e.message});window.addEventListener('unhandledrejection',e=>{const m=document.getElementById('loginMsg');if(m)m.textContent='Verbindungsfehler: '+(e.reason?.message||String(e.reason))});</script></body></html>
