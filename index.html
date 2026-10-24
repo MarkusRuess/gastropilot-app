@@ -212,7 +212,16 @@ header{position:sticky;top:0;z-index:60}
 #quickKpis .tile b{display:block;margin-top:5px;font-size:clamp(18px,1.2vw,21px);line-height:1.2;letter-spacing:0;overflow-wrap:normal;white-space:nowrap}
 @media(max-width:900px){#quickKpis.grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}#quickKpis>.tile,#quickKpis .tile{height:84px;min-height:84px;padding:10px 12px}#quickKpis .tile small{font-size:11px}#quickKpis .tile b{font-size:17px}}
 </style>
-</head><body>
+<style id="combined-gross-home-style">
+#combinedGrossHome{display:flex;width:100%;margin-top:16px;padding:16px 20px;align-items:center;justify-content:space-between;gap:12px;text-align:left;background:#e8f5f1;color:#173c35;border:1px solid #a8d7c9;border-radius:14px}
+#combinedGrossHome[hidden],#combinedGrossHome small[hidden]{display:none}
+#combinedGrossHome>span{font-size:15px;font-weight:700}
+#combinedGrossHome>strong{font-size:clamp(22px,3vw,30px);white-space:nowrap;font-variant-numeric:tabular-nums}
+#combinedGrossHome>small{width:100%;color:#365c54;font-size:12px}
+#combinedGrossHome[aria-expanded="true"]{flex-wrap:wrap}
+#combinedGrossHome:disabled{opacity:1;cursor:default}
+@media(max-width:680px){#combinedGrossHome{flex-wrap:wrap;padding:14px;margin-top:12px}#combinedGrossHome>span,#combinedGrossHome>strong{width:100%}#combinedGrossHome>strong{font-size:26px}}
+</style></head><body>
 <header><div class="gpHeaderBar"><button id="gpHeaderHome" type="button" aria-label="GastroPilot – zur Betriebsübersicht" style="appearance:none;background:transparent;border:0;padding:0;color:inherit;text-align:left;cursor:pointer;display:block"><strong>GastroPilot</strong><small>Dein Lokal. Deine Zahlen. Dein Überblick.</small></button><nav id="gpHeaderSwitch" class="hidden" aria-label="Betrieb wechseln"></nav></div></header>
 <main><section id="login" class="card"><h2>Anmelden</h2><form id="loginForm"><label>E-Mail<input id="email" type="email" autocomplete="username" required></label><label>Passwort<input id="password" type="password" autocomplete="current-password" required></label><button>Anmelden</button></form><p id="loginMsg" class="status"></p></section>
 <section id="businessHome" class="hidden" aria-label="Betriebsübersicht"><div class="card"><div class="homeHead"><div><h1>Beide Betriebe im Blick</h1><p>Monatswerte je Betrieb · Betrieb antippen für Details</p></div><label>Monat<input id="homeMonth" type="month" aria-label="Monat der Betriebsübersicht"></label><button id="homeLogout" type="button">Abmelden</button></div><div id="homeCards" class="homeGrid" aria-live="polite"></div><p class="homeFoot">Umsatz brutto; Personal- und Wareneinsatzquote vom Nettoumsatz. Judith: Ø Bon aus Tagesumsatz und Beleganzahl; Friedrich: Ø Bon aus zugeordneten bezahlten Bons. Wareneinsatz nur mit erfassten Netto-Einkäufen und geprüfter Lagerveränderung.</p><p id="homeStatus" class="muted" role="status"></p></div></section>
@@ -227,7 +236,7 @@ header{position:sticky;top:0;z-index:60}
 <script src="./business-switch.js"></script><script type="module">
 import {createClient} from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 import {loadBankFixedCosts} from './bank-costs-integration.js';
-import {renderBusinessOverview,loadPersonnelAverage,JUDITH_PERSONNEL_REFERENCE,SALES_TARGETS} from './business-overview.js?v=20261023-zielerreichung';
+import {renderBusinessOverview,loadPersonnelAverage,JUDITH_PERSONNEL_REFERENCE,SALES_TARGETS} from './business-overview.js?v=20261024-gesamtbrutto';
 const db=createClient('https://sjnwfwcpgwsavygewwzb.supabase.co','sb_publishable__tucXG-IQGUhibMqMSUzCw_5RnH_sbQ');
 let BID=null,authorizedBusinesses=[],switchingBusiness=false;const E=id=>document.getElementById(id),N=v=>v==null||v===''?null:Number(v),EUR=v=>v==null||!Number.isFinite(v)?'–':new Intl.NumberFormat('de-AT',{style:'currency',currency:'EUR'}).format(v),D=v=>v?.split('-').reverse().join('.')||'–';
 let user=null,busy=false,selected=null,queue=[];
