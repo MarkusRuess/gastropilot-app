@@ -1608,6 +1608,16 @@ document.querySelectorAll('#app tbody').forEach(el=>cardObserver.observe(el,{chi
 cardTables();E('gpHeaderHome').onclick=()=>{if(user)void showHome()};E('backHome').onclick=showHome;E('homeMonth').onchange=showHome;const signOut=async()=>{await db.auth.signOut();user=null;authorizedBusinesses=[];sessionStorage.removeItem('gastropilot-open-business');E('app').classList.add('hidden');E('businessHome').classList.add('hidden');E('login').classList.remove('hidden');renderTopBusinessNav();};E('homeLogout').onclick=signOut;E('refresh').onclick=async()=>{await refresh();await loadWholeArchive();};E('month').onchange=()=>{monthSelectedDay=null;void refresh();};E('monthPrev').onclick=()=>moveOverviewMonth(-1);E('monthNext').onclick=()=>moveOverviewMonth(1);E('logout').onclick=signOut;enter().catch(e=>E('loginMsg').textContent='Anmeldung: '+e.message);
 let autoRefreshing=false;
 async function refreshVisibleDashboard(){if(!user||E('app').classList.contains('hidden')||document.hidden||busy||autoRefreshing)return;autoRefreshing=true;try{await refresh();}finally{autoRefreshing=false;}}
-// Keine zeitgesteuerte Aktualisierung: neue BONit-Abschlüsse werden beim nächsten Laden oder bei der nächsten bewussten Aktualisierung übernommen.
-// Kein automatisches Nachladen beim Wechsel zurück zur App.
+// ChatGPT überträgt Belege in Supabase; GastroPilot liest die aktualisierten Kennzahlen automatisch nach.
+let lastAutomaticRefresh=0;
+async function autoRefreshDashboard(){
+ if(!user||document.hidden||busy||openingBusiness||autoRefreshing)return;
+ const now=Date.now();if(now-lastAutomaticRefresh<45000)return;
+ lastAutomaticRefresh=now;
+ if(!E('businessHome').classList.contains('hidden')){await showHome();return;}
+ await refreshVisibleDashboard();
+}
+setInterval(()=>{void autoRefreshDashboard().catch(e=>console.warn('Automatische Dashboard-Aktualisierung:',e));},60000);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden){lastAutomaticRefresh=0;void autoRefreshDashboard().catch(e=>console.warn('Dashboard beim Zurückkehren:',e));}});
+window.addEventListener('focus',()=>{void autoRefreshDashboard().catch(e=>console.warn('Dashboard-Fokus:',e));});
 </script><script>setTimeout(()=>{const f=document.getElementById('loginForm'),m=document.getElementById('loginMsg');if(f&&!f.onsubmit&&m)m.textContent='Die Anwendung konnte nicht geladen werden. Bitte Seite neu laden. Falls diese Meldung bleibt, ist die Programm-Bibliothek blockiert.'},4500);window.addEventListener('error',e=>{const m=document.getElementById('loginMsg');if(m)m.textContent='Ladefehler: '+e.message});window.addEventListener('unhandledrejection',e=>{const m=document.getElementById('loginMsg');if(m)m.textContent='Verbindungsfehler: '+(e.reason?.message||String(e.reason))});</script></body></html>
