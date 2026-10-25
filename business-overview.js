@@ -147,7 +147,7 @@ export async function renderBusinessOverview(db,members,month,host,onSelect){
    const ticketBox=values[1].parentElement;
    ticketBox.querySelector('.homeTicketTarget').textContent='Soll '+euro(ticketTarget)+(ticketProgress===null?'':' · '+percent(ticketProgress));
    setProgress(ticketBox.querySelector('.homeProgress'),ticketProgress);
-   const planRatio=isJudith&&history.exact===null&&data.personnelPlan!==null&&data.net>0?100*data.personnelPlan/data.net:null;
+   const planRatio=history.exact===null&&data.personnelPlan!==null&&data.net>0?100*data.personnelPlan/data.net:null;
    const historicalReference=isJudith&&history.exact===null&&planRatio===null&&history.average===null;
    values[2].textContent=percent(history.exact??planRatio??history.average??(historicalReference?JUDITH_PERSONNEL_REFERENCE.ratio:null));
    const relevantPurchases=(purchaseRows.data||[]).filter(x=>String(x.accounting_month||x.expense_date||'').slice(0,7)===month);
@@ -177,7 +177,7 @@ export async function renderBusinessOverview(db,members,month,host,onSelect){
    values[1].previousElementSibling.textContent='Ø Bon';
    values[1].title=data.average===null?(isJudith?'Beleganzahl oder Umsatz fehlen.':'Bezahlte Bons und zugehöriger Umsatz fehlen.'):(isJudith?'Umsatz / Belege aus ':'Umsatz / bezahlte Bons aus ')+data.paidDays+' Tag(en).';
    values[2].previousElementSibling.textContent='Personalquote · vorläufig';
-   values[2].title=planRatio!==null?'Personalkosten des Vormonats / bisher erfasster Nettoumsatz dieses Monats. Vorläufig, keine Oktober-Ist-Kosten.':historicalReference?'Vorläufige Referenz '+JUDITH_PERSONNEL_REFERENCE.period+': 149.196 € Personal / 298.214 € Nettoumsatz. Früherer Analysewert, nicht erneut gegen Original-BWA geprüft. Die exakte Monatsquote folgt nach dem Monatsabschluss.':history.exact===null?'Vorläufiger Durchschnitt aus '+history.count+' abgeschlossenen Monaten mit Nettoumsatz und Personalkosten. Die exakte Monatsquote folgt mit dem Monatsabschluss.':'Personalkosten dieses Monats / Nettoumsatz.';
+   values[2].title=planRatio!==null?'Personalkosten des Vormonats / bisher erfasster Nettoumsatz dieses Monats. Vorläufige Planquote, keine Ist-Lohnabrechnung dieses Monats.':historicalReference?'Vorläufige Referenz '+JUDITH_PERSONNEL_REFERENCE.period+': 149.196 € Personal / 298.214 € Nettoumsatz. Früherer Analysewert, nicht erneut gegen Original-BWA geprüft. Die exakte Monatsquote folgt nach dem Monatsabschluss.':history.exact===null?'Vorläufiger Durchschnitt aus '+history.count+' abgeschlossenen Monaten mit Nettoumsatz und Personalkosten. Die exakte Monatsquote folgt mit dem Monatsabschluss.':'Personalkosten dieses Monats / Nettoumsatz.';
    values[4].title=planRatio!==null?'Aktuelle Planquote: Personalkosten des Vormonats / bisher erfasster Nettoumsatz. Kein Jahresdurchschnitt.':'Arithmetischer Durchschnitt aus '+history.count+' abgeschlossenen Monaten mit Nettoumsatz und Personalkosten.';
    values[4].previousElementSibling.textContent='Ø Personalquote im Jahr / Plan';
    return {name:member.businesses.name,gross:data.gross};
