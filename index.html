@@ -261,7 +261,7 @@ function renderTopBusinessNav(){
  }
 }
 function businessLabel(name){return String(name||'GastroPilot').includes('Judith')?'Judith und die Torten':String(name||'GastroPilot').includes('Friedrich')?'Das Friedrich':String(name||'GastroPilot');}function setSalesTargetForBusiness(name){const goal=SALES_TARGETS[String(name||'').includes('Judith')?'judith':'friedrich'];if(E('salesTargetBreakEven'))E('salesTargetBreakEven').textContent=EUR(goal.breakEven);if(E('salesTargetProfit'))E('salesTargetProfit').textContent=EUR(goal.profit5000);if(E('salesTargetNote'))E('salesTargetNote').textContent=goal.note+' Bruttoumsatz pro Monat; vorläufig, keine Ist-Gewinnberechnung.';}
-function setBusinessHeader(name){setSalesTargetForBusiness(name);const label=businessLabel(name);document.body.dataset.activeBusiness=label==='Judith und die Torten'?'judith':'friedrich';E('activeBusinessTitle').textContent=label+' · Betriebssteuerung';E('intakeBusinessTitle').textContent='📷 Unterlagen für '+label+' hochladen';document.title='GastroPilot · '+label;const calc=E('kalkulationLink');if(calc){const judith=label==='Judith und die Torten';if(judith){calc.removeAttribute('href');calc.setAttribute('aria-disabled','true');calc.querySelector('b').textContent='Kalkulation · Judith';calc.querySelectorAll('small')[1].textContent='Nach dem ersten Artikel- und Preisimport verfügbar';}else{calc.href='kalkulation.html';calc.removeAttribute('aria-disabled');calc.querySelector('b').textContent='Kalkulation';calc.querySelectorAll('small')[1].textContent='Gesamtziel: max. 26 % Wareneinsatz · Grün ≤20 % · Gelb ≤26 % · Rot >26 %';}}const personnelTile=E('judithPersonnelTile');if(personnelTile)personnelTile.classList.toggle('hidden',label!=='Judith und die Torten');const cakePricingTile=E('judithCakePricingTile');if(cakePricingTile)cakePricingTile.classList.toggle('hidden',label!=='Judith und die Torten');const rentTile=E('judithRentTile');if(rentTile)rentTile.classList.toggle('hidden',label!=='Judith und die Torten');const recipeTile=E('recipeCostTile');if(recipeTile)recipeTile.classList.toggle('hidden',label!=='Judith und die Torten');const menuTitle=E('menuDashboardTitle');if(menuTitle)menuTitle.textContent=label==='Judith und die Torten'?'Produkte':'Getränke & Speisekarte';E('judithAnalysisLink').classList.toggle('hidden',label!=='Judith und die Torten');}
+function setBusinessHeader(name){setSalesTargetForBusiness(name);const label=businessLabel(name);document.body.dataset.activeBusiness=label==='Judith und die Torten'?'judith':'friedrich';E('activeBusinessTitle').textContent=label+' · Betriebssteuerung';E('intakeBusinessTitle').textContent='📷 Unterlagen für '+label+' hochladen';document.title='GastroPilot · '+label;const calc=E('kalkulationLink');if(calc){const judith=label==='Judith und die Torten';if(judith){calc.removeAttribute('href');calc.setAttribute('aria-disabled','true');calc.querySelector('b').textContent='Kalkulation · Judith';calc.querySelectorAll('small')[1].textContent='ETRON-Artikel · Brutto-VK · Herstellkosten offen';calc.removeAttribute('aria-disabled');calc.setAttribute('role','button');calc.onclick=()=>{E('topArticlesDisclosure').open=true;E('topArticles').classList.remove('mobileHidden');E('topArticles').scrollIntoView({behavior:'smooth'});};}else{calc.href='kalkulation.html';calc.onclick=null;calc.removeAttribute('role');calc.removeAttribute('aria-disabled');calc.querySelector('b').textContent='Kalkulation';calc.querySelectorAll('small')[1].textContent='Gesamtziel: max. 26 % Wareneinsatz · Grün ≤20 % · Gelb ≤26 % · Rot >26 %';}}const personnelTile=E('judithPersonnelTile');if(personnelTile)personnelTile.classList.toggle('hidden',label!=='Judith und die Torten');const cakePricingTile=E('judithCakePricingTile');if(cakePricingTile)cakePricingTile.classList.toggle('hidden',label!=='Judith und die Torten');const rentTile=E('judithRentTile');if(rentTile)rentTile.classList.toggle('hidden',label!=='Judith und die Torten');const recipeTile=E('recipeCostTile');if(recipeTile)recipeTile.classList.toggle('hidden',label!=='Judith und die Torten');const menuTitle=E('menuDashboardTitle');if(menuTitle)menuTitle.textContent=label==='Judith und die Torten'?'Produkte':'Getränke & Speisekarte';E('judithAnalysisLink').classList.toggle('hidden',label!=='Judith und die Torten');}
 const menuPriceKey=value=>String(value||'').toLocaleLowerCase('de-AT').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/ß/g,'ss').replace(/[^a-z0-9]+/g,' ').trim();
 function menuServing(name){
  const match=String(name).match(/(?:\d+[,.]\d+\s*l|\d+\s*\/\s*\d+\s*l?|\d+\s*cl|\d+\s*ml|\d+\s*(?:stk\.?|stuck|paar))/i);
@@ -322,6 +322,7 @@ function renderMenuDashboard(items,proposals){
  if(!items.length)host.textContent='Keine BONit-Artikelpreise vorhanden.';
 }
 async function loadMenuDashboard(){
+ if(BID===JUDITH_ARTICLE_BUSINESS){const businessId=BID;try{const model=await loadJudithArticleAnalysis(businessId);if(BID===businessId&&model)renderJudithArticleAnalysis(model);else if(BID===businessId)E('menuDashboardRows').textContent='Noch keine Jahres-Artikelstatistik vorhanden.';}catch(error){if(BID===businessId)E('menuDashboardRows').textContent='Judith-Artikel konnten nicht geladen werden: '+error.message;}return;}
  await loadArticleEkPrices().catch(e=>console.warn('EK konnten nicht geladen werden',e));
  const host=E('menuDashboardRows');host.textContent='BONit-Preise werden geladen …';
  const [sales,months,menu]=await Promise.all([
@@ -924,6 +925,46 @@ async function loadJudithRecipes(){
  }
  }catch(e){host.textContent='Rezeptdaten konnten nicht geladen werden: '+e.message;}
 }
+
+const JUDITH_ARTICLE_BUSINESS='87889eaf-f865-4e3a-8f9a-cd01db483e0e';
+function buildJudithArticleAnalysis(stat,priceData){
+ const n=value=>value===null||value===undefined||value===''?null:Number(value);
+ const prices=new Map((priceData?.tax_basis==='gross'?priceData.price_reference_items||[]:[]).map(x=>[x.ean,x]));
+ const rows=(stat.statistics_items||[]).map(x=>{const price=prices.get(x.ean);const revenue=n(x.reported_revenue),qty=n(x.quantity);return {...x,revenue,qty,currentVk:price?n(price.reported_price):null};}).filter(x=>Number.isFinite(x.revenue)&&Number.isFinite(x.qty));
+ return {rows,total:rows.reduce((a,x)=>a+x.revenue,0),from:stat.period_start,to:stat.period_end,priceDate:priceData?.price_date||null,priceConfirmed:priceData?.tax_basis==='gross'};
+}
+async function loadJudithArticleAnalysis(businessId){
+ if(businessId!==JUDITH_ARTICLE_BUSINESS)return null;
+ const fetchClass=kind=>db.from('documents').select('id,document_date,extracted_data').eq('business_id',businessId).eq('document_type','other').contains('extracted_data',{document_class:kind}).order('document_date',{ascending:false}).order('created_at',{ascending:false}).limit(1);
+ const [stats,prices]=await Promise.all([fetchClass('annual_article_sales_statistics'),fetchClass('article_price_reference')]);
+ if(stats.error||prices.error)throw stats.error||prices.error;
+ const stat=stats.data?.[0],price=prices.data?.[0];
+ if(!stat)return null;
+ return buildJudithArticleAnalysis(stat.extracted_data,{...price?.extracted_data,price_date:price?.document_date});
+}
+function renderJudithArticleAnalysis(model){
+ const fmt=new Intl.NumberFormat('de-AT',{maximumFractionDigits:2});
+ const period=D(model.from)+'–'+D(model.to),total=model.total;
+ const metrics=(card,pairs)=>{const box=document.createElement('div');box.className='metrics';for(const [label,value] of pairs){const span=document.createElement('span'),b=document.createElement('b');span.append(label+' ');b.textContent=value;span.append(b);box.append(span);}card.append(box);};
+ const draw=(host,rows)=>{host.replaceChildren();for(const [i,x] of rows.entries()){const card=document.createElement('article');card.className='top-article';const name=document.createElement('strong');name.textContent=(i+1)+'. '+x.name.replace(/\s+/g,' ');card.append(name);metrics(card,[['Menge',fmt.format(x.qty)],['Umsatz lt. Liste',EUR(x.revenue)],['Anteil',total>0?(x.revenue/total*100).toLocaleString('de-AT',{maximumFractionDigits:1})+' %':'–'],['Aktueller VK brutto',x.currentVk===0?'variabler Auftragspreis':EUR(x.currentVk)],['Ø Umsatz/Einheit',x.qty>0?EUR(x.revenue/x.qty):'–'],['Herstellkosten','offen']]);host.append(card);}};
+ E('topArticles').querySelector('summary strong').textContent='Top 30 Artikel · Judith · Jahresliste';
+ E('topArticleNote').textContent=period+' · '+model.rows.length+' Artikel · Umsatz laut Statistik '+EUR(total)+'. Steuerbasis des historischen Umsatzes noch ungeklärt; aktueller ETRON-VK brutto'+(model.priceDate?' vom '+D(model.priceDate):'')+'. Jahresliste unabhängig vom oben gewählten Monat. Kein zusätzlicher Umsatz gebucht.';
+ draw(E('topArticleCards'),[...model.rows].sort((a,b)=>b.revenue-a.revenue||a.name.localeCompare(b.name,'de')).slice(0,30));
+ E('articlePage').textContent='30 von '+model.rows.length+' Artikeln · Jahresliste';E('articlePrev').hidden=true;E('articleNext').hidden=true;
+ E('slowArticles').querySelector('summary strong').textContent='Top 30 · Selten verkauft · Judith · Jahresliste';
+ E('slowArticles').querySelector('summary small').textContent='Geringste Menge · ETRON · Jahresliste';
+ E('slowArticleNote').textContent=period+' · geringste erfasste positive Menge. Saison-, Großhandels- und Sammelartikel sind enthalten; keine automatische Auslistungsempfehlung.';
+ draw(E('slowArticleCards'),[...model.rows].filter(x=>x.qty>0).sort((a,b)=>a.qty-b.qty||a.revenue-b.revenue).slice(0,30));
+ E('slowPage').textContent='30 von '+model.rows.length+' Artikeln · Jahresliste';E('slowPrev').hidden=true;E('slowNext').hidden=true;
+ E('profitCards').replaceChildren();
+ const cake=model.rows.find(x=>x.ean==='21-10000-02471-0');
+ E('profitNote').textContent='Judith · '+period+'. '+(cake?'Auftragstorten: '+EUR(cake.revenue)+' ('+(cake.revenue/total*100).toFixed(1).replace('.',',')+' % des ausgewiesenen Umsatzes). ':'')+'Herstellkosten und Rezeptzuordnung noch unvollständig. Der Rohertrag aus ETRON wird nicht als tatsächlicher Gewinn oder Deckungsbeitrag gewertet.';
+ const hint=document.createElement('div');hint.className='top-article';hint.textContent='Nächster Schritt: Zutaten, Rezeptausbeute, Verpackung und Arbeitszeit je Produkt zuordnen. Keine pauschalen VK-Erhöhungen aus unvollständigen Kosten.';E('profitCards').append(hint);
+ const host=E('menuDashboardRows');host.replaceChildren();
+ const note=document.createElement('p');note.className='muted';note.textContent='ETRON-Brutto-VK · '+model.rows.length+' tatsächlich in der Jahresliste enthaltene Artikel. Ø Umsatz aus der Statistik ist kein aktueller Listenpreis.';host.append(note);
+ for(const x of [...model.rows].sort((a,b)=>a.name.localeCompare(b.name,'de'))){const card=document.createElement('article');card.className='menu-product-card';const h=document.createElement('strong');h.className='menu-product-name';h.textContent=x.name.replace(/\s+/g,' ');card.append(h);metrics(card,[['ETRON VK brutto',x.currentVk===0?'variabler Auftragspreis':EUR(x.currentVk)],['Verkaufte Menge',fmt.format(x.qty)],['Herstellkosten','offen'],['Neuer VK','noch nicht kalkuliert']]);host.append(card);}
+}
+
 async function refresh(){if(E('recipeCostTile')&&!E('recipeCostTile').classList.contains('hidden'))void loadJudithRecipes();await loadArticleEkPrices().catch(e=>{console.warn('EK-Preise nicht geladen',e);articleEkPrices=new Map();});void loadWeeklyPurchase().catch(e=>E('purchasePeriod').textContent='Einkaufsdaten konnten nicht geladen werden: '+e.message);
  const [start,end]=dateRange();E('summary').textContent='Archiv wird abgeglichen …';
  try{
@@ -1054,7 +1095,17 @@ async function refresh(){if(E('recipeCostTile')&&!E('recipeCostTile').classList.
   for(const x of articles){const qty=N(x.quantity),amount=N(x.gross_amount);if(qty===null||amount===null||qty<=0)continue;const key=String(x.article_number||'').trim()||canonicalArticleName(x.article_name||'Unbenannt');const v=provisional.get(key)||{name:(x.article_number?x.article_number+' · ':'')+canonicalArticleName(x.article_name||'Unbenannt'),qty:0,gross:0,known:true};v.qty+=qty;v.gross+=amount;provisional.set(key,v);dates.add(x.closing_date);}
   liveArticleRows=[...provisional.values()];articleSourceDays=dates.size;
  }
- const useMonthlyReference=liveArticleRows.length===0&&Array.isArray(M?.items)&&M.items.length>0;renderTopArticles(useMonthlyReference?M.items.map(([id,name,qty,price,total])=>({name:id+' · '+canonicalArticleName(name),qty,gross:total,known:true})):liveArticleRows,M?.gross??gross,daily.length,useMonthlyReference?Math.min(M.days||0,daily.length):articleSourceDays);
+ const articleBusiness=BID;
+ if(articleBusiness===JUDITH_ARTICLE_BUSINESS){
+  const model=await loadJudithArticleAnalysis(articleBusiness);
+  if(BID!==articleBusiness)return;
+  if(model)renderJudithArticleAnalysis(model);else renderTopArticles(liveArticleRows,gross,daily.length,articleSourceDays);
+ }else{
+  E('topArticles').querySelector('summary strong').textContent='Top 30 Artikel · Umsatz';
+  E('slowArticles').querySelector('summary strong').textContent='Top 30 · Selten verkauft';
+  E('slowArticles').querySelector('summary small').textContent='Geringste Verkaufsmenge · BONit';
+  const useMonthlyReference=liveArticleRows.length===0&&Array.isArray(M?.items)&&M.items.length>0;renderTopArticles(useMonthlyReference?M.items.map(([id,name,qty,price,total])=>({name:id+' · '+canonicalArticleName(name),qty,gross:total,known:true})):liveArticleRows,M?.gross??gross,daily.length,useMonthlyReference?Math.min(M.days||0,daily.length):articleSourceDays);
+ }
  E('archive').replaceChildren();for(const d of monthlyReports){const p=document.createElement('p');p.textContent='BONit Monatsabschluss '+(d.extracted_data?.period_start||'?')+' bis '+(d.extracted_data?.period_end||'?')+' · '+EUR(N(d.extracted_data?.gross_total))+' · Original im Archiv (nicht zusätzlich zu Tagesumsätzen gezählt)';E('archive').append(p);}for(const d of docs.sort((a,b)=>b.document_date.localeCompare(a.document_date)).slice(0,50)){if(d.extracted_data?.document_class==='spreadsheet')continue;const p=document.createElement('p');p.className='muted';const details=d.extracted_data||{},candidate=details.recognition_candidate||details;const supplier=d.supplier||candidate.supplier||candidate.vendor||candidate.merchant||'Lieferant nicht erkannt';const amount=N(details.gross_total??details.total_gross??details.total_amount??candidate.gross_total??candidate.total_gross??candidate.total_amount);const type=d.document_type==='cash_report'?'BONit / Kassa':d.document_type==='invoice'?'Lieferantenrechnung':details.document_class==='supplier_purchase_statistics'?'Lieferantenstatistik · keine Rechnung':candidate.document_type==='invoice'?'Rechnung (Prüfung)':d.document_type;p.textContent=D(d.document_date)+' · '+type+' · '+(d.document_type==='cash_report'?'':supplier+' · ')+(amount!==null?EUR(amount)+' · ':'')+(d.status||'');const paths=[...new Set([...(d.extracted_data?.original_files||[]),d.storage_path].filter(Boolean))];if(paths.length){const box=document.createElement('div');box.hidden=true;for(const [index,path] of paths.entries()){const button=document.createElement('button');button.type='button';button.textContent='Original '+(index+1);button.style.margin='4px';button.onclick=async()=>{button.disabled=true;try{const result=await db.storage.from('invoice-originals').createSignedUrl(path,300);if(result.error)throw result.error;const original=/\.pdf$/i.test(path)?document.createElement('iframe'):document.createElement('img');if(original.tagName==='IFRAME')original.title='PDF-Original '+(index+1);else original.alt='Original '+(index+1)+' · '+D(d.document_date);original.src=result.data.signedUrl;original.style.cssText=original.tagName==='IFRAME'?'display:block;width:100%;height:70vh;border:0;margin:8px 0':'display:block;max-width:100%;height:auto;margin:8px 0';box.replaceChildren(original);box.hidden=false;}catch(error){box.textContent='Original konnte nicht geöffnet werden: '+error.message;box.hidden=false;}finally{button.disabled=false;}};p.append(button);}p.append(box);}E('archive').append(p);}
  E('summary').textContent=M?(isSep?'September 2026':'August 2026')+' · BONit Monatsabschluss Z '+M.z_number+' · '+M.days+' Abschlusstage · '+M.receipts+' Rechnungen. Keine Doppelzählung.':daily.length+' Umsatztage · '+docs.length+' archivierte Dokumente · BONit vor Archiv, keine Doppelzählung.';
  void repairStoredTaxes(docs);
@@ -1611,3 +1662,4 @@ async function refreshVisibleDashboard(){if(!user||E('app').classList.contains('
 // Daten werden beim Öffnen des Betriebs, beim Monatswechsel und über die manuelle Aktualisierung geladen.
 // Keine zeitgesteuerten Abfragen; ChatGPT-Import schreibt die Daten in die Datenbank.
 </script><script>setTimeout(()=>{const f=document.getElementById('loginForm'),m=document.getElementById('loginMsg');if(f&&!f.onsubmit&&m)m.textContent='Die Anwendung konnte nicht geladen werden. Bitte Seite neu laden. Falls diese Meldung bleibt, ist die Programm-Bibliothek blockiert.'},4500);window.addEventListener('error',e=>{const m=document.getElementById('loginMsg');if(m)m.textContent='Ladefehler: '+e.message});window.addEventListener('unhandledrejection',e=>{const m=document.getElementById('loginMsg');if(m)m.textContent='Verbindungsfehler: '+(e.reason?.message||String(e.reason))});</script></body></html>
+
