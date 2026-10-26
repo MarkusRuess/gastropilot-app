@@ -38,14 +38,17 @@ document.getElementById('load-inbox').addEventListener('click',async()=>{
   const response=await fetch('https://sjnwfwcpgwsavygewwzb.supabase.co/functions/v1/judith-ai-status?check=inbox&server='+encodeURIComponent(document.getElementById('imap-source').value)+'&folder='+encodeURIComponent(document.getElementById('mail-folder').value),{headers:{Authorization:'Bearer '+active.access_token,apikey:'sb_publishable__tucXG-IQGUhibMqMSUzCw_5RnH_sbQ'},cache:'no-store'});
   const result=await response.json();if(!response.ok||!result.ok)throw Error(result.error||'Abruf fehlgeschlagen');
   out.textContent='✅ '+result.count+' E-Mail(s) geladen · Server: '+result.server+' · Nur-Lese-Modus';
-  result.messages.sort((a,b)=>(Date.parse(b.date)||0)-(Date.parse(a.date)||0));
-  for(const m of result.messages){
+  const cutoff=Date.now()-45*24*60*60*1000;
+  const recent=result.messages.filter(m=>{const d=Date.parse(m.date);return Number.isFinite(d)&&d>=cutoff}).sort((a,b)=>Date.parse(b.date)-Date.parse(a.date));
+  if(!recent.length){out.textContent='⚠️ Auf diesem Server keine aktuellen E-Mails gefunden. Alte Nachrichten werden ausgeblendet. Bitte anderen Server oder IMAP-Ordner auswählen.';list.replaceChildren();return;}
+  out.textContent='✅ '+recent.length+' aktuelle E-Mail(s) · Server: '+result.server+' · Nur-Lese-Modus';
+  for(const m of recent){
    const box=document.createElement('div');box.className='tile';box.style.marginBottom='8px';
    const title=document.createElement('strong');title.textContent=m.subject;
    const details=document.createElement('p');details.textContent='Von: '+m.from+' · '+m.date;
    box.append(title,details);list.append(box);
   }
-  const summary=document.createElement('p');summary.textContent='Server: '+result.server+' · INBOX gesamt: '+(result.inbox_total??'unbekannt')+' · Neueste gefundene Nachricht: '+(result.messages[0]?.date||'keine')+' · Ordner erkannt: '+(result.folder_names||[]).length;summary.style.overflowWrap='anywhere';list.prepend(summary);if(!result.messages.length)out.textContent='Keine E-Mails im INBOX-Ordner gefunden. Ordnerübersicht siehe unten.';
+  const summary=document.createElement('p');summary.textContent='Aktuelle Nachrichten (letzte 45 Tage) · Server: '+result.server+' · INBOX gesamt: '+(result.inbox_total??'unbekannt')+' · Neueste gefundene Nachricht: '+(result.messages[0]?.date||'keine')+' · Ordner erkannt: '+(result.folder_names||[]).length;summary.style.overflowWrap='anywhere';list.prepend(summary);if(!result.messages.length)out.textContent='Keine E-Mails im INBOX-Ordner gefunden. Ordnerübersicht siehe unten.';
  }catch(e){out.textContent='❌ '+(e.message||'Posteingang konnte nicht geladen werden')}
  finally{button.disabled=false}
 });
@@ -66,7 +69,7 @@ document.getElementById('load-inbox').addEventListener('click',async()=>{
    document.getElementById('receive').textContent='Abruf auf Anfrage';
    document.getElementById('ai').textContent=s.ai_drafting_enabled?'Aktiviert':'Noch nicht aktiviert';
    document.getElementById('send').textContent=s.mail_send_enabled?'Aktiviert':'Gesperrt';
-   document.getElementById('budget').textContent=(s.monthly_budget_eur??30)+' € / Monat (Vorgabe, keine automatische Sperre)';document.getElementById('load-inbox').click();
+   document.getElementById('budget').textContent=(s.monthly_budget_eur??30)+' € / Monat (Vorgabe, keine automatische Sperre)';
   }
  }
 }catch{fail('Verbindung zur Anmeldung derzeit nicht verfügbar.');}
