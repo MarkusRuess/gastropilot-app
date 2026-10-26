@@ -29,7 +29,7 @@ try{
    const details=document.createElement('p');details.textContent='Von: '+m.from+' · '+m.date;
    box.append(title,details);list.append(box);
   }
-  const summary=document.createElement('p');summary.textContent='Server: '+result.server+' · INBOX gesamt: '+(result.inbox_total??'unbekannt')+' · Neueste gefundene Nachricht: '+(result.messages[0]?.date||'keine')+' · Ordner: '+(result.folder_names||[]).join(' | ');list.prepend(summary);if(!result.messages.length)out.textContent='Keine E-Mails im INBOX-Ordner gefunden. Ordnerübersicht siehe unten.';
+  const summary=document.createElement('p');summary.textContent='Server: '+result.server+' · INBOX gesamt: '+(result.inbox_total??'unbekannt')+' · Neueste gefundene Nachricht: '+(result.messages[0]?.date||'keine')+' · Ordner erkannt: '+(result.folder_names||[]).length;summary.style.overflowWrap='anywhere';list.prepend(summary);if(!result.messages.length)out.textContent='Keine E-Mails im INBOX-Ordner gefunden. Ordnerübersicht siehe unten.';
  }catch(e){out.textContent='❌ '+(e.message||'Posteingang konnte nicht geladen werden')}
  finally{button.disabled=false}
 });
