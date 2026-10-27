@@ -20,7 +20,7 @@ try{
       const res=await fetch('https://sjnwfwcpgwsavygewwzb.supabase.co/functions/v1/judith-ai-inbox?view=customers',{headers:{Authorization:'Bearer '+active.access_token,apikey:'sb_publishable__tucXG-IQGUhibMqMSUzCw_5RnH_sbQ'},cache:'no-store'});
       const result=await res.json();if(!res.ok||!result.ok)throw Error(result.error||'Kunden nicht verfügbar');
       status.textContent=(result.customers||[]).length+' Kunden gespeichert';
-      for(const customer of result.customers||[]){const card=document.createElement('details');card.className='tile';card.style.marginBottom='8px';const head=document.createElement('summary');head.style.cursor='pointer';head.style.fontWeight='650';head.textContent='👤 '+customer.name;card.append(head);
+      for(const customer of result.customers||[]){const card=document.createElement('details');card.className='tile';card.style.marginBottom='8px';const head=document.createElement('summary');head.style.cursor='pointer';head.style.fontWeight='650';const dates=(result.inquiries||[]).filter(x=>x.customer_id===customer.id&&x.requested_date).map(x=>x.requested_date).sort();const nextDate=dates[0];const formattedDate=nextDate?nextDate.split('-').reverse().join('.'):'';head.textContent='👤 '+customer.name+(formattedDate?' · 📅 '+formattedDate:' · 📅 Termin offen');card.append(head);
         const email=document.createElement('p');email.textContent='E-Mail: '+customer.email;const phone=document.createElement('p');phone.textContent='Telefon: '+(customer.phone||'Noch nicht bekannt');card.append(email,phone);
         const items=(result.inquiries||[]).filter(x=>x.customer_id===customer.id);
         if(!items.length){const p=document.createElement('p');p.textContent='Noch keine zugeordnete Anfrage';card.append(p);}
