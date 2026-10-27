@@ -67,14 +67,8 @@ document.getElementById('load-inbox').addEventListener('click',async()=>{
      if(head.length){const meta=document.createElement('div');meta.className='mail-thread-meta';meta.textContent=head.join(' · ');section.append(meta);}
      let textPart=lines.join('\n').trim();
      const signatureMatch=textPart.search(signatures);
-     if(signatureMatch>=0){
-      const before=textPart.slice(0,signatureMatch).trim();
-      const after=textPart.slice(signatureMatch).trim();
-      if(before){const message=document.createElement('div');message.className='mail-thread-text';message.textContent=before;section.append(message);}
-      const sig=document.createElement('details');sig.className='mail-thread-signature';
-      const sigLabel=document.createElement('summary');sigLabel.textContent='Judith-Signatur anzeigen';sig.append(sigLabel);
-      const sigBody=document.createElement('div');sigBody.textContent=after;sig.append(sigBody);section.append(sig);
-     }else{const message=document.createElement('div');message.className='mail-thread-text';message.textContent=textPart;section.append(message);}
+     if(signatureMatch>=0)textPart=textPart.slice(0,signatureMatch).trim();
+     if(textPart){const message=document.createElement('div');message.className='mail-thread-text';message.textContent=textPart;section.append(message);}
      history.append(section);
     }
     body.append(history);
