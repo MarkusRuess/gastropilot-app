@@ -24,7 +24,26 @@ try{
         const email=document.createElement('p');email.textContent='E-Mail: '+customer.email;const phone=document.createElement('p');phone.textContent='Telefon: '+(customer.phone||'Noch nicht bekannt');card.append(email,phone);
         const items=(result.inquiries||[]).filter(x=>x.customer_id===customer.id);
         if(!items.length){const p=document.createElement('p');p.textContent='Noch keine zugeordnete Anfrage';card.append(p);}
-        for(const item of items){const sub=document.createElement('div');sub.style.borderTop='1px solid #dce7df';sub.style.paddingTop='8px';const heading=document.createElement('strong');heading.textContent=(item.occasion||'Anfrage')+' · '+(item.requested_date||'Termin offen');const info=document.createElement('p');info.textContent=(item.guests?'Gäste: '+item.guests+' · ':'')+(item.status==='confirmed'?'Bestätigt':'Anfrage – nicht bestätigt');const detail=document.createElement('p');detail.textContent=item.details||'';sub.append(heading,info,detail);card.append(sub);}
+        for(const item of items){const sub=document.createElement('div');sub.style.borderTop='1px solid #dce7df';sub.style.paddingTop='8px';const heading=document.createElement('strong');heading.textContent=(item.occasion||'Anfrage')+' · '+(item.requested_date||'Termin offen');const info=document.createElement('p');info.textContent=(item.guests?'Gäste: '+item.guests+' · ':'')+(item.status==='picked_up'?'✅ Abgeholt'+(item.picked_up_at?' am '+new Date(item.picked_up_at).toLocaleDateString('de-AT'):''):item.status==='confirmed'?'🟢 Bestätigt':'🟡 Anfrage – nicht bestätigt');const detail=document.createElement('p');detail.textContent=item.details||'';sub.append(heading,info,detail);
+        if(item.status!=='picked_up'){
+          const action=document.createElement('button');action.type='button';action.style.margin='6px 0 12px';
+          action.textContent=item.status==='confirmed'?'✅ Torte abgeholt':'🟢 Auftrag bestätigen';
+          action.addEventListener('click',async()=>{
+            const operation=item.status==='confirmed'?'pickup':'confirm';
+            if(!confirm(operation==='pickup'?'Ist die Torte tatsächlich abgeholt worden?':'Hat der Kunde diesen Auftrag verbindlich bestätigt?'))return;
+            action.disabled=true;
+            try{
+              const {data:{session}}=await sb.auth.getSession();if(!session)throw Error('Bitte neu anmelden');
+              const response=await fetch('https://sjnwfwcpgwsavygewwzb.supabase.co/functions/v1/judith-ai-inbox',{
+                method:'PATCH',headers:{Authorization:'Bearer '+session.access_token,apikey:'sb_publishable__tucXG-IQGUhibMqMSUzCw_5RnH_sbQ','Content-Type':'application/json'},
+                body:JSON.stringify({inquiry_id:item.id,action:operation})
+              });
+              const result=await response.json();if(!response.ok||!result.ok)throw Error(result.error||'Speichern fehlgeschlagen');
+              document.getElementById('load-customers').click();
+            }catch(e){alert('❌ '+e.message);action.disabled=false}
+          });sub.append(action);
+        }
+        card.append(sub);}
         list.append(card);
       }
     }catch(e){status.textContent='❌ '+(e.message||'Kunden konnten nicht geladen werden');}finally{btn.disabled=false;}
