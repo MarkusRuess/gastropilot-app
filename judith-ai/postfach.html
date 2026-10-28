@@ -41,9 +41,14 @@ document.getElementById('load-orders').addEventListener('click',async()=>{
    const head=document.createElement('summary');head.style.cursor='pointer';head.style.fontWeight='650';
    head.textContent=(item.status==='picked_up'?'✅ Abgeholt':item.status==='confirmed'?'🟢 Bestätigt':'🟡 Anfrage')+' · '+(item.requested_date?item.requested_date.split('-').reverse().join('.'):'Datum offen')+' · '+(customer.name||'Kunde unbekannt')+' · '+(item.occasion||'Torte');
    const info=document.createElement('p');info.textContent='E-Mail: '+(customer.email||'Fehlt')+' · Telefon: '+(customer.phone||'Fehlt')+(item.guests?' · Personen: '+item.guests:'');
-   const details=document.createElement('p');details.textContent=item.details||'';
-   card.append(head,info,details);
-   if(item.status==='picked_up'){const p=document.createElement('p');p.textContent='Abholung bestätigt'+(item.picked_up_at?' am '+new Date(item.picked_up_at).toLocaleString('de-AT'):'');card.append(p)}
+   const details=document.createElement('p');details.textContent=item.details||'';const attachments=(result.attachments||[]).filter(f=>f.inquiry_id===item.id);
+   const photoPanel=document.createElement('div');photoPanel.style.margin='8px 0';
+   for(const f of attachments){const link=document.createElement('a');link.href=f.url;link.target='_blank';link.rel='noopener noreferrer';link.style.display='inline-block';link.style.margin='6px';link.textContent='📎 '+f.filename;if(f.mime_type.startsWith('image/')){const img=document.createElement('img');img.src=f.url;img.alt=f.filename;img.loading='lazy';img.style.cssText='display:block;max-width:180px;max-height:160px;object-fit:contain';link.prepend(img)}photoPanel.append(link)}
+   
+   card.append(head,info,details,photoPanel);
+   if(item.status==='picked_up'){const p=document.createElement('p');p.textContent='Abholung bestätigt'+(item.picked_up_at?' am '+new Date(item.picked_up_at).toLocaleString('de-AT'):'');card.append(p);
+    if(attachments.length){const del=document.createElement('button');del.type='button';del.textContent='🗑 Kundenbilder jetzt löschen';del.addEventListener('click',async()=>{del.disabled=true;try{if(!confirm('Alle gespeicherten Bilder dieses abgeholten Auftrags endgültig löschen?'))return;const {data:{session}}=await sb.auth.getSession();const res=await fetch('https://sjnwfwcpgwsavygewwzb.supabase.co/functions/v1/judith-ai-inbox',{method:'PATCH',headers:{Authorization:'Bearer '+session.access_token,apikey:'sb_publishable__tucXG-IQGUhibMqMSUzCw_5RnH_sbQ','Content-Type':'application/json'},body:JSON.stringify({inquiry_id:item.id,action:'delete_images'})});const x=await res.json();if(!res.ok||!x.ok)throw Error(x.error||'Löschen fehlgeschlagen');btn.click()}catch(e){alert('❌ '+e.message)}finally{del.disabled=false}});card.append(del)}
+   }
    else{const action=document.createElement('button');action.type='button';action.textContent=item.status==='confirmed'?'✅ Torte abgeholt':'🟢 Auftrag bestätigen';
     action.addEventListener('click',async()=>{action.disabled=true;try{if(await judithUpdateOrder(item.id,item.status==='confirmed'?'pickup':'confirm')){btn.click();document.getElementById('load-customers').click()}}catch(e){alert('❌ '+e.message)}finally{action.disabled=false}});
     card.append(action)}
@@ -137,6 +142,8 @@ document.getElementById('load-inbox').addEventListener('click',async()=>{
    toggle.addEventListener('click',()=>{const open=contentWrap.hidden;contentWrap.hidden=!open;preview.hidden=open;toggle.textContent=open?'E-Mail schließen ▲':'E-Mail öffnen ▼';toggle.setAttribute('aria-expanded',String(open));});
    const body=document.createElement('div');body.className='mail-body';
    const main=document.createElement('div');main.className='mail-current';main.textContent=visible;body.append(main);
+   const mailFiles=(result.attachments||[]).filter(a=>a.message_id===m.id);
+   if(mailFiles.length){const wrap=document.createElement('div');wrap.style.margin='12px 0';const label=document.createElement('strong');label.textContent='📎 Kundenanhänge ('+mailFiles.length+')';wrap.append(label);for(const f of mailFiles){const link=document.createElement('a');link.href=f.url;link.target='_blank';link.rel='noopener noreferrer';link.style.display='inline-block';link.style.margin='8px';link.textContent='📎 '+f.filename;if(f.mime_type.startsWith('image/')){const img=document.createElement('img');img.src=f.url;img.alt=f.filename;img.loading='lazy';img.style.cssText='display:block;max-width:220px;max-height:200px;border-radius:9px;object-fit:contain';link.prepend(img)}wrap.append(link)}body.append(wrap)}
    const history=document.createElement('details');history.className='mail-history';
    const summary=document.createElement('summary');summary.textContent='Original-E-Mail und bisherigen Verlauf anzeigen';history.append(summary);
    const original=document.createElement('div');original.className='mail-thread-text';original.textContent=tidy(raw);history.append(original);body.append(history);
