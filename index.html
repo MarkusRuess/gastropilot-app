@@ -2507,5 +2507,58 @@ function init(){
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
+</script><style id="gp-friedrich-article-unified-20261029">
+body.gp-friedrich-article-view #gpArticleTabs{display:grid!important}
+#gpArticleTabs{display:none;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:0 0 15px}
+#gpArticleTabs button{background:#f4faf8;border:1px solid #d2e7e0;border-radius:13px;padding:15px 12px;text-align:left;color:#183c35;cursor:pointer;min-height:90px;font-weight:750}
+#gpArticleTabs button span{display:block;font-size:21px;margin-bottom:6px}
+#gpArticleTabs button small{display:block;font-size:11px;color:#638075;margin-top:5px}
+#gpArticleTabs button[aria-pressed="true"]{border:2px solid #087f70;background:#e5f5ef;box-shadow:0 0 0 2px #d5eee6}
+body.gp-friedrich-article-view #gpMockupDetailBody{display:block!important}
+body.gp-friedrich-article-view #gpMockupDetailBody>:not(.gp-article-active){display:none!important}
+body.gp-friedrich-article-view #gpMockupDetailBody>.gp-article-active{display:block!important;width:100%!important;max-width:none!important;margin-bottom:12px!important}
+body.gp-friedrich-article-view #gpMockupDetailBody>.gp-article-active details{width:100%!important}
+body.gp-friedrich-article-view #menuDashboardTile .menu-dashboard-scroll{height:auto!important;max-height:none!important;overflow:visible!important}
+body.gp-friedrich-article-view #menuDashboardRows{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:10px!important;max-height:none!important;overflow:visible!important}
+body.gp-friedrich-article-view #menuDashboardRows>*{min-width:0!important;max-width:none!important;overflow-wrap:anywhere!important}
+body.gp-friedrich-article-view :is(#topArticleCards,#slowArticleCards){display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:7px!important}
+body.gp-friedrich-article-view :is(#topArticleCards,#slowArticleCards)>*{min-width:0!important;overflow-wrap:anywhere!important}
+body.gp-friedrich-article-view #gpMockupDetailBody .top-articles-launch{background:#f1f8f5!important;border-radius:11px!important;padding:15px!important}
+body.gp-friedrich-article-view #gpMockupDetailBody .top-articles-launch strong{color:#087f70!important}
+#gpArticleCategoryBar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:12px 0;padding:10px;background:#f4faf8;border-radius:10px}
+#gpArticleCategoryBar select{max-width:300px;padding:9px;border:1px solid #cbded7;border-radius:8px}
+@media(max-width:800px){#gpArticleTabs{grid-template-columns:repeat(2,minmax(0,1fr))}body.gp-friedrich-article-view #menuDashboardRows{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
+@media(max-width:520px){body.gp-friedrich-article-view #menuDashboardRows,body.gp-friedrich-article-view :is(#topArticleCards,#slowArticleCards){grid-template-columns:1fr!important}#gpArticleTabs button{min-height:72px;padding:10px}}
+</style>
+<script id="gp-friedrich-article-unified-20261029-script">
+(function(){'use strict';
+const sections={top:['topArticles'],menu:['menuDashboardTile'],slow:['slowArticles'],profit:['profitability']};
+let selected='top';
+function isFriedrich(){return !document.body.classList.contains('gp-judith-design')}
+function sync(){
+const tabs=document.getElementById('gpArticleTabs'),nav=document.getElementById('gpCockpitNav'),btn=nav?.querySelector('[data-gp-area="articles"]');
+const on=isFriedrich()&&btn?.getAttribute('aria-current')==='true'&&!document.getElementById('gpMockupDetail')?.hidden;
+document.body.classList.toggle('gp-friedrich-article-view',!!on);
+if(!tabs)return;
+tabs.hidden=!on;
+document.querySelectorAll('#gpArticleTabs button[data-gp-article-tab]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.gpArticleTab===selected)));
+for(const [key,ids] of Object.entries(sections))for(const id of ids){const el=document.getElementById(id);if(!el)continue;el.classList.toggle('gp-article-active',!!on&&key===selected);if(on&&key===selected){el.classList.remove('gp-area-hidden');const details=el.matches('details')?el:el.querySelector(':scope > details');if(details)details.open=true;}}
+}
+function init(){
+const body=document.getElementById('gpMockupDetailBody'),nav=document.getElementById('gpCockpitNav');if(!body||!nav)return;
+const tabs=document.createElement('nav');tabs.id='gpArticleTabs';tabs.hidden=true;tabs.setAttribute('aria-label','Artikelanalyse – Bereiche');
+const names=[['top','🏆','Top 30 Umsatz','Menge · Preis · Umsatz'],['menu','📋','Getränke & Speisekarte','VK · EK · Wareneinsatz'],['slow','📉','Selten verkauft','Geringste Mengen'],['profit','💰','Rentabilität','Deckungsbeitrag · Kosten']];
+for(const [key,icon,title,sub] of names){const b=document.createElement('button');b.type='button';b.dataset.gpArticleTab=key;b.innerHTML='<span>'+icon+'</span>'+title+'<small>'+sub+'</small>';b.addEventListener('click',()=>{selected=key;sync();});tabs.append(b)}
+body.parentNode.insertBefore(tabs,body);
+nav.addEventListener('click',ev=>{if(ev.target.closest('[data-gp-area="articles"]'))selected='top';setTimeout(sync,60)});
+document.getElementById('gpMockupBack')?.addEventListener('click',()=>setTimeout(sync,60));
+document.getElementById('gpMockupAll')?.addEventListener('click',()=>setTimeout(sync,60));
+const detail=document.getElementById('gpMockupDetail');if(detail)new MutationObserver(sync).observe(detail,{attributes:true,attributeFilter:['hidden']});
+const menu=document.getElementById('menuDashboardTile');
+if(menu){const bar=document.createElement('div');bar.id='gpArticleCategoryBar';const label=document.createElement('label');label.textContent='Artikelgruppe ';const sel=document.createElement('select');sel.setAttribute('aria-label','Artikelgruppe auswählen');for(const [value,name] of [['all','Alle Artikel'],['bier','Bier'],['wein','Wein'],['spritzer','Spritzer'],['kaffee','Kaffee'],['aperitivo','Aperitivo'],['alkoholfrei','Alkoholfrei'],['speisen','Speisen'],['mehlspeisen','Mehlspeisen']]){const o=document.createElement('option');o.value=value;o.textContent=name;sel.append(o)}bar.append(label,sel);menu.querySelector('.menu-dashboard-panel')?.prepend(bar);const terms={bier:/bier|villacher|radler|pils|märzen/i,wein:/wein|veltliner|riesling|chardonnay|sauvignon|rotgipfler|neuburger|muskateller|pfaffl|alphart/i,spritzer:/spritz|soda|sarti|aperol/i,kaffee:/kaffee|cafe|café|espresso|melange|cappuccino|latte|brauner|verlängerter/i,aperitivo:/aperol|sarti|campari|crodino|prosecco|frizzante|freixenet/i,alkoholfrei:/saft|wasser|cola|limonade|tonic|vöslauer|soda/i,speisen:/baguette|toast|schinken|käse|roast beef|würstel|prosciutto|brot/i,mehlspeisen:/torte|kuchen|schnitte|strudel|punsch|dessert|cupcake/i};function filter(){const rows=document.getElementById('menuDashboardRows');if(!rows)return;for(const card of rows.children){const title=card.querySelector('h3,h4,strong,b')?.textContent||card.textContent||'';card.hidden=sel.value!=='all'&&!terms[sel.value].test(title)}}sel.addEventListener('change',filter);new MutationObserver(filter).observe(document.getElementById('menuDashboardRows'),{childList:true});}
+sync();
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+})();
 </script></body></html>
 
