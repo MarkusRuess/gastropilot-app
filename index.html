@@ -1223,13 +1223,30 @@ async function ledgerExtract(){
   const pdfjs=await import('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.min.mjs');
   pdfjs.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.worker.min.mjs';
   const pdf=await pdfjs.getDocument({data:new Uint8Array(await blob.arrayBuffer())}).promise;
-  const lines=[];for(let p=1;p<=pdf.numPages;p++){const page=await pdf.getPage(p),content=await page.getTextContent(),group=new Map();for(const item of content.items){if(!item.str?.trim())continue;const y=Math.round(item.transform[5]/3)*3;const arr=group.get(y)||[];arr.push({x:item.transform[4],s:item.str});group.set(y,arr);}for(const [y,parts] of [...group.entries()].sort((a,b)=>b[0]-a[0]))lines.push(parts.sort((a,b)=>a.x-b.x).map(x=>x.s).join(' '));}
-  const matched=lines.filter(line=>/(?:^|\s)\d{3,7}(?=\s|$)|\b\d{3,7}\b/.test(line));
-  host.textContent=(matched.length?matched.map(line=>{const kind=ledgerAccountClassify(line);return (kind?'['+kind+'] ':'[prüfen] ')+line;}).join('\n'):'Keine Kontenzeilen nach Kontonummer erkannt. PDF-Textauszug:\n'+lines.slice(0,100).join('\n'));
+  const lines=[],raw=[];
+  for(let p=1;p<=pdf.numPages;p++){
+   const page=await pdf.getPage(p),content=await page.getTextContent();
+   const items=content.items.filter(x=>x.str?.trim()).map(x=>({x:x.transform[4],y:x.transform[5],s:x.str}));
+   raw.push(...items.map(x=>x.s));
+   const groups=[];
+   for(const item of items.sort((a,b)=>b.y-a.y||a.x-b.x)){
+    let group=groups.find(g=>Math.abs(g.y-item.y)<=4);
+    if(!group){group={y:item.y,parts:[]};groups.push(group);}
+    group.parts.push(item);
+   }
+   lines.push(...groups.sort((a,b)=>b.y-a.y).map(g=>g.parts.sort((a,b)=>a.x-b.x).map(x=>x.s).join(' ').replace(/\\s+/g,' ').trim()));
+  }
+  const accountPattern=/(?:^|\\s)(\\d{3,7})(?=\\s|[.:-]|$)/;
+  let matched=lines.filter(line=>accountPattern.test(line));
+  if(!matched.length){
+   const tokens=raw.join(' ').replace(/\\s+/g,' ');
+   matched=(tokens.match(/(?:^|\\s)\\d{3,7}(?=\\s|[.:-]|$)[^\\n]{0,130}/g)||[]).slice(0,120);
+  }
+  host.textContent=matched.length?matched.map(line=>{const kind=ledgerAccountClassify(line);return (kind?'['+kind+'] ':'[prüfen] ')+line;}).join('\\n'):'Keine Kontenzeilen auslesbar. Textfragmente: '+raw.length+'. Vorschau:\\n'+lines.slice(0,50).join('\\n')+'\\nFalls die Seiten gescannt sind, ist OCR erforderlich.';
   const metricNames=[['net_revenue','Nettoumsatz'],['personnel','Personalaufwand'],['purchases','Wareneinkauf / Verbrauch'],['fixed_costs','Fixkosten'],['operating_result','Betriebsergebnis'],['personnel_ratio','Personalquote (%)']];
   fields.innerHTML=metricNames.map(([key,label])=>'<label style="display:block;font-size:13px">'+label+'<input data-ledger-metric="'+key+'" type="number" step="0.01" placeholder="Nur geprüfter Wert" style="display:block;width:100%;margin:4px 0 8px"></label>').join('');
-  status.textContent=pdf.numPages+' Seite(n), '+matched.length+' mögliche Kontenzeilen erkannt. Bitte Konten und Beträge mit dem Original abgleichen und geprüfte Summen eintragen. Es erfolgt keine automatische Verbuchung.';
-  save.disabled=false;
+  status.textContent=pdf.numPages+' Seite(n), '+raw.length+' Textfragmente, '+matched.length+' mögliche Kontenzeilen. '+(!raw.length?'Keine Textebene: gescanntes PDF, OCR notwendig.':'Konten und Beträge vor Speicherung mit Original abstimmen.');
+  save.disabled=!raw.length;
  }catch(e){status.textContent='Auslesen nicht möglich: '+e.message;}
 }
 async function ledgerSaveVerified(){
