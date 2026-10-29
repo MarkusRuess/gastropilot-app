@@ -1931,11 +1931,11 @@ function updateMetrics(){
  const tiles=Array.from(el('quickKpis')?.children||[]);
  function tileValue(term){const t=tiles.find(n=>n.textContent.toLowerCase().includes(term));if(!t)return '—';const v=t.querySelector('.v,.value,.kpi-value,strong,b');if(v&&/\d/.test(v.textContent))return v.textContent.trim();const text=t.textContent;const matches=text.match(/€\s*[\d.]+,\d+|\d+[.,]\d+\s*%/g);return matches?.at(-1)||'—';}
  const gross=tileValue('bruttoumsatz'),personal=tileValue('personalquote');
- const cost=tileValue('wareneinsatzquote')!=='—'?tileValue('wareneinsatzquote'):tileValue('wareneinsatz');
- const bon=tileValue('ø bon')!=='—'?tileValue('ø bon'):tileValue('ø-bon')!=='—'?tileValue('ø-bon'):tileValue('durchschnittsbon');
+ const cost=tileValue('wareneinsatzquote')!=='—'?tileValue('wareneinsatzquote'):'—';
+ const bon=gpLatest?.month===month&&Number(gpLatest.paid)>0&&Number.isFinite(Number(gpLatest.paidGross))?fmtEUR(Number(gpLatest.paidGross)/Number(gpLatest.paid)): '—';
  const result=tileValue('vorläufiges ergebnis');
  m.innerHTML='<div class="gp-metric gp-progress"><span class="gp-label">Monatsfortschritt '+monthText()+'</span><strong class="gp-value">'+count+' / '+days+' Tage · '+pct+' %</strong><div class="gp-progress-track"><div class="gp-progress-fill" style="width:'+pct+'%"></div></div><span class="gp-note">Erfasste Umsatztage im gewählten Monat</span></div>'+
- metric('▥ Umsatz brutto',gross,'Aktueller Monat')+metric('€ Ø Bon',bon,'Nur bei vorhandenen Bon-Daten')+metric('♟ Personalquote',personal,'Ziel Friedrich: 35 %')+metric('◈ Wareneinsatz',cost,'Einkaufsquote ≠ Lager-Wareneinsatz')+metric('▤ Vorläufiges Ergebnis',result,'Nur bestätigte Berechnung');
+ metric('▥ Umsatz brutto',gross,'Aktueller Monat')+metric('€ Ø Bon',bon,'Nur bei vorhandenen Bon-Daten')+metric('♟ Personalquote',personal,'Ziel Friedrich: 35 %')+metric('◈ Wareneinsatz',cost,'Ziel: 26 % · Ist nur mit geprüften Daten')+metric('▤ Vorläufiges Ergebnis',result,'Nur bestätigte Berechnung');
 }
 let gpLatest=null;
 const fmtEUR=n=>typeof n==='number'&&Number.isFinite(n)?new Intl.NumberFormat('de-AT',{style:'currency',currency:'EUR'}).format(n):'—';
