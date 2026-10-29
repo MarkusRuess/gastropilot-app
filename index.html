@@ -368,6 +368,30 @@ body.gp-cockpit-active #app .gp-cockpit-secondary-hidden{display:none!important}
 #gpMockupMetrics .gp-metric .gp-note{line-height:1.3}
 #gpMockupMetrics .gp-progress-track{margin-top:12px!important}
 @media(min-width:1000px) and (max-width:1240px){#gpMockupMetrics{grid-template-columns:minmax(220px,1.65fr) repeat(5,minmax(105px,1fr))!important}#gpMockupMetrics .gp-metric{padding:11px 8px!important}#gpMockupMetrics .gp-metric .gp-value{font-size:18px!important}#gpMockupHeader{grid-template-columns:minmax(175px,1fr) minmax(320px,1.3fr) minmax(240px,1fr)!important}}
+</style><style id="gp-chart-finishing">
+#gpMockupCharts{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(0,1fr);gap:12px;margin:0 0 14px}
+.gp-chart-card{background:#fff;border:1px solid #dce6eb;border-radius:13px;padding:15px;min-width:0}
+.gp-chart-card h3{font-size:15px;margin:0 0 12px;color:#18354b}
+.gp-chart-card .gp-chart-note{font-size:11px;color:#657f8c;margin-top:8px}
+#gpDayBars{display:flex;align-items:flex-end;gap:3px;height:210px;border-bottom:1px solid #d9e4e9;background:repeating-linear-gradient(to top,transparent 0,transparent calc(25% - 1px),#eef3f5 25%);padding:8px 0 0}
+#gpDayBars .gp-day-column{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%;position:relative}
+#gpDayBars .gp-day-bar{width:min(100%,18px);min-height:0;background:linear-gradient(#21b497,#0c846e);border-radius:4px 4px 0 0}
+#gpDayBars .gp-day-column:hover .gp-day-bar{background:#076b5d}
+#gpDayBars .gp-day-column>span{position:absolute;bottom:-18px;font-size:9px;color:#647c89}
+#gpPayments{display:flex;align-items:center;gap:18px;justify-content:center;min-height:210px}
+#gpPaymentDonut{width:145px;height:145px;flex:0 0 145px;border-radius:50%;background:#e8eff3;position:relative}
+#gpPaymentDonut:after{content:'';position:absolute;inset:25px;background:white;border-radius:50%}
+#gpPaymentLegend{font-size:13px;line-height:1.8;min-width:0}
+#gpPaymentLegend strong{display:block;font-size:17px}
+#gpPaymentLegend .gp-dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px}
+#gpDailyMini{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-bottom:12px}
+#gpDailyMini .gp-mini{border:1px solid #dce6eb;border-radius:10px;padding:12px;background:#fff}
+#gpDailyMini .gp-mini small{display:block;color:#6d8190;font-size:11px}
+#gpDailyMini .gp-mini strong{display:block;color:#142f42;font-size:18px;margin-top:7px}
+#gpMockupShell .gp-cockpit-nav button{position:relative}
+#gpMockupShell .gp-cockpit-nav button:after{content:'›';position:absolute;right:12px;bottom:10px;font-size:19px;opacity:.65}
+#gpMockupShell .gp-cockpit-nav button[aria-current=true]{outline:2px solid #0c7867;outline-offset:1px}
+@media(max-width:720px){#gpMockupCharts{grid-template-columns:1fr}#gpDayBars{height:150px}#gpPayments{min-height:170px}#gpDailyMini{grid-template-columns:repeat(2,minmax(0,1fr))}}
 </style></head><body>
 <header><div class="gpHeaderBar"><button id="gpHeaderHome" type="button" aria-label="GastroPilot – zur Betriebsübersicht" style="appearance:none;background:transparent;border:0;padding:0;color:inherit;text-align:left;cursor:pointer;display:block"><strong>GastroPilot</strong><small>Dein Lokal. Deine Zahlen. Dein Überblick.</small></button><nav id="gpHeaderSwitch" class="hidden" aria-label="Betrieb wechseln"></nav></div></header>
 <main><section id="login" class="card"><h2>Anmelden</h2><form id="loginForm"><label>E-Mail<input id="email" type="email" autocomplete="username" required></label><label>Passwort<input id="password" type="password" autocomplete="current-password" required></label><button>Anmelden</button></form><p id="loginMsg" class="status"></p></section>
@@ -1215,6 +1239,7 @@ async function refresh(){void loadLedgerComparison();if(E('recipeCostTile')&&!E(
   button.onclick=()=>{const disclosure=E(targetId+'Disclosure');if(disclosure)disclosure.open=true;const target=E(targetId);if(target){target.classList.remove('mobileHidden');target.scrollIntoView({behavior:'smooth',block:'start'});}if(window.matchMedia('(max-width:680px)').matches)showMobilePanel(targetId);};E('sales').append(button);
  }
 
+ window.dispatchEvent(new CustomEvent('gp:monthly-data',{detail:{businessId:BID,month:selectedMonth,days:daily.map(d=>({date:d.date,gross:d.gross,cash:d.cash,card:d.card,paid:d.paid})),gross:M?.gross??gross,cash:M?.cash??cash,card:M?.card??card,paid:coveredPaid,paidGross:coveredGross}}));
  const taxRows=[];for(const d of daily){const stored=archive.get(d.date);const x=['auto_imported','reviewed'].includes(stored?.status)?stored.extracted_data||{}:{};const z=vat(x)||vat({...d.raw,gross_total:d.gross,net_total:d.net});if(z&&Math.abs(z.g10+z.g20-d.gross)<.03)taxRows.push(z);}
  E('tax').replaceChildren();for(const [label,key] of [['10 % brutto','g10'],['10 % netto','n10'],['20 % brutto','g20'],['20 % netto','n20']])tile(E('tax'),label,M?EUR(({g10:M.tax.find(x=>x.rate===10).gross,n10:M.tax.find(x=>x.rate===10).net,g20:M.tax.find(x=>x.rate===20).gross,n20:M.tax.find(x=>x.rate===20).net})[key]):taxRows.length?EUR(taxRows.reduce((a,x)=>a+x[key],0)):'–');
  E('taxNote').textContent=M?'BONit Monatsabschluss Z '+M.z_number+' · Steuergruppen aus Original.':taxRows.length+' von '+daily.length+' Tagesabrechnungen mit vollständig abgeglichenen 10/20-%-Werten. Angezeigt ist die Summe der geprüften Tage; fehlende Werte werden nicht ergänzt.';
@@ -1912,12 +1937,31 @@ function updateMetrics(){
  m.innerHTML='<div class="gp-metric gp-progress"><span class="gp-label">Monatsfortschritt '+monthText()+'</span><strong class="gp-value">'+count+' / '+days+' Tage · '+pct+' %</strong><div class="gp-progress-track"><div class="gp-progress-fill" style="width:'+pct+'%"></div></div><span class="gp-note">Erfasste Umsatztage im gewählten Monat</span></div>'+
  metric('▥ Umsatz brutto',gross,'Aktueller Monat')+metric('€ Ø Bon',bon,'Nur bei vorhandenen Bon-Daten')+metric('♟ Personalquote',personal,'Ziel Friedrich: 35 %')+metric('◈ Wareneinsatz',cost,'Einkaufsquote ≠ Lager-Wareneinsatz')+metric('▤ Vorläufiges Ergebnis',result,'Nur bestätigte Berechnung');
 }
+let gpLatest=null;
+const fmtEUR=n=>typeof n==='number'&&Number.isFinite(n)?new Intl.NumberFormat('de-AT',{style:'currency',currency:'EUR'}).format(n):'—';
+function gpRenderCharts(){
+ const chart=el('gpMockupCharts'),mini=el('gpDailyMini');if(!chart||!mini)return;
+ const current=el('month')?.value||'';
+ if(!gpLatest||gpLatest.month!==current){chart.innerHTML='<div class="gp-chart-card">Tagesdaten werden geladen …</div>';mini.innerHTML='';return;}
+ const data=gpLatest;
+ const days=Array.isArray(data.days)?data.days:[];
+ const paid=Number(data.paid),paidGross=Number(data.paidGross);
+ const avg=Number.isFinite(paid)&&paid>0&&Number.isFinite(paidGross)?paidGross/paid:null;
+ const valid=days.filter(x=>Number.isFinite(Number(x.gross))&&Number(x.gross)>=0);
+ const max=Math.max(1,...valid.map(x=>Number(x.gross)));
+ const bars=valid.map(x=>{const h=Math.max(0,Number(x.gross)/max*100);const day=Number(String(x.date).slice(-2));return '<div class="gp-day-column" title="'+x.date+' · '+fmtEUR(Number(x.gross))+'"><div class="gp-day-bar" style="height:'+h+'%"></div>'+(day===1||day%5===0?'<span>'+day+'</span>':'')+'</div>';}).join('');
+ const cash=Number(data.cash),card=Number(data.card),both=Number.isFinite(cash)&&Number.isFinite(card)&&cash>=0&&card>=0&&cash+card>0;
+ const pct=both?cash/(cash+card)*100:0;
+ chart.innerHTML='<section class="gp-chart-card"><h3>Tagesumsätze · '+monthText()+'</h3>'+(valid.length?'<div id="gpDayBars" role="img" aria-label="Tagesumsätze als Balkendiagramm">'+bars+'</div>':'<p>Keine geprüften Tagesumsätze vorhanden.</p>')+'<p class="gp-chart-note">Bruttoumsätze aus den erfassten Tagesabschlüssen.</p></section><section class="gp-chart-card"><h3>Zahlungsarten</h3>'+(both?'<div id="gpPayments"><div id="gpPaymentDonut" role="img" aria-label="Bar '+pct.toFixed(1)+' Prozent, Karte '+(100-pct).toFixed(1)+' Prozent" style="background:conic-gradient(#16a486 0% '+pct+'%,#4196e9 '+pct+'% 100%)"></div><div id="gpPaymentLegend"><strong>'+fmtEUR(cash+card)+'</strong><div><i class="gp-dot" style="background:#16a486"></i>Bar: '+fmtEUR(cash)+' ('+pct.toFixed(1)+' %)</div><div><i class="gp-dot" style="background:#4196e9"></i>Karte: '+fmtEUR(card)+' ('+(100-pct).toFixed(1)+' %)</div></div></div>':'<p>Bar- und Kartendaten noch nicht vollständig verfügbar.</p>')+'</section>';
+ mini.innerHTML=[['Bruttoumsatz',fmtEUR(Number(data.gross))],['Ø bezahlter Bon',fmtEUR(avg)],['Umsatztage',String(days.length)],['Zahlungsarten',both?'Bar & Karte':'Noch offen']].map(x=>'<div class="gp-mini"><small>'+x[0]+'</small><strong>'+x[1]+'</strong></div>').join('');
+}
+window.addEventListener('gp:monthly-data',e=>{gpLatest=e.detail;gpRenderCharts();updateMetrics();});
 function openArea(name){
  area=name;
  const body=el('gpMockupDetailBody'),detail=el('gpMockupDetail');if(!body||!detail)return;
  const show=new Set(groups[name]||[]);
  Array.from(body.children).forEach(node=>node.classList.toggle('gp-area-hidden',name!=='all'&&!show.has(node.id)));
- el('gpMockupDetailTitle').textContent=areaNames[name]||name;
+ el('gpMockupDetailTitle').textContent=areaNames[name]||name;const charts=el('gpMockupDailyCharts');if(charts)charts.hidden=name!=='daily'&&name!=='all';if(name==='daily'||name==='all')gpRenderCharts();
  detail.hidden=false;
  document.querySelectorAll('#gpCockpitNav [data-gp-area]').forEach(b=>b.setAttribute('aria-current',String(b.dataset.gpArea===name)));
  detail.scrollIntoView({behavior:'smooth',block:'start'});
@@ -1937,6 +1981,7 @@ function init(){
  const status=document.createElement('p');status.id='gpMockupStatus';status.textContent='Daten und Auswertungen bleiben je Betrieb getrennt · Kein automatisches Neuladen.';shell.appendChild(status);
  const detail=document.createElement('section');detail.id='gpMockupDetail';detail.hidden=true;app.insertBefore(detail,shell.nextSibling);
  const dhead=document.createElement('div');dhead.id='gpMockupDetailHead';dhead.innerHTML='<strong id="gpMockupDetailTitle">Details</strong><div class="gp-detail-actions"><button type="button" id="gpMockupAll">Alle Funktionen</button> <button type="button" id="gpMockupBack">← Zur Übersicht</button></div>';detail.appendChild(dhead);
+ const chartsBox=document.createElement('div');chartsBox.id='gpMockupDailyCharts';chartsBox.hidden=true;chartsBox.innerHTML='<div id="gpDailyMini"></div><div id="gpMockupCharts"></div>';detail.appendChild(chartsBox);
  const body=document.createElement('div');body.id='gpMockupDetailBody';detail.appendChild(body);
  const extra=document.createElement('details');extra.id='gpMockupExtra';extra.innerHTML='<summary>Weitere Kennzahlen anzeigen</summary>';extra.appendChild(kpis);detail.appendChild(extra);
  // Alle vorhandenen Auswertungen und Upload-Formulare in einen gemeinsamen Detailbereich verschieben.
