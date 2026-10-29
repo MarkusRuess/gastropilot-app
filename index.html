@@ -2215,5 +2215,37 @@ const extra=$('gpJudithMockupSections');if(extra)extra.addEventListener('click',
 const quick=$('gpJudithFinancialPreview');if(quick)quick.addEventListener('click',e=>{if(!document.body.classList.contains('gp-judith-design'))return;const b=e.target.closest('button[data-jd-open]');if(!b)return;const map={planning:'Rezepte & Kalkulation',articles:'Top Torten & Artikel',ledger:'Buchhaltung',staff:'Personal'};const name=map[b.dataset.jdOpen];if(!name)return;e.stopImmediatePropagation();openFull(name);},true);
 }if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();})();
 </script>
+
+<style id="gp-judith-all-detail-design-v4">
+/* Unified Judith-only visual system for every detail view; preserves underlying data and actions. */
+body.gp-judith-design{--jd-accent:#c02d75;--jd-ink:#26344a;--jd-border:#efd6e4;--jd-bg:#fff7fb;--jd-soft:#fff0f7}
+body.gp-judith-design #gpMockupDetail{background:#fff8fc!important;border:1px solid var(--jd-border)!important;border-radius:18px!important;padding:12px!important;box-shadow:0 4px 18px #a7528210!important}
+body.gp-judith-design #gpMockupDetailHead{background:linear-gradient(90deg,#fff,#fff1f8)!important;border:1px solid var(--jd-border)!important;border-radius:13px!important;padding:12px 15px!important}
+body.gp-judith-design #gpMockupDetailHead strong{color:#ac2e6b!important;font-size:19px!important}
+body.gp-judith-design #gpMockupDetailHead button,body.gp-judith-design #gpMockupDetailBody button{border-radius:9px;border-color:#e8c6d8;color:#963669}
+body.gp-judith-design #gpMockupDetailHead button{background:#fff1f8!important}
+body.gp-judith-design #gpMockupDetailBody{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px;align-items:start}
+body.gp-judith-design #gpMockupDetailBody>.card,body.gp-judith-design #gpMockupDetailBody>.tile,body.gp-judith-design #gpMockupDetailBody>details,body.gp-judith-design #gpMockupDetailBody>section,body.gp-judith-design #gpMockupDetailBody>div:not(.gp-area-hidden){background:#fff!important;border:1px solid var(--jd-border)!important;border-radius:13px!important;padding:13px!important;margin:0!important;min-width:0!important;box-shadow:0 3px 13px #a9547a0c!important}
+body.gp-judith-design #gpMockupDetailBody>.gp-area-hidden{display:none!important}
+body.gp-judith-design #gpMockupDetailBody>:is(.card,.tile,details,section,div):only-child{grid-column:1/-1}
+body.gp-judith-design #gpMockupDetailBody :is(h1,h2,h3,h4){color:#9c3169!important;line-height:1.25}
+body.gp-judith-design #gpMockupDetailBody h2{font-size:18px!important;margin:3px 0 9px!important}
+body.gp-judith-design #gpMockupDetailBody h3{font-size:16px!important}
+body.gp-judith-design #gpMockupDetailBody summary{color:#a42d6c!important;background:#fff5fa!important;border-radius:9px;padding:10px!important;font-weight:750;cursor:pointer}
+body.gp-judith-design #gpMockupDetailBody details[open]>summary{margin-bottom:10px!important}
+body.gp-judith-design #gpMockupDetailBody :is(table,.table){width:100%;border-collapse:collapse;font-size:12px}
+body.gp-judith-design #gpMockupDetailBody table th{background:#fff0f7!important;color:#873a64!important;text-align:left;padding:9px 7px!important;border-bottom:1px solid var(--jd-border)}
+body.gp-judith-design #gpMockupDetailBody table td{padding:8px 7px!important;border-bottom:1px solid #f8eaf1}
+body.gp-judith-design #gpMockupDetailBody table tr:hover td{background:#fff9fc}
+body.gp-judith-design #gpMockupDetailBody :is(input,select,textarea){border-radius:8px;border-color:#e8d1dd}
+body.gp-judith-design #gpMockupDetailBody :is(.muted,small){color:#8b6a7c}
+body.gp-judith-design #gpJudithDetailNotice{background:#fff0f7!important;color:#893663!important;border:1px solid var(--jd-border)}
+body.gp-judith-design #gpMockupDetailBody .gp-area-hidden,body.gp-judith-design #gpMockupDetailBody [hidden]{display:none!important}
+body.gp-judith-design #gpMockupDetailBody .menu-product-grid{grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}
+body.gp-judith-design #gpMockupDetailBody .menu-dashboard-panel{padding:8px 0}
+body.gp-judith-design #gpMockupDetailBody .menu-card-scroll,body.gp-judith-design #gpMockupDetailBody .menu-dashboard-scroll{max-height:420px;overflow:auto}
+body.gp-judith-design #gpMockupDetailBody #topArticles,body.gp-judith-design #gpMockupDetailBody #slowArticles,body.gp-judith-design #gpMockupDetailBody #ledgerComparisonSection,body.gp-judith-design #gpMockupDetailBody #financeSection,body.gp-judith-design #gpMockupDetailBody #monthlyCostOverview,body.gp-judith-design #gpMockupDetailBody #judithCakePricingTile{grid-column:1/-1}
+@media(max-width:760px){body.gp-judith-design #gpMockupDetailBody{grid-template-columns:1fr!important}body.gp-judith-design #gpMockupDetailBody>*{grid-column:1/-1!important}body.gp-judith-design #gpMockupDetail{padding:8px!important}body.gp-judith-design #gpMockupDetailHead{flex-wrap:wrap}body.gp-judith-design #gpMockupDetailBody table{font-size:11px}}
+</style>
 </body></html>
 
