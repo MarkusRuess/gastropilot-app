@@ -2286,5 +2286,27 @@ function openCalendar(){if(!isJudith())return;const panel=$('gpDailyCalendarPane
 function init(){const metrics=$('gpMockupMetrics');if(!metrics)return;metrics.addEventListener('click',e=>{if(!isJudith())return;const tile=e.target.closest('.gp-metric');if(tile&&/umsatz brutto/i.test(tile.textContent)){e.preventDefault();e.stopImmediatePropagation();openCalendar();}},true);metrics.addEventListener('keydown',e=>{if(!isJudith()||!['Enter',' '].includes(e.key))return;const tile=e.target.closest('.gp-metric');if(tile&&/umsatz brutto/i.test(tile.textContent)){e.preventDefault();e.stopImmediatePropagation();openCalendar();}},true);const calendar=$('gpDailyCalendarPanel');if(calendar){calendar.addEventListener('click',e=>{const day=e.target.closest('[data-gp-date]');if(!day)return;calendar.querySelectorAll('[data-gp-date]').forEach(b=>b.removeAttribute('aria-pressed'));day.setAttribute('aria-pressed','true');});} }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();})();
 </script>
+
+<style id="gp-judith-calendar-design-v8">
+/* Judith-only daily calendar: unified pastel visual language. */
+body.gp-judith-design #gpDailyCalendarPanel{background:#fff9fc!important;border:1px solid #efcfe0!important;border-radius:17px!important;padding:15px!important;box-shadow:0 5px 20px #b4538411!important}
+body.gp-judith-design #gpDailyCalendarPanel.jd-calendar-open{border:2px solid #ec8cb7!important}
+body.gp-judith-design #gpDailyCalendarPanel header{background:linear-gradient(100deg,#fff1f8,#fff)!important;border:1px solid #f2d9e6;border-radius:12px;padding:13px 16px!important;margin:0 0 14px!important;align-items:center}
+body.gp-judith-design #gpDailyCalendarPanel header strong{color:#a52d6b!important;font-size:19px!important}
+body.gp-judith-design #gpDailyCalendarPanel header small{color:#896b7e!important;font-size:12px!important}
+body.gp-judith-design #gpDailyCalendarPanel header button{background:#c23678!important;border:1px solid #c23678!important;color:#fff!important;border-radius:9px!important;padding:9px 12px!important;font-weight:750}
+body.gp-judith-design #gpDailyCalendarGrid{gap:7px!important}
+body.gp-judith-design #gpDailyCalendarGrid .gp-cal-weekday{color:#9b4c77!important;background:#fff0f7;border-radius:7px;padding:8px 0!important}
+body.gp-judith-design #gpDailyCalendarGrid .gp-cal-day{min-height:83px!important;background:#fff!important;border:1px solid #efd9e4!important;border-radius:11px!important;padding:10px!important;color:#35425a!important;transition:background .15s,border-color .15s,transform .15s}
+body.gp-judith-design #gpDailyCalendarGrid .gp-cal-day[data-state="has-data"]{background:#fff0f7!important;border-color:#edc4d8!important}
+body.gp-judith-design #gpDailyCalendarGrid .gp-cal-day[data-state="no-data"]{background:#f9f7fa!important;border-color:#eae5eb!important;color:#87909c!important}
+body.gp-judith-design #gpDailyCalendarGrid .gp-cal-day.gp-cal-empty{background:transparent!important;border:0!important}
+body.gp-judith-design #gpDailyCalendarGrid button.gp-cal-day:hover{border-color:#c73e80!important;background:#ffe3f0!important;transform:translateY(-1px)}
+body.gp-judith-design #gpDailyCalendarGrid button.gp-cal-day:focus-visible,body.gp-judith-design #gpDailyCalendarGrid button.gp-cal-day[aria-pressed="true"]{outline:2px solid #ce3b7e!important;outline-offset:1px}
+body.gp-judith-design #gpDailyCalendarGrid .gp-cal-day b{color:#a33b70;font-size:13px!important}
+body.gp-judith-design #gpDailyCalendarGrid .gp-cal-day strong{color:#29354d;font-size:clamp(11px,1.06vw,15px)!important}
+body.gp-judith-design #gpDailyCalendarInfo{background:#fff0f7!important;border:1px solid #f1d8e5!important;color:#884b70!important;border-radius:10px!important;padding:11px 13px!important}
+@media(max-width:700px){body.gp-judith-design #gpDailyCalendarPanel{padding:8px!important}body.gp-judith-design #gpDailyCalendarPanel header{padding:10px!important}body.gp-judith-design #gpDailyCalendarGrid{gap:3px!important}body.gp-judith-design #gpDailyCalendarGrid .gp-cal-day{min-height:63px!important;padding:5px 3px!important}body.gp-judith-design #gpDailyCalendarGrid .gp-cal-day b{font-size:10px!important}body.gp-judith-design #gpDailyCalendarGrid .gp-cal-day strong{font-size:10px!important}}
+</style>
 </body></html>
 
