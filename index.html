@@ -2446,5 +2446,15 @@ body:not(.gp-judith-design) #gpDailyCalendarPanel.gp-friedrich-calendar-open #gp
 <script id="gp-friedrich-daily-calendar-click">
 (function(){'use strict';function show(){if(document.body.classList.contains('gp-judith-design'))return;var cal=document.getElementById('gpDailyCalendarPanel');if(!cal)return;cal.hidden=false;cal.style.display='block';cal.classList.add('gp-friedrich-calendar-open');requestAnimationFrame(function(){cal.scrollIntoView({behavior:'smooth',block:'start'});});}function init(){var nav=document.getElementById('gpCockpitNav');if(!nav)return;nav.addEventListener('click',function(e){var btn=e.target.closest('[data-gp-area="daily"]');if(btn&&nav.contains(btn))setTimeout(show,70);});}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();})();
 </script>
+
+<style id="gp-friedrich-weekly-planning-click-style">
+body:not(.gp-judith-design) #gpMockupDetailBody #weeklyPurchase{grid-column:1/-1!important;width:100%!important;min-width:0!important}
+body:not(.gp-judith-design) #gpMockupDetailBody #weeklyPurchase .top-articles-content{padding:14px!important}
+body:not(.gp-judith-design) #gpMockupDetailBody #purchaseCards{display:grid!important;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))!important;gap:10px!important}
+body:not(.gp-judith-design) #gpMockupDetailBody #purchaseCards>*{min-width:0!important}
+</style>
+<script id="gp-friedrich-weekly-planning-click">
+(function(){'use strict';function show(){if(document.body.classList.contains('gp-judith-design'))return;var d=document.getElementById('weeklyPurchaseDisclosure');var card=document.getElementById('weeklyPurchase');if(!d||!card)return;d.open=true;card.hidden=false;card.style.display='';requestAnimationFrame(function(){card.scrollIntoView({behavior:'smooth',block:'start'});});}function init(){var nav=document.getElementById('gpCockpitNav');if(!nav)return;nav.addEventListener('click',function(e){var b=e.target.closest('[data-gp-area="planning"]');if(b&&nav.contains(b))setTimeout(show,90);});}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();})();
+</script>
 </body></html>
 
