@@ -441,6 +441,22 @@ body.gp-cockpit-active #app .gp-cockpit-secondary-hidden{display:none!important}
 #gpRefCharts #gpPaymentLegend strong{font-size:13px}
 @media(max-width:1000px){#gpReferencePreviews{grid-template-columns:1fr}#gpMockupShell #gpUploadShortcut{position:static}}
 @media(max-width:600px){#gpRefCharts{grid-template-columns:1fr}#gpRefMini{grid-template-columns:repeat(2,1fr)}.gp-ref-panel .gp-ref-actions{grid-template-columns:repeat(2,1fr)}.gp-ref-panel header strong{font-size:15px}}
+</style><style id="gp-daily-calendar-style">
+#gpDailyCalendarPanel{margin:0 auto 14px;max-width:1460px;background:#fff;border:1px solid #dce6ec;border-radius:14px;padding:15px;box-shadow:0 3px 15px #1730470a}
+#gpDailyCalendarPanel header{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px;flex-wrap:wrap}
+#gpDailyCalendarPanel header strong{font-size:19px;color:#183a47}
+#gpDailyCalendarPanel header small{font-size:12px;color:#637b88}
+#gpDailyCalendarGrid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
+#gpDailyCalendarGrid .gp-cal-weekday{text-align:center;font-size:12px;font-weight:750;color:#6b7d8b;padding:7px 0}
+#gpDailyCalendarGrid .gp-cal-day{min-width:0;min-height:75px;border:1px solid #dfe8ed;border-radius:9px;background:#fff;padding:9px 7px;text-align:left;display:flex;flex-direction:column;justify-content:space-between;gap:8px;cursor:pointer;color:#193647}
+#gpDailyCalendarGrid .gp-cal-day[data-state="has-data"]{background:#ecf9f4;border-color:#b4e1d0}
+#gpDailyCalendarGrid .gp-cal-day[data-state="no-data"]{background:#f8fafb;color:#81909a}
+#gpDailyCalendarGrid .gp-cal-day:focus-visible{outline:3px solid #168a74}
+#gpDailyCalendarGrid .gp-cal-day b{font-size:12px}
+#gpDailyCalendarGrid .gp-cal-day strong{font-size:clamp(11px,1.1vw,15px);font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+#gpDailyCalendarGrid .gp-cal-day.gp-cal-empty{border:0;background:transparent;cursor:default}
+#gpDailyCalendarInfo{margin-top:10px;border-radius:9px;background:#f0f7f8;padding:10px 12px;color:#294b56;font-size:13px}
+@media(max-width:650px){#gpDailyCalendarPanel{padding:9px}#gpDailyCalendarGrid{gap:3px}#gpDailyCalendarGrid .gp-cal-day{min-height:62px;padding:5px 3px;gap:3px}#gpDailyCalendarGrid .gp-cal-day b{font-size:10px}#gpDailyCalendarGrid .gp-cal-day strong{font-size:10px}#gpDailyCalendarGrid .gp-cal-weekday{font-size:10px}}
 </style></head><body>
 <header><div class="gpHeaderBar"><button id="gpHeaderHome" type="button" aria-label="GastroPilot – zur Betriebsübersicht" style="appearance:none;background:transparent;border:0;padding:0;color:inherit;text-align:left;cursor:pointer;display:block"><strong>GastroPilot</strong><small>Dein Lokal. Deine Zahlen. Dein Überblick.</small></button><nav id="gpHeaderSwitch" class="hidden" aria-label="Betrieb wechseln"></nav></div></header>
 <main><section id="login" class="card"><h2>Anmelden</h2><form id="loginForm"><label>E-Mail<input id="email" type="email" autocomplete="username" required></label><label>Passwort<input id="password" type="password" autocomplete="current-password" required></label><button>Anmelden</button></form><p id="loginMsg" class="status"></p></section>
@@ -2004,7 +2020,24 @@ function gpRenderCharts(){
  chart.innerHTML='<section class="gp-chart-card"><h3>Tagesumsätze · '+monthText()+'</h3>'+(valid.length?'<div id="gpDayBars" role="img" aria-label="Tagesumsätze als Balkendiagramm">'+bars+'</div>':'<p>Keine geprüften Tagesumsätze vorhanden.</p>')+'<p class="gp-chart-note">Bruttoumsätze aus den erfassten Tagesabschlüssen.</p></section><section class="gp-chart-card"><h3>Zahlungsarten</h3>'+(both?'<div id="gpPayments"><div id="gpPaymentDonut" role="img" aria-label="Bar '+pct.toFixed(1)+' Prozent, Karte '+(100-pct).toFixed(1)+' Prozent" style="background:conic-gradient(#16a486 0% '+pct+'%,#4196e9 '+pct+'% 100%)"></div><div id="gpPaymentLegend"><strong>'+fmtEUR(cash+card)+'</strong><div><i class="gp-dot" style="background:#16a486"></i>Bar: '+fmtEUR(cash)+' ('+pct.toFixed(1)+' %)</div><div><i class="gp-dot" style="background:#4196e9"></i>Karte: '+fmtEUR(card)+' ('+(100-pct).toFixed(1)+' %)</div></div></div>':'<p>Bar- und Kartendaten noch nicht vollständig verfügbar.</p>')+'</section>';
  mini.innerHTML=[['Bruttoumsatz',fmtEUR(Number(data.gross))],['Ø bezahlter Bon',fmtEUR(avg)],['Umsatztage',String(days.length)],['Zahlungsarten',both?'Bar & Karte':'Noch offen']].map(x=>'<div class="gp-mini"><small>'+x[0]+'</small><strong>'+x[1]+'</strong></div>').join('');
 }
-window.addEventListener('gp:monthly-data',e=>{gpLatest=e.detail;gpRenderCharts();updateMetrics();gpRenderReference();});
+window.addEventListener('gp:monthly-data',e=>{gpLatest=e.detail;gpRenderCharts();updateMetrics();gpRenderReference();gpRenderDailyCalendar();});
+function gpRenderDailyCalendar(){
+ const grid=el('gpDailyCalendarGrid'),title=el('gpDailyCalendarTitle'),info=el('gpDailyCalendarInfo');
+ if(!grid||!title||!info)return;
+ const month=el('month')?.value||'';
+ const parts=month.split('-').map(Number);const year=parts[0],mon=parts[1];
+ if(!year||!mon)return;
+ title.textContent=monthText()+' · Bruttoumsätze je Tag';
+ const daysInMonth=new Date(year,mon,0).getDate(),offset=(new Date(year,mon-1,1).getDay()+6)%7;
+ const valid=gpLatest?.month===month&&Array.isArray(gpLatest.days);
+ const map=new Map();
+ if(valid)for(const row of gpLatest.days){const date=String(row.date||'').slice(0,10);const gross=Number(row.gross);if(date.startsWith(month)&&Number.isFinite(gross)&&gross>=0)map.set(date,(map.get(date)||0)+gross);}
+ let html=['Mo','Di','Mi','Do','Fr','Sa','So'].map(w=>'<span class="gp-cal-weekday" role="columnheader">'+w+'</span>').join('');
+ for(let i=0;i<offset;i++)html+='<span class="gp-cal-day gp-cal-empty" aria-hidden="true"></span>';
+ for(let d=1;d<=daysInMonth;d++){const date=month+'-'+String(d).padStart(2,'0');const has=map.has(date);const amount=has?fmtEUR(map.get(date)):'—';html+='<button type="button" class="gp-cal-day" data-gp-date="'+date+'" data-state="'+(has?'has-data':'no-data')+'" aria-label="'+date+': '+(has?amount:'Kein erfasster Umsatz')+'"><b>'+d+'</b><strong>'+amount+'</strong></button>';}
+ grid.innerHTML=html;
+ info.textContent=valid?map.size+' Tage mit erfasstem Umsatz · Klick auf einen Tag für Details.':'Tagesumsätze werden geladen oder sind für diesen Monat noch nicht verfügbar.';
+}
 function gpRenderReference(){
  const mini=el('gpRefMini'),charts=el('gpRefCharts'),table=el('gpRefLedgerBody');
  if(!mini||!charts||!table)return;
@@ -2057,6 +2090,7 @@ function init(){
  shell.appendChild(el('gpCockpitNav').previousElementSibling);shell.appendChild(nav);shell.appendChild(quick);
  const status=document.createElement('p');status.id='gpMockupStatus';status.textContent='Daten und Auswertungen bleiben je Betrieb getrennt · Kein automatisches Neuladen.';shell.appendChild(status);
  const previews=document.createElement('section');previews.id='gpReferencePreviews';previews.innerHTML='<article class="gp-ref-panel gp-ref-ledger"><header><div><strong>▥ Buchhaltung & Monatsvergleich</strong><small>Saldenlisten, Kostenstruktur und vorläufiges Ergebnis</small></div><button type="button" data-gp-preview="ledger">Details ›</button></header><table class="gp-ref-table"><thead><tr><th>Kennzahl</th><th>August</th><th>September</th><th>Oktober</th></tr></thead><tbody id="gpRefLedgerBody"><tr><td colspan="4">Bestätigte Buchhaltungsdaten werden geladen.</td></tr></tbody></table><div class="gp-ref-actions"><button type="button" data-gp-preview="ledger">Saldenlisten ›</button><button type="button" data-gp-preview="costs">Fixkosten ›</button><button type="button" data-gp-preview="staff">Personal ›</button><button type="button" data-gp-preview="ledger">Ergebnis ›</button></div></article><article class="gp-ref-panel gp-ref-daily"><header><div><strong>▤ Tagesabschlüsse</strong><small>Umsätze, Bons, 10 % / 20 %</small></div><button type="button" data-gp-preview="daily">Details ›</button></header><div id="gpRefMini"></div><div id="gpRefCharts"></div><div class="gp-ref-actions"><button type="button" data-gp-preview="daily">Tagesliste ›</button><button type="button" data-gp-preview="daily">10 % / 20 % ›</button><button type="button" data-gp-preview="articles">Top 30 ›</button><button type="button" data-gp-preview="articles">Selten verkauft ›</button></div></article>';app.insertBefore(previews,shell.nextSibling);
+ const calendarPanel=document.createElement('section');calendarPanel.id='gpDailyCalendarPanel';calendarPanel.innerHTML='<header><div><strong>📅 Tagesumsätze im Monatskalender</strong><br><small id="gpDailyCalendarTitle">Monat auswählen</small></div><button type="button" data-gp-calendar-action="daily">Tagesabschlüsse öffnen ›</button></header><div id="gpDailyCalendarGrid" role="grid" aria-label="Tägliche Bruttoumsätze"></div><div id="gpDailyCalendarInfo" role="status">Wähle einen Tag, um den Umsatz zu sehen.</div>';app.insertBefore(calendarPanel,previews.nextSibling);
  const detail=document.createElement('section');detail.id='gpMockupDetail';detail.hidden=true;app.insertBefore(detail,shell.nextSibling);
  const dhead=document.createElement('div');dhead.id='gpMockupDetailHead';dhead.innerHTML='<strong id="gpMockupDetailTitle">Details</strong><div class="gp-detail-actions"><button type="button" id="gpMockupAll">Alle Funktionen</button> <button type="button" id="gpMockupBack">← Zur Übersicht</button></div>';detail.appendChild(dhead);
  const chartsBox=document.createElement('div');chartsBox.id='gpMockupDailyCharts';chartsBox.hidden=true;chartsBox.innerHTML='<div id="gpDailyMini"></div><div id="gpMockupCharts"></div>';detail.appendChild(chartsBox);
@@ -2075,6 +2109,7 @@ function init(){
  const logout=el('logout');if(logout){logout.style.display='none';shell.appendChild(logout);}
  const hint=el('gpCockpitHint');if(hint)hint.style.display='none';
  if(summary){summary.style.fontSize='11px';shell.appendChild(summary);}
+ calendarPanel.addEventListener('click',e=>{const day=e.target.closest('[data-gp-date]');if(day){const date=day.dataset.gpDate;const row=gpLatest?.days?.find(x=>String(x.date).slice(0,10)===date);el('gpDailyCalendarInfo').textContent=row?'📅 '+date+' · Umsatz brutto: '+fmtEUR(Number(row.gross))+' · Bar: '+fmtEUR(Number(row.cash))+' · Karte: '+fmtEUR(Number(row.card)):'📅 '+date+' · Kein erfasster Tagesabschluss.';}else if(e.target.closest('[data-gp-calendar-action]'))openArea('daily');});
  previews.addEventListener('click',e=>{const b=e.target.closest('[data-gp-preview]');if(b)openArea(b.dataset.gpPreview);});
  el('gpMockupBack')?.addEventListener('click',home);el('gpMockupAll')?.addEventListener('click',()=>openArea('all'));
  el('gpOverviewShortcut')?.addEventListener('click',home);
@@ -2082,7 +2117,7 @@ function init(){
  nav.addEventListener('click',e=>{const b=e.target.closest('[data-gp-area]');if(b)openArea(b.dataset.gpArea);});
  quick?.addEventListener('click',e=>{const b=e.target.closest('[data-gp-quick]');if(!b)return;const key=b.dataset.gpQuick;openArea(key==='invoices'?'costs':key==='ledger'?'ledger':key==='archive'?'archive':'bank');});
  const label=el('activeBusinessTitle');
- const sync=()=>{const t=label?.textContent||'';el('gpMockupBusinessLabel').textContent=t.replace(' · Betriebssteuerung','')||'Betriebssteuerung';updateMetrics();gpRenderReference();};
+ const sync=()=>{const t=label?.textContent||'';el('gpMockupBusinessLabel').textContent=t.replace(' · Betriebssteuerung','')||'Betriebssteuerung';updateMetrics();gpRenderReference();gpRenderDailyCalendar();};
  const obs=new MutationObserver(()=>{clearTimeout(window.__gpCockpitSyncTimer);window.__gpCockpitSyncTimer=setTimeout(sync,120);});
  [label,kpis,el('monthOverviewStats'),summary].filter(Boolean).forEach(n=>obs.observe(n,{childList:true,subtree:true,characterData:true}));
  el('month')?.addEventListener('change',()=>setTimeout(sync,80));
