@@ -260,6 +260,33 @@ body.gp-cockpit-active #app .gp-cockpit-secondary-hidden{display:none!important}
 #intake{scroll-margin-top:85px}
 @media(max-width:1080px){.gp-cockpit-nav{grid-template-columns:repeat(3,minmax(0,1fr))}#quickKpis{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:680px){#app>.row{padding:10px;flex-wrap:wrap}#quickKpis{grid-template-columns:repeat(2,minmax(0,1fr))}.gp-cockpit-nav{grid-template-columns:repeat(2,minmax(0,1fr))}.gp-cockpit-nav button{min-height:94px}.gp-cockpit-quick{grid-template-columns:repeat(2,minmax(0,1fr))}.gp-cockpit-quick button:nth-child(2){border-right:0}.gp-cockpit-quick button:nth-child(-n+2){border-bottom:1px solid #e2e9ec}.gp-cockpit-head strong{font-size:14px}.gp-cockpit-actions button{padding:9px!important;font-size:12px}}
+</style><style id="gp-final-cockpit-style">
+/* Freigegebene Cockpit-Skizze: kompakter Kopf, 6 Menüs, Details nur auf Abruf */
+#app{max-width:1480px;margin:auto}
+#app #businessSwitchCard{display:flex;align-items:center;gap:18px;min-height:66px;padding:9px 16px!important;margin:0 0 9px!important}
+#businessSwitchCard #gp-business-switch{flex:1;align-items:center;gap:9px!important}
+#businessSwitchCard label,#businessSwitchCard button{margin:0!important}
+#businessSwitchCard #businessSwitchStatus:empty{display:none}
+#app>.row{display:flex;align-items:center;flex-wrap:wrap;gap:10px;padding:10px 14px!important;margin:0 0 8px!important}
+#app>.row #activeBusinessTitle{flex:1;min-width:220px;margin:0;font-size:clamp(18px,2vw,27px)}
+#app>.row #monthOverview{flex:0 1 490px;max-width:100%;margin:0!important;padding:8px 10px!important}
+#monthOverview .month-overview-head{margin:0}
+#monthOverview #monthCalendar:not([open]){margin:0}
+#app #summary{font-size:12px;margin:4px 0 9px!important}
+#app #quickKpis{grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;margin:0 0 12px!important}
+#app #quickKpis>*{padding:12px!important;min-height:90px!important;border:1px solid #e1e7eb!important;box-shadow:none!important}
+#app .gp-cockpit-head{position:sticky;top:0;margin:0 0 8px;padding:9px 6px;z-index:30}
+#app .gp-cockpit-nav{margin:0 0 10px;gap:9px}
+#app .gp-cockpit-nav button{min-height:115px}
+#app .gp-cockpit-quick{margin:0 0 9px}
+#app #gpCockpitHint{margin:6px 0 12px}
+body.gp-cockpit-active #app .gp-area-hidden{display:none!important}
+body.gp-cockpit-active #app .gp-cockpit-secondary-hidden{display:none!important}
+#app .gp-cockpit-detail-heading{display:flex;align-items:center;justify-content:space-between;gap:10px;background:#fff;border:1px solid #dce6e5;border-radius:13px;padding:12px 16px;margin:8px 0 12px}
+#app .gp-cockpit-detail-heading strong{font-size:18px}
+#app .gp-cockpit-detail-heading button{background:#f0f7f5;color:#164d42;border:1px solid #c5dcd4;border-radius:9px;padding:9px 12px;cursor:pointer}
+@media(min-width:1200px){#app #quickKpis{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media(max-width:750px){#app #businessSwitchCard{flex-wrap:wrap;gap:6px}#app>.row #monthOverview{flex:1 1 100%}#app #quickKpis{grid-template-columns:repeat(2,minmax(0,1fr))}#app .gp-cockpit-nav{grid-template-columns:repeat(2,minmax(0,1fr))}#app .gp-cockpit-nav button{min-height:95px}}
 </style></head><body>
 <header><div class="gpHeaderBar"><button id="gpHeaderHome" type="button" aria-label="GastroPilot – zur Betriebsübersicht" style="appearance:none;background:transparent;border:0;padding:0;color:inherit;text-align:left;cursor:pointer;display:block"><strong>GastroPilot</strong><small>Dein Lokal. Deine Zahlen. Dein Überblick.</small></button><nav id="gpHeaderSwitch" class="hidden" aria-label="Betrieb wechseln"></nav></div></header>
 <main><section id="login" class="card"><h2>Anmelden</h2><form id="loginForm"><label>E-Mail<input id="email" type="email" autocomplete="username" required></label><label>Passwort<input id="password" type="password" autocomplete="current-password" required></label><button>Anmelden</button></form><p id="loginMsg" class="status"></p></section>
@@ -1768,51 +1795,59 @@ async function refreshVisibleDashboard(){if(!user||E('app').classList.contains('
 // Keine zeitgesteuerten Abfragen; ChatGPT-Import schreibt die Daten in die Datenbank.
 </script><script>setTimeout(()=>{const f=document.getElementById('loginForm'),m=document.getElementById('loginMsg');if(f&&!f.onsubmit&&m)m.textContent='Die Anwendung konnte nicht geladen werden. Bitte Seite neu laden. Falls diese Meldung bleibt, ist die Programm-Bibliothek blockiert.'},4500);window.addEventListener('error',e=>{const m=document.getElementById('loginMsg');if(m)m.textContent='Ladefehler: '+e.message});window.addEventListener('unhandledrejection',e=>{const m=document.getElementById('loginMsg');if(m)m.textContent='Verbindungsfehler: '+(e.reason?.message||String(e.reason))});</script><script>
 (function(){
- const groups={
- daily:['salesSection','monthlyReference','dailyArchiveDisclosure'],
- costs:['monthlyCostOverview','financeSection','purchaseItemsCalc','costAlertsTile'],
- staff:['judithPersonnelTile','financeSection'],
+const groups={
+ daily:['salesSection','monthlyReference','dailyArchiveDisclosure','operating'],
+ costs:['monthlyCostOverview','financeSection','purchaseItemsCalc','costAlertsTile','purchaseAssign'],
+ staff:['judithPersonnelTile','financeSection','judithPersonnelLevies','judithPersonnelRows'],
  ledger:['ledgerComparisonSection','profitGoalTile','salesTargetTile','judithSimpleResult','judithRentTile'],
- articles:['topArticles','slowArticles','operating','profitability','menuDashboardTile','judithCakePricingTile','kalkulationLink'],
+ articles:['topArticles','slowArticles','profitability','menuDashboardTile','judithCakePricingTile','kalkulationLink','operating'],
  planning:['weeklyPurchase','recipeCostTile','kalkulationLink']
- };
- const extra=['intake','centralArchive','judithAnalysisLink','judithPersonnelLevies','judithPersonnelRows'];
- const all=new Set([...Object.values(groups).flat(),...extra]);
- const hiddenTop=['augustSection','augSection','august','augArchive','costs','tax','review'];
- let active=null;
- function render(){
-  document.body.classList.add('gp-cockpit-active');
-  document.querySelectorAll('#gpCockpitNav [data-gp-area]').forEach(b=>b.setAttribute('aria-current',String(b.dataset.gpArea===active)));
-  for(const id of all){const el=document.getElementById(id);if(!el)continue;el.classList.toggle('gp-area-hidden',!active||!groups[active]?.includes(id));}
-  // Alle vorhandenen Detailkarten bleiben im DOM und werden beim Öffnen ihres Bereichs angezeigt.
-  const hint=document.getElementById('gpCockpitHint');
-  if(hint)hint.textContent=active?'Bereich: '+(document.querySelector('[data-gp-area="'+active+'"] strong')?.textContent||'Details')+' · Mit „Übersicht“ zurück zum Cockpit.':'Sechs Hauptbereiche · Ein Klick öffnet die Details.';
-  const nav=document.getElementById('gpCockpitNav');if(nav)nav.scrollIntoView({block:'nearest'});
+};
+const allIds=['judithAnalysisLink','kalkulationLink','menuDashboardTile','recipeCostTile','costAlertsTile','judithCakePricingTile','judithPersonnelTile','judithRentTile','salesTargetTile','profitGoalTile','judithSimpleResult','intake','monthlyReference','salesSection','monthlyCostOverview','ledgerComparisonSection','operating','financeSection','purchaseItemsCalc','weeklyPurchase','topArticles','profitability','slowArticles','centralArchive','purchaseAssign','archive'];
+const areas={bank:'costs',invoices:'costs',ledger:'ledger',archive:'costs'};
+let active=null, uploadOpen=false,archiveOpen=false;
+function render(){
+ document.body.classList.add('gp-cockpit-active');
+ document.querySelectorAll('#gpCockpitNav [data-gp-area]').forEach(b=>b.setAttribute('aria-current',String(b.dataset.gpArea===active)));
+ const visible=new Set(active?(groups[active]||[]):[]);
+ if(uploadOpen)visible.add('intake');
+ if(archiveOpen)visible.add('centralArchive');
+ for(const id of allIds){const el=document.getElementById(id);if(el)el.classList.toggle('gp-area-hidden',!visible.has(id));}
+ // Altmodule, die nicht in den 6 Bereichen gebraucht werden, auf Startseite verbergen.
+ for(const id of ['quickNav','monthlyReference','salesSection','monthlyCostOverview','ledgerComparisonSection','operating','financeSection','purchaseItemsCalc','weeklyPurchase','topArticles','profitability','slowArticles','centralArchive','purchaseAssign','archive']){
+  const el=document.getElementById(id);if(el&&!visible.has(id))el.classList.add('gp-area-hidden');
  }
- function openUpload(){
-  const intake=document.getElementById('intake');if(!intake)return;
-  intake.classList.remove('gp-area-hidden');
-  intake.scrollIntoView({behavior:'smooth',block:'start'});
+ // Nicht verknüpfte Altansichten auf dem Cockpit ausblenden, ohne Inhalte zu löschen.
+ const anchor=document.getElementById('gpCockpitHint'),intake=document.getElementById('intake');
+ if(anchor){
+  let n=anchor.nextElementSibling;
+  while(n){const next=n.nextElementSibling;if(n.id!=='gpCockpitDetailHeading'&&n!==intake&&n.classList.contains('card')&&!visible.has(n.id))n.classList.add('gp-area-hidden');n=next;}
  }
- function init(){
-  const nav=document.getElementById('gpCockpitNav');if(!nav)return;
-  nav.addEventListener('click',e=>{const b=e.target.closest('[data-gp-area]');if(b){active=b.dataset.gpArea;render();}});
-  document.getElementById('gpOverviewShortcut')?.addEventListener('click',()=>{active=null;render();window.scrollTo({top:0,behavior:'smooth'});});
-  document.getElementById('gpUploadShortcut')?.addEventListener('click',openUpload);
-  document.getElementById('gpCockpitQuick')?.addEventListener('click',e=>{
-   const b=e.target.closest('[data-gp-quick]');if(!b)return;
-   const k=b.dataset.gpQuick;
-   active=k==='ledger'?'ledger':k==='archive'?'costs':k==='bank'?'staff':'costs';
-   render();
-   if(k==='archive'){const el=document.getElementById('centralArchive');el?.classList.remove('gp-area-hidden');el?.scrollIntoView({behavior:'smooth',block:'start'});}
-   else if(k==='bank'){document.getElementById('financeSection')?.scrollIntoView({behavior:'smooth',block:'start'});}
-   else if(k==='ledger'){document.getElementById('ledgerComparisonSection')?.scrollIntoView({behavior:'smooth',block:'start'});}
-   else{document.getElementById('monthlyCostOverview')?.scrollIntoView({behavior:'smooth',block:'start'});}
-  });
-  // Start im übersichtlichen Cockpit, keine doppelten großen Detailkacheln.
-  render();
+ const h=document.getElementById('gpCockpitDetailHeading');
+ if(h){h.hidden=!active&&!uploadOpen&&!archiveOpen;const label=h.querySelector('strong');if(label)label.textContent=uploadOpen?'📷 Unterlagen hochladen':archiveOpen?'📂 Datenarchiv':active?(document.querySelector('[data-gp-area="'+active+'"] strong')?.textContent||'Details'):'Übersicht';}
+ const hint=document.getElementById('gpCockpitHint');if(hint)hint.textContent=active?'Detailansicht · Mit „Übersicht“ zum Cockpit zurück.':'Sechs Hauptbereiche · Ein Klick öffnet die Detailseite.';
+}
+function openArea(area){active=area;uploadOpen=false;archiveOpen=false;render();document.getElementById('gpCockpitDetailHeading')?.scrollIntoView({behavior:'smooth',block:'start'});}
+function openUpload(){uploadOpen=true;archiveOpen=false;render();document.getElementById('intake')?.scrollIntoView({behavior:'smooth',block:'start'});}
+function home(){active=null;uploadOpen=false;archiveOpen=false;render();window.scrollTo({top:0,behavior:'smooth'});}
+function init(){
+ const nav=document.getElementById('gpCockpitNav');if(!nav)return;
+ const hint=document.getElementById('gpCockpitHint');
+ if(hint&&!document.getElementById('gpCockpitDetailHeading')){
+  const head=document.createElement('div');head.id='gpCockpitDetailHeading';head.className='gp-cockpit-detail-heading';head.innerHTML='<strong>Details</strong><button type="button">← Zur Übersicht</button>';head.querySelector('button').addEventListener('click',home);hint.insertAdjacentElement('afterend',head);
  }
- if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
-})();
+ nav.addEventListener('click',e=>{const b=e.target.closest('[data-gp-area]');if(b)openArea(b.dataset.gpArea);});
+ document.getElementById('gpOverviewShortcut')?.addEventListener('click',home);
+ document.getElementById('gpUploadShortcut')?.addEventListener('click',openUpload);
+ document.getElementById('gpCockpitQuick')?.addEventListener('click',e=>{
+  const b=e.target.closest('[data-gp-quick]');if(!b)return;const k=b.dataset.gpQuick;
+  if(k==='archive'){active='costs';archiveOpen=true;uploadOpen=false;render();document.getElementById('centralArchive')?.scrollIntoView({behavior:'smooth',block:'start'});}
+  else{openArea(areas[k]||'costs');const target=k==='ledger'?'ledgerComparisonSection':k==='invoices'?'monthlyCostOverview':'financeSection';document.getElementById(target)?.scrollIntoView({behavior:'smooth',block:'start'});}
+ });
+ document.querySelectorAll('#quickNav [data-target]').forEach(b=>b.addEventListener('click',()=>{const id=b.dataset.target;if(id==='intake')openUpload();else if(id==='centralArchive'){archiveOpen=true;active='costs';render();}}));
+ home();
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+};
 </script></body></html>
 
