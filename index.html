@@ -2438,5 +2438,13 @@ body:has(#businessHome:not(.hidden)) main{max-width:1400px!important}
 #businessHome #homeCards .homeBusiness:first-child .homeOpen{color:#087f70!important}
 #businessHome #homeCards .homeBusiness:nth-child(2) .homeOpen{color:#b43c7c!important}
 @media(max-width:520px){#businessHome #homeCards .homeBusiness .homeMetrics{gap:7px!important}#businessHome #homeCards .homeBusiness .homeMetrics .homeMetric{min-height:80px!important;padding:9px!important}#businessHome #homeCards .homeBusiness .homeMetric strong{font-size:16px!important}}
-</style></body></html>
+</style>
+<style id="gp-friedrich-daily-calendar-click-style">
+body:not(.gp-judith-design) #gpDailyCalendarPanel.gp-friedrich-calendar-open{display:block!important;visibility:visible!important;border:2px solid #16a085!important;box-shadow:0 7px 24px #087f7020!important;scroll-margin-top:14px}
+body:not(.gp-judith-design) #gpDailyCalendarPanel.gp-friedrich-calendar-open #gpDailyCalendarGrid{display:grid!important}
+</style>
+<script id="gp-friedrich-daily-calendar-click">
+(function(){'use strict';function show(){if(document.body.classList.contains('gp-judith-design'))return;var cal=document.getElementById('gpDailyCalendarPanel');if(!cal)return;cal.hidden=false;cal.style.display='block';cal.classList.add('gp-friedrich-calendar-open');requestAnimationFrame(function(){cal.scrollIntoView({behavior:'smooth',block:'start'});});}function init(){var nav=document.getElementById('gpCockpitNav');if(!nav)return;nav.addEventListener('click',function(e){var btn=e.target.closest('[data-gp-area="daily"]');if(btn&&nav.contains(btn))setTimeout(show,70);});}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();})();
+</script>
+</body></html>
 
