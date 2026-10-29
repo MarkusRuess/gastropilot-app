@@ -2560,5 +2560,5 @@ sync();
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
-</script></body></html>
+</script><style id="gp-calendar-daily-only-20261029">#gpDailyCalendarPanel:not(.gp-calendar-daily-visible){display:none!important}</style><script id="gp-calendar-daily-only-20261029-script">(function(){function update(){const panel=document.getElementById('gpDailyCalendarPanel');if(!panel)return;const nav=document.getElementById('gpCockpitNav');const active=nav?.querySelector('[data-gp-area="daily"][aria-current="true"]');panel.classList.toggle('gp-calendar-daily-visible',!!active);}function init(){const nav=document.getElementById('gpCockpitNav');nav?.addEventListener('click',()=>setTimeout(update,80));document.getElementById('gpMockupBack')?.addEventListener('click',()=>setTimeout(update,80));document.getElementById('gpMockupAll')?.addEventListener('click',()=>setTimeout(update,80));const detail=document.getElementById('gpMockupDetail');if(detail)new MutationObserver(update).observe(detail,{attributes:true,attributeFilter:['hidden']});update();}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();})();</script></body></html>
 
