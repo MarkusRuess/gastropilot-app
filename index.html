@@ -2477,5 +2477,35 @@ function init(){e('gpCockpitNav')?.addEventListener('click',ev=>{if(ev.target.cl
 </script>
 <style id="gp-friedrich-staff-visibility-fix">#gpMockupDetailBody #friedrichPersonnelTile.gp-area-hidden{display:none!important;visibility:hidden!important}#gpMockupDetailBody #judithPersonnelTile.gp-area-hidden{display:none!important;visibility:hidden!important}</style>
 <script id="gp-friedrich-staff-visibility-click">(function(){function init(){var nav=document.getElementById('gpCockpitNav');if(!nav)return;nav.addEventListener('click',function(ev){var btn=ev.target.closest('[data-gp-area]');if(!btn||!nav.contains(btn))return;var area=btn.getAttribute('data-gp-area');if(area==='staff'||area==='all')return;var staff=document.getElementById('friedrichPersonnelTile');if(staff){staff.classList.add('gp-area-hidden');staff.style.display='none';}var judith=document.getElementById('judithPersonnelTile');if(judith)judith.classList.add('gp-area-hidden');});nav.addEventListener('click',function(ev){var btn=ev.target.closest('[data-gp-area="staff"]');if(!btn)return;var staff=document.getElementById('friedrichPersonnelTile');if(staff)staff.style.removeProperty('display');});}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();})();</script>
-</body></html>
+<style id="gp-personnel-only-on-staff-v2">
+/* Personnel details must never leak into other cockpit sections. */
+#gpMockupDetailBody #friedrichPersonnelTile.gp-area-hidden,
+#gpMockupDetailBody #judithPersonnelTile.gp-area-hidden{display:none!important}
+body.gp-judith-design #gpMockupDetailBody #friedrichPersonnelTile,
+body:not(.gp-judith-design) #gpMockupDetailBody #judithPersonnelTile{display:none!important}
+body:not(.gp-judith-design) #gpMockupDetailBody #friedrichPersonnelTile:not(.gp-area-hidden){display:block!important}
+body.gp-judith-design #gpMockupDetailBody #judithPersonnelTile:not(.gp-area-hidden){display:block!important}
+</style>
+<script id="gp-personnel-only-on-staff-v2-script">
+(function(){
+function enforce(){
+ const nav=document.getElementById('gpCockpitNav');
+ const staff=nav?.querySelector('[data-gp-area="staff"]');
+ const isStaff=staff?.getAttribute('aria-current')==='true';
+ for(const id of ['friedrichPersonnelTile','judithPersonnelTile']){
+  const el=document.getElementById(id);if(!el)continue;
+  const correct=id===(document.body.classList.contains('gp-judith-design')?'judithPersonnelTile':'friedrichPersonnelTile');
+  el.classList.toggle('gp-area-hidden',!(isStaff&&correct));
+ }
+}
+function init(){
+ const nav=document.getElementById('gpCockpitNav');
+ nav?.addEventListener('click',()=>setTimeout(enforce,160));
+ document.getElementById('gpMockupBack')?.addEventListener('click',()=>setTimeout(enforce,50));
+ document.getElementById('gpMockupAll')?.addEventListener('click',()=>setTimeout(enforce,50));
+ enforce();
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+})();
+</script></body></html>
 
