@@ -2323,5 +2323,21 @@ body.gp-judith-design #recipeCostRows>.tile>details>p{font-size:12px;margin:0;pa
 </style>
 <script id="judith-recipe-collapse-20261029">
 (function(){function ready(){var host=document.getElementById('recipeCostRows');if(!host)return;function close(){if(!document.body.classList.contains('gp-judith-design'))return;host.querySelectorAll(':scope > .tile > details').forEach(function(d){if(!d.dataset.userExpanded)d.open=false;});}host.addEventListener('click',function(e){var s=e.target.closest('summary');if(s&&host.contains(s)){var d=s.parentElement;if(!d.open)d.dataset.userExpanded='yes';else delete d.dataset.userExpanded;}});new MutationObserver(function(){setTimeout(close,0);}).observe(host,{childList:true});document.getElementById('gpCockpitNav')?.addEventListener('click',function(){setTimeout(close,50);});setTimeout(close,700);}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',ready);else ready();})();
-</script></body></html>
+</script><style id="judith-personnel-compact-20261029">
+body.gp-judith-design #gpMockupDetailBody #judithPersonnelTile{grid-column:1/-1!important;width:100%!important;max-width:none!important}
+body.gp-judith-design #judithPersonnelTile>.profit-goal-panel{padding:10px 4px 6px!important}
+body.gp-judith-design #judithPersonnelTile .profit-goal-metrics{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:9px!important}
+body.gp-judith-design #judithPersonnelTile .profit-goal-metrics>div{padding:12px!important;background:#fff6fa!important;border:1px solid #efd4e3!important;border-radius:11px!important}
+body.gp-judith-design #judithPersonnelTile .profit-goal-metrics small{font-size:11px!important;color:#946078!important}
+body.gp-judith-design #judithPersonnelTile .profit-goal-metrics strong{font-size:19px!important;color:#9c3169!important}
+body.gp-judith-design #judithPersonnelRows{display:grid!important;grid-template-columns:repeat(auto-fit,minmax(265px,1fr))!important;gap:10px!important;align-items:start!important}
+body.gp-judith-design #judithPersonnelRows>div{min-width:0!important;margin:0!important;padding:12px!important;border:1px solid #efd6e4!important;border-radius:12px!important;background:#fff!important}
+body.gp-judith-design #judithPersonnelRows>div :is(h2,h3,h4,b,strong){max-width:100%;overflow-wrap:anywhere}
+body.gp-judith-design #judithPersonnelRows>div>div:first-child{background:#fff1f8!important;border-radius:9px!important;padding:8px 10px!important}
+body.gp-judith-design #judithPersonnelRows>div>div:first-child :is(b,strong){color:#a42d6d!important}
+body.gp-judith-design #judithPersonnelRows>div p{font-size:12px!important;line-height:1.4!important;margin:5px 0!important}
+body.gp-judith-design #judithPersonnelRows>div small{font-size:10px!important;line-height:1.35!important}
+body.gp-judith-design #judithPersonnelRows>div :is(.resultLine,.profit-goal-metric){gap:8px!important}
+@media(max-width:760px){body.gp-judith-design #judithPersonnelTile .profit-goal-metrics{grid-template-columns:1fr 1fr!important}body.gp-judith-design #judithPersonnelRows{grid-template-columns:1fr!important}}
+</style></body></html>
 
