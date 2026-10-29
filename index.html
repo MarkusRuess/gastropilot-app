@@ -1276,7 +1276,23 @@ async function loadLedgerComparison(){
   if(verifiedError)throw verifiedError;
   const keys=['net_revenue','personnel','purchases','fixed_costs','operating_result','personnel_ratio'];
   const byKey=new Map((verified||[]).filter(v=>v.verification_status==='verified'&&v.amount!==null).map(v=>[v.metric_key+'|'+String(v.month_start).slice(0,7),v.amount]));
-  const dashboard=E('ledgerDashboard');if(dashboard){const m=months.filter(m=>byKey.has('net_revenue|'+m)).at(-1);const v=k=>m?byKey.get(k+'|'+m):undefined;const goal=5000;const result=v('operating_result');const turnover=v('net_revenue');const cost=['personnel','purchases','fixed_costs'].reduce((sum,k)=>sum+(Number(v(k))||0),0);const needed=turnover===undefined?null:cost+goal;dashboard.innerHTML=[['Monat',m||'–'],['Nettoumsatz',turnover===undefined?'–':EUR(Number(turnover))],['Personalquote',v('personnel_ratio')===undefined?'–':Number(v('personnel_ratio')).toFixed(2)+' %'],['Ergebnis',result===undefined?'–':EUR(Number(result))],['Gewinnziel',EUR(goal)],['Sollumsatz (vorläufig)',needed===null?'–':EUR(needed)]].map(([k,val])=>'<div class="tile"><small>'+k+'</small><b>'+val+'</b></div>').join('')+'<p class="muted" style="grid-column:1/-1">Sollumsatz ist eine vorläufige Näherung aus den erfassten Aufwandsklassen plus 5.000 € Ziel, keine belastbare Prognose. Ungeklärte Buchungen und weitere Kosten sind gesondert zu prüfen.</p>';}
+  const dashboard=E('ledgerDashboard');if(dashboard){
+   const latest=months.filter(m=>byKey.has('net_revenue|'+m)).at(-1);
+   const val=(m,k)=>Number(byKey.get(k+'|'+m));
+   const history=months.filter(m=>['net_revenue','personnel','purchases','fixed_costs','operating_result'].every(k=>byKey.has(k+'|'+m))).slice(-3);
+   const fmt=n=>Number.isFinite(n)?EUR(Math.round(n)):'–';
+   const goal=5000, reserve=2000;
+   let breakeven=NaN,target=NaN,safety=NaN,ratio=NaN;
+   if(history.length===3){
+    const revenue=history.reduce((a,m)=>a+val(m,'net_revenue'),0);
+    const materials=history.reduce((a,m)=>a+val(m,'purchases'),0);
+    const fixed=history.reduce((a,m)=>a+val(m,'personnel')+val(m,'fixed_costs'),0)/3;
+    ratio=materials/revenue;
+    if(revenue>0&&ratio>=0&&ratio<1){breakeven=fixed/(1-ratio);target=(fixed+goal)/(1-ratio);safety=(fixed+goal+reserve)/(1-ratio);}
+   }
+   const result=latest?val(latest,'operating_result'):NaN;
+   dashboard.innerHTML=[['Datenstand',latest||'–'],['Kostendeckung · Schätzung',fmt(breakeven)],['Gewinnziel +5.000 €',fmt(target)],['Sicherheitsziel +2.000 €',fmt(safety)],['Letztes Ergebnis',fmt(result)],['Personalquote',latest?val(latest,'personnel_ratio').toLocaleString('de-AT',{maximumFractionDigits:2})+' %':'–']].map(([k,v])=>'<div class="tile"><small>'+k+'</small><b>'+v+'</b></div>').join('')+'<p class="muted" style="grid-column:1/-1">Planung in NETTO: Durchschnitt der letzten 3 vollständig erfassten Monate ('+history.join(', ')+'). Klasse 5 als vorläufig variabler Materialaufwand; Personal + Klasse 7 als vorläufige Grundkosten. Sicherheitsziel = Gewinnziel plus 2.000 € Reserve. Keine verbindliche Break-even-Rechnung: Klasse 5 enthält weitere Aufwendungen, Energie und Finanzierung sind nicht vollständig abgegrenzt, Konto 9999 ungeklärt. Tatsächliche Ergebnisse laut Saldenliste bleiben separat.</p>';
+  }
 
   rows.innerHTML=labels.map((label,i)=>'<tr><th style="text-align:left;padding:8px 4px;border-bottom:1px solid #dce5e9">'+label+'</th>'+months.map(month=>{const value=byKey.get(keys[i]+'|'+month);return '<td style="padding:8px 4px;border-bottom:1px solid #dce5e9">'+(value===undefined?'–':keys[i]==='personnel_ratio'?Number(value).toLocaleString('de-AT',{maximumFractionDigits:2})+' %':EUR(Number(value)))+'</td>';}).join('')+'</tr>').join('');
   ledgerActiveDocument=ledger.find(d=>d.storage_path)||null;
