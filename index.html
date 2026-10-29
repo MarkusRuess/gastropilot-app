@@ -349,6 +349,25 @@ body.gp-cockpit-active #app .gp-cockpit-secondary-hidden{display:none!important}
 #gpMockupShell #gpMockupStatus{font-size:11px;color:#738694;margin:10px 0 0}
 @media(max-width:1250px){#gpMockupHeader{grid-template-columns:1fr 1.4fr;gap:12px}#gpMockupHeader #gpMockupMonth{grid-column:1/-1;justify-content:flex-end}#gpMockupMetrics{grid-template-columns:repeat(3,minmax(0,1fr))}#gpMockupMetrics .gp-progress{grid-column:span 3}#gpMockupShell .gp-cockpit-nav{grid-template-columns:repeat(3,minmax(0,1fr))!important}}
 @media(max-width:700px){#app{padding:5px!important}#gpMockupShell{padding:11px;border-radius:13px}#gpMockupHeader{display:flex;flex-direction:column;align-items:stretch;gap:9px}#gpMockupHeader #gpMockupMonth{justify-content:space-between}#gpMockupHeader #businessSwitchCard #gp-business-switch{flex-wrap:wrap!important}#gpMockupMetrics{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}#gpMockupMetrics .gp-progress{grid-column:span 2}#gpMockupMetrics .gp-metric{padding:10px;min-height:86px}#gpMockupMetrics .gp-metric .gp-value{font-size:20px}#gpMockupShell .gp-cockpit-nav{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:7px!important}#gpMockupShell .gp-cockpit-nav button{min-height:95px!important;padding:11px!important}#gpMockupShell .gp-cockpit-quick{grid-template-columns:repeat(2,minmax(0,1fr))}#gpMockupExtra #quickKpis{grid-template-columns:repeat(2,minmax(0,1fr))}#gpMockupDetail{padding:8px}}
+</style><style id="gp-mockup-exact-layout">
+/* Mockup 29.10: einzeilige Monats-KPIs und sechs Hauptkacheln auf Desktop */
+@media(min-width:1000px){
+ #gpMockupHeader{display:grid!important;grid-template-columns:minmax(220px,1fr) minmax(340px,1.1fr) minmax(265px,.85fr)!important;align-items:center!important;gap:10px!important}
+ #gpMockupHeader #gpMockupMonth{grid-column:auto!important;justify-content:flex-end!important}
+ #gpMockupMetrics{display:grid!important;grid-template-columns:minmax(270px,1.9fr) repeat(5,minmax(125px,1fr))!important;gap:8px!important;margin-bottom:17px!important}
+ #gpMockupMetrics .gp-progress{grid-column:auto!important}
+ #gpMockupMetrics .gp-metric{min-height:148px!important;padding:15px 12px!important}
+ #gpMockupMetrics .gp-progress .gp-label{font-size:17px!important}
+ #gpMockupMetrics .gp-progress .gp-value{margin-top:24px!important}
+ #gpMockupShell .gp-cockpit-nav{grid-template-columns:repeat(6,minmax(0,1fr))!important}
+ #gpMockupShell .gp-cockpit-nav button{min-height:125px!important}
+}
+#gpMockupHeader #businessSwitchCard #gp-business-switch{gap:6px!important}
+#gpMockupHeader #businessSwitchCard #gp-business-switch label{font-size:12px!important}
+#gpMockupMetrics .gp-metric .gp-value{white-space:normal}
+#gpMockupMetrics .gp-metric .gp-note{line-height:1.3}
+#gpMockupMetrics .gp-progress-track{margin-top:12px!important}
+@media(min-width:1000px) and (max-width:1240px){#gpMockupMetrics{grid-template-columns:minmax(220px,1.65fr) repeat(5,minmax(105px,1fr))!important}#gpMockupMetrics .gp-metric{padding:11px 8px!important}#gpMockupMetrics .gp-metric .gp-value{font-size:18px!important}#gpMockupHeader{grid-template-columns:minmax(175px,1fr) minmax(320px,1.3fr) minmax(240px,1fr)!important}}
 </style></head><body>
 <header><div class="gpHeaderBar"><button id="gpHeaderHome" type="button" aria-label="GastroPilot – zur Betriebsübersicht" style="appearance:none;background:transparent;border:0;padding:0;color:inherit;text-align:left;cursor:pointer;display:block"><strong>GastroPilot</strong><small>Dein Lokal. Deine Zahlen. Dein Überblick.</small></button><nav id="gpHeaderSwitch" class="hidden" aria-label="Betrieb wechseln"></nav></div></header>
 <main><section id="login" class="card"><h2>Anmelden</h2><form id="loginForm"><label>E-Mail<input id="email" type="email" autocomplete="username" required></label><label>Passwort<input id="password" type="password" autocomplete="current-password" required></label><button>Anmelden</button></form><p id="loginMsg" class="status"></p></section>
