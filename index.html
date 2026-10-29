@@ -287,6 +287,68 @@ body.gp-cockpit-active #app .gp-cockpit-secondary-hidden{display:none!important}
 #app .gp-cockpit-detail-heading button{background:#f0f7f5;color:#164d42;border:1px solid #c5dcd4;border-radius:9px;padding:9px 12px;cursor:pointer}
 @media(min-width:1200px){#app #quickKpis{grid-template-columns:repeat(4,minmax(0,1fr))}}
 @media(max-width:750px){#app #businessSwitchCard{flex-wrap:wrap;gap:6px}#app>.row #monthOverview{flex:1 1 100%}#app #quickKpis{grid-template-columns:repeat(2,minmax(0,1fr))}#app .gp-cockpit-nav{grid-template-columns:repeat(2,minmax(0,1fr))}#app .gp-cockpit-nav button{min-height:95px}}
+</style><style id="gp-mockup-v3">
+/* Einheitliches Design: Kopfbereich, Fortschritt, KPIs, 6 Menüs, Schnellinfos, Detailseiten */
+#app{max-width:1500px;margin:0 auto;padding:10px!important}
+#gpMockupShell{background:linear-gradient(160deg,#fff,#f8fbfc);border:1px solid #d9e3e8;border-radius:19px;padding:18px 20px;box-shadow:0 7px 25px #203f5512;margin-bottom:15px}
+#gpMockupHeader{display:grid;grid-template-columns:minmax(180px,1fr) minmax(280px,1.3fr) auto;align-items:center;gap:16px;margin-bottom:14px}
+#gpMockupBrand strong{display:block;font-size:clamp(25px,3vw,40px);font-weight:850;letter-spacing:-.055em;line-height:1.05;color:#101d38}
+#gpMockupBrand small{font-size:13px;color:#07594d;font-weight:650}
+#gpMockupHeader #businessSwitchCard{margin:0!important;min-height:0!important;padding:0!important;border:0!important;background:transparent!important;box-shadow:none!important;display:block!important}
+#gpMockupHeader #businessSwitchCard #backHome{display:none}
+#gpMockupHeader #businessSwitchCard #gp-business-switch{display:flex!important;flex-wrap:nowrap!important;gap:7px!important}
+#gpMockupHeader #businessSwitchCard #gp-business-switch>*{min-width:0!important;max-width:100%;font-size:13px!important}
+#gpMockupHeader #businessSwitchStatus{display:none}
+#gpMockupHeader #gpMockupMonth{display:flex;align-items:center;gap:7px}
+#gpMockupHeader #monthOverview{padding:0!important;margin:0!important;border:0!important;box-shadow:none!important;background:transparent!important;max-width:260px}
+#gpMockupHeader #monthOverview .month-overview-head{display:block}
+#gpMockupHeader #monthOverview .month-overview-head>div:first-child{display:none}
+#gpMockupHeader #monthOverview #monthOverviewStats,#gpMockupHeader #monthOverview #monthCalendar{display:none!important}
+#gpMockupHeader #monthOverview .month-controls{display:flex;gap:4px}
+#gpMockupHeader #monthOverview .month-controls button,#gpMockupHeader #monthOverview input{height:42px;min-height:42px;border-radius:9px;border:1px solid #d7e2e8;background:#fff}
+#gpMockupHeader #monthOverview input{min-width:125px;max-width:165px;padding:4px 8px;font-size:14px}
+#gpMockupHeader #refresh{background:#fff;color:#244454;border:1px solid #dce5e8;border-radius:9px;min-height:42px;font-size:13px;padding:9px}
+#gpMockupHeader #logout{display:none}
+#gpMockupMetrics{display:grid;grid-template-columns:1.8fr repeat(5,minmax(0,1fr));gap:8px;margin:0 0 16px}
+#gpMockupMetrics .gp-metric{background:#fff;border:1px solid #e0e8ec;border-radius:12px;padding:15px 13px;min-height:112px;min-width:0}
+#gpMockupMetrics .gp-metric .gp-label{display:block;color:#3b5364;font-size:12px;line-height:1.3}
+#gpMockupMetrics .gp-metric .gp-value{display:block;color:#12223e;font-size:clamp(18px,1.7vw,25px);font-weight:800;margin-top:12px;overflow-wrap:anywhere}
+#gpMockupMetrics .gp-metric .gp-note{display:block;font-size:11px;color:#6c8090;margin-top:6px}
+#gpMockupMetrics .gp-progress .gp-label{font-size:17px;font-weight:800;color:#152341}
+#gpMockupMetrics .gp-progress .gp-value{font-size:15px;margin-top:14px}
+#gpMockupMetrics .gp-progress-track{height:10px;background:#e4edf2;border-radius:20px;overflow:hidden;margin-top:10px}
+#gpMockupMetrics .gp-progress-fill{height:100%;width:0;background:linear-gradient(90deg,#1bb393,#087969);border-radius:20px;transition:width .25s}
+#gpMockupShell .gp-cockpit-head{position:static!important;background:none!important;border:0!important;padding:0!important;margin:0 0 9px!important;min-height:38px}
+#gpMockupShell .gp-cockpit-head>strong{font-size:12px!important;letter-spacing:.08em;color:#6a7f89}
+#gpMockupShell .gp-cockpit-nav{display:grid!important;grid-template-columns:repeat(6,minmax(0,1fr))!important;gap:9px!important;margin:0 0 15px!important}
+#gpMockupShell .gp-cockpit-nav button{border-radius:12px!important;min-height:125px!important;padding:15px 12px!important;gap:9px!important;align-items:flex-start!important;justify-content:center!important;box-shadow:none!important;font-size:24px!important;transition:transform .12s}
+#gpMockupShell .gp-cockpit-nav button:hover{transform:translateY(-2px)}
+#gpMockupShell .gp-cockpit-nav button strong{font-size:14px!important;line-height:1.2;color:#142a3d}
+#gpMockupShell .gp-cockpit-nav button small{font-size:12px!important;line-height:1.3}
+#gpMockupShell .gp-cockpit-quick{margin:0!important;grid-template-columns:repeat(4,minmax(0,1fr));border-radius:12px!important}
+#gpMockupShell .gp-cockpit-quick button{min-height:65px;padding:11px 13px!important}
+#gpMockupShell .gp-cockpit-quick button strong{font-size:13px}
+#gpMockupShell .gp-cockpit-quick button small{font-size:11px}
+#gpMockupShell #gpCockpitHint{display:none}
+#gpMockupShell #gpOverviewShortcut{display:none}
+#gpMockupShell #gpUploadShortcut{font-size:14px!important;padding:12px 17px!important;background:#096e5a!important;color:#fff!important}
+#gpMockupDetail{background:#f5f8fa;border:1px solid #dfe8ed;border-radius:17px;padding:14px;margin:0 0 18px}
+#gpMockupDetail[hidden]{display:none!important}
+#gpMockupDetailHead{display:flex;align-items:center;justify-content:space-between;gap:12px;background:#fff;border:1px solid #dce6eb;border-radius:12px;padding:13px 16px;margin-bottom:12px}
+#gpMockupDetailHead strong{font-size:20px;color:#152d42}
+#gpMockupDetailHead button{border:1px solid #d4e4e4;background:#edf8f5;color:#105849;border-radius:9px;padding:9px 13px;cursor:pointer}
+#gpMockupDetailBody>.card,#gpMockupDetailBody>.tile,#gpMockupDetailBody>details{margin:0 0 12px!important;border:1px solid #dce6eb!important;border-radius:13px!important;background:#fff!important;box-shadow:none!important;padding:14px!important}
+#gpMockupDetailBody h2{font-size:19px;color:#173e46}
+#gpMockupDetailBody .gp-area-hidden{display:none!important}
+#gpMockupDetailBody>.gp-area-hidden{display:none!important}
+#gpMockupExtra{margin-top:10px}
+#gpMockupExtra>summary{cursor:pointer;font-weight:650;font-size:13px;color:#526d7d;padding:10px}
+#gpMockupExtra #quickKpis{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+#gpMockupExtra #quickKpis>*{margin:0!important;min-height:80px!important}
+#gpMockupLegacy{display:none!important}
+#gpMockupShell #gpMockupStatus{font-size:11px;color:#738694;margin:10px 0 0}
+@media(max-width:1250px){#gpMockupHeader{grid-template-columns:1fr 1.4fr;gap:12px}#gpMockupHeader #gpMockupMonth{grid-column:1/-1;justify-content:flex-end}#gpMockupMetrics{grid-template-columns:repeat(3,minmax(0,1fr))}#gpMockupMetrics .gp-progress{grid-column:span 3}#gpMockupShell .gp-cockpit-nav{grid-template-columns:repeat(3,minmax(0,1fr))!important}}
+@media(max-width:700px){#app{padding:5px!important}#gpMockupShell{padding:11px;border-radius:13px}#gpMockupHeader{display:flex;flex-direction:column;align-items:stretch;gap:9px}#gpMockupHeader #gpMockupMonth{justify-content:space-between}#gpMockupHeader #businessSwitchCard #gp-business-switch{flex-wrap:wrap!important}#gpMockupMetrics{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}#gpMockupMetrics .gp-progress{grid-column:span 2}#gpMockupMetrics .gp-metric{padding:10px;min-height:86px}#gpMockupMetrics .gp-metric .gp-value{font-size:20px}#gpMockupShell .gp-cockpit-nav{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:7px!important}#gpMockupShell .gp-cockpit-nav button{min-height:95px!important;padding:11px!important}#gpMockupShell .gp-cockpit-quick{grid-template-columns:repeat(2,minmax(0,1fr))}#gpMockupExtra #quickKpis{grid-template-columns:repeat(2,minmax(0,1fr))}#gpMockupDetail{padding:8px}}
 </style></head><body>
 <header><div class="gpHeaderBar"><button id="gpHeaderHome" type="button" aria-label="GastroPilot – zur Betriebsübersicht" style="appearance:none;background:transparent;border:0;padding:0;color:inherit;text-align:left;cursor:pointer;display:block"><strong>GastroPilot</strong><small>Dein Lokal. Deine Zahlen. Dein Überblick.</small></button><nav id="gpHeaderSwitch" class="hidden" aria-label="Betrieb wechseln"></nav></div></header>
 <main><section id="login" class="card"><h2>Anmelden</h2><form id="loginForm"><label>E-Mail<input id="email" type="email" autocomplete="username" required></label><label>Passwort<input id="password" type="password" autocomplete="current-password" required></label><button>Anmelden</button></form><p id="loginMsg" class="status"></p></section>
@@ -1795,59 +1857,96 @@ async function refreshVisibleDashboard(){if(!user||E('app').classList.contains('
 // Keine zeitgesteuerten Abfragen; ChatGPT-Import schreibt die Daten in die Datenbank.
 </script><script>setTimeout(()=>{const f=document.getElementById('loginForm'),m=document.getElementById('loginMsg');if(f&&!f.onsubmit&&m)m.textContent='Die Anwendung konnte nicht geladen werden. Bitte Seite neu laden. Falls diese Meldung bleibt, ist die Programm-Bibliothek blockiert.'},4500);window.addEventListener('error',e=>{const m=document.getElementById('loginMsg');if(m)m.textContent='Ladefehler: '+e.message});window.addEventListener('unhandledrejection',e=>{const m=document.getElementById('loginMsg');if(m)m.textContent='Verbindungsfehler: '+(e.reason?.message||String(e.reason))});</script><script>
 (function(){
+'use strict';
+const areaNames={daily:'Tagesabschlüsse',costs:'Kosten & Einkauf',staff:'Personal',ledger:'Buchhaltung & Monatsvergleich',articles:'Artikelanalyse',planning:'Einkaufsplanung',upload:'Unterlagen hochladen',archive:'Datenarchiv',bank:'Bank & Liquidität'};
 const groups={
- daily:['salesSection','monthlyReference','dailyArchiveDisclosure','operating'],
+ daily:['salesSection','monthlyReference','operating','dailyArchiveDisclosure'],
  costs:['monthlyCostOverview','financeSection','purchaseItemsCalc','costAlertsTile','purchaseAssign'],
- staff:['judithPersonnelTile','financeSection','judithPersonnelLevies','judithPersonnelRows'],
+ staff:['judithPersonnelTile','financeSection'],
  ledger:['ledgerComparisonSection','profitGoalTile','salesTargetTile','judithSimpleResult','judithRentTile'],
  articles:['topArticles','slowArticles','profitability','menuDashboardTile','judithCakePricingTile','kalkulationLink','operating'],
- planning:['weeklyPurchase','recipeCostTile','kalkulationLink']
+ planning:['weeklyPurchase','recipeCostTile','kalkulationLink'],
+ upload:['intake'],archive:['centralArchive','archive'],bank:['financeSection']
 };
-const allIds=['judithAnalysisLink','kalkulationLink','menuDashboardTile','recipeCostTile','costAlertsTile','judithCakePricingTile','judithPersonnelTile','judithRentTile','salesTargetTile','profitGoalTile','judithSimpleResult','intake','monthlyReference','salesSection','monthlyCostOverview','ledgerComparisonSection','operating','financeSection','purchaseItemsCalc','weeklyPurchase','topArticles','profitability','slowArticles','centralArchive','purchaseAssign','archive'];
-const areas={bank:'costs',invoices:'costs',ledger:'ledger',archive:'costs'};
-let active=null, uploadOpen=false,archiveOpen=false;
-function render(){
- document.body.classList.add('gp-cockpit-active');
- document.querySelectorAll('#gpCockpitNav [data-gp-area]').forEach(b=>b.setAttribute('aria-current',String(b.dataset.gpArea===active)));
- const visible=new Set(active?(groups[active]||[]):[]);
- if(uploadOpen)visible.add('intake');
- if(archiveOpen)visible.add('centralArchive');
- for(const id of allIds){const el=document.getElementById(id);if(el)el.classList.toggle('gp-area-hidden',!visible.has(id));}
- // Altmodule, die nicht in den 6 Bereichen gebraucht werden, auf Startseite verbergen.
- for(const id of ['quickNav','monthlyReference','salesSection','monthlyCostOverview','ledgerComparisonSection','operating','financeSection','purchaseItemsCalc','weeklyPurchase','topArticles','profitability','slowArticles','centralArchive','purchaseAssign','archive']){
-  const el=document.getElementById(id);if(el&&!visible.has(id))el.classList.add('gp-area-hidden');
- }
- // Nicht verknüpfte Altansichten auf dem Cockpit ausblenden, ohne Inhalte zu löschen.
- const anchor=document.getElementById('gpCockpitHint'),intake=document.getElementById('intake');
- if(anchor){
-  let n=anchor.nextElementSibling;
-  while(n){const next=n.nextElementSibling;if(n.id!=='gpCockpitDetailHeading'&&n!==intake&&n.classList.contains('card')&&!visible.has(n.id))n.classList.add('gp-area-hidden');n=next;}
- }
- const h=document.getElementById('gpCockpitDetailHeading');
- if(h){h.hidden=!active&&!uploadOpen&&!archiveOpen;const label=h.querySelector('strong');if(label)label.textContent=uploadOpen?'📷 Unterlagen hochladen':archiveOpen?'📂 Datenarchiv':active?(document.querySelector('[data-gp-area="'+active+'"] strong')?.textContent||'Details'):'Übersicht';}
- const hint=document.getElementById('gpCockpitHint');if(hint)hint.textContent=active?'Detailansicht · Mit „Übersicht“ zum Cockpit zurück.':'Sechs Hauptbereiche · Ein Klick öffnet die Detailseite.';
+let area=null;
+const el=id=>document.getElementById(id);
+function valueFor(words){
+ const tiles=Array.from(el('quickKpis')?.children||[]);
+ for(const tile of tiles){const t=tile.textContent.toLowerCase();if(words.some(w=>t.includes(w))){const candidates=Array.from(tile.querySelectorAll('strong,b,.value,.big,.amount,h3,h2'));const numeric=candidates.map(x=>x.textContent.trim()).find(x=>/\d/.test(x));if(numeric)return numeric;const m=tile.textContent.match(/(?:€\s*)?[\d.]+,\d+\s*%?|\d+(?:[.,]\d+)?\s*%/);if(m)return m[0];}}
+ return '—';
 }
-function openArea(area){active=area;uploadOpen=false;archiveOpen=false;render();document.getElementById('gpCockpitDetailHeading')?.scrollIntoView({behavior:'smooth',block:'start'});}
-function openUpload(){uploadOpen=true;archiveOpen=false;render();document.getElementById('intake')?.scrollIntoView({behavior:'smooth',block:'start'});}
-function home(){active=null;uploadOpen=false;archiveOpen=false;render();window.scrollTo({top:0,behavior:'smooth'});}
+function monthText(){const input=el('month');if(!input?.value)return 'Monat';const [y,m]=input.value.split('-').map(Number);return new Intl.DateTimeFormat('de-AT',{month:'long',year:'numeric'}).format(new Date(y,m-1,1));}
+function metric(title,val,note,cls=''){return '<div class="gp-metric '+cls+'"><span class="gp-label">'+title+'</span><strong class="gp-value">'+val+'</strong><span class="gp-note">'+note+'</span></div>';}
+function updateMetrics(){
+ const m=el('gpMockupMetrics');if(!m)return;
+ const summary=el('monthOverviewStats')?.textContent||'';
+ const match=summary.match(/(?:Erfasste Tage|Umsatztage)\s*(\d+)/i);
+ const count=match?Number(match[1]):Number((el('summary')?.textContent||'').match(/(\d+)\s+Umsatztage/)?.[1]||0);
+ const month=el('month')?.value||'';const [y,mo]=month.split('-').map(Number);const days=y&&mo?new Date(y,mo,0).getDate():31;
+ const pct=days?Math.min(100,Math.round(count/days*100)):0;
+ const tiles=Array.from(el('quickKpis')?.children||[]);
+ function tileValue(term){const t=tiles.find(n=>n.textContent.toLowerCase().includes(term));if(!t)return '—';const v=t.querySelector('.v,.value,.kpi-value,strong,b');if(v&&/\d/.test(v.textContent))return v.textContent.trim();const text=t.textContent;const matches=text.match(/€\s*[\d.]+,\d+|\d+[.,]\d+\s*%/g);return matches?.at(-1)||'—';}
+ const gross=tileValue('bruttoumsatz'),personal=tileValue('personalquote');
+ const cost=tileValue('wareneinsatzquote')!=='—'?tileValue('wareneinsatzquote'):tileValue('wareneinsatz');
+ const bon=tileValue('ø bon')!=='—'?tileValue('ø bon'):tileValue('ø-bon')!=='—'?tileValue('ø-bon'):tileValue('durchschnittsbon');
+ const result=tileValue('vorläufiges ergebnis');
+ m.innerHTML='<div class="gp-metric gp-progress"><span class="gp-label">Monatsfortschritt '+monthText()+'</span><strong class="gp-value">'+count+' / '+days+' Tage · '+pct+' %</strong><div class="gp-progress-track"><div class="gp-progress-fill" style="width:'+pct+'%"></div></div><span class="gp-note">Erfasste Umsatztage im gewählten Monat</span></div>'+
+ metric('▥ Umsatz brutto',gross,'Aktueller Monat')+metric('€ Ø Bon',bon,'Nur bei vorhandenen Bon-Daten')+metric('♟ Personalquote',personal,'Ziel Friedrich: 35 %')+metric('◈ Wareneinsatz',cost,'Einkaufsquote ≠ Lager-Wareneinsatz')+metric('▤ Vorläufiges Ergebnis',result,'Nur bestätigte Berechnung');
+}
+function openArea(name){
+ area=name;
+ const body=el('gpMockupDetailBody'),detail=el('gpMockupDetail');if(!body||!detail)return;
+ const show=new Set(groups[name]||[]);
+ Array.from(body.children).forEach(node=>node.classList.toggle('gp-area-hidden',!show.has(node.id)));
+ el('gpMockupDetailTitle').textContent=areaNames[name]||name;
+ detail.hidden=false;
+ document.querySelectorAll('#gpCockpitNav [data-gp-area]').forEach(b=>b.setAttribute('aria-current',String(b.dataset.gpArea===name)));
+ detail.scrollIntoView({behavior:'smooth',block:'start'});
+}
+function home(){area=null;const d=el('gpMockupDetail');if(d)d.hidden=true;document.querySelectorAll('#gpCockpitNav [data-gp-area]').forEach(b=>b.setAttribute('aria-current','false'));window.scrollTo({top:0,behavior:'smooth'});}
 function init(){
- const nav=document.getElementById('gpCockpitNav');if(!nav)return;
- const hint=document.getElementById('gpCockpitHint');
- if(hint&&!document.getElementById('gpCockpitDetailHeading')){
-  const head=document.createElement('div');head.id='gpCockpitDetailHeading';head.className='gp-cockpit-detail-heading';head.innerHTML='<strong>Details</strong><button type="button">← Zur Übersicht</button>';head.querySelector('button').addEventListener('click',home);hint.insertAdjacentElement('afterend',head);
- }
- nav.addEventListener('click',e=>{const b=e.target.closest('[data-gp-area]');if(b)openArea(b.dataset.gpArea);});
- document.getElementById('gpOverviewShortcut')?.addEventListener('click',home);
- document.getElementById('gpUploadShortcut')?.addEventListener('click',openUpload);
- document.getElementById('gpCockpitQuick')?.addEventListener('click',e=>{
-  const b=e.target.closest('[data-gp-quick]');if(!b)return;const k=b.dataset.gpQuick;
-  if(k==='archive'){active='costs';archiveOpen=true;uploadOpen=false;render();document.getElementById('centralArchive')?.scrollIntoView({behavior:'smooth',block:'start'});}
-  else{openArea(areas[k]||'costs');const target=k==='ledger'?'ledgerComparisonSection':k==='invoices'?'monthlyCostOverview':'financeSection';document.getElementById(target)?.scrollIntoView({behavior:'smooth',block:'start'});}
+ const app=el('app'),switcher=el('businessSwitchCard'),nav=el('gpCockpitNav'),quick=el('gpCockpitQuick'),head=app?.querySelector(':scope > .row'),kpis=el('quickKpis'),summary=el('summary');
+ if(!app||!switcher||!nav||!head||!kpis)return;
+ const shell=document.createElement('div');shell.id='gpMockupShell';app.insertBefore(shell,app.firstChild);
+ const header=document.createElement('div');header.id='gpMockupHeader';shell.appendChild(header);
+ const brand=document.createElement('div');brand.id='gpMockupBrand';brand.innerHTML='<strong>GastroPilot</strong><small id="gpMockupBusinessLabel">Betriebssteuerung</small>';header.appendChild(brand);
+ header.appendChild(switcher);
+ const month=document.createElement('div');month.id='gpMockupMonth';header.appendChild(month);
+ month.appendChild(el('monthOverview'));month.appendChild(el('refresh'));
+ const metrics=document.createElement('div');metrics.id='gpMockupMetrics';shell.appendChild(metrics);
+ shell.appendChild(el('gpCockpitNav').previousElementSibling);shell.appendChild(nav);shell.appendChild(quick);
+ const status=document.createElement('p');status.id='gpMockupStatus';status.textContent='Daten und Auswertungen bleiben je Betrieb getrennt · Kein automatisches Neuladen.';shell.appendChild(status);
+ const detail=document.createElement('section');detail.id='gpMockupDetail';detail.hidden=true;app.insertBefore(detail,shell.nextSibling);
+ const dhead=document.createElement('div');dhead.id='gpMockupDetailHead';dhead.innerHTML='<strong id="gpMockupDetailTitle">Details</strong><button type="button" id="gpMockupBack">← Zur Übersicht</button>';detail.appendChild(dhead);
+ const body=document.createElement('div');body.id='gpMockupDetailBody';detail.appendChild(body);
+ const extra=document.createElement('details');extra.id='gpMockupExtra';extra.innerHTML='<summary>Weitere Kennzahlen anzeigen</summary>';extra.appendChild(kpis);detail.appendChild(extra);
+ // Alle vorhandenen Auswertungen und Upload-Formulare in einen gemeinsamen Detailbereich verschieben.
+ // Bestehende IDs und Eventhandler bleiben erhalten.
+ const exclusions=new Set([shell,detail,head,summary,el('logout'),el('gpCockpitHint')]);
+ Array.from(app.children).forEach(node=>{
+  if(exclusions.has(node))return;
+  if(node.id==='quickNav'){node.style.display='none';return;}
+  if(node.id==='gpCockpitDetailHeading'){node.remove();return;}
+  body.appendChild(node);
  });
- document.querySelectorAll('#quickNav [data-target]').forEach(b=>b.addEventListener('click',()=>{const id=b.dataset.target;if(id==='intake')openUpload();else if(id==='centralArchive'){archiveOpen=true;active='costs';render();}}));
- home();
+ head.style.display='none';
+ const logout=el('logout');if(logout){logout.style.display='none';shell.appendChild(logout);}
+ const hint=el('gpCockpitHint');if(hint)hint.style.display='none';
+ if(summary){summary.style.fontSize='11px';shell.appendChild(summary);}
+ el('gpMockupBack')?.addEventListener('click',home);
+ el('gpOverviewShortcut')?.addEventListener('click',home);
+ el('gpUploadShortcut')?.addEventListener('click',()=>openArea('upload'));
+ nav.addEventListener('click',e=>{const b=e.target.closest('[data-gp-area]');if(b)openArea(b.dataset.gpArea);});
+ quick?.addEventListener('click',e=>{const b=e.target.closest('[data-gp-quick]');if(!b)return;const key=b.dataset.gpQuick;openArea(key==='invoices'?'costs':key==='ledger'?'ledger':key==='archive'?'archive':'bank');});
+ const label=el('activeBusinessTitle');
+ const sync=()=>{const t=label?.textContent||'';el('gpMockupBusinessLabel').textContent=t.replace(' · Betriebssteuerung','')||'Betriebssteuerung';updateMetrics();};
+ const obs=new MutationObserver(()=>{clearTimeout(window.__gpCockpitSyncTimer);window.__gpCockpitSyncTimer=setTimeout(sync,120);});
+ [label,kpis,el('monthOverviewStats'),summary].filter(Boolean).forEach(n=>obs.observe(n,{childList:true,subtree:true,characterData:true}));
+ el('month')?.addEventListener('change',()=>setTimeout(sync,80));
+ el('refresh')?.addEventListener('click',()=>setTimeout(sync,350));
+ sync();home();
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
-})();
+};
 </script></body></html>
 
