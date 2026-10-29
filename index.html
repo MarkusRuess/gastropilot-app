@@ -2164,5 +2164,33 @@ const label=byId('activeBusinessTitle');if(label)new MutationObserver(()=>setTim
 window.addEventListener('gp:monthly-data',e=>{latest=e.detail;update();});if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
 </script>
+
+<style id="gp-judith-mockup-layout-v2">
+body.gp-judith-design #gpMockupShell{padding:18px 20px!important}
+body.gp-judith-design #gpCockpitNav{grid-template-columns:repeat(6,minmax(0,1fr))!important;gap:9px!important}
+body.gp-judith-design #gpCockpitNav button{min-height:112px!important;padding:12px 10px!important;border:1px solid #f2cbdc!important;border-radius:13px!important;background:#fff0f6!important;color:#a53069!important}
+body.gp-judith-design #gpCockpitNav button:nth-child(3){background:#fff6e8!important}
+body.gp-judith-design #gpCockpitNav button:nth-child(4){background:#f2edff!important}
+body.gp-judith-design #gpCockpitNav button:nth-child(5){background:#fff0f5!important}
+body.gp-judith-design #gpCockpitNav button:nth-child(6){background:#f7edfa!important}
+body.gp-judith-design #gpCockpitQuick button{border-color:#f0dce7!important}
+body.gp-judith-design #gpMockupMetrics .gp-progress-fill{background:#ec2e80!important}
+body.gp-judith-design #gpMockupMetrics .gp-metric .gp-note{color:#885b73!important}
+body.gp-judith-design #gpMockupMetrics .gp-metric .gp-note.jd-wrong-target{display:none!important}
+body.gp-judith-design #gpJudithFinancialPreview{margin-top:10px}
+body.gp-judith-design #gpJudithMockupSections{display:grid;grid-template-columns:1.15fr 1fr 1fr;gap:12px;margin:14px auto;max-width:1460px}
+#gpJudithMockupSections{display:none}
+#gpJudithMockupSections .jd-mock-card{min-width:0;background:#fff;border:1px solid #efd6e3;border-radius:14px;padding:15px;box-shadow:0 4px 14px #a9547a0c}
+#gpJudithMockupSections h3{color:#c02472;font-size:17px;margin:0 0 10px}
+#gpJudithMockupSections p{color:#765a6a;font-size:13px;margin:8px 0}
+#gpJudithMockupSections button{border:1px solid #e8c5d6;background:#fff5fa;color:#9c3169;border-radius:8px;padding:9px 12px;cursor:pointer;font-weight:700;margin-top:8px}
+@media(max-width:1000px){body.gp-judith-design #gpCockpitNav{grid-template-columns:repeat(3,minmax(0,1fr))!important}body.gp-judith-design #gpJudithMockupSections{grid-template-columns:1fr}}
+@media(max-width:550px){body.gp-judith-design #gpCockpitNav{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
+</style>
+<script id="gp-judith-mockup-layout-runtime-v2">
+(()=>{'use strict';const $=id=>document.getElementById(id);const labels=[['🎂','Tortenaufträge','Finanzübersicht · Judith AI','articles'],['🥄','Rezepte & Kalkulation','Zutaten · EK · Margen','planning'],['🛒','Kosten & Einkauf','Lieferanten · Rechnungen','costs'],['👥','Personal','Löhne · Quote','staff'],['📚','Buchhaltung','Monatsvergleich · Ergebnis','ledger'],['⭐','Top Torten & Artikel','Top 30 · Analyse','articles']];
+function paint(){const isJudith=document.body.classList.contains('gp-judith-design');const nav=$('gpCockpitNav');if(!nav)return;if(isJudith){const buttons=[...nav.querySelectorAll('button[data-gp-area]')];if(buttons.length===6){buttons.forEach((b,i)=>{const d=labels[i];b.dataset.gpArea=d[3];const strong=b.querySelector('strong'),small=b.querySelector('small');if(strong)strong.textContent=d[1];if(small)small.textContent=d[2];b.firstChild.textContent=d[0]+' ';});}const metric=$('gpMockupMetrics');if(metric){metric.querySelectorAll('.gp-note').forEach(n=>{if(/ziel friedrich/i.test(n.textContent))n.textContent='Judith · Personalquote (vorläufig)';});}const panel=$('gpJudithMockupSections');if(panel)panel.hidden=false;}else{const buttons=[...nav.querySelectorAll('button[data-gp-area]')];const old=[['📊','Tagesabschlüsse','Umsatz · BONit','daily'],['🧾','Kosten & Einkauf','Rechnungen · EK','costs'],['👥','Personal','Quote · Löhne','staff'],['📚','Buchhaltung','Salden · Ergebnis','ledger'],['🏆','Artikelanalyse','Top 30 · Preise','articles'],['🛒','Einkaufsplanung','Bedarf · Rezepturen','planning']];buttons.forEach((b,i)=>{const d=old[i];if(!d)return;b.dataset.gpArea=d[3];if(b.querySelector('strong'))b.querySelector('strong').textContent=d[1];if(b.querySelector('small'))b.querySelector('small').textContent=d[2];b.firstChild.textContent=d[0]+' ';});const panel=$('gpJudithMockupSections');if(panel)panel.hidden=true;}}
+function init(){const shell=$('gpMockupShell');if(!shell)return;if(!$('gpJudithMockupSections')){const s=document.createElement('section');s.id='gpJudithMockupSections';s.setAttribute('aria-label','Judith Auswertungen laut Designvorlage');s.innerHTML='<article class="jd-mock-card"><h3>📅 Umsätze · Tageskalender</h3><p>Die täglichen Bruttoumsätze findest du im Monatskalender direkt darunter.</p><p>Jeder Tag kann zur Detailansicht geöffnet werden.</p><button data-open="daily">Tageskalender & Details ›</button></article><article class="jd-mock-card"><h3>🎂 Tortenaufträge · Finanzübersicht</h3><p>Auftragsdaten aus Judith AI sind noch nicht vollständig verbunden.</p><p>Bis zur geprüften Übertragung werden keine Auftragszahlen erfunden.</p><button data-open="articles">Artikel & Umsatzanalyse ›</button></article><article class="jd-mock-card"><h3>⭐ Top Torten & Artikel</h3><p>Die Top-30-Auswertung wächst mit den erfassten Artikeldaten.</p><p>Nur tatsächlich übernommene Artikel werden ausgewertet.</p><button data-open="articles">Top 30 anzeigen ›</button></article>';shell.insertAdjacentElement('afterend',s);s.addEventListener('click',e=>{const b=e.target.closest('button[data-open]');if(b)document.querySelector('#gpCockpitNav button[data-gp-area="'+b.dataset.open+'"]')?.click();});}const business=$('activeBusinessTitle');if(business)new MutationObserver(()=>setTimeout(paint,90)).observe(business,{subtree:true,childList:true,characterData:true});const metric=$('gpMockupMetrics');if(metric)new MutationObserver(()=>{if(document.body.classList.contains('gp-judith-design'))metric.querySelectorAll('.gp-note').forEach(n=>{if(/ziel friedrich/i.test(n.textContent))n.textContent='Judith · Personalquote (vorläufig)';});}).observe(metric,{subtree:true,childList:true});document.querySelectorAll('select').forEach(x=>x.addEventListener('change',()=>setTimeout(paint,180)));setTimeout(paint,200);setTimeout(paint,1200);}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();})();
+</script>
 </body></html>
 
