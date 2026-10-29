@@ -2126,5 +2126,43 @@ function init(){
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
-</script></body></html>
+</script>
+<style id="gp-judith-design-20261029">
+/* Judith only: isolated dashboard treatment, Friedrich untouched. */
+body.gp-judith-design{--jd-ink:#56344c;--jd-pink:#bf568c;--jd-soft:#fff0f7;--jd-line:#f0dce7;background:#fff9fc!important}
+body.gp-judith-design #gpMockupShell{background:linear-gradient(140deg,#fff,#fff1f8);border-color:var(--jd-line);box-shadow:0 10px 32px #b54d8120}
+body.gp-judith-design #gpMockupBrand strong{color:#9e3972!important}
+body.gp-judith-design #gpMockupMetrics .gp-metric,body.gp-judith-design #gpMockupMetrics .gp-progress,body.gp-judith-design .gp-ref-panel,body.gp-judith-design #gpDailyCalendarPanel,body.gp-judith-design #gpJudithFinancialPreview{border-color:var(--jd-line)!important;box-shadow:0 4px 18px #a9547a12!important}
+body.gp-judith-design #gpReferencePreviews{grid-template-columns:repeat(2,minmax(0,1fr))}
+body.gp-judith-design #gpReferencePreviews .gp-ref-panel header{background:var(--jd-soft)!important}
+body.gp-judith-design #gpDailyCalendarPanel header strong{color:var(--jd-ink)}
+body.gp-judith-design #gpMockupStatus{color:#8d5575}
+#gpJudithFinancialPreview{display:none;background:#fff;border:1px solid #f0dce7;border-radius:16px;padding:17px;max-width:1460px;margin:0 auto 14px}
+body.gp-judith-design #gpJudithFinancialPreview{display:block}
+#gpJudithFinancialPreview h2{margin:0 0 5px;font-size:20px;color:#713957}
+#gpJudithFinancialPreview .jd-sub{margin:0 0 14px;color:#8d6479;font-size:12px}
+#gpJudithFinancialPreview .jd-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+#gpJudithFinancialPreview .jd-card{border:1px solid #f0dce7;background:#fffafd;border-radius:13px;padding:14px;min-width:0}
+#gpJudithFinancialPreview .jd-card h3{font-size:15px;margin:0 0 9px;color:#853b66}
+#gpJudithFinancialPreview .jd-card p{margin:6px 0;font-size:13px;color:#624a5a}
+#gpJudithFinancialPreview .jd-card strong{color:#81345f}
+#gpJudithFinancialPreview button{cursor:pointer;border:1px solid #e9bfd3;border-radius:9px;background:#fff;color:#983b72;font-weight:700;padding:8px 11px;margin-top:8px}
+#gpJudithFinancialPreview button:hover{background:#ffeaf4}
+@media(max-width:850px){#gpJudithFinancialPreview .jd-grid{grid-template-columns:1fr}body.gp-judith-design #gpReferencePreviews{grid-template-columns:1fr}}
+</style>
+<script id="gp-judith-design-runtime-20261029">
+(()=>{'use strict';
+const JUDITH_ID='87889eaf-f865-4e3a-8f9a-cd01db483e0e';
+const byId=id=>document.getElementById(id);
+let latest=null;
+function judithSelected(){const label=(byId('activeBusinessTitle')?.textContent||byId('gpMockupBusinessLabel')?.textContent||'').toLowerCase();const active=document.querySelector('#businessSelect, #business, select[id*="business"]');return (active?.value===JUDITH_ID)||(/judith|j\\.w\\./.test(label)&&!/friedrich/.test(label));}
+function update(){const yes=judithSelected();document.body.classList.toggle('gp-judith-design',yes);const box=byId('gpJudithFinancialPreview');if(!box)return;if(!yes)return;const month=byId('month')?.value||'';const valid=latest&&latest.businessId===JUDITH_ID&&latest.month===month;const sales=valid&&Number.isFinite(Number(latest.gross))?new Intl.NumberFormat('de-AT',{style:'currency',currency:'EUR'}).format(Number(latest.gross)):'Noch keine bestätigten Monatsdaten';const days=valid&&Array.isArray(latest.days)?latest.days.length+' erfasste Tage':'Tagesabschlüsse werden geladen';byId('jdSales').textContent=sales;byId('jdDays').textContent=days;}
+function init(){const app=byId('app');if(!app||byId('gpJudithFinancialPreview'))return;const box=document.createElement('section');box.id='gpJudithFinancialPreview';box.setAttribute('aria-label','Judith Finanzübersicht');box.innerHTML='<h2>🎂 Judith und die Torten · Finanzübersicht</h2><p class="jd-sub">Monat für Monat wachsen die Auswertungen mit den tatsächlich erfassten Daten. Keine Beispielumsätze.</p><div class="jd-grid"><article class="jd-card"><h3>💗 Monatsumsatz & Tagesabschlüsse</h3><p><strong id="jdSales">Daten werden geladen</strong></p><p id="jdDays">Tagesabschlüsse werden geladen</p><button type="button" data-jd-open="daily">Tagesabschlüsse öffnen ›</button></article><article class="jd-card"><h3>🎂 Tortenaufträge & Rezepturen</h3><p>Aufträge aus Judith AI: Schnittstelle noch nicht bestätigt.</p><p>Rezepturen und Einkaufspreise: vorhandene Kalkulation öffnen.</p><button type="button" data-jd-open="planning">Rezepturen öffnen ›</button><button type="button" data-jd-open="articles">Artikelanalyse ›</button></article><article class="jd-card"><h3>📊 Betriebsergebnis & Buchhaltung</h3><p>Ein verlässliches Ergebnis benötigt vollständige Kosten- und Personaldaten.</p><p>Fehlende Werte bleiben ausdrücklich offen.</p><button type="button" data-jd-open="ledger">Monatsvergleich öffnen ›</button><button type="button" data-jd-open="staff">Personal ›</button></article></div>';
+const calendar=byId('gpDailyCalendarPanel'),preview=byId('gpReferencePreviews');if(calendar?.parentNode)calendar.parentNode.insertBefore(box,calendar.nextSibling);else if(preview?.parentNode)preview.parentNode.insertBefore(box,preview);else app.appendChild(box);
+box.addEventListener('click',e=>{const b=e.target.closest('[data-jd-open]');if(!b)return;const target=document.querySelector('#gpCockpitNav [data-gp-area="'+b.dataset.jdOpen+'"]');target?.click();});
+const label=byId('activeBusinessTitle');if(label)new MutationObserver(()=>setTimeout(update,30)).observe(label,{subtree:true,childList:true,characterData:true});document.querySelectorAll('select').forEach(x=>x.addEventListener('change',()=>setTimeout(update,160)));byId('refresh')?.addEventListener('click',()=>setTimeout(update,500));update();}
+window.addEventListener('gp:monthly-data',e=>{latest=e.detail;update();});if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+})();
+</script>
+</body></html>
 
