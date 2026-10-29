@@ -2026,7 +2026,7 @@ const groups={
  daily:['salesSection','monthlyReference','operating','dailyArchiveDisclosure'],
  costs:['monthlyCostOverview','financeSection','purchaseItemsCalc','costAlertsTile','purchaseAssign'],
  staff:['judithPersonnelTile','friedrichPersonnelTile','financeSection'],
- ledger:['ledgerComparisonSection','profitGoalTile','salesTargetTile','judithSimpleResult','judithRentTile'],
+ ledger:['ledgerComparisonSection','judithSimpleResult','judithRentTile'],
  articles:['topArticles','slowArticles','profitability','menuDashboardTile','judithCakePricingTile','kalkulationLink','operating'],
  planning:['weeklyPurchase','recipeCostTile','kalkulationLink'],
  upload:['intake'],archive:['centralArchive','archive'],bank:['financeSection']
@@ -2261,7 +2261,7 @@ const areaMap={
 'Rezepte & Kalkulation':{title:'Rezepte & Kalkulation',ids:['recipeCostTile','kalkulationLink','judithCakePricingTile','purchaseItemsCalc'],message:'Vorhandene Zutaten, Einkaufspreise und Rezepturen. Fehlende Rezeptmengen bleiben offen.'},
 'Kosten & Einkauf':{title:'Kosten & Einkauf',ids:['monthlyCostOverview','financeSection','purchaseItemsCalc','costAlertsTile','purchaseAssign','weeklyPurchase'],message:''},
 'Personal':{title:'Personal · Judith',ids:['judithPersonnelTile','financeSection'],message:'Nur für Judith zugeordnete Personalwerte verwenden.'},
-'Buchhaltung':{title:'Buchhaltung · Monatsvergleich',ids:['ledgerComparisonSection','profitGoalTile','salesTargetTile','judithSimpleResult','judithRentTile'],message:''},
+'Buchhaltung':{title:'Buchhaltung · Monatsvergleich',ids:['ledgerComparisonSection','judithSimpleResult','judithRentTile'],message:''},
 'Top Torten & Artikel':{title:'Top Torten & Artikel',ids:['topArticles','slowArticles','profitability','judithCakePricingTile','menuDashboardTile'],message:'Top-30-Auswertung auf Basis vorhandener Artikelbuchungen.'}}
 function openFull(label){const cfg=areaMap[label];if(!cfg||!document.body.classList.contains('gp-judith-design'))return false;const detail=$('gpMockupDetail'),body=$('gpMockupDetailBody');if(!detail||!body)return false;const title=$('gpMockupDetailTitle');if(title)title.textContent=cfg.title;const set=new Set(cfg.ids);let shown=0;for(const node of body.children){const show=set.has(node.id);node.classList.toggle('gp-area-hidden',!show);if(show){shown++;if(node.tagName==='DETAILS')node.open=true;node.querySelectorAll('details').forEach(d=>d.open=true);}}const chart=$('gpMockupDailyCharts');if(chart)chart.hidden=true;let notice=$('gpJudithDetailNotice');if(!notice){notice=document.createElement('p');notice.id='gpJudithDetailNotice';notice.style.cssText='border-radius:10px;padding:10px 13px;background:#fff0f7;color:#8d3c69;font-size:13px;margin:10px 0';body.parentElement.insertBefore(notice,body);}notice.textContent=cfg.message||('Alle verfügbaren Informationen zum Bereich '+cfg.title+' werden angezeigt.');notice.hidden=false;detail.hidden=false;detail.scrollIntoView({behavior:'instant',block:'start'});return true;}
 function init(){const nav=$('gpCockpitNav');if(!nav)return;nav.addEventListener('click',e=>{if(!document.body.classList.contains('gp-judith-design'))return;const btn=e.target.closest('button[data-gp-area]');if(!btn)return;const label=btn.querySelector('strong')?.textContent?.trim();if(!areaMap[label])return;e.stopImmediatePropagation();openFull(label);nav.querySelectorAll('button[data-gp-area]').forEach(b=>b.setAttribute('aria-current',String(b===btn)));},true);
