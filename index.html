@@ -336,7 +336,7 @@ body.gp-cockpit-active #app .gp-cockpit-secondary-hidden{display:none!important}
 #gpMockupDetail[hidden]{display:none!important}
 #gpMockupDetailHead{display:flex;align-items:center;justify-content:space-between;gap:12px;background:#fff;border:1px solid #dce6eb;border-radius:12px;padding:13px 16px;margin-bottom:12px}
 #gpMockupDetailHead strong{font-size:20px;color:#152d42}
-#gpMockupDetailHead button{border:1px solid #d4e4e4;background:#edf8f5;color:#105849;border-radius:9px;padding:9px 13px;cursor:pointer}
+#gpMockupDetailHead .gp-detail-actions{display:flex;flex-wrap:wrap;gap:6px}#gpMockupDetailHead button{border:1px solid #d4e4e4;background:#edf8f5;color:#105849;border-radius:9px;padding:9px 13px;cursor:pointer}
 #gpMockupDetailBody>.card,#gpMockupDetailBody>.tile,#gpMockupDetailBody>details{margin:0 0 12px!important;border:1px solid #dce6eb!important;border-radius:13px!important;background:#fff!important;box-shadow:none!important;padding:14px!important}
 #gpMockupDetailBody h2{font-size:19px;color:#173e46}
 #gpMockupDetailBody .gp-area-hidden{display:none!important}
@@ -1858,7 +1858,7 @@ async function refreshVisibleDashboard(){if(!user||E('app').classList.contains('
 </script><script>setTimeout(()=>{const f=document.getElementById('loginForm'),m=document.getElementById('loginMsg');if(f&&!f.onsubmit&&m)m.textContent='Die Anwendung konnte nicht geladen werden. Bitte Seite neu laden. Falls diese Meldung bleibt, ist die Programm-Bibliothek blockiert.'},4500);window.addEventListener('error',e=>{const m=document.getElementById('loginMsg');if(m)m.textContent='Ladefehler: '+e.message});window.addEventListener('unhandledrejection',e=>{const m=document.getElementById('loginMsg');if(m)m.textContent='Verbindungsfehler: '+(e.reason?.message||String(e.reason))});</script><script>
 (function(){
 'use strict';
-const areaNames={daily:'Tagesabschlüsse',costs:'Kosten & Einkauf',staff:'Personal',ledger:'Buchhaltung & Monatsvergleich',articles:'Artikelanalyse',planning:'Einkaufsplanung',upload:'Unterlagen hochladen',archive:'Datenarchiv',bank:'Bank & Liquidität'};
+const areaNames={daily:'Tagesabschlüsse',costs:'Kosten & Einkauf',staff:'Personal',ledger:'Buchhaltung & Monatsvergleich',articles:'Artikelanalyse',planning:'Einkaufsplanung',upload:'Unterlagen hochladen',archive:'Datenarchiv',bank:'Bank & Liquidität',all:'Alle Auswertungen'};
 const groups={
  daily:['salesSection','monthlyReference','operating','dailyArchiveDisclosure'],
  costs:['monthlyCostOverview','financeSection','purchaseItemsCalc','costAlertsTile','purchaseAssign'],
@@ -1897,7 +1897,7 @@ function openArea(name){
  area=name;
  const body=el('gpMockupDetailBody'),detail=el('gpMockupDetail');if(!body||!detail)return;
  const show=new Set(groups[name]||[]);
- Array.from(body.children).forEach(node=>node.classList.toggle('gp-area-hidden',!show.has(node.id)));
+ Array.from(body.children).forEach(node=>node.classList.toggle('gp-area-hidden',name!=='all'&&!show.has(node.id)));
  el('gpMockupDetailTitle').textContent=areaNames[name]||name;
  detail.hidden=false;
  document.querySelectorAll('#gpCockpitNav [data-gp-area]').forEach(b=>b.setAttribute('aria-current',String(b.dataset.gpArea===name)));
@@ -1917,7 +1917,7 @@ function init(){
  shell.appendChild(el('gpCockpitNav').previousElementSibling);shell.appendChild(nav);shell.appendChild(quick);
  const status=document.createElement('p');status.id='gpMockupStatus';status.textContent='Daten und Auswertungen bleiben je Betrieb getrennt · Kein automatisches Neuladen.';shell.appendChild(status);
  const detail=document.createElement('section');detail.id='gpMockupDetail';detail.hidden=true;app.insertBefore(detail,shell.nextSibling);
- const dhead=document.createElement('div');dhead.id='gpMockupDetailHead';dhead.innerHTML='<strong id="gpMockupDetailTitle">Details</strong><button type="button" id="gpMockupBack">← Zur Übersicht</button>';detail.appendChild(dhead);
+ const dhead=document.createElement('div');dhead.id='gpMockupDetailHead';dhead.innerHTML='<strong id="gpMockupDetailTitle">Details</strong><div class="gp-detail-actions"><button type="button" id="gpMockupAll">Alle Funktionen</button> <button type="button" id="gpMockupBack">← Zur Übersicht</button></div>';detail.appendChild(dhead);
  const body=document.createElement('div');body.id='gpMockupDetailBody';detail.appendChild(body);
  const extra=document.createElement('details');extra.id='gpMockupExtra';extra.innerHTML='<summary>Weitere Kennzahlen anzeigen</summary>';extra.appendChild(kpis);detail.appendChild(extra);
  // Alle vorhandenen Auswertungen und Upload-Formulare in einen gemeinsamen Detailbereich verschieben.
@@ -1933,7 +1933,7 @@ function init(){
  const logout=el('logout');if(logout){logout.style.display='none';shell.appendChild(logout);}
  const hint=el('gpCockpitHint');if(hint)hint.style.display='none';
  if(summary){summary.style.fontSize='11px';shell.appendChild(summary);}
- el('gpMockupBack')?.addEventListener('click',home);
+ el('gpMockupBack')?.addEventListener('click',home);el('gpMockupAll')?.addEventListener('click',()=>openArea('all'));
  el('gpOverviewShortcut')?.addEventListener('click',home);
  el('gpUploadShortcut')?.addEventListener('click',()=>openArea('upload'));
  nav.addEventListener('click',e=>{const b=e.target.closest('[data-gp-area]');if(b)openArea(b.dataset.gpArea);});
