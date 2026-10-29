@@ -1310,6 +1310,10 @@ async function ledgerSaveVerified(){
 }
 async function loadLedgerComparison(){
  const rows=E('ledgerComparisonRows'),status=E('ledgerComparisonStatus');if(!rows||!status||!BID)return;
+ const requestedBusinessId=BID;
+ const judithId='87889eaf-f865-4e3a-8f9a-cd01db483e0e',friedrichId='6a5484d1-daf6-4263-897d-24cdf536aa29';
+ if(![judithId,friedrichId].includes(requestedBusinessId))return;
+ const analysisPanels=[E('judithLedgerAnalysis'),E('friedrichLedgerAnalysis')];analysisPanels.forEach(p=>{if(p){p.hidden=true;const body=p.querySelector('[id$="AnalysisBody"]');if(body)body.replaceChildren();}});
  const months=['2025-10','2025-11','2025-12','2026-01','2026-02','2026-03','2026-04','2026-05','2026-06','2026-07','2026-08','2026-09','2026-10'];
  const labels=['Nettoumsatz','Personalaufwand','Waren & Material (Klasse 5)','Sonstiger Aufwand (Klasse 7)','Ergebnis laut Saldenliste','Personalquote'];
  rows.innerHTML=labels.map(label=>'<tr><th style="text-align:left;padding:8px 4px;border-bottom:1px solid #dce5e9">'+label+'</th>'+months.map(()=>'<td style="padding:8px 4px;border-bottom:1px solid #dce5e9">–</td>').join('')+'</tr>').join('');
@@ -1319,8 +1323,12 @@ async function loadLedgerComparison(){
   const ledger=(data||[]).filter(d=>{const e=d.extracted_data||{};const name=String(e.filename||e.file_name||e.original_filename||'').toLowerCase();return /saldenliste|\\bsl\\s*2026|kontensalden/.test(name)||e.document_kind==='trial_balance'||e.document_type==='trial_balance';});
   const {data:verified,error:verifiedError}=await db.from('gp_ledger_monthly').select('month_start,metric_key,amount,verification_status').eq('business_id',BID).gte('month_start','2025-10-01').lte('month_start','2026-10-01');
   if(verifiedError)throw verifiedError;
+  if(BID!==requestedBusinessId)return; // stale response from previous business: never render it
   const keys=['net_revenue','personnel','purchases','fixed_costs','operating_result','personnel_ratio'];
   const byKey=new Map((verified||[]).filter(v=>v.verification_status==='verified'&&v.amount!==null).map(v=>[v.metric_key+'|'+String(v.month_start).slice(0,7),v.amount]));
+  const expectedRevenue=requestedBusinessId===friedrichId?41703:45520;
+  const augustRevenue=byKey.get('net_revenue|2026-08');
+  if(augustRevenue!==undefined&&Math.abs(Number(augustRevenue)-expectedRevenue)>0.01){status.textContent='⚠️ Betriebszuordnung der Buchhaltungsdaten prüfen. Anzeige aus Sicherheitsgründen gestoppt.';return;}
   const dashboard=E('ledgerDashboard');if(dashboard){
    const latest=months.filter(m=>byKey.has('net_revenue|'+m)).at(-1);
    const val=(m,k)=>Number(byKey.get(k+'|'+m));
