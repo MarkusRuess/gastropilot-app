@@ -27,6 +27,15 @@
 import {createClient} from 'https://esm.sh/@supabase/supabase-js@2.57.0';
 const sb=createClient('https://sjnwfwcpgwsavygewwzb.supabase.co','sb_publishable__tucXG-IQGUhibMqMSUzCw_5RnH_sbQ',{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:false}});
 const loading=document.getElementById('loading');
+let jdPreloadPromise=null;
+function jdPreloadData(session){
+ if(jdPreloadPromise)return jdPreloadPromise;
+ jdPreloadPromise=fetch('https://sjnwfwcpgwsavygewwzb.supabase.co/functions/v1/judith-ai-inbox?view=customers',{headers:{Authorization:'Bearer '+session.access_token,apikey:'sb_publishable__tucXG-IQGUhibMqMSUzCw_5RnH_sbQ'},cache:'no-store'})
+ .then(async res=>{const data=await res.json();if(!res.ok||!data.ok)throw Error(data.error||'Vorabladen fehlgeschlagen');const cached={at:Date.now(),data};try{sessionStorage.setItem('jd-calendar-cache',JSON.stringify(cached));sessionStorage.setItem('jd-customer-cache',JSON.stringify(cached))}catch(e){}return data})
+ .catch(e=>{jdPreloadPromise=null;console.warn('Judith AI Vorabladen:',e.message);return null});
+ return jdPreloadPromise;
+}
+
 const fail=(msg)=>{loading.textContent=msg+' ';const a=document.createElement('a');a.href='./login.html';a.textContent='Zur Anmeldung →';loading.appendChild(a)};
 try{
  const {data:{session}}=await sb.auth.getSession();
@@ -35,7 +44,7 @@ try{
   const res=await fetch('https://sjnwfwcpgwsavygewwzb.supabase.co/functions/v1/judith-ai-status',{headers:{Authorization:'Bearer '+session.access_token,apikey:'sb_publishable__tucXG-IQGUhibMqMSUzCw_5RnH_sbQ'},cache:'no-store'});
   if(!res.ok){await sb.auth.signOut();fail('Kein Zugriff auf Judith AI.');}
   else{
-   const data=await res.json();loading.hidden=true;document.getElementById('app').hidden=false;document.getElementById('logout').hidden=false;
+   const data=await res.json();jdPreloadData(session);loading.hidden=true;document.getElementById('app').hidden=false;document.getElementById('logout').hidden=false;
    document.getElementById('user').textContent=session.user.email??'Gemeinsamer Zugang';
    document.getElementById('role').textContent=data.role??'Freigeschaltet';
    const s=data.settings??{};const m=data.mail_setup??{};const n=[["IMAP-Server",m.imap_host_configured],["SMTP-Server",m.smtp_host_configured],["Benutzername",m.mail_user_configured],["E-Mail-Passwort",m.mail_password_configured]];document.getElementById("current-host").textContent=m.imap_host||"nicht hinterlegt";document.getElementById("setup").textContent=n.map(([name,ok])=>name+": "+(ok?"hinterlegt":"fehlt")).join(" · ")+" · Verbindungstest: noch nicht durchgeführt";
@@ -59,7 +68,7 @@ function jcRender(){const first=new Date(jc.year,jc.month,1),days=new Date(jc.ye
 let jcLoading=false;
 function jcApply(result,source){jc.customers=new Map((result.customers||[]).map(c=>[c.id,c]));jc.orders=(result.inquiries||[]).filter(o=>/^\d{4}-\d{2}-\d{2}$/.test(o.requested_date||''));jc.loaded=true;document.getElementById('jc-status').textContent=jc.orders.length+' datierte Aufträge und Anfragen'+(source?' · '+source:'');jcRender()}
 try{const cached=sessionStorage.getItem('jd-calendar-cache');if(cached){const parsed=JSON.parse(cached);if(Date.now()-parsed.at<300000)jcApply(parsed.data,'gespeicherte Ansicht')}}catch(e){}
-async function jcLoad(){if(jcLoading)return;jcLoading=true;const status=document.getElementById('jc-status');if(!jc.loaded)status.textContent='Termine werden geladen …';try{const {data:{session}}=await sb.auth.getSession();if(!session)throw Error('Bitte anmelden');const resp=await fetch('https://sjnwfwcpgwsavygewwzb.supabase.co/functions/v1/judith-ai-inbox?view=customers',{headers:{Authorization:'Bearer '+session.access_token,apikey:'sb_publishable__tucXG-IQGUhibMqMSUzCw_5RnH_sbQ'},cache:'no-store'});const result=await resp.json();if(!resp.ok||!result.ok)throw Error(result.error||'Abruf fehlgeschlagen');jcApply(result,'aktuell');try{sessionStorage.setItem('jd-calendar-cache',JSON.stringify({at:Date.now(),data:result}))}catch(e){}}catch(e){status.textContent=(jc.loaded?'Letzte gespeicherte Ansicht · Aktualisierung fehlgeschlagen: ':'Kalender konnte nicht geladen werden: ')+e.message}finally{jcLoading=false}}
+async function jcLoad(){if(jcLoading)return;jcLoading=true;const status=document.getElementById('jc-status');if(!jc.loaded)status.textContent='Termine werden geladen …';try{const {data:{session}}=await sb.auth.getSession();if(!session)throw Error('Bitte anmelden');const preloaded=jdPreloadPromise?await jdPreloadPromise:null;if(preloaded){jcApply(preloaded,'aktuell');return}const resp=await fetch('https://sjnwfwcpgwsavygewwzb.supabase.co/functions/v1/judith-ai-inbox?view=customers',{headers:{Authorization:'Bearer '+session.access_token,apikey:'sb_publishable__tucXG-IQGUhibMqMSUzCw_5RnH_sbQ'},cache:'no-store'});const result=await resp.json();if(!resp.ok||!result.ok)throw Error(result.error||'Abruf fehlgeschlagen');jcApply(result,'aktuell');try{sessionStorage.setItem('jd-calendar-cache',JSON.stringify({at:Date.now(),data:result}))}catch(e){}}catch(e){status.textContent=(jc.loaded?'Letzte gespeicherte Ansicht · Aktualisierung fehlgeschlagen: ':'Kalender konnte nicht geladen werden: ')+e.message}finally{jcLoading=false}}
 document.getElementById('judith-calendar').addEventListener('toggle',e=>{if(e.target.open)jcLoad()});
 document.getElementById('jc-prev').onclick=()=>{jc.month--;if(jc.month<0){jc.month=11;jc.year--}jcRender()};document.getElementById('jc-next').onclick=()=>{jc.month++;if(jc.month>11){jc.month=0;jc.year++}jcRender()};document.getElementById('jc-today').onclick=()=>{const d=new Date();jc.month=d.getMonth();jc.year=d.getFullYear();jc.selected=jcDate(d);jcRender()};jcRender();
 document.getElementById('load-orders').addEventListener('click',async()=>{
@@ -99,8 +108,8 @@ document.getElementById('judith-customers').addEventListener('toggle',e=>{if(e.t
 document.getElementById('load-customers').addEventListener('click',async()=>{
     const btn=document.getElementById('load-customers'),status=document.getElementById('customers-status'),list=document.getElementById('customers-list');if(jdCustomerLoading)return;jdCustomerLoading=true;btn.disabled=true;status.textContent=jdCustomerCache?'Kunden werden aktualisiert …':'Kunden werden geladen …';if(!jdCustomerCache)list.replaceChildren();
     try{const {data:{session:active}}=await sb.auth.getSession();if(!active)throw Error('Bitte neu anmelden');
-      const res=await fetch('https://sjnwfwcpgwsavygewwzb.supabase.co/functions/v1/judith-ai-inbox?view=customers',{headers:{Authorization:'Bearer '+active.access_token,apikey:'sb_publishable__tucXG-IQGUhibMqMSUzCw_5RnH_sbQ'},cache:'no-store'});
-      const result=await res.json();if(!res.ok||!result.ok)throw Error(result.error||'Kunden nicht verfügbar');jdCustomerCache=result;jdCustomerCacheAt=Date.now();try{sessionStorage.setItem('jd-customer-cache',JSON.stringify({at:jdCustomerCacheAt,data:result}))}catch(e){}
+      const preloaded=jdPreloadPromise?await jdPreloadPromise:null;const res=preloaded?null:await fetch('https://sjnwfwcpgwsavygewwzb.supabase.co/functions/v1/judith-ai-inbox?view=customers',{headers:{Authorization:'Bearer '+active.access_token,apikey:'sb_publishable__tucXG-IQGUhibMqMSUzCw_5RnH_sbQ'},cache:'no-store'});
+      const result=preloaded||await res.json();if((res&&!res.ok)||!result.ok)throw Error(result.error||'Kunden nicht verfügbar');jdCustomerCache=result;jdCustomerCacheAt=Date.now();try{sessionStorage.setItem('jd-customer-cache',JSON.stringify({at:jdCustomerCacheAt,data:result}))}catch(e){}
       list.replaceChildren();const customers=result.customers||[],inquiries=result.inquiries||[],today=new Date();today.setHours(0,0,0,0);const dateKey=d=>[d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-');const todayKey=dateKey(today),weekEnd=new Date(today);weekEnd.setDate(weekEnd.getDate()+7);const weekKey=dateKey(weekEnd);
       const stats=[['👥 Kunden',customers.length],['🎂 Bestätigte Aufträge',inquiries.filter(x=>x.status==='confirmed').length],['🟡 Offene Anfragen',inquiries.filter(x=>x.status!=='confirmed'&&x.status!=='picked_up').length],['📅 Nächste 7 Tage',inquiries.filter(x=>x.status==='confirmed'&&x.requested_date>=todayKey&&x.requested_date<=weekKey).length]];
       const statBox=document.getElementById('customer-stats');statBox.replaceChildren();for(const [label,value] of stats){const tile=document.createElement('div');tile.className='customer-stat';const title=document.createElement('span');title.textContent=label;const count=document.createElement('strong');count.textContent=value;tile.append(title,count);statBox.append(tile)}
