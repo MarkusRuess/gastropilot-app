@@ -392,6 +392,55 @@ body.gp-cockpit-active #app .gp-cockpit-secondary-hidden{display:none!important}
 #gpMockupShell .gp-cockpit-nav button:after{content:'›';position:absolute;right:12px;bottom:10px;font-size:19px;opacity:.65}
 #gpMockupShell .gp-cockpit-nav button[aria-current=true]{outline:2px solid #0c7867;outline-offset:1px}
 @media(max-width:720px){#gpMockupCharts{grid-template-columns:1fr}#gpDayBars{height:150px}#gpPayments{min-height:170px}#gpDailyMini{grid-template-columns:repeat(2,minmax(0,1fr))}}
+</style><style id="gp-reference-final">
+/* Freigegebene Referenz: weiße Desktop-Karte, kompakte Kopfzeile und zwei Detail-Vorschauen */
+@media(min-width:1000px){
+ #gpMockupShell{max-width:1400px;margin:0 auto 15px;padding:18px 20px 13px!important;border-radius:18px!important}
+ #gpMockupHeader{grid-template-columns:minmax(220px,1.15fr) minmax(300px,1.15fr) minmax(250px,.85fr)!important;gap:16px!important;margin-bottom:16px!important}
+ #gpMockupHeader #businessSwitchCard #gp-business-switch{justify-content:center!important}
+ #gpMockupHeader #businessSwitchCard #gp-business-switch label{border-radius:10px!important}
+ #gpMockupMetrics{grid-template-columns:minmax(275px,1.85fr) repeat(5,minmax(125px,1fr))!important;gap:8px!important;margin-bottom:17px!important}
+ #gpMockupMetrics .gp-metric{min-height:143px!important}
+ #gpMockupShell .gp-cockpit-nav{grid-template-columns:repeat(6,minmax(0,1fr))!important}
+ #gpMockupShell .gp-cockpit-nav button{min-height:125px!important}
+}
+#gpMockupShell .gp-cockpit-head{position:relative!important;min-height:0!important;margin:0!important;padding:0!important;border:0!important}
+#gpMockupShell .gp-cockpit-head>strong{display:none}
+#gpMockupShell #gpUploadShortcut{position:absolute;right:0;top:-57px;z-index:2;min-height:39px!important;font-size:12px!important}
+#gpMockupShell .gp-cockpit-nav button{font-size:24px!important}
+#gpMockupShell .gp-cockpit-nav button strong{font-weight:750!important}
+#gpMockupShell #gpMockupStatus,#gpMockupShell #summary{display:none!important}
+#gpMockupMetrics .gp-progress .gp-value{display:flex;justify-content:space-between;align-items:center;gap:8px}
+#gpMockupMetrics .gp-progress .gp-value em{font-size:13px;font-style:normal;font-weight:700;color:#385066}
+#gpMockupMetrics .gp-metric .gp-note{font-size:11px}
+#gpReferencePreviews{display:grid;grid-template-columns:1fr 1fr;gap:12px;max-width:1460px;margin:0 auto 14px}
+.gp-ref-panel{background:#fff;border:1px solid #dce6ec;border-radius:14px;padding:13px;min-width:0;box-shadow:0 3px 15px #1730470a}
+.gp-ref-panel header{display:flex;justify-content:space-between;gap:8px;align-items:center;padding:12px;background:#f4f0ff;border-radius:10px;margin-bottom:10px}
+.gp-ref-panel.gp-ref-daily header{background:#eaf8f2}
+.gp-ref-panel header strong{font-size:17px;color:#182d4c}
+.gp-ref-panel header small{display:block;font-size:11px;color:#5a7080}
+.gp-ref-panel header button,.gp-ref-panel .gp-ref-actions button{border:1px solid #dce5ea;background:#fff;border-radius:9px;padding:10px;color:#17364c;cursor:pointer;font-weight:650}
+.gp-ref-panel .gp-ref-table{width:100%;border-collapse:collapse;font-size:12px}
+.gp-ref-panel .gp-ref-table th,.gp-ref-panel .gp-ref-table td{border:1px solid #e3e9ee;padding:9px 7px;text-align:left}
+.gp-ref-panel .gp-ref-table th{background:#f5f7fb}
+.gp-ref-panel .gp-ref-table td:not(:first-child){text-align:right}
+.gp-ref-panel .gp-ref-table tr:last-child{background:#e8f7f0;font-weight:750}
+.gp-ref-panel .gp-ref-actions{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-top:10px}
+.gp-ref-panel .gp-ref-actions button{font-size:11px;padding:10px 5px}
+#gpRefMini{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin:0 0 10px}
+#gpRefMini .gp-mini{border:1px solid #e1e8ed;border-radius:10px;padding:11px 8px}
+#gpRefMini .gp-mini small{font-size:10px;color:#69808f;display:block}
+#gpRefMini .gp-mini strong{font-size:16px;color:#1b3449;display:block;margin-top:6px}
+#gpRefCharts{display:grid;grid-template-columns:1.35fr 1fr;gap:9px}
+#gpRefCharts .gp-chart-card{padding:10px}
+#gpRefCharts #gpDayBars{height:155px}
+#gpRefCharts #gpPayments{min-height:155px;gap:8px}
+#gpRefCharts #gpPaymentDonut{width:100px;height:100px;flex-basis:100px}
+#gpRefCharts #gpPaymentDonut:after{inset:19px}
+#gpRefCharts #gpPaymentLegend{font-size:10px}
+#gpRefCharts #gpPaymentLegend strong{font-size:13px}
+@media(max-width:1000px){#gpReferencePreviews{grid-template-columns:1fr}#gpMockupShell #gpUploadShortcut{position:static}}
+@media(max-width:600px){#gpRefCharts{grid-template-columns:1fr}#gpRefMini{grid-template-columns:repeat(2,1fr)}.gp-ref-panel .gp-ref-actions{grid-template-columns:repeat(2,1fr)}.gp-ref-panel header strong{font-size:15px}}
 </style></head><body>
 <header><div class="gpHeaderBar"><button id="gpHeaderHome" type="button" aria-label="GastroPilot – zur Betriebsübersicht" style="appearance:none;background:transparent;border:0;padding:0;color:inherit;text-align:left;cursor:pointer;display:block"><strong>GastroPilot</strong><small>Dein Lokal. Deine Zahlen. Dein Überblick.</small></button><nav id="gpHeaderSwitch" class="hidden" aria-label="Betrieb wechseln"></nav></div></header>
 <main><section id="login" class="card"><h2>Anmelden</h2><form id="loginForm"><label>E-Mail<input id="email" type="email" autocomplete="username" required></label><label>Passwort<input id="password" type="password" autocomplete="current-password" required></label><button>Anmelden</button></form><p id="loginMsg" class="status"></p></section>
@@ -1955,7 +2004,35 @@ function gpRenderCharts(){
  chart.innerHTML='<section class="gp-chart-card"><h3>Tagesumsätze · '+monthText()+'</h3>'+(valid.length?'<div id="gpDayBars" role="img" aria-label="Tagesumsätze als Balkendiagramm">'+bars+'</div>':'<p>Keine geprüften Tagesumsätze vorhanden.</p>')+'<p class="gp-chart-note">Bruttoumsätze aus den erfassten Tagesabschlüssen.</p></section><section class="gp-chart-card"><h3>Zahlungsarten</h3>'+(both?'<div id="gpPayments"><div id="gpPaymentDonut" role="img" aria-label="Bar '+pct.toFixed(1)+' Prozent, Karte '+(100-pct).toFixed(1)+' Prozent" style="background:conic-gradient(#16a486 0% '+pct+'%,#4196e9 '+pct+'% 100%)"></div><div id="gpPaymentLegend"><strong>'+fmtEUR(cash+card)+'</strong><div><i class="gp-dot" style="background:#16a486"></i>Bar: '+fmtEUR(cash)+' ('+pct.toFixed(1)+' %)</div><div><i class="gp-dot" style="background:#4196e9"></i>Karte: '+fmtEUR(card)+' ('+(100-pct).toFixed(1)+' %)</div></div></div>':'<p>Bar- und Kartendaten noch nicht vollständig verfügbar.</p>')+'</section>';
  mini.innerHTML=[['Bruttoumsatz',fmtEUR(Number(data.gross))],['Ø bezahlter Bon',fmtEUR(avg)],['Umsatztage',String(days.length)],['Zahlungsarten',both?'Bar & Karte':'Noch offen']].map(x=>'<div class="gp-mini"><small>'+x[0]+'</small><strong>'+x[1]+'</strong></div>').join('');
 }
-window.addEventListener('gp:monthly-data',e=>{gpLatest=e.detail;gpRenderCharts();updateMetrics();});
+window.addEventListener('gp:monthly-data',e=>{gpLatest=e.detail;gpRenderCharts();updateMetrics();gpRenderReference();});
+function gpRenderReference(){
+ const mini=el('gpRefMini'),charts=el('gpRefCharts'),table=el('gpRefLedgerBody');
+ if(!mini||!charts||!table)return;
+ const m=el('month')?.value||'';
+ const valid=gpLatest?.month===m&&Array.isArray(gpLatest.days);
+ const gross=valid?Number(gpLatest.gross):NaN;
+ const paid=valid?Number(gpLatest.paid):0;
+ const paidGross=valid?Number(gpLatest.paidGross):NaN;
+ const avg=paid>0&&Number.isFinite(paidGross)?paidGross/paid:NaN;
+ const net=(()=>{const tile=Array.from(el('quickKpis')?.children||[]).find(x=>x.textContent.toLowerCase().includes('nettoumsatz'));const v=tile?.textContent.match(/€\\s*[\\d.]+,\\d+/);return v?.[0]||'—';})();
+ mini.innerHTML=[['Bruttoumsatz',valid?fmtEUR(gross):'—'],['Nettoumsatz',net],['Ø bezahlter Bon',fmtEUR(avg)],['Umsatztage',valid?String(gpLatest.days.length):'—']].map(x=>'<div class="gp-mini"><small>'+x[0]+'</small><strong>'+x[1]+'</strong></div>').join('');
+ if(valid){
+  const days=gpLatest.days.filter(x=>Number.isFinite(Number(x.gross))&&Number(x.gross)>=0);
+  const max=Math.max(1,...days.map(x=>Number(x.gross)));
+  const bars=days.map(x=>{const day=Number(String(x.date).slice(-2));return '<div class="gp-day-column" title="'+x.date+' · '+fmtEUR(Number(x.gross))+'"><div class="gp-day-bar" style="height:'+Math.min(100,Number(x.gross)/max*100)+'%"></div>'+(day===1||day%5===0?'<span>'+day+'</span>':'')+'</div>';}).join('');
+  const cash=Number(gpLatest.cash),card=Number(gpLatest.card),ok=Number.isFinite(cash)&&Number.isFinite(card)&&cash>=0&&card>=0&&cash+card>0;
+  const pct=ok?cash/(cash+card)*100:0;
+  charts.innerHTML='<section class="gp-chart-card"><h3>Tagesumsätze · '+monthText()+'</h3>'+(days.length?'<div id="gpDayBars">'+bars+'</div>':'Keine Tagesdaten')+'</section><section class="gp-chart-card"><h3>Zahlungsarten</h3>'+(ok?'<div id="gpPayments"><div id="gpPaymentDonut" style="background:conic-gradient(#16a486 0% '+pct+'%,#4196e9 '+pct+'% 100%)"></div><div id="gpPaymentLegend"><strong>'+fmtEUR(cash+card)+'</strong>🟢 Bar '+fmtEUR(cash)+'<br>🔵 Karte '+fmtEUR(card)+'</div></div>':'<p>Keine vollständigen Zahlungsdaten.</p>')+'</section>';
+ }else charts.innerHTML='<div class="gp-chart-card">Tagesumsätze werden geladen.</div>';
+ // Keine fiktiven Salden: nur ausdrücklich verifizierte Werte aus der bestehenden Buchhaltung.
+ const ledger=el('ledgerComparisonSection');
+ const source=ledger?.querySelector('table');
+ if(source&&source.querySelectorAll('tbody tr').length){
+  const rows=Array.from(source.querySelectorAll('tbody tr')).slice(0,8);
+  const html=rows.map(tr=>{const cells=Array.from(tr.querySelectorAll('td')).slice(0,4);return cells.length===4?'<tr>'+cells.map(td=>'<td>'+td.textContent.trim().replaceAll('<','&lt;')+'</td>').join('')+'</tr>':'';}).join('');
+  table.innerHTML=html||'<tr><td colspan="4">Noch keine verifizierten Saldenwerte.</td></tr>';
+ }else table.innerHTML='<tr><td colspan="4">Noch keine verifizierten Saldenwerte für den Monatsvergleich.</td></tr>';
+}
 function openArea(name){
  area=name;
  const body=el('gpMockupDetailBody'),detail=el('gpMockupDetail');if(!body||!detail)return;
@@ -1979,6 +2056,7 @@ function init(){
  const metrics=document.createElement('div');metrics.id='gpMockupMetrics';shell.appendChild(metrics);
  shell.appendChild(el('gpCockpitNav').previousElementSibling);shell.appendChild(nav);shell.appendChild(quick);
  const status=document.createElement('p');status.id='gpMockupStatus';status.textContent='Daten und Auswertungen bleiben je Betrieb getrennt · Kein automatisches Neuladen.';shell.appendChild(status);
+ const previews=document.createElement('section');previews.id='gpReferencePreviews';previews.innerHTML='<article class="gp-ref-panel gp-ref-ledger"><header><div><strong>▥ Buchhaltung & Monatsvergleich</strong><small>Saldenlisten, Kostenstruktur und vorläufiges Ergebnis</small></div><button type="button" data-gp-preview="ledger">Details ›</button></header><table class="gp-ref-table"><thead><tr><th>Kennzahl</th><th>August</th><th>September</th><th>Oktober</th></tr></thead><tbody id="gpRefLedgerBody"><tr><td colspan="4">Bestätigte Buchhaltungsdaten werden geladen.</td></tr></tbody></table><div class="gp-ref-actions"><button type="button" data-gp-preview="ledger">Saldenlisten ›</button><button type="button" data-gp-preview="costs">Fixkosten ›</button><button type="button" data-gp-preview="staff">Personal ›</button><button type="button" data-gp-preview="ledger">Ergebnis ›</button></div></article><article class="gp-ref-panel gp-ref-daily"><header><div><strong>▤ Tagesabschlüsse</strong><small>Umsätze, Bons, 10 % / 20 %</small></div><button type="button" data-gp-preview="daily">Details ›</button></header><div id="gpRefMini"></div><div id="gpRefCharts"></div><div class="gp-ref-actions"><button type="button" data-gp-preview="daily">Tagesliste ›</button><button type="button" data-gp-preview="daily">10 % / 20 % ›</button><button type="button" data-gp-preview="articles">Top 30 ›</button><button type="button" data-gp-preview="articles">Selten verkauft ›</button></div></article>';app.insertBefore(previews,shell.nextSibling);
  const detail=document.createElement('section');detail.id='gpMockupDetail';detail.hidden=true;app.insertBefore(detail,shell.nextSibling);
  const dhead=document.createElement('div');dhead.id='gpMockupDetailHead';dhead.innerHTML='<strong id="gpMockupDetailTitle">Details</strong><div class="gp-detail-actions"><button type="button" id="gpMockupAll">Alle Funktionen</button> <button type="button" id="gpMockupBack">← Zur Übersicht</button></div>';detail.appendChild(dhead);
  const chartsBox=document.createElement('div');chartsBox.id='gpMockupDailyCharts';chartsBox.hidden=true;chartsBox.innerHTML='<div id="gpDailyMini"></div><div id="gpMockupCharts"></div>';detail.appendChild(chartsBox);
@@ -1997,13 +2075,14 @@ function init(){
  const logout=el('logout');if(logout){logout.style.display='none';shell.appendChild(logout);}
  const hint=el('gpCockpitHint');if(hint)hint.style.display='none';
  if(summary){summary.style.fontSize='11px';shell.appendChild(summary);}
+ previews.addEventListener('click',e=>{const b=e.target.closest('[data-gp-preview]');if(b)openArea(b.dataset.gpPreview);});
  el('gpMockupBack')?.addEventListener('click',home);el('gpMockupAll')?.addEventListener('click',()=>openArea('all'));
  el('gpOverviewShortcut')?.addEventListener('click',home);
  el('gpUploadShortcut')?.addEventListener('click',()=>openArea('upload'));
  nav.addEventListener('click',e=>{const b=e.target.closest('[data-gp-area]');if(b)openArea(b.dataset.gpArea);});
  quick?.addEventListener('click',e=>{const b=e.target.closest('[data-gp-quick]');if(!b)return;const key=b.dataset.gpQuick;openArea(key==='invoices'?'costs':key==='ledger'?'ledger':key==='archive'?'archive':'bank');});
  const label=el('activeBusinessTitle');
- const sync=()=>{const t=label?.textContent||'';el('gpMockupBusinessLabel').textContent=t.replace(' · Betriebssteuerung','')||'Betriebssteuerung';updateMetrics();};
+ const sync=()=>{const t=label?.textContent||'';el('gpMockupBusinessLabel').textContent=t.replace(' · Betriebssteuerung','')||'Betriebssteuerung';updateMetrics();gpRenderReference();};
  const obs=new MutationObserver(()=>{clearTimeout(window.__gpCockpitSyncTimer);window.__gpCockpitSyncTimer=setTimeout(sync,120);});
  [label,kpis,el('monthOverviewStats'),summary].filter(Boolean).forEach(n=>obs.observe(n,{childList:true,subtree:true,characterData:true}));
  el('month')?.addEventListener('change',()=>setTimeout(sync,80));
