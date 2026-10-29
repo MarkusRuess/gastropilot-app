@@ -2420,5 +2420,23 @@ body:has(#businessHome:not(.hidden)) main{max-width:1400px!important}
 #businessHome .homeFoot{background:#fff!important;border:1px solid #e8edf2!important;border-radius:11px!important;padding:12px 15px!important;color:#718092!important;line-height:1.5!important}
 @media(max-width:850px){#businessHome .homeGrid{grid-template-columns:1fr!important}#businessHome .homeHead{padding:14px!important}#businessHome #annualForecast2026 .gp-annual-grid{grid-template-columns:1fr!important}}
 @media(max-width:550px){#businessHome #homeCards>.homeBusiness{padding:12px!important}#businessHome #homeCards .homeMetric{padding:9px!important}#businessHome #homeCards .homeMetric b{font-size:16px!important}}
+</style><style id="gp-home-content-consistency-v2">
+/* Uniform content cards on the shared overview; business-specific accent only. */
+#businessHome #homeCards.homeGrid{align-items:stretch!important;gap:16px!important}
+#businessHome #homeCards .homeBusiness{display:flex!important;flex-direction:column!important;gap:0!important;min-width:0!important}
+#businessHome #homeCards .homeBusiness .homeMetrics{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px!important;margin:18px 0 16px!important;flex:1!important}
+#businessHome #homeCards .homeBusiness .homeMetrics .homeMetric{display:flex!important;flex-direction:column!important;justify-content:space-between!important;gap:8px!important;min-width:0!important;min-height:91px!important;padding:12px 13px!important;background:#f5f8fa!important;border:1px solid #e1e9ee!important;border-radius:12px!important;box-shadow:none!important}
+#businessHome #homeCards .homeBusiness:first-child .homeMetrics .homeMetric{background:#f2f9f7!important;border-color:#d8ebe5!important}
+#businessHome #homeCards .homeBusiness:nth-child(2) .homeMetrics .homeMetric{background:#fff6fa!important;border-color:#f0dce7!important}
+#businessHome #homeCards .homeBusiness .homeMetric small{font-size:12px!important;font-weight:650!important;line-height:1.3!important;color:#667b8c!important}
+#businessHome #homeCards .homeBusiness .homeMetric strong,#businessHome #homeCards .homeBusiness .homeMetric b{display:block!important;font-size:clamp(17px,1.5vw,22px)!important;font-weight:800!important;line-height:1.25!important;color:#183348!important;overflow-wrap:anywhere!important}
+#businessHome #homeCards .homeBusiness .homeMetric .homeTicketTarget{font-size:11px!important;margin-top:3px!important;color:#65788a!important}
+#businessHome #homeCards .homeBusiness .homeMetric .homeProgress{height:8px!important;margin-top:5px!important}
+#businessHome #homeCards .homeBusiness:first-child .homeProgressFill{background:#087f70!important}
+#businessHome #homeCards .homeBusiness:nth-child(2) .homeProgressFill{background:#bb3d7c!important}
+#businessHome #homeCards .homeBusiness .homeOpen{margin-top:auto!important;padding-top:9px!important;font-size:14px!important}
+#businessHome #homeCards .homeBusiness:first-child .homeOpen{color:#087f70!important}
+#businessHome #homeCards .homeBusiness:nth-child(2) .homeOpen{color:#b43c7c!important}
+@media(max-width:520px){#businessHome #homeCards .homeBusiness .homeMetrics{gap:7px!important}#businessHome #homeCards .homeBusiness .homeMetrics .homeMetric{min-height:80px!important;padding:9px!important}#businessHome #homeCards .homeBusiness .homeMetric strong{font-size:16px!important}}
 </style></body></html>
 
