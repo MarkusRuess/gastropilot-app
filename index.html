@@ -1528,7 +1528,9 @@ async function updateCombinedManagementHome(){
   const advice=label==='Friedrich'
    ?(achieved?'Wareneinkäufe, Getränkemargen und Personaleinsatz weiter prüfen.':'Wareneinkäufe, Getränkemargen und Personaleinsatz gezielt prüfen.')
    :'Zusätzliche Torten- und Firmenaufträge gewinnen; Personalstunden im Blick behalten.';
-  target.innerHTML='<div class="gp-analysis-status"><span class="gp-analysis-arrow gp-analysis-arrow--'+arrowClass+'" role="img" aria-label="'+arrowLabel+'">'+(arrowClass==='up'?'↑':'↓')+'</span><span class="gp-analysis-status-copy"><strong>'+ratio.toLocaleString('de-AT',{maximumFractionDigits:1})+' %</strong><small>des Monatsziels · '+EUR(gross)+' brutto</small></span></div><p class="gp-analysis-message"><strong>'+status+'</strong> '+advice+'</p><small class="gp-analysis-caveat">Ein Gewinn ist erst nach Abgleich der aktuellen Kosten beurteilbar.</small>';
+  const percentLabel=ratio.toLocaleString('de-AT',{maximumFractionDigits:1})+' %';
+  const progress=Math.min(100,Math.max(0,ratio));
+  target.innerHTML='<div class="gp-analysis-status"><span class="gp-analysis-arrow gp-analysis-arrow--'+arrowClass+'" role="img" aria-label="'+arrowLabel+'">'+(arrowClass==='up'?'↑':'↓')+'</span><span class="gp-analysis-status-copy"><strong>'+percentLabel+'</strong><small>des Monatsziels erreicht</small></span></div><div class="gp-analysis-revenue"><span><small>Umsatz bisher</small><strong>'+EUR(gross)+' brutto</strong></span><span class="gp-analysis-target"><small>Monatsziel</small><strong>'+EUR(goal)+'</strong></span></div><div class="gp-analysis-progress" role="progressbar" aria-label="Umsatzfortschritt zum Monatsziel" aria-valuemin="0" aria-valuemax="100" aria-valuenow="'+progress.toFixed(1)+'" aria-valuetext="'+percentLabel+' vom Umsatzziel erreicht"><span style="width:'+progress.toFixed(1)+'%"></span></div><p class="gp-analysis-progress-caption"><span>'+percentLabel+' erreicht</span><span>Ziel: '+EUR(goal)+'</span></p><div class="gp-analysis-message"><strong>'+status+'</strong><span><b>Empfehlung:</b> '+advice+'</span></div><small class="gp-analysis-caveat">Ein Gewinn ist erst nach Abgleich der aktuellen Kosten beurteilbar.</small>';
  };
  describe(ids[0],'Friedrich',friedrichBrief,50000,'');
  describe(ids[1],'Judith',judithBrief,60000,'');
@@ -3157,6 +3159,49 @@ body.gp-article-area-active #financeSection{display:none!important}
   #businessHome .gp-home-analysis-card>p[id^="home"]{font-size:14px!important}
   #businessHome .gp-home-analysis-card .gp-analysis-status{gap:10px!important;margin-bottom:9px!important}
   #businessHome .gp-home-analysis-card .gp-analysis-arrow{flex-basis:40px!important;width:40px!important;height:40px!important;font-size:29px!important}
+}
+</style><style id="gp-economic-analysis-progress-20261030">
+#businessHome .gp-home-analysis-card>p[id^="home"]{margin-top:12px!important}
+#businessHome .gp-home-analysis-card .gp-analysis-status{margin-bottom:12px!important}
+#businessHome .gp-home-analysis-card .gp-analysis-revenue{
+  display:flex!important;align-items:flex-end!important;justify-content:space-between!important;
+  gap:14px!important;margin:8px 0 10px!important;padding:12px 14px!important;
+  border:1px solid #dce8e9!important;border-radius:13px!important;background:#fff!important;
+}
+#businessHome .gp-home-analysis-card .gp-analysis-revenue>span{display:flex!important;min-width:0!important;flex-direction:column!important;gap:3px!important}
+#businessHome .gp-home-analysis-card .gp-analysis-revenue small{color:#64788a!important;font-size:11px!important;font-weight:650!important;line-height:1.3!important}
+#businessHome .gp-home-analysis-card .gp-analysis-revenue strong{color:#183348!important;font-size:clamp(17px,1.7vw,22px)!important;font-weight:800!important;line-height:1.2!important;overflow-wrap:anywhere!important}
+#businessHome .gp-home-analysis-card .gp-analysis-target{text-align:right!important}
+#businessHome .gp-home-analysis-card .gp-analysis-target strong{font-size:15px!important}
+#businessHome .gp-home-analysis-card .gp-analysis-progress{
+  display:block!important;width:100%!important;height:13px!important;overflow:hidden!important;
+  border-radius:999px!important;background:#e7edf0!important;
+}
+#businessHome .gp-home-analysis-card .gp-analysis-progress>span{
+  display:block!important;height:100%!important;max-width:100%!important;border-radius:inherit!important;
+  background:#078b70!important;transition:width .35s ease!important;
+}
+#businessHome .gp-home-analysis-card.judith .gp-analysis-progress>span{background:#bd3475!important}
+#businessHome .gp-home-analysis-card .gp-analysis-progress-caption{
+  display:flex!important;justify-content:space-between!important;gap:10px!important;
+  margin:6px 0 12px!important;color:#64788a!important;font-size:11px!important;font-weight:700!important;
+}
+#businessHome .gp-home-analysis-card .gp-analysis-message{
+  display:flex!important;flex-direction:column!important;gap:5px!important;
+  margin:0 0 9px!important;padding:11px 13px!important;border-left:4px solid #078b70!important;
+  border-radius:0 11px 11px 0!important;background:#edf8f4!important;
+  color:#33485b!important;font-size:14px!important;line-height:1.45!important;
+}
+#businessHome .gp-home-analysis-card.judith .gp-analysis-message{border-left-color:#bd3475!important;background:#fff0f6!important}
+#businessHome .gp-home-analysis-card .gp-analysis-message>strong{font-weight:800!important}
+#businessHome .gp-home-analysis-card .gp-analysis-message>span{display:block!important}
+#businessHome .gp-home-analysis-card .gp-analysis-caveat{display:block!important;margin-top:7px!important}
+@media(max-width:600px){
+  #businessHome .gp-home-analysis-card .gp-analysis-revenue{padding:10px!important;gap:8px!important}
+  #businessHome .gp-home-analysis-card .gp-analysis-revenue strong{font-size:17px!important}
+  #businessHome .gp-home-analysis-card .gp-analysis-target strong{font-size:14px!important}
+  #businessHome .gp-home-analysis-card .gp-analysis-progress{height:11px!important}
+  #businessHome .gp-home-analysis-card .gp-analysis-message{font-size:13px!important;padding:10px 11px!important}
 }
 </style></body></html>
 
