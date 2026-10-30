@@ -50,7 +50,8 @@ export async function loadBusinessMetrics(db,businessId,month,isJudith=false){
   db.from('expenses').select('category,net_amount').eq('business_id',businessId).gte('expense_date',start).lt('expense_date',end).in('category',['food','drinks','beverages']),
   db.from('monthly_cost_ratio_inputs').select('net_revenue,inventory_change').eq('business_id',businessId).eq('month',start).maybeSingle(),
   ['2026-08','2026-09'].includes(month)?db.from('monthly_bonit_summaries').select('summary').eq('business_id',businessId).eq('month_start',start).maybeSingle():Promise.resolve({data:null,error:null}),
-  db.from('personnel_costs').select('total_costs').eq('business_id',businessId).eq('accounting_month',previousMonthStart)
+  db.from('personnel_costs').select('total_costs').eq('business_id',businessId).eq('accounting_month',previousMonthStart),
+  db.from('sales_invoices').select('service_date,gross_total,net_total').eq('business_id',businessId).gte('service_date',start).lt('service_date',end)
  ]);
  const sales=result(salesResult,'Umsätze'),documents=result(documentsResult,'Tagesabschlüsse');
  const staff=result(staffResult,'Personal'),costs=result(costResult,'Einkäufe'),planStaff=result(planStaffResult,'Personal Vormonat'),invoices=result(invoicesResult,'Ausgangsrechnungen');
