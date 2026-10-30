@@ -1525,12 +1525,13 @@ async function updateCombinedManagementHome(){
   const status=achieved
    ?'Monatsziel erreicht · '+EUR(remaining*-1)+' über dem Ziel.'
    :'Noch '+EUR(remaining)+' bis zum Monatsziel von '+EUR(goal)+'.';
+  const encouragementTitle=achieved?'🏆 Monatsziel geschafft!':ratio>=85?'🚀 Endspurt!':'🚀 Gemeinsam weiter zum Ziel!';
   const advice=label==='Friedrich'
-   ?(achieved?'Wareneinkäufe, Getränkemargen und Personaleinsatz weiter prüfen.':'Wareneinkäufe, Getränkemargen und Personaleinsatz gezielt prüfen.')
-   :'Zusätzliche Torten- und Firmenaufträge gewinnen; Personalstunden im Blick behalten.';
+   ?(achieved?'Stark gemacht! Gute Getränkemargen sichern und den Schwung mitnehmen.':ratio>=85?'Das Ziel ist zum Greifen nah. Gäste aktiv auf Getränke und Mehlspeisen aufmerksam machen – jeder Verkauf zählt!':'Jeder Verkauf bringt uns näher. Gäste aktiv beraten und Getränkemargen im Blick behalten.')
+   :(achieved?'Starke Leistung! Torten- und Firmenaufträge weiter ausbauen und den Schwung mitnehmen.':ratio>=85?'Offene Torten- und Firmenanfragen nachfassen – jeder Auftrag bringt uns näher ans Ziel!':'Jede zusätzliche Torte und jeder Firmenauftrag zählt. Offene Anfragen nachfassen und neue Chancen nutzen!');
   const percentLabel=ratio.toLocaleString('de-AT',{maximumFractionDigits:1})+' %';
   const progress=Math.min(100,Math.max(0,ratio));
-  target.innerHTML='<div class="gp-analysis-status"><span class="gp-analysis-arrow gp-analysis-arrow--'+arrowClass+'" role="img" aria-label="'+arrowLabel+'">'+(arrowClass==='up'?'↑':'↓')+'</span><span class="gp-analysis-status-copy"><strong>'+percentLabel+'</strong><small>des Monatsziels erreicht</small></span></div><div class="gp-analysis-revenue"><span><small>Umsatz bisher</small><strong>'+EUR(gross)+' brutto</strong></span><span class="gp-analysis-target"><small>Monatsziel</small><strong>'+EUR(goal)+'</strong></span></div><div class="gp-analysis-progress" role="progressbar" aria-label="Umsatzfortschritt zum Monatsziel" aria-valuemin="0" aria-valuemax="100" aria-valuenow="'+progress.toFixed(1)+'" aria-valuetext="'+percentLabel+' vom Umsatzziel erreicht"><span style="width:'+progress.toFixed(1)+'%"></span></div><p class="gp-analysis-progress-caption"><span>'+percentLabel+' erreicht</span><span>Ziel: '+EUR(goal)+'</span></p><div class="gp-analysis-message"><strong>'+status+'</strong><span><b>Empfehlung:</b> '+advice+'</span></div><small class="gp-analysis-caveat">Ein Gewinn ist erst nach Abgleich der aktuellen Kosten beurteilbar.</small>';
+  target.innerHTML='<div class="gp-analysis-status"><span class="gp-analysis-arrow gp-analysis-arrow--'+arrowClass+'" role="img" aria-label="'+arrowLabel+'">'+(arrowClass==='up'?'↑':'↓')+'</span><span class="gp-analysis-status-copy"><strong>'+percentLabel+'</strong><small>des Monatsziels erreicht</small></span></div><div class="gp-analysis-revenue"><span><small>Umsatz bisher</small><strong>'+EUR(gross)+' brutto</strong></span><span class="gp-analysis-target"><small>Monatsziel</small><strong>'+EUR(goal)+'</strong></span></div><div class="gp-analysis-progress" role="progressbar" aria-label="Umsatzfortschritt zum Monatsziel" aria-valuemin="0" aria-valuemax="100" aria-valuenow="'+progress.toFixed(1)+'" aria-valuetext="'+percentLabel+' vom Umsatzziel erreicht"><span style="width:'+progress.toFixed(1)+'%"></span></div><p class="gp-analysis-progress-caption"><span>'+percentLabel+' erreicht</span><span>Ziel: '+EUR(goal)+'</span></p><div class="gp-analysis-message"><strong>'+status+'</strong><span class="gp-analysis-recommendation"><b>'+encouragementTitle+'</b><span>'+advice+'</span></span></div><small class="gp-analysis-caveat">Ein Gewinn ist erst nach Abgleich der aktuellen Kosten beurteilbar.</small>';
  };
  describe(ids[0],'Friedrich',friedrichBrief,50000,'');
  describe(ids[1],'Judith',judithBrief,60000,'');
@@ -3202,6 +3203,41 @@ body.gp-article-area-active #financeSection{display:none!important}
   #businessHome .gp-home-analysis-card .gp-analysis-target strong{font-size:14px!important}
   #businessHome .gp-home-analysis-card .gp-analysis-progress{height:11px!important}
   #businessHome .gp-home-analysis-card .gp-analysis-message{font-size:13px!important;padding:10px 11px!important}
+}
+</style><style id="gp-analysis-motivational-recommendation-20261030">
+#businessHome .gp-home-analysis-card .gp-analysis-message{
+  gap:9px!important;
+  padding:14px 16px!important;
+  border-radius:0 13px 13px 0!important;
+}
+#businessHome .gp-home-analysis-card .gp-analysis-message>strong{
+  font-size:15px!important;
+  line-height:1.4!important;
+}
+#businessHome .gp-home-analysis-card .gp-analysis-recommendation{
+  display:flex!important;
+  flex-direction:column!important;
+  gap:4px!important;
+}
+#businessHome .gp-home-analysis-card .gp-analysis-recommendation>b{
+  display:block!important;
+  color:#087f70!important;
+  font-size:17px!important;
+  font-weight:850!important;
+  line-height:1.3!important;
+}
+#businessHome .gp-home-analysis-card.judith .gp-analysis-recommendation>b{color:#b92f70!important}
+#businessHome .gp-home-analysis-card .gp-analysis-recommendation>span{
+  display:block!important;
+  font-size:15px!important;
+  font-weight:650!important;
+  line-height:1.45!important;
+}
+@media(max-width:600px){
+  #businessHome .gp-home-analysis-card .gp-analysis-message{padding:12px!important}
+  #businessHome .gp-home-analysis-card .gp-analysis-message>strong{font-size:14px!important}
+  #businessHome .gp-home-analysis-card .gp-analysis-recommendation>b{font-size:16px!important}
+  #businessHome .gp-home-analysis-card .gp-analysis-recommendation>span{font-size:14px!important}
 }
 </style></body></html>
 
