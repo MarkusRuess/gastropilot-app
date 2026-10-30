@@ -2478,8 +2478,9 @@ function gpRenderReference(){
   table.innerHTML=html||'<tr><td colspan="4">Noch keine verifizierten Saldenwerte.</td></tr>';
  }else table.innerHTML='<tr><td colspan="4">Noch keine verifizierten Saldenwerte für den Monatsvergleich.</td></tr>';
 }
+function setDailyCalendarVisibility(visible){const panel=el('gpDailyCalendarPanel');if(!panel)return;panel.hidden=!visible;panel.style.setProperty('display',visible?'block':'none','important');panel.setAttribute('aria-hidden',String(!visible));}
 function openArea(name){
- area=name;
+ area=name;setDailyCalendarVisibility(name==='daily');
  const body=el('gpMockupDetailBody'),detail=el('gpMockupDetail');if(!body||!detail)return;
  const show=new Set(groups[name]||[]);
  Array.from(body.children).forEach(node=>node.classList.toggle('gp-area-hidden',name!=='all'&&!show.has(node.id)));
@@ -2489,7 +2490,7 @@ function openArea(name){
  document.querySelectorAll('#gpCockpitNav [data-gp-area]').forEach(b=>b.setAttribute('aria-current',String(b.dataset.gpArea===name)));
  detail.scrollIntoView({behavior:'smooth',block:'start'});
 }
-function home(){area=null;const d=el('gpMockupDetail');if(d)d.hidden=true;document.querySelectorAll('#gpCockpitNav [data-gp-area]').forEach(b=>b.setAttribute('aria-current','false'));window.scrollTo({top:0,behavior:'smooth'});}
+function home(){area=null;setDailyCalendarVisibility(false);const d=el('gpMockupDetail');if(d)d.hidden=true;document.querySelectorAll('#gpCockpitNav [data-gp-area]').forEach(b=>b.setAttribute('aria-current','false'));window.scrollTo({top:0,behavior:'smooth'});}
 function init(){
  const app=el('app'),switcher=el('businessSwitchCard'),nav=el('gpCockpitNav'),quick=el('gpCockpitQuick'),head=app?.querySelector(':scope > .row'),kpis=el('quickKpis'),summary=el('summary');
  if(!app||!switcher||!nav||!head||!kpis)return;
@@ -2503,7 +2504,7 @@ function init(){
  shell.appendChild(el('gpCockpitNav').previousElementSibling);shell.appendChild(nav);shell.appendChild(quick);
  const status=document.createElement('p');status.id='gpMockupStatus';status.textContent='Daten und Auswertungen bleiben je Betrieb getrennt · Kein automatisches Neuladen.';shell.appendChild(status);
  const previews=document.createElement('section');previews.id='gpReferencePreviews';previews.innerHTML='<article class="gp-ref-panel gp-ref-ledger"><header><div><strong>▥ Buchhaltung & Monatsvergleich</strong><small>Saldenlisten, Kostenstruktur und vorläufiges Ergebnis</small></div><button type="button" data-gp-preview="ledger">Details ›</button></header><table class="gp-ref-table"><thead><tr><th>Kennzahl</th><th>August</th><th>September</th><th>Oktober</th></tr></thead><tbody id="gpRefLedgerBody"><tr><td colspan="4">Bestätigte Buchhaltungsdaten werden geladen.</td></tr></tbody></table><div class="gp-ref-actions"><button type="button" data-gp-preview="ledger">Saldenlisten ›</button><button type="button" data-gp-preview="costs">Fixkosten ›</button><button type="button" data-gp-preview="staff">Personal ›</button><button type="button" data-gp-preview="ledger">Ergebnis ›</button></div></article><article class="gp-ref-panel gp-ref-daily"><header><div><strong>▤ Tagesabschlüsse</strong><small>Umsätze, Bons, 10 % / 20 %</small></div><button type="button" data-gp-preview="daily">Details ›</button></header><div id="gpRefMini"></div><div id="gpRefCharts"></div><div class="gp-ref-actions"><button type="button" data-gp-preview="daily">Tagesliste ›</button><button type="button" data-gp-preview="daily">10 % / 20 % ›</button><button type="button" data-gp-preview="articles">Top 30 ›</button><button type="button" data-gp-preview="articles">Selten verkauft ›</button></div></article>';app.insertBefore(previews,shell.nextSibling);
- const calendarPanel=document.createElement('section');calendarPanel.id='gpDailyCalendarPanel';calendarPanel.innerHTML='<header><div><strong>📅 Tagesumsätze im Monatskalender</strong><br><small id="gpDailyCalendarTitle">Monat auswählen</small></div><button type="button" data-gp-calendar-action="daily">Tagesabschlüsse öffnen ›</button></header><div id="gpDailyCalendarGrid" role="grid" aria-label="Tägliche Bruttoumsätze"></div><div id="gpDailyCalendarInfo" role="status">Wähle einen Tag, um den Umsatz zu sehen.</div>';app.insertBefore(calendarPanel,previews.nextSibling);
+ const calendarPanel=document.createElement('section');calendarPanel.id='gpDailyCalendarPanel';calendarPanel.hidden=true;calendarPanel.style.setProperty('display','none','important');calendarPanel.innerHTML='<header><div><strong>📅 Tagesumsätze im Monatskalender</strong><br><small id="gpDailyCalendarTitle">Monat auswählen</small></div><button type="button" data-gp-calendar-action="daily">Tagesabschlüsse öffnen ›</button></header><div id="gpDailyCalendarGrid" role="grid" aria-label="Tägliche Bruttoumsätze"></div><div id="gpDailyCalendarInfo" role="status">Wähle einen Tag, um den Umsatz zu sehen.</div>';app.insertBefore(calendarPanel,previews.nextSibling);
  const detail=document.createElement('section');detail.id='gpMockupDetail';detail.hidden=true;app.insertBefore(detail,shell.nextSibling);
  const dhead=document.createElement('div');dhead.id='gpMockupDetailHead';dhead.innerHTML='<strong id="gpMockupDetailTitle">Details</strong><div class="gp-detail-actions"><button type="button" id="gpMockupAll">Alle Funktionen</button> <button type="button" id="gpMockupBack">← Zur Übersicht</button></div>';detail.appendChild(dhead);
  const chartsBox=document.createElement('div');chartsBox.id='gpMockupDailyCharts';chartsBox.hidden=true;chartsBox.innerHTML='<div id="gpDailyMini"></div><div id="gpMockupCharts"></div>';detail.appendChild(chartsBox);
