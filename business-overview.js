@@ -43,7 +43,7 @@ export async function loadBusinessMetrics(db,businessId,month,isJudith=false){
  if(!/^\d{4}-(0[1-9]|1[0-2])$/.test(month))throw new Error('Ungültiger Monat.');
  const start=month+'-01',end=monthEnd(month);
  const previousMonthStart=new Date(Date.UTC(Number(month.slice(0,4)),Number(month.slice(5,7))-2,1)).toISOString().slice(0,10);
- const [salesResult,documentsResult,staffResult,costResult,ratioResult,summaryResult,planStaffResult]=await Promise.all([
+ const [salesResult,documentsResult,staffResult,costResult,ratioResult,summaryResult,planStaffResult,invoicesResult]=await Promise.all([
   db.from('bonit_daily_closings').select('closing_date,gross_amount,net_amount,receipt_count,raw_data').eq('business_id',businessId).gte('closing_date',start).lt('closing_date',end),
   db.from('documents').select('document_date,document_type,status,created_at,extracted_data').eq('business_id',businessId).gte('document_date',start).lt('document_date',end).in('document_type',['cash_report']),
   db.from('personnel_costs').select('total_costs').eq('business_id',businessId).eq('accounting_month',start),
@@ -53,7 +53,7 @@ export async function loadBusinessMetrics(db,businessId,month,isJudith=false){
   db.from('personnel_costs').select('total_costs').eq('business_id',businessId).eq('accounting_month',previousMonthStart)
  ]);
  const sales=result(salesResult,'Umsätze'),documents=result(documentsResult,'Tagesabschlüsse');
- const staff=result(staffResult,'Personal'),costs=result(costResult,'Einkäufe'),planStaff=result(planStaffResult,'Personal Vormonat');
+ const staff=result(staffResult,'Personal'),costs=result(costResult,'Einkäufe'),planStaff=result(planStaffResult,'Personal Vormonat'),invoices=result(invoicesResult,'Ausgangsrechnungen');
  if(ratioResult.error)throw new Error('Monatswerte: '+ratioResult.error.message);
  if(summaryResult.error)throw new Error('Monatsabschluss: '+summaryResult.error.message);
  const days=new Map();
@@ -77,7 +77,7 @@ export async function loadBusinessMetrics(db,businessId,month,isJudith=false){
  const personnel=net>0&&staffAmount!==null?100*staffAmount/net:null;
  const purchases=total(costs,'net_amount'),inventory=number(ratioResult.data?.inventory_change);
  const goods=net>0&&purchases!==null&&inventory!==null?100*(purchases+inventory)/net:null;
- return {gross,net,receipts,average,personnel,personnelPlan,goods,days:daily.length,paidDays:paidDays.length,hasSummary:gross!==null&&!!summary};
+ const dayCount=new Set([...days.keys(),...invoices.map(x=>x.service_date)]).size;\n return {gross,net,receipts,average,personnel,personnelPlan,goods,days:dayCount,paidDays:paidDays.length,hasSummary:gross!==null&&!!summary};
 }
 
 // Jahresdurchschnitt nur aus abgeschlossenen Monaten mit Nettoumsatz und Personalkosten.
