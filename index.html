@@ -652,7 +652,7 @@ body:not(.gp-judith-design) #gpDailyCalendarGrid .gp-cal-weekday{font-size:10px!
 <label>Anlass<input name="occasion" placeholder="optional"></label>
 </div><h3>Positionen</h3><div id="invoice-itemRows"></div><div class="row"><button id="invoice-addItem" type="button" class="secondary">+ Position</button><span id="invoice-calculation" class="muted"></span></div><p><button type="submit">Rechnung speichern</button></p></form>
 </section></div><p id="invoice-status" class="status muted" role="status"></p></main>
-<script src="./business-switch.js"></script><script type="module" src="./sales-invoices.js"></script></body></html</div><p id="invoice-status" class="status muted" role="status"></p></div></details></section>
+<script src="./business-switch.js"></script><script type="module" src="./sales-invoices.js"></script><script>if(location.hash==='#salesInvoices'){const d=document.getElementById('salesInvoices');if(d)d.open=true}</script></body></html</div><p id="invoice-status" class="status muted" role="status"></p></div></details></section>
 <section class="card" id="monthlyCostOverview"><details id="monthlyCostOverviewDisclosure"><summary class="top-articles-launch"><span><strong>Monatsüberblick · Kosten & Einkauf</strong><small id="monthlyCostOverviewHint">Umsatz · Wareneinkäufe · Personal · Fixkosten</small></span><span class="top-articles-chevron" aria-hidden="true">⌄</span></summary><div class="top-articles-content"><div id="monthlyCostOverviewRows" class="resultBridge"></div><p id="monthlyCostOverviewNote" class="muted">Monatsdaten werden geladen …</p></div></details></section>
 <style id="ledgerModernStyles">
 #ledgerComparisonSection .top-articles-content{padding:16px}
