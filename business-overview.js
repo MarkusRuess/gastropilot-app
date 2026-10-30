@@ -78,7 +78,8 @@ export async function loadBusinessMetrics(db,businessId,month,isJudith=false){
  const personnel=net>0&&staffAmount!==null?100*staffAmount/net:null;
  const purchases=total(costs,'net_amount'),inventory=number(ratioResult.data?.inventory_change);
  const goods=net>0&&purchases!==null&&inventory!==null?100*(purchases+inventory)/net:null;
- const dayCount=new Set([...days.keys(),...invoices.map(x=>x.service_date)]).size;\n return {gross,net,receipts,average,personnel,personnelPlan,goods,days:dayCount,paidDays:paidDays.length,hasSummary:gross!==null&&!!summary};
+ const dayCount=new Set([...days.keys(),...invoices.map(x=>x.service_date)]).size;
+ return {gross,net,receipts,average,personnel,personnelPlan,goods,days:dayCount,paidDays:paidDays.length,hasSummary:gross!==null&&!!summary};
 }
 
 // Jahresdurchschnitt nur aus abgeschlossenen Monaten mit Nettoumsatz und Personalkosten.
