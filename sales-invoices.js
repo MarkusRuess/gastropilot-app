@@ -18,7 +18,7 @@ function calc(){const lines=lineValues();const g=lines.reduce((a,x)=>a+x.gross_a
 function setDataLabel(td,label){td.dataset.label=label;return td}
 function selectStatus(value,options,save){const s=document.createElement('select');for(const [v,l] of options){const o=document.createElement('option');o.value=v;o.textContent=l;s.append(o)}s.value=value;s.onchange=async()=>{s.disabled=true;const r=await db.from('sales_invoices').update({[save]:s.value,updated_at:new Date().toISOString()}).eq('id',s.dataset.id).eq('business_id',businessId);s.disabled=false;if(r.error){status('Status nicht gespeichert: '+r.error.message);return}status('Rechnungsstatus gespeichert.');};return s}
 function addCell(row,text,label,cls){const td=document.createElement('td');td.textContent=text;td.dataset.label=label;if(cls)td.className=cls;row.append(td);return td}
-async function load(){const month=$('month').value;if(!/^\\d{4}-\\d{2}$/.test(month))return;const start=month+'-01',end=new Date(Date.UTC(Number(month.slice(0,4)),Number(month.slice(5,7)),1)).toISOString().slice(0,10);
+async function load(){const month=$('month').value;if(!/^\d{4}-\d{2}$/.test(month))return;const start=month+'-01',end=new Date(Date.UTC(Number(month.slice(0,4)),Number(month.slice(5,7)),1)).toISOString().slice(0,10);
  const {data:invoices,error}=await db.from('sales_invoices').select('*').eq('business_id',businessId).gte('service_date',start).lt('service_date',end).order('service_date');
  if(error)throw error;const ids=(invoices||[]).map(x=>x.id);let items=[];
  if(ids.length){const q=await db.from('sales_invoice_items').select('invoice_id,item_name,article_group,quantity,gross_amount').eq('business_id',businessId).in('invoice_id',ids);if(q.error)throw q.error;items=q.data||[]}
