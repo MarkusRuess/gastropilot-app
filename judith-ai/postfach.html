@@ -88,8 +88,12 @@ document.getElementById('load-orders').addEventListener('click',async()=>{
   for(const item of orders){
    const customer=customers.get(item.customer_id)||{};
    const card=document.createElement('details');card.className='tile';card.style.marginBottom='8px';
-   const head=document.createElement('summary');head.style.cursor='pointer';head.style.fontWeight='650';
-   head.textContent=(item.status==='picked_up'?'✅ Abgeholt':item.status==='confirmed'?'🟢 Bestätigt':'🟡 Anfrage')+' · '+(item.requested_date?item.requested_date.split('-').reverse().join('.'):'Datum offen')+' · '+(customer.name||'Kunde unbekannt')+' · '+(item.occasion||'Torte');
+   const head=document.createElement('summary');head.style.cssText='cursor:pointer;font-weight:650;display:flex;align-items:center;gap:8px;flex-wrap:wrap;line-height:1.35';
+   const customerName=document.createElement('span');customerName.textContent=customer.name||'Kunde unbekannt';customerName.style.fontWeight='750';
+   const orderStatus=document.createElement('span');orderStatus.textContent=item.status==='picked_up'?'✅ Torte abgeholt':item.status==='confirmed'?'🟢 Bestätigt':'🟡 Anfrage';orderStatus.style.cssText='display:inline-flex;align-items:center;padding:4px 9px;border-radius:999px;background:'+(item.status==='picked_up'?'#e2f4e9':item.status==='confirmed'?'#e2f4e9':'#fff1d6')+';color:'+(item.status==='picked_up'||item.status==='confirmed'?'#21674a':'#8a5a12')+';font-size:13px;font-weight:750;white-space:nowrap';
+   const orderDate=document.createElement('span');orderDate.textContent='📅 '+(item.requested_date?item.requested_date.split('-').reverse().join('.'):'Datum offen');orderDate.style.cssText='font-weight:500;color:#5b6470';
+   const orderOccasion=document.createElement('span');orderOccasion.textContent='· '+(item.occasion||'Torte');orderOccasion.style.cssText='font-weight:500;color:#5b6470';
+   head.append(customerName,orderStatus,orderDate,orderOccasion);
    const info=document.createElement('p');info.textContent='E-Mail: '+(customer.email||'Fehlt')+' · Telefon: '+(customer.phone||'Fehlt')+(item.guests?' · Personen: '+item.guests:'');
    const details=document.createElement('p');details.textContent=item.details||'';const attachments=(result.attachments||[]).filter(f=>f.inquiry_id===item.id);
    const photoPanel=renderJudithAttachments(attachments);
