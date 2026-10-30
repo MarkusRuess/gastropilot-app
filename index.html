@@ -1515,13 +1515,23 @@ async function updateCombinedManagementHome(){
  const grossFor=id=>(sales.data||[]).filter(x=>x.business_id===id).reduce((a,x)=>a+Number(x.gross_amount||0),0);
  const describe=(id,label,target,goal,action)=>{
   if(!target)return;
-  if(!hasSales.has(id)){target.textContent='Für '+month+' liegen noch keine BONit-Tagesabschlüsse vor. Wirtschaftliche Bewertung derzeit nicht möglich.';return;}
-  const gross=grossFor(id),ratio=goal>0?gross/goal*100:0;
-  const note=ratio>=100?'Das Monatsumsatzziel ist bereits erreicht.':ratio>=85?'Das Monatsumsatzziel ist in Reichweite.':'Zum Monatsumsatzziel besteht noch eine deutliche Lücke.';
-  target.textContent='Umsatz bisher '+EUR(gross)+' brutto · '+ratio.toLocaleString('de-AT',{maximumFractionDigits:1})+' % des vorläufigen Monatsziels '+EUR(goal)+'. '+note+' '+action+' Ein Gewinn lässt sich daraus ohne aktuelle Kosten nicht ableiten.';
+  if(!hasSales.has(id)){
+   target.textContent='Für '+month+' liegen noch keine BONit-Tagesabschlüsse vor. Eine Einschätzung ist erst mit erfassten Umsätzen möglich.';
+   return;
+  }
+  const gross=grossFor(id),ratio=goal>0?gross/goal*100:0,remaining=goal-gross,achieved=ratio>=100;
+  const arrowClass=achieved||ratio>=85?'up':'down';
+  const arrowLabel=achieved?'Monatsziel erreicht':ratio>=85?'Monatsziel fast erreicht':'Monatsziel noch offen';
+  const status=achieved
+   ?'Monatsziel erreicht · '+EUR(remaining*-1)+' über dem Ziel.'
+   :'Noch '+EUR(remaining)+' bis zum Monatsziel von '+EUR(goal)+'.';
+  const advice=label==='Friedrich'
+   ?(achieved?'Wareneinkäufe, Getränkemargen und Personaleinsatz weiter prüfen.':'Wareneinkäufe, Getränkemargen und Personaleinsatz gezielt prüfen.')
+   :'Zusätzliche Torten- und Firmenaufträge gewinnen; Personalstunden im Blick behalten.';
+  target.innerHTML='<div class="gp-analysis-status"><span class="gp-analysis-arrow gp-analysis-arrow--'+arrowClass+'" role="img" aria-label="'+arrowLabel+'">'+(arrowClass==='up'?'↑':'↓')+'</span><span class="gp-analysis-status-copy"><strong>'+ratio.toLocaleString('de-AT',{maximumFractionDigits:1})+' %</strong><small>des Monatsziels · '+EUR(gross)+' brutto</small></span></div><p class="gp-analysis-message"><strong>'+status+'</strong> '+advice+'</p><small class="gp-analysis-caveat">Ein Gewinn ist erst nach Abgleich der aktuellen Kosten beurteilbar.</small>';
  };
- describe(ids[0],'Friedrich',friedrichBrief,50000,'Schwerpunkt: Wareneinkäufe, Getränkemargen und Personalplanung prüfen.');
- describe(ids[1],'Judith',judithBrief,60000,'Schwerpunkt: mehr Torten- und Firmenaufträge bei kontrollierten Personalstunden.');
+ describe(ids[0],'Friedrich',friedrichBrief,50000,'');
+ describe(ids[1],'Judith',judithBrief,60000,'');
 
  if(ids.every(id=>hasSales.has(id)))revenueEl.textContent=EUR((sales.data||[]).reduce((a,x)=>a+Number(x.gross_amount||0),0));
  const targetEl=E('combinedManagementTarget'),targetBar=E('combinedManagementTargetBar'),targetCaption=E('combinedManagementTargetCaption');
@@ -3108,6 +3118,45 @@ body.gp-article-area-active #financeSection{display:none!important}
 }
 @media(max-width:360px){
   #businessHome #homeCards>.homeBusiness .homeMetrics{grid-template-columns:minmax(0,1fr)!important}
+}
+</style><style id="gp-economic-brief-arrows-20261030">
+#businessHome .gp-home-analysis-card>p[id^="home"]{
+  display:block!important;
+  margin:12px 0 0!important;
+  font-size:15px!important;
+  line-height:1.5!important;
+  color:#33485b!important;
+}
+#businessHome .gp-home-analysis-card .gp-analysis-status{
+  display:flex!important;
+  align-items:center!important;
+  gap:12px!important;
+  margin:0 0 12px!important;
+}
+#businessHome .gp-home-analysis-card .gp-analysis-arrow{
+  display:inline-flex!important;
+  flex:0 0 46px!important;
+  width:46px!important;
+  height:46px!important;
+  align-items:center!important;
+  justify-content:center!important;
+  border-radius:50%!important;
+  font-size:34px!important;
+  font-weight:800!important;
+  line-height:1!important;
+}
+#businessHome .gp-home-analysis-card .gp-analysis-arrow--up{background:#e5f5ee!important;color:#078b60!important}
+#businessHome .gp-home-analysis-card .gp-analysis-arrow--down{background:#fff0f3!important;color:#c63760!important}
+#businessHome .gp-home-analysis-card .gp-analysis-status-copy{display:flex!important;min-width:0!important;flex-direction:column!important;gap:2px!important}
+#businessHome .gp-home-analysis-card .gp-analysis-status-copy strong{font-size:clamp(23px,2.6vw,32px)!important;line-height:1.1!important;color:#172a3a!important}
+#businessHome .gp-home-analysis-card .gp-analysis-status-copy small{font-size:12px!important;line-height:1.35!important;color:#64788a!important}
+#businessHome .gp-home-analysis-card .gp-analysis-message{margin:0 0 8px!important;font-size:14px!important;line-height:1.45!important}
+#businessHome .gp-home-analysis-card .gp-analysis-message strong{font-weight:750!important}
+#businessHome .gp-home-analysis-card .gp-analysis-caveat{display:block!important;margin-top:8px!important;color:#687c8e!important;font-size:11px!important;line-height:1.4!important}
+@media(max-width:600px){
+  #businessHome .gp-home-analysis-card>p[id^="home"]{font-size:14px!important}
+  #businessHome .gp-home-analysis-card .gp-analysis-status{gap:10px!important;margin-bottom:9px!important}
+  #businessHome .gp-home-analysis-card .gp-analysis-arrow{flex-basis:40px!important;width:40px!important;height:40px!important;font-size:29px!important}
 }
 </style></body></html>
 
