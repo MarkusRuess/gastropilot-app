@@ -67,8 +67,10 @@ export async function loadBusinessMetrics(db,businessId,month,isJudith=false){
  }
  for(const row of sales)days.set(row.closing_date,{gross:number(row.gross_amount),net:number(row.net_amount),receipts:number(row.receipt_count),paid:isJudith?number(row.receipt_count):paidCount(row.raw_data)??days.get(row.closing_date)?.paid??null});
  const daily=[...days.values()],summary=summaryResult.data?.summary;
- const gross=number(summary?.gross)??total(daily,'gross');
- const net=number(ratioResult.data?.net_revenue)??number(summary?.net)??total(daily,'net');
+ const invoiceGross=total(invoices,'gross_total')??0,invoiceNet=total(invoices,'net_total')??0;
+ const posGross=number(summary?.gross)??total(daily,'gross'),posNet=number(summary?.net)??total(daily,'net');
+ const gross=posGross===null&&!invoices.length?null:(posGross??0)+invoiceGross;
+ const net=number(ratioResult.data?.net_revenue)??(posNet===null&&!invoices.length?null:(posNet??0)+invoiceNet);
  const receipts=total(daily,'receipts');
  const personnelPlan=planStaff.length?total(planStaff,'total_costs'):null;
  const paidDays=daily.filter(row=>row.paid!==null&&row.gross!==null);
