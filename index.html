@@ -2989,5 +2989,125 @@ body.gp-article-area-active #gpJudithDetailNotice,
 body.gp-article-area-active #ledgerComparisonSection,
 body.gp-article-area-active #monthlyCostOverview,
 body.gp-article-area-active #financeSection{display:none!important}
+</style><style id="gp-overview-responsive-cleanup-20261030">
+/* Übersicht: Bildbereich und Kennzahlen bleiben klar getrennt. */
+#businessHome #homeCards.homeGrid{
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  align-items:stretch!important;
+  gap:18px!important;
+}
+#businessHome #homeCards>.homeBusiness{
+  position:relative!important;
+  display:flex!important;
+  flex-direction:column!important;
+  width:100%!important;
+  min-width:0!important;
+  box-sizing:border-box!important;
+  overflow:hidden!important;
+  padding:184px 18px 18px!important;
+  border-radius:20px!important;
+}
+#businessHome #homeCards>.homeBusiness::before{
+  display:block!important;
+  content:""!important;
+  position:absolute!important;
+  top:12px!important;
+  left:12px!important;
+  right:12px!important;
+  height:154px!important;
+  border-radius:15px!important;
+  background:#dce8e2 url('https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=1100&q=85&fit=crop') center/cover no-repeat!important;
+  pointer-events:none!important;
+}
+#businessHome #homeCards>.homeBusiness:nth-child(2)::before{
+  background:#f7e2ec url('https://images.unsplash.com/photo-1464305795204-6f5bbfc7fb81?w=1100&q=85&fit=crop') center/cover no-repeat!important;
+}
+#businessHome #homeCards>.homeBusiness::after{content:none!important;display:none!important}
+#businessHome #homeCards>.homeBusiness .homeOpen{
+  position:absolute!important;
+  top:119px!important;
+  right:25px!important;
+  z-index:2!important;
+  display:inline-flex!important;
+  align-items:center!important;
+  margin:0!important;
+  padding:11px 15px!important;
+  border:0!important;
+  border-radius:11px!important;
+  background:#078b70!important;
+  color:#fff!important;
+  font-size:14px!important;
+  font-weight:750!important;
+  line-height:1.2!important;
+  box-shadow:0 4px 14px #102f2726!important;
+}
+#businessHome #homeCards>.homeBusiness:nth-child(2) .homeOpen{background:#bd3475!important}
+#businessHome #homeCards>.homeBusiness h2{
+  position:relative!important;
+  z-index:1!important;
+  margin:0 0 3px!important;
+  font-size:clamp(20px,2vw,25px)!important;
+  line-height:1.2!important;
+}
+#businessHome #homeCards>.homeBusiness .homeHint{min-height:0!important;line-height:1.35!important}
+#businessHome #homeCards>.homeBusiness .homeMetrics{
+  display:grid!important;
+  width:100%!important;
+  max-width:none!important;
+  min-width:0!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  grid-auto-rows:minmax(88px,auto)!important;
+  align-content:start!important;
+  gap:10px!important;
+  margin:16px 0 12px!important;
+  flex:initial!important;
+}
+#businessHome #homeCards .homeMetric{
+  display:flex!important;
+  flex-direction:column!important;
+  justify-content:space-between!important;
+  min-width:0!important;
+  min-height:88px!important;
+  box-sizing:border-box!important;
+  padding:12px!important;
+  border-radius:13px!important;
+  overflow:hidden!important;
+}
+#businessHome #homeCards .homeMetric small{
+  min-height:0!important;
+  font-size:12px!important;
+  line-height:1.3!important;
+  overflow-wrap:anywhere!important;
+}
+#businessHome #homeCards .homeMetric strong{
+  margin-top:8px!important;
+  font-size:clamp(16px,1.45vw,21px)!important;
+  line-height:1.2!important;
+  overflow-wrap:anywhere!important;
+}
+#businessHome #homeCards .homeMetric .homeTicketTarget{font-size:11px!important;line-height:1.3!important}
+#businessHome #homeCards .homeMetric .homeProgress{height:7px!important;flex:none!important}
+#businessHome #homeCards .homeBusiness:first-child .homeMetric:nth-child(1){background:#eaf7f2!important;border-color:#cce9df!important}
+#businessHome #homeCards .homeBusiness:nth-child(2) .homeMetric:nth-child(1){background:#fff0f6!important;border-color:#f1d5e2!important}
+#businessHome #homeCards>.homeBusiness:focus-visible{outline:3px solid #078b70!important;outline-offset:3px!important}
+@media(max-width:850px){
+  #businessHome #homeCards.homeGrid{grid-template-columns:minmax(0,1fr)!important;gap:14px!important}
+  #businessHome #homeCards>.homeBusiness{padding:184px 16px 16px!important}
+  #businessHome #homeCards>.homeBusiness .homeMetrics{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+}
+@media(max-width:520px){
+  #businessHome #homeCards>.homeBusiness{padding:154px 12px 13px!important;border-radius:17px!important}
+  #businessHome #homeCards>.homeBusiness::before{top:9px!important;left:9px!important;right:9px!important;height:130px!important}
+  #businessHome #homeCards>.homeBusiness .homeOpen{top:93px!important;right:20px!important;padding:9px 12px!important;font-size:12px!important}
+  #businessHome #homeCards>.homeBusiness .homeMetrics{grid-auto-rows:minmax(78px,auto)!important;gap:7px!important;margin:12px 0 8px!important}
+  #businessHome #homeCards .homeMetric{min-height:78px!important;padding:9px!important}
+  #businessHome #homeCards .homeMetric small{font-size:11px!important}
+  #businessHome #homeCards .homeMetric strong{font-size:16px!important}
+  #businessHome #homeCards .homeMetric .homeTicketTarget{font-size:10px!important}
+}
+@media(max-width:360px){
+  #businessHome #homeCards>.homeBusiness .homeMetrics{grid-template-columns:minmax(0,1fr)!important}
+}
 </style></body></html>
 
