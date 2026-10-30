@@ -1505,14 +1505,15 @@ async function updateCombinedManagementHome(){
  const friedrichBrief=E('homeFriedrichBrief'),judithBrief=E('homeJudithBrief');if(friedrichBrief)friedrichBrief.textContent='Werte werden geprüft …';if(judithBrief)judithBrief.textContent='Werte werden geprüft …';
  try{
  const next=new Date(Date.UTC(Number(month.slice(0,4)),Number(month.slice(5,7)),1)).toISOString().slice(0,10);
- const [sales,ledger]=await Promise.all([
+ const [sales,invoices,ledger]=await Promise.all([
  db.from('bonit_daily_closings').select('business_id,gross_amount').in('business_id',ids).gte('closing_date',month+'-01').lt('closing_date',next),
+ db.from('sales_invoices').select('business_id,invoice_date,gross_total').in('business_id',ids).gte('invoice_date',month+'-01').lt('invoice_date',next),
  db.from('gp_ledger_monthly').select('business_id,metric_key,amount,verification_status').in('business_id',ids).eq('month_start',month+'-01')
  ]);
  if(E('homeMonth')?.value!==month||E('businessHome')?.classList.contains('hidden'))return;
- if(sales.error)throw sales.error;if(ledger.error)throw ledger.error;
- const hasSales=new Set((sales.data||[]).map(x=>x.business_id));
- const grossFor=id=>(sales.data||[]).filter(x=>x.business_id===id).reduce((a,x)=>a+Number(x.gross_amount||0),0);
+ if(sales.error)throw sales.error;if(invoices.error)throw invoices.error;if(ledger.error)throw ledger.error;
+ const hasSales=new Set([...(sales.data||[]),...(invoices.data||[])].map(x=>x.business_id));
+ const grossFor=id=>[...(sales.data||[]).filter(x=>x.business_id===id).map(x=>x.gross_amount),...(invoices.data||[]).filter(x=>x.business_id===id).map(x=>x.gross_total)].reduce((a,x)=>a+Number(x||0),0);
  const describe=(id,label,target,goal,action)=>{
   if(!target)return;
   if(!hasSales.has(id)){
@@ -1536,12 +1537,12 @@ async function updateCombinedManagementHome(){
  describe(ids[0],'Friedrich',friedrichBrief,50000,'');
  describe(ids[1],'Judith',judithBrief,60000,'');
 
- if(ids.every(id=>hasSales.has(id)))revenueEl.textContent=EUR((sales.data||[]).reduce((a,x)=>a+Number(x.gross_amount||0),0));
+ if(ids.every(id=>hasSales.has(id)))revenueEl.textContent=EUR(ids.reduce((a,id)=>a+grossFor(id),0));
  const targetEl=E('combinedManagementTarget'),targetBar=E('combinedManagementTargetBar'),targetCaption=E('combinedManagementTargetCaption');
  if(targetEl&&targetBar&&targetCaption){
   const totalGoal=110000; // dashboard month targets: Friedrich 50k, Judith 60k (gross)
   if(ids.every(id=>hasSales.has(id))){
-   const totalGross=(sales.data||[]).reduce((a,x)=>a+Number(x.gross_amount||0),0);
+   const totalGross=ids.reduce((a,id)=>a+grossFor(id),0);
    const percentage=100*totalGross/totalGoal;
    targetEl.textContent=percentage.toLocaleString('de-AT',{maximumFractionDigits:1})+' %';
    targetBar.style.width=Math.min(100,Math.max(0,percentage))+'%';
