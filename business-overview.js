@@ -43,17 +43,18 @@ export async function loadBusinessMetrics(db,businessId,month,isJudith=false){
  if(!/^\d{4}-(0[1-9]|1[0-2])$/.test(month))throw new Error('Ungültiger Monat.');
  const start=month+'-01',end=monthEnd(month);
  const previousMonthStart=new Date(Date.UTC(Number(month.slice(0,4)),Number(month.slice(5,7))-2,1)).toISOString().slice(0,10);
- const [salesResult,documentsResult,staffResult,costResult,ratioResult,summaryResult,planStaffResult]=await Promise.all([
+ const [salesResult,documentsResult,staffResult,costResult,ratioResult,summaryResult,planStaffResult,invoicesResult]=await Promise.all([
   db.from('bonit_daily_closings').select('closing_date,gross_amount,net_amount,receipt_count,raw_data').eq('business_id',businessId).gte('closing_date',start).lt('closing_date',end),
   db.from('documents').select('document_date,document_type,status,created_at,extracted_data').eq('business_id',businessId).gte('document_date',start).lt('document_date',end).in('document_type',['cash_report']),
   db.from('personnel_costs').select('total_costs').eq('business_id',businessId).eq('accounting_month',start),
   db.from('expenses').select('category,net_amount').eq('business_id',businessId).gte('expense_date',start).lt('expense_date',end).in('category',['food','drinks','beverages']),
   db.from('monthly_cost_ratio_inputs').select('net_revenue,inventory_change').eq('business_id',businessId).eq('month',start).maybeSingle(),
   ['2026-08','2026-09'].includes(month)?db.from('monthly_bonit_summaries').select('summary').eq('business_id',businessId).eq('month_start',start).maybeSingle():Promise.resolve({data:null,error:null}),
-  db.from('personnel_costs').select('total_costs').eq('business_id',businessId).eq('accounting_month',previousMonthStart)
+  db.from('personnel_costs').select('total_costs').eq('business_id',businessId).eq('accounting_month',previousMonthStart),
+  db.from('sales_invoices').select('service_date,gross_total,net_total').eq('business_id',businessId).gte('service_date',start).lt('service_date',end)
  ]);
  const sales=result(salesResult,'Umsätze'),documents=result(documentsResult,'Tagesabschlüsse');
- const staff=result(staffResult,'Personal'),costs=result(costResult,'Einkäufe'),planStaff=result(planStaffResult,'Personal Vormonat');
+ const staff=result(staffResult,'Personal'),costs=result(costResult,'Einkäufe'),planStaff=result(planStaffResult,'Personal Vormonat'),invoices=result(invoicesResult,'Ausgangsrechnungen');
  if(ratioResult.error)throw new Error('Monatswerte: '+ratioResult.error.message);
  if(summaryResult.error)throw new Error('Monatsabschluss: '+summaryResult.error.message);
  const days=new Map();
@@ -66,8 +67,10 @@ export async function loadBusinessMetrics(db,businessId,month,isJudith=false){
  }
  for(const row of sales)days.set(row.closing_date,{gross:number(row.gross_amount),net:number(row.net_amount),receipts:number(row.receipt_count),paid:isJudith?number(row.receipt_count):paidCount(row.raw_data)??days.get(row.closing_date)?.paid??null});
  const daily=[...days.values()],summary=summaryResult.data?.summary;
- const gross=number(summary?.gross)??total(daily,'gross');
- const net=number(ratioResult.data?.net_revenue)??number(summary?.net)??total(daily,'net');
+ const invoiceGross=total(invoices,'gross_total')??0,invoiceNet=total(invoices,'net_total')??0;
+ const posGross=number(summary?.gross)??total(daily,'gross'),posNet=number(summary?.net)??total(daily,'net');
+ const gross=posGross===null&&!invoices.length?null:(posGross??0)+invoiceGross;
+ const net=number(ratioResult.data?.net_revenue)??(posNet===null&&!invoices.length?null:(posNet??0)+invoiceNet);
  const receipts=total(daily,'receipts');
  const personnelPlan=planStaff.length?total(planStaff,'total_costs'):null;
  const paidDays=daily.filter(row=>row.paid!==null&&row.gross!==null);
@@ -77,7 +80,8 @@ export async function loadBusinessMetrics(db,businessId,month,isJudith=false){
  const personnel=net>0&&staffAmount!==null?100*staffAmount/net:null;
  const purchases=total(costs,'net_amount'),inventory=number(ratioResult.data?.inventory_change);
  const goods=net>0&&purchases!==null&&inventory!==null?100*(purchases+inventory)/net:null;
- return {gross,net,receipts,average,personnel,personnelPlan,goods,days:daily.length,paidDays:paidDays.length,hasSummary:gross!==null&&!!summary};
+ const dayCount=new Set([...days.keys(),...invoices.map(x=>x.service_date)]).size;
+ return {gross,net,receipts,average,personnel,personnelPlan,goods,days:dayCount,paidDays:paidDays.length,hasSummary:gross!==null&&!!summary};
 }
 
 // Jahresdurchschnitt nur aus abgeschlossenen Monaten mit Nettoumsatz und Personalkosten.
