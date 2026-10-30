@@ -2480,7 +2480,7 @@ function gpRenderReference(){
 }
 function setDailyCalendarVisibility(visible){const panel=el('gpDailyCalendarPanel');if(!panel)return;panel.hidden=!visible;panel.style.setProperty('display',visible?'block':'none','important');panel.setAttribute('aria-hidden',String(!visible));}
 function openArea(name){
- area=name;setDailyCalendarVisibility(name==='daily');
+ area=name;document.body.classList.toggle('gp-article-area-active',name==='articles');setDailyCalendarVisibility(name==='daily');
  const body=el('gpMockupDetailBody'),detail=el('gpMockupDetail');if(!body||!detail)return;
  const show=new Set(groups[name]||[]);
  Array.from(body.children).forEach(node=>node.classList.toggle('gp-area-hidden',name!=='all'&&!show.has(node.id)));
@@ -2490,7 +2490,7 @@ function openArea(name){
  document.querySelectorAll('#gpCockpitNav [data-gp-area]').forEach(b=>b.setAttribute('aria-current',String(b.dataset.gpArea===name)));
  detail.scrollIntoView({behavior:'smooth',block:'start'});
 }
-function home(){area=null;setDailyCalendarVisibility(false);const d=el('gpMockupDetail');if(d)d.hidden=true;document.querySelectorAll('#gpCockpitNav [data-gp-area]').forEach(b=>b.setAttribute('aria-current','false'));window.scrollTo({top:0,behavior:'smooth'});}
+function home(){area=null;document.body.classList.remove('gp-article-area-active');setDailyCalendarVisibility(false);const d=el('gpMockupDetail');if(d)d.hidden=true;document.querySelectorAll('#gpCockpitNav [data-gp-area]').forEach(b=>b.setAttribute('aria-current','false'));window.scrollTo({top:0,behavior:'smooth'});}
 function init(){
  const app=el('app'),switcher=el('businessSwitchCard'),nav=el('gpCockpitNav'),quick=el('gpCockpitQuick'),head=app?.querySelector(':scope > .row'),kpis=el('quickKpis'),summary=el('summary');
  if(!app||!switcher||!nav||!head||!kpis)return;
@@ -2623,7 +2623,7 @@ const areaMap={
 'Personal':{title:'Personal · Judith',ids:['judithPersonnelTile','financeSection'],message:'Nur für Judith zugeordnete Personalwerte verwenden.'},
 'Buchhaltung':{title:'Buchhaltung · Monatsvergleich',ids:['ledgerComparisonSection','judithSimpleResult','judithRentTile'],message:''},
 'Top Torten & Artikel':{title:'Top Torten & Artikel',ids:['topArticles','slowArticles','profitability','judithCakePricingTile','menuDashboardTile'],message:'Top-30-Auswertung auf Basis vorhandener Artikelbuchungen.'}}
-function openFull(label){const cfg=areaMap[label];if(!cfg||!document.body.classList.contains('gp-judith-design'))return false;const detail=$('gpMockupDetail'),body=$('gpMockupDetailBody');if(!detail||!body)return false;const title=$('gpMockupDetailTitle');if(title)title.textContent=cfg.title;const set=new Set(cfg.ids);let shown=0;for(const node of body.children){const show=set.has(node.id);node.classList.toggle('gp-area-hidden',!show);if(show){shown++;if(node.tagName==='DETAILS')node.open=true;node.querySelectorAll('details').forEach(d=>d.open=true);}}if(label==='Buchhaltung'){const disclosure=$('ledgerComparisonDisclosure');if(disclosure)disclosure.open=true;const comparison=$('ledgerTablePanel');if(comparison)comparison.open=true;}const chart=$('gpMockupDailyCharts');if(chart)chart.hidden=true;let notice=$('gpJudithDetailNotice');if(!notice){notice=document.createElement('p');notice.id='gpJudithDetailNotice';notice.style.cssText='border-radius:10px;padding:10px 13px;background:#fff0f7;color:#8d3c69;font-size:13px;margin:10px 0';body.parentElement.insertBefore(notice,body);}notice.textContent=cfg.message||('Alle verfügbaren Informationen zum Bereich '+cfg.title+' werden angezeigt.');notice.hidden=false;detail.hidden=false;detail.scrollIntoView({behavior:'instant',block:'start'});return true;}
+function openFull(label){const cfg=areaMap[label];if(!cfg||!document.body.classList.contains('gp-judith-design'))return false;document.body.classList.toggle('gp-article-area-active',label==='Top Torten & Artikel');const detail=$('gpMockupDetail'),body=$('gpMockupDetailBody');if(!detail||!body)return false;const title=$('gpMockupDetailTitle');if(title)title.textContent=cfg.title;const set=new Set(cfg.ids);let shown=0;for(const node of body.children){const show=set.has(node.id);node.classList.toggle('gp-area-hidden',!show);if(show){shown++;if(node.tagName==='DETAILS')node.open=true;node.querySelectorAll('details').forEach(d=>d.open=true);}}if(label==='Buchhaltung'){const disclosure=$('ledgerComparisonDisclosure');if(disclosure)disclosure.open=true;const comparison=$('ledgerTablePanel');if(comparison)comparison.open=true;}const chart=$('gpMockupDailyCharts');if(chart)chart.hidden=true;let notice=$('gpJudithDetailNotice');if(!notice){notice=document.createElement('p');notice.id='gpJudithDetailNotice';notice.style.cssText='border-radius:10px;padding:10px 13px;background:#fff0f7;color:#8d3c69;font-size:13px;margin:10px 0';body.parentElement.insertBefore(notice,body);}notice.textContent=cfg.message||('Alle verfügbaren Informationen zum Bereich '+cfg.title+' werden angezeigt.');notice.hidden=false;detail.hidden=false;detail.scrollIntoView({behavior:'instant',block:'start'});return true;}
 function init(){const nav=$('gpCockpitNav');if(!nav)return;nav.addEventListener('click',e=>{if(!document.body.classList.contains('gp-judith-design'))return;const btn=e.target.closest('button[data-gp-area]');if(!btn)return;const label=btn.querySelector('strong')?.textContent?.trim();if(!areaMap[label])return;e.stopImmediatePropagation();openFull(label);nav.querySelectorAll('button[data-gp-area]').forEach(b=>b.setAttribute('aria-current',String(b===btn)));},true);
 const extra=$('gpJudithMockupSections');if(extra)extra.addEventListener('click',e=>{if(!document.body.classList.contains('gp-judith-design'))return;const b=e.target.closest('button[data-open]');if(!b)return;const target=b.dataset.open==='articles'?'Top Torten & Artikel':null;if(!target)return;e.stopImmediatePropagation();openFull(target);},true);
 const quick=$('gpJudithFinancialPreview');if(quick)quick.addEventListener('click',e=>{if(!document.body.classList.contains('gp-judith-design'))return;const b=e.target.closest('button[data-jd-open]');if(!b)return;const map={planning:'Rezepte & Kalkulation',articles:'Top Torten & Artikel',ledger:'Buchhaltung',staff:'Personal'};const name=map[b.dataset.jdOpen];if(!name)return;e.stopImmediatePropagation();openFull(name);},true);
@@ -2980,5 +2980,14 @@ body.gp-friedrich-article-view #gpDailyCalendarPanel,
 body.gp-friedrich-article-view #gpMockupExtra,
 body.gp-friedrich-article-view #ledgerComparisonSection{display:none!important}
 body.gp-friedrich-article-view #gpMockupDetailBody>:not(.gp-article-active){display:none!important}
+</style><style id="gp-article-area-lower-cleanup-20261030">
+body.gp-article-area-active #gpReferencePreviews,
+body.gp-article-area-active #gpDailyCalendarPanel,
+body.gp-article-area-active #gpMockupExtra,
+body.gp-article-area-active #gpMockupStatus,
+body.gp-article-area-active #gpJudithDetailNotice,
+body.gp-article-area-active #ledgerComparisonSection,
+body.gp-article-area-active #monthlyCostOverview,
+body.gp-article-area-active #financeSection{display:none!important}
 </style></body></html>
 
