@@ -1815,9 +1815,10 @@ async function refresh(){void loadLedgerComparison();if(E('recipeCostTile')&&!E(
  const pricedItems=new Map(),pricedDates=new Set();
  function addPricedArticle(x){const id=String(x.article_number||'');const rawName=canonicalArticleName(x.article_name||x.name||'Unbenannt');const key=id||rawName.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/baguette/g,'baquette').replace(/\s+/g,' ').trim();const qty=N(x.quantity),amount=N(x.gross_amount??x.gross_total);if(qty===null||amount===null)return;const old=pricedItems.get(key)||{name:(id?id+' · ':'')+rawName,qty:0,gross:0,known:true};old.qty+=qty;old.gross+=amount;pricedItems.set(key,old);}
  // Einzelartikel aus der Datenbank haben Vorrang; nur zum Z-Bericht passende Tage zählen.
+ const bonitGrossByDate=new Map(bonit.map(z=>[z.closing_date,N(z.gross_amount)]));
  const salesByDate=new Map();
  for(const item of articles){const group=salesByDate.get(item.closing_date)||[];group.push(item);salesByDate.set(item.closing_date,group);}
- for(const day of daily){const list=salesByDate.get(day.date)||[];if(!list.length||list.some(x=>N(x.quantity)===null||N(x.gross_amount)===null))continue;const total=list.reduce((n,x)=>n+Number(x.gross_amount),0);if(Math.abs(total-day.gross)>.03)continue;for(const item of list)addPricedArticle(item);pricedDates.add(day.date);}
+ for(const day of daily){const list=salesByDate.get(day.date)||[];if(!list.length||list.some(x=>N(x.quantity)===null||N(x.gross_amount)===null))continue;const total=list.reduce((n,x)=>n+Number(x.gross_amount),0);if(Math.abs(total-(bonitGrossByDate.get(day.date)??day.gross))>.03)continue;for(const item of list)addPricedArticle(item);pricedDates.add(day.date);}
  // Nur für nicht bereits abgedeckte Tage auf verifizierte Archivdaten zurückgreifen.
  for(const day of daily){if(pricedDates.has(day.date))continue;const doc=archive.get(day.date)?.extracted_data;if(!doc?.article_sales_verification?.verified||!Array.isArray(doc.sales_items))continue;const list=doc.sales_items;if(!list.length||list.some(x=>N(x.quantity)===null||N(x.gross_amount??x.gross_total)===null))continue;if(Math.abs(list.reduce((n,x)=>n+Number(x.gross_amount??x.gross_total),0)-day.gross)>.03)continue;for(const item of list)addPricedArticle(item);pricedDates.add(day.date);}
  let liveArticleRows=[...pricedItems.values()];
@@ -1831,7 +1832,7 @@ async function refresh(){void loadLedgerComparison();if(E('recipeCostTile')&&!E(
    const closing=daily.find(d=>d.date===date);if(!closing)continue;
    const valid=items.every(x=>Number.isFinite(N(x.quantity))&&Number.isFinite(N(x.gross_amount)));
    const sum=items.reduce((n,x)=>n+(N(x.gross_amount)||0),0);
-   if(!valid||Math.abs(sum-closing.gross)>.03)continue;
+   if(!valid||Math.abs(sum-(bonitGrossByDate.get(date)??closing.gross))>.03)continue;
    for(const x of items){const qty=N(x.quantity),amount=N(x.gross_amount);if(qty<=0)continue;const key=String(x.article_number||'').trim()||canonicalArticleName(x.article_name||'Unbenannt');const v=provisional.get(key)||{name:(x.article_number?x.article_number+' · ':'')+canonicalArticleName(x.article_name||'Unbenannt'),qty:0,gross:0,known:true};v.qty+=qty;v.gross+=amount;provisional.set(key,v);}
    addedDates.add(date);
   }
