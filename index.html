@@ -1239,7 +1239,7 @@ function drawWeeklyPurchase(){
   }
  };
  for(const [id,title] of tabs){const button=document.createElement('button');button.type='button';button.textContent=title;button.onclick=()=>{nav.querySelectorAll('button').forEach(b=>b.disabled=false);button.disabled=true;render(id);};nav.append(button);}
- host.append(nav,panel);nav.querySelector('button').click();
+ host.append(nav,panel);const settings=E('purchasePeriod');if(settings&&settings.parentElement){settings.insertAdjacentElement('afterend',nav);}nav.querySelector('button').click();
 }
 for(const id of ['purchaseKeg','purchaseCan','purchaseDose']){const saved=localStorage.getItem(id);if(saved&&Number(saved)>0)E(id).value=saved;E(id).onchange=()=>{if(Number(E(id).value)>0)localStorage.setItem(id,E(id).value);drawWeeklyPurchase();};}
 
