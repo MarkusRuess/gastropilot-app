@@ -1243,7 +1243,7 @@ function renderTopArticles(rows,total,days,sourceDays){
  const key=E('month').value;if(topArticleKey!==key){topArticlePage=0;topArticleKey=key;}
  topArticleTotal=total;topArticleRows=groupTopArticles(rows.filter(x=>x.qty!==0||x.gross!==0)).sort((a,b)=>Number(b.known)-Number(a.known)||(a.known?b.gross-a.gross:b.qty-a.qty)).slice(0,30);
  const incomplete=rows.filter(x=>!x.known).length;
- const monthLabel=new Intl.DateTimeFormat('de-AT',{month:'long',year:'numeric',timeZone:'UTC'}).format(new Date(E('month').value+'-01T12:00:00Z'));const refreshedAt=new Intl.DateTimeFormat('de-AT',{hour:'2-digit',minute:'2-digit'}).format(new Date());E('topArticleNote').textContent=monthLabel+' · '+sourceDays+' von '+days+' Verkaufstagen mit abgeglichenen Einzelartikeln'+(sourceDays<days?' · '+(days-sourceDays)+' Tage fehlen oder weichen vom Z-Bericht ab ('+(window.gpTop30MissingDates||[]).join(', ')+'); vorläufige Rangliste':'')+' · Stand '+refreshedAt+' Uhr · Rangliste nach Artikel-Bruttoumsatz · Ø Preis = Artikelumsatz ÷ Menge · Anteil = Artikelumsatz ÷ Monats-Bruttoumsatz. Aktualisierung beim Öffnen und während der Nutzung.';
+ const monthLabel=new Intl.DateTimeFormat('de-AT',{month:'long',year:'numeric',timeZone:'UTC'}).format(new Date(E('month').value+'-01T12:00:00Z'));const refreshedAt=new Intl.DateTimeFormat('de-AT',{hour:'2-digit',minute:'2-digit'}).format(new Date());E('topArticleNote').textContent=monthLabel+' · '+sourceDays+' von '+days+' Verkaufstagen mit abgeglichenen Einzelartikeln'+(sourceDays<days?' · '+(days-sourceDays)+' Tage fehlen oder weichen vom Z-Bericht ab ('+(window.gpTop30MissingDates||[]).join(', ')+'); vorläufige Rangliste':'')+' · '+(window.gpTop30Diagnostic||'')+' · Stand '+refreshedAt+' Uhr · Rangliste nach Artikel-Bruttoumsatz · Ø Preis = Artikelumsatz ÷ Menge · Anteil = Artikelumsatz ÷ Monats-Bruttoumsatz. Aktualisierung beim Öffnen und während der Nutzung.';
  drawTopArticles();
 }
 function coffeeEkEstimate(name){
@@ -1817,6 +1817,10 @@ async function refresh(){void loadLedgerComparison();if(E('recipeCostTile')&&!E(
  // Einzelartikel aus der Datenbank haben Vorrang; nur zum Z-Bericht passende Tage zählen.
  const bonitGrossByDate=new Map(bonit.map(z=>[z.closing_date,N(z.gross_amount)]));
  const articleClosingDays=bonit.map(z=>({date:z.closing_date,gross:N(z.gross_amount)}));
+ // BONit-Artikel ohne zusätzliche Belegfilter direkt je Tag aggregieren.
+ const directArticleDayTotals=new Map();
+ for(const a of articles){const k=a.closing_date;const t=directArticleDayTotals.get(k)||{sum:0,count:0,valid:true};const amount=N(a.gross_amount),qty=N(a.quantity);t.valid=t.valid&&amount!==null&&qty!==null;t.sum+=amount||0;t.count++;directArticleDayTotals.set(k,t);}
+ const verifiedDirectDays=articleClosingDays.filter(d=>{const t=directArticleDayTotals.get(d.date);return t&&t.valid&&Math.abs(t.sum-d.gross)<.03;});
  const salesByDate=new Map();
  for(const item of articles){const group=salesByDate.get(item.closing_date)||[];group.push(item);salesByDate.set(item.closing_date,group);}
  for(const day of articleClosingDays){const list=salesByDate.get(day.date)||[];if(!list.length||list.some(x=>N(x.quantity)===null||N(x.gross_amount)===null))continue;const total=list.reduce((n,x)=>n+Number(x.gross_amount),0);if(Math.abs(total-(bonitGrossByDate.get(day.date)??day.gross))>.03)continue;for(const item of list)addPricedArticle(item);pricedDates.add(day.date);}
@@ -1842,6 +1846,7 @@ async function refresh(){void loadLedgerComparison();if(E('recipeCostTile')&&!E(
   for(const d of addedDates){const i=missingBonitDates.indexOf(d);if(i>=0)missingBonitDates.splice(i,1);}
  }
  window.gpTop30MissingDates=missingBonitDates;
+ window.gpTop30Diagnostic='Z-Berichte: '+articleClosingDays.length+' · Artikel-Tage: '+directArticleDayTotals.size+' · direkt geprüft: '+verifiedDirectDays.length+' · fehlend: '+missingBonitDates.join(', ');
  const articleBusiness=BID;
  if(articleBusiness===JUDITH_ARTICLE_BUSINESS){
   const model=await loadJudithArticleAnalysis(articleBusiness);
