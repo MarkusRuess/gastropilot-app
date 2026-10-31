@@ -2573,7 +2573,7 @@ function openArea(name){
  const show=new Set(groups[name]||[]);
  Array.from(body.children).forEach(node=>node.classList.toggle('gp-area-hidden',name!=='all'&&!show.has(node.id)));
  el('gpMockupDetailTitle').textContent=areaNames[name]||name;const charts=el('gpMockupDailyCharts');if(charts)charts.hidden=name!=='daily'&&name!=='all';if(name==='daily'||name==='all')gpRenderCharts();
- if(name==='ledger'||name==='all'){const ledgerDisclosure=el('ledgerComparisonDisclosure');if(ledgerDisclosure)ledgerDisclosure.open=true;const ledgerTable=el('ledgerTablePanel');if(ledgerTable)ledgerTable.open=true;const panel=el('friedrichLedgerAnalysis')?.hidden?el('judithLedgerAnalysis'):el('friedrichLedgerAnalysis');if(panel&&!panel.hidden)panel.open=true;}
+ if(name==='ledger'||name==='all'){const ledgerSection=el('ledgerComparisonSection');if(ledgerSection&&ledgerSection.parentElement!==body){body.appendChild(ledgerSection);}if(ledgerSection){ledgerSection.classList.remove('gp-area-hidden');ledgerSection.style.setProperty('display','block','important');ledgerSection.hidden=false;}const ledgerDisclosure=el('ledgerComparisonDisclosure');if(ledgerDisclosure)ledgerDisclosure.open=true;const ledgerTable=el('ledgerTablePanel');if(ledgerTable)ledgerTable.open=true;const panel=el('friedrichLedgerAnalysis')?.hidden?el('judithLedgerAnalysis'):el('friedrichLedgerAnalysis');if(panel&&!panel.hidden)panel.open=true;}
  detail.hidden=false;
  document.querySelectorAll('#gpCockpitNav [data-gp-area]').forEach(b=>b.setAttribute('aria-current',String(b.dataset.gpArea===name)));
  detail.scrollIntoView({behavior:'smooth',block:'start'});
