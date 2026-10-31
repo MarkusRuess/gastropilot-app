@@ -1243,7 +1243,7 @@ function renderTopArticles(rows,total,days,sourceDays){
  const key=E('month').value;if(topArticleKey!==key){topArticlePage=0;topArticleKey=key;}
  topArticleTotal=total;topArticleRows=groupTopArticles(rows.filter(x=>x.qty!==0||x.gross!==0)).sort((a,b)=>Number(b.known)-Number(a.known)||(a.known?b.gross-a.gross:b.qty-a.qty)).slice(0,30);
  const incomplete=rows.filter(x=>!x.known).length;
- const monthLabel=new Intl.DateTimeFormat('de-AT',{month:'long',year:'numeric',timeZone:'UTC'}).format(new Date(E('month').value+'-01T12:00:00Z'));E('topArticleNote').textContent=monthLabel+' · '+sourceDays+' Verkaufstage mit belegten Artikelumsätzen'+(sourceDays<days?' ('+(days-sourceDays)+' Tagesabschlüsse ohne vollständige Artikeldaten; vorläufige Rangliste)':'')+' · Rangliste nach Artikel-Bruttoumsatz · Ø Preis = Artikelumsatz ÷ Menge · Anteil = Artikelumsatz ÷ Monats-Bruttoumsatz. Aktualisierung mit jedem neuen BONit-Import.';
+ const monthLabel=new Intl.DateTimeFormat('de-AT',{month:'long',year:'numeric',timeZone:'UTC'}).format(new Date(E('month').value+'-01T12:00:00Z'));const refreshedAt=new Intl.DateTimeFormat('de-AT',{hour:'2-digit',minute:'2-digit'}).format(new Date());E('topArticleNote').textContent=monthLabel+' · '+sourceDays+' von '+days+' Verkaufstagen mit abgeglichenen Einzelartikeln'+(sourceDays<days?' · '+(days-sourceDays)+' Tage fehlen oder weichen vom Z-Bericht ab; vorläufige Rangliste':'')+' · Stand '+refreshedAt+' Uhr · Rangliste nach Artikel-Bruttoumsatz · Ø Preis = Artikelumsatz ÷ Menge · Anteil = Artikelumsatz ÷ Monats-Bruttoumsatz. Aktualisierung beim Öffnen und während der Nutzung.';
  drawTopArticles();
 }
 function coffeeEkEstimate(name){
@@ -3257,9 +3257,10 @@ body.gp-article-area-active #financeSection{display:none!important}
 }
 </style><style id="judith-compact-dashboard-20261030">body.gp-judith-design #gpJudithMockupSections,body.gp-judith-design #gpJudithFinancialPreview,body.gp-judith-design #judithAnalysisLink,body.gp-judith-design #gpCockpitHint{display:none!important}body.gp-judith-design #gpMockupDetailBody{grid-template-columns:1fr!important}body.gp-judith-design #gpMockupDetailBody>details:not(.gp-area-hidden){grid-column:1/-1!important}body.gp-judith-design #gpMockupDetailBody #ledgerComparisonSection.gp-area-hidden{display:none!important;visibility:hidden!important}body.gp-judith-design #gpMockupDetailBody #gpReferencePreviews.gp-area-hidden{display:none!important}</style>
 <script id="gp-top30-auto-refresh-20261031">
-(()=>{let last=0,busy=false;async function update(){if(document.hidden||busy||Date.now()-last<60000)return;const pane=document.getElementById('topArticlesDisclosure');if(!pane?.open)return;busy=true;last=Date.now();try{if(typeof refresh==='function')await refresh();}catch(e){console.warn('Top-30 Aktualisierung',e)}finally{busy=false;}}
-document.addEventListener('toggle',e=>{if(e.target?.id==='topArticlesDisclosure'){last=0;void update();}},true);
-document.addEventListener('visibilitychange',()=>{if(!document.hidden){last=0;void update();}});
+(()=>{let last=0,busy=false;const pane=()=>document.getElementById('topArticlesDisclosure');async function update(force=false){if(document.hidden||busy||(!force&&Date.now()-last<85000)||!pane()?.open)return;busy=true;last=Date.now();try{if(typeof refresh==='function')await refresh();}catch(e){console.warn('Top-30 Aktualisierung',e);const note=document.getElementById('topArticleNote');if(note)note.textContent+=' · Aktualisierung fehlgeschlagen, bitte erneut versuchen.';}finally{busy=false;}}
+document.addEventListener('toggle',e=>{if(e.target?.id==='topArticlesDisclosure'&&e.target.open){last=0;void update(true);}},true);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden){last=0;void update(true);}});
+document.getElementById('month')?.addEventListener('change',()=>{last=0;void update(true);});
 setInterval(()=>void update(),90000);
 })();
 </script></body></html>
