@@ -1187,10 +1187,43 @@ async function loadWeeklyPurchase(){
  drawWeeklyPurchase();
 }
 function drawWeeklyPurchase(){
- const host=E('purchaseCards');host.replaceChildren();const groups=new Map();for(const row of weeklyPurchaseRows){const x=purchaseGroup(row.name,row.quantity);if(!x)continue;const key=x.name.toLocaleLowerCase('de-AT');const old=groups.get(key)||{...x,amount:0};old.amount+=x.amount;groups.set(key,old);}
- const keg=Number(E('purchaseKeg').value),can=Number(E('purchaseCan').value),dose=Number(E('purchaseDose').value);const fmt=new Intl.NumberFormat('de-AT',{maximumFractionDigits:2});
- for(const x of [...groups.values()].sort((a,b)=>a.unit.localeCompare(b.unit)||b.amount-a.amount)){const card=document.createElement('div');card.className='top-article';const name=document.createElement('strong');name.textContent=x.name;const detail=document.createElement('div');detail.className='metrics';let need,base;if(x.unit==='beer'){need=keg>0?Math.ceil((x.amount-1e-8)/keg)+' Fass à '+keg+' l':'Fassgröße eingeben';base=fmt.format(x.amount)+' l verkauft';}else if(x.unit==='coffee'){need=can>0&&dose>0?Math.ceil((x.amount*dose-1e-8)/can)+' Dosen à '+can+' g':'Gebinde eingeben';base=fmt.format(x.amount)+' Portionen · '+dose+' g/Portion';}else{need=Math.ceil((x.amount-1e-8)/.75)+' Flaschen à 0,75 l';base=fmt.format(x.amount)+' l verkauft';}const b=document.createElement('b');b.textContent=need;detail.append(b,document.createTextNode(base));card.append(name,detail);host.append(card);}
- if(!groups.size)host.textContent='Keine passenden Verkaufsdaten für die letzte abgeschlossene Woche vorhanden.';
+ const host=E('purchaseCards');if(!host)return;host.replaceChildren();
+ const groups=new Map();
+ for(const row of weeklyPurchaseRows){const x=purchaseGroup(row.name,row.quantity);if(!x)continue;const key=x.name.toLocaleLowerCase('de-AT');const old=groups.get(key)||{...x,amount:0};old.amount+=x.amount;groups.set(key,old);}
+ const keg=Number(E('purchaseKeg').value)||50,can=Number(E('purchaseCan').value)||1500,dose=Number(E('purchaseDose').value)||8;
+ const fmt=new Intl.NumberFormat('de-AT',{maximumFractionDigits:2});
+ const nav=document.createElement('div');nav.className='row';nav.style.cssText='gap:8px;flex-wrap:wrap;margin:12px 0';
+ const panel=document.createElement('div');panel.id='gpPurchaseTabPanel';
+ const tabs=[['order','🛒 Bestellliste'],['stock','📦 Lagerbestand'],['all','📋 Alle Artikel']];
+ const getStock=(key)=>{try{return Number(localStorage.getItem('gp-friedrich-stock-'+key))||0;}catch(e){return 0;}};
+ const setStock=(key,value)=>{try{localStorage.setItem('gp-friedrich-stock-'+key,String(Math.max(0,Number(value)||0)));}catch(e){}};
+ const list=[...groups.entries()].map(([key,x])=>{const size=x.unit==='beer'?keg:x.unit==='coffee'?can:.75;const demand=x.unit==='coffee'?x.amount*dose:x.amount;const stock=getStock(key);const quantity=Math.max(0,Math.ceil((demand-stock-1e-8)/size));return {key,...x,size,demand,stock,quantity};}).sort((a,b)=>a.unit.localeCompare(b.unit)||b.demand-a.demand);
+ const label=x=>x.unit==='beer'?'Fass à '+fmt.format(x.size)+' l':x.unit==='coffee'?'Illy-Dose à '+fmt.format(x.size)+' g':'Flasche à 0,75 l';
+ const units=x=>x.unit==='coffee'?'g':'l';
+ const render=(tab)=>{
+  panel.replaceChildren();
+  if(!list.length){panel.textContent='Keine passenden Verkaufsdaten der letzten abgeschlossenen Woche.';return;}
+  if(tab==='order'){
+   const intro=document.createElement('p');intro.className='muted';intro.textContent='Bestellbedarf = Verbrauch der Vergleichswoche minus Lagerbestand; auf ganze Gebinde aufgerundet. Mengen vor Bestellung prüfen.';panel.append(intro);
+   const lines=[];
+   for(const x of list.filter(x=>x.quantity>0)){
+    const row=document.createElement('div');row.className='top-article';row.style.marginBottom='8px';
+    const strong=document.createElement('strong');strong.textContent=x.name;
+    const detail=document.createElement('div');detail.className='metrics';detail.textContent=fmt.format(x.demand)+' '+units(x)+' Bedarf · '+fmt.format(x.stock)+' '+units(x)+' Lager';
+    const qty=document.createElement('b');qty.textContent=x.quantity+' × '+label(x);row.append(strong,qty,detail);panel.append(row);
+    lines.push(x.name+': '+x.quantity+' × '+label(x));
+   }
+   if(!lines.length){const p=document.createElement('p');p.textContent='Der erfasste Lagerbestand deckt den berechneten Bedarf.';panel.append(p);}
+   const btn=document.createElement('button');btn.type='button';btn.textContent='📋 Bestellliste kopieren';btn.onclick=async()=>{const msg='Das Friedrich · Einkauf nächste Woche\n'+E('purchasePeriod').textContent+'\n\n'+lines.join('\n');try{await navigator.clipboard.writeText(msg);btn.textContent='✓ Kopiert';}catch(e){const ta=document.createElement('textarea');ta.value=msg;panel.append(ta);ta.select();}};panel.append(btn);
+  }else if(tab==='stock'){
+   const intro=document.createElement('p');intro.className='muted';intro.textContent='Lagerbestand in Litern bzw. Gramm eingeben. Speicherung auf diesem Gerät; keine automatische Inventur.';panel.append(intro);
+   for(const x of list){const row=document.createElement('div');row.className='top-article';row.style.cssText='display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:8px';const name=document.createElement('strong');name.textContent=x.name;const wrap=document.createElement('label');wrap.textContent='Lager ('+units(x)+') ';const inp=document.createElement('input');inp.type='number';inp.min='0';inp.step=x.unit==='coffee'?'100':'.1';inp.value=String(x.stock);inp.style.width='100px';inp.onchange=()=>{setStock(x.key,inp.value);drawWeeklyPurchase();};wrap.append(inp);row.append(name,wrap);panel.append(row);}
+  }else{
+   for(const x of list){const row=document.createElement('div');row.className='top-article';row.style.marginBottom='8px';const title=document.createElement('strong');title.textContent=x.name;const detail=document.createElement('div');detail.className='metrics';detail.textContent=fmt.format(x.demand)+' '+units(x)+' Bedarf · '+fmt.format(x.stock)+' '+units(x)+' Lager · '+x.quantity+' × '+label(x);row.append(title,detail);panel.append(row);}
+  }
+ };
+ for(const [id,title] of tabs){const button=document.createElement('button');button.type='button';button.textContent=title;button.onclick=()=>{nav.querySelectorAll('button').forEach(b=>b.disabled=false);button.disabled=true;render(id);};nav.append(button);}
+ host.append(nav,panel);nav.querySelector('button').click();
 }
 for(const id of ['purchaseKeg','purchaseCan','purchaseDose']){const saved=localStorage.getItem(id);if(saved&&Number(saved)>0)E(id).value=saved;E(id).onchange=()=>{if(Number(E(id).value)>0)localStorage.setItem(id,E(id).value);drawWeeklyPurchase();};}
 
