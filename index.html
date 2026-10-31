@@ -1611,6 +1611,26 @@ const monthKey=String(E('month')?.value||'').slice(0,7);
     :'Für '+monthKey+' liegt noch kein geprüftes Betriebsergebnis aus der Saldenliste vor. Ein Umsatz allein bestätigt keinen Gewinn.';
    const statusCard='<div style="grid-column:1/-1;border:1px solid #cbded8;border-radius:12px;padding:14px;background:#f0f8f5"><strong style="display:block;font-size:16px">'+monthlyStatus+'</strong><small style="display:block;margin-top:5px">'+monthKey+' · '+monthlyMessage+'</small></div>';
    dashboard.insertAdjacentHTML('beforeend',statusCard);
+   // Aktueller Monatsfortschritt aus den BONit-Z-Berichten (NETTO), getrennt vom bestätigten Gewinn.
+   if(BID==='6a5484d1-daf6-4263-897d-24cdf536aa29'){
+    const progressMonth=/^\\d{4}-\\d{2}$/.test(E('month')?.value||'')?E('month').value:new Date().toISOString().slice(0,7);
+    const next=new Date(progressMonth+'-01T12:00:00Z');next.setUTCMonth(next.getUTCMonth()+1);
+    const progressEnd=next.toISOString().slice(0,10);
+    const progressId='gpRevenueGoalProgress';
+    dashboard.insertAdjacentHTML('beforeend','<div id="'+progressId+'" style="grid-column:1/-1;padding:15px;border:1px solid #cbded8;border-radius:12px;background:#f7fbfa">🎯 Umsatzziel '+progressMonth+' wird berechnet …</div>');
+    try{
+     const {data:closings,error:closingError}=await db.from('bonit_daily_closings').select('closing_date,net_amount').eq('business_id',BID).gte('closing_date',progressMonth+'-01').lt('closing_date',progressEnd).limit(100);
+     if(closingError)throw closingError;
+     if(BID!==requestedBusinessId)return;
+     const netTotal=(closings||[]).reduce((sum,row)=>sum+(Number(row.net_amount)||0),0);
+     const goalNet=target;
+     const pct=Number.isFinite(goalNet)&&goalNet>0?Math.max(0,Math.min(100,netTotal/goalNet*100)):0;
+     const achieved=Number.isFinite(goalNet)&&netTotal>=goalNet;
+     const card=E(progressId);
+     if(card)card.innerHTML='<strong style="font-size:16px">'+(achieved?'🏆 Umsatz-Gewinnziel rechnerisch erreicht':'🎯 Fortschritt zum Umsatz-Gewinnziel')+'</strong><div style="margin-top:8px;font-weight:750">'+EUR(netTotal)+' netto von '+(Number.isFinite(goalNet)?EUR(goalNet):'Ziel nicht berechenbar')+' · '+(Number.isFinite(goalNet)?Math.round(netTotal/goalNet*100)+' %':'–')+'</div><div style="height:13px;border-radius:20px;background:#dbe8e5;overflow:hidden;margin:9px 0"><div style="height:100%;width:'+pct+'%;background:#0e8978"></div></div><small>'+(achieved?'Umsatzschwelle erreicht.':'Zum Umsatz-Ziel fehlen '+(Number.isFinite(goalNet)?EUR(Math.max(0,goalNet-netTotal)):'verifizierte Plandaten')+'.')+' Tatsächlicher Gewinn von 5.000 € erst nach geprüfter Saldenliste bestätigt. · '+(closings||[]).length+' Z-Tage</small>';
+    }catch(e){const card=E(progressId);if(card)card.textContent='Umsatzfortschritt derzeit nicht verfügbar: '+e.message;}
+   }
+
      const judithAnalysis=E('judithLedgerAnalysis'),judithBody=E('judithLedgerAnalysisBody');
   if(judithAnalysis&&judithBody){
    const isJudith=BID==='87889eaf-f865-4e3a-8f9a-cd01db483e0e';
