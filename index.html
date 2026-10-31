@@ -1617,7 +1617,7 @@ const monthKey=String(E('month')?.value||'').slice(0,7);
     const next=new Date(progressMonth+'-01T12:00:00Z');next.setUTCMonth(next.getUTCMonth()+1);
     const progressEnd=next.toISOString().slice(0,10);
     const progressId='gpRevenueGoalProgress';
-    dashboard.insertAdjacentHTML('beforeend','<div id="'+progressId+'" style="grid-column:1/-1;padding:15px;border:1px solid #cbded8;border-radius:12px;background:#f7fbfa">🎯 Umsatzziel '+progressMonth+' wird berechnet …</div>');
+    dashboard.insertAdjacentHTML('afterend','<div id="'+progressId+'" style="display:block;margin:12px 0 18px;padding:16px;border:1px solid #cbded8;border-radius:12px;background:#f7fbfa">🎯 Umsatzziel '+progressMonth+' wird berechnet …</div>');
     try{
      const {data:closings,error:closingError}=await db.from('bonit_daily_closings').select('closing_date,net_amount').eq('business_id',BID).gte('closing_date',progressMonth+'-01').lt('closing_date',progressEnd).limit(100);
      if(closingError)throw closingError;
