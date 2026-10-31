@@ -2493,7 +2493,7 @@ const groups={
  costs:['monthlyCostOverview','financeSection','purchaseItemsCalc','costAlertsTile','purchaseAssign'],
  staff:['judithPersonnelTile','friedrichPersonnelTile','financeSection'],
  ledger:['ledgerComparisonSection','judithSimpleResult','judithRentTile'],
- articles:['topArticles','slowArticles','profitability','menuDashboardTile','judithCakePricingTile','kalkulationLink','operating'],
+ articles:['topArticles','slowArticles','profitability','menuDashboardTile','judithCakePricingTile','kalkulationLink'],
  planning:['weeklyPurchase','recipeCostTile','kalkulationLink'],
  upload:['intake'],archive:['centralArchive','archive'],bank:['financeSection']
 };
@@ -2591,7 +2591,14 @@ function openArea(name){
  area=name;document.body.classList.toggle('gp-article-area-active',name==='articles');setDailyCalendarVisibility(name==='daily');
  const body=el('gpMockupDetailBody'),detail=el('gpMockupDetail');if(!body||!detail)return;
  const show=new Set(groups[name]||[]);
+ if(name==='articles'){
+  // Artikelanalyse: ausschließlich Artikel-Untermenüs, keine Buchhaltung oder allgemeinen Kennzahlen.
+  ['ledgerComparisonSection','operating','monthlyCostOverview','financeSection','judithSimpleResult','judithRentTile'].forEach(id=>show.delete(id));
+ }
  Array.from(body.children).forEach(node=>node.classList.toggle('gp-area-hidden',name!=='all'&&!show.has(node.id)));
+ const ledgerSection=el('ledgerComparisonSection');
+ if(ledgerSection&&name==='articles'){ledgerSection.classList.add('gp-area-hidden');ledgerSection.style.setProperty('display','none','important');}
+ else if(ledgerSection&&name==='ledger'){ledgerSection.style.removeProperty('display');}
  el('gpMockupDetailTitle').textContent=areaNames[name]||name;const charts=el('gpMockupDailyCharts');if(charts)charts.hidden=name!=='daily'&&name!=='all';if(name==='daily'||name==='all')gpRenderCharts();
  if(name==='ledger'||name==='all'){const ledgerSection=el('ledgerComparisonSection');if(ledgerSection&&ledgerSection.parentElement!==body){body.appendChild(ledgerSection);}if(ledgerSection){ledgerSection.classList.remove('gp-area-hidden');ledgerSection.style.setProperty('display','block','important');ledgerSection.hidden=false;}const ledgerDisclosure=el('ledgerComparisonDisclosure');if(ledgerDisclosure)ledgerDisclosure.open=true;const ledgerTable=el('ledgerTablePanel');if(ledgerTable)ledgerTable.open=true;const panel=el('friedrichLedgerAnalysis')?.hidden?el('judithLedgerAnalysis'):el('friedrichLedgerAnalysis');if(panel&&!panel.hidden)panel.open=true;}
  detail.hidden=false;
