@@ -1856,7 +1856,34 @@ async function refresh(){void loadLedgerComparison();if(E('recipeCostTile')&&!E(
   E('topArticles').querySelector('summary strong').textContent='Top 30 Artikel · Umsatz';
   E('slowArticles').querySelector('summary strong').textContent='Top 30 · Selten verkauft';
   E('slowArticles').querySelector('summary small').textContent='Geringste Verkaufsmenge · BONit';
-  const useMonthlyReference=liveArticleRows.length===0&&Array.isArray(M?.items)&&M.items.length>0;renderTopArticles(useMonthlyReference?M.items.map(([id,name,qty,price,total])=>({name:id+' · '+canonicalArticleName(name),qty,gross:total,known:true})):liveArticleRows,M?.gross??gross,bonit.length,useMonthlyReference?Math.min(M.days||0,bonit.length):articleSourceDays);
+  // Top 30 V2: ausschließlich BONit-Artikel dieses Monats, ohne Archiv-/Rechnungs-Mischung.
+  const zTotals=new Map(bonit.map(z=>[z.closing_date,N(z.gross_amount)]));
+  const byDay=new Map();
+  for(const a of articles){
+   const d=a.closing_date;
+   if(!zTotals.has(d))continue;
+   const group=byDay.get(d)||[];group.push(a);byDay.set(d,group);
+  }
+  const ranked=new Map(),verified=new Set(),missing=[];
+  for(const [date,zGross] of zTotals){
+   const list=byDay.get(date)||[];
+   const valid=list.length>0&&list.every(a=>N(a.quantity)!==null&&N(a.gross_amount)!==null);
+   const sum=list.reduce((n,a)=>n+(N(a.gross_amount)||0),0);
+   if(!valid||zGross===null||Math.abs(sum-zGross)>.03){missing.push(date);continue;}
+   verified.add(date);
+   for(const a of list){
+    const id=String(a.article_number||'').trim();
+    if(id.startsWith('ABGLEICH'))continue;
+    const name=canonicalArticleName(a.article_name||'Unbenannt');
+    const k=id||name.toLocaleLowerCase('de-AT');
+    const prev=ranked.get(k)||{name:(id?id+' · ':'')+name,qty:0,gross:0,known:true};
+    prev.qty+=N(a.quantity);prev.gross+=N(a.gross_amount);ranked.set(k,prev);
+   }
+  }
+  window.gpTop30MissingDates=missing;
+  window.gpTop30Diagnostic='BONit-Datenbank: '+articles.length+' Artikelzeilen · '+verified.size+' geprüfte Z-Tage';
+  const bonitMonthGross=[...zTotals.values()].reduce((n,v)=>n+(v||0),0);
+  renderTopArticles([...ranked.values()],bonitMonthGross,zTotals.size,verified.size);
  }
  E('archive').replaceChildren();for(const d of monthlyReports){const p=document.createElement('p');p.textContent='BONit Monatsabschluss '+(d.extracted_data?.period_start||'?')+' bis '+(d.extracted_data?.period_end||'?')+' · '+EUR(N(d.extracted_data?.gross_total))+' · Original im Archiv (nicht zusätzlich zu Tagesumsätzen gezählt)';E('archive').append(p);}for(const d of docs.sort((a,b)=>b.document_date.localeCompare(a.document_date)).slice(0,50)){if(d.extracted_data?.document_class==='spreadsheet')continue;const p=document.createElement('p');p.className='muted';const details=d.extracted_data||{},candidate=details.recognition_candidate||details;const supplier=d.supplier||candidate.supplier||candidate.vendor||candidate.merchant||'Lieferant nicht erkannt';const amount=N(details.gross_total??details.total_gross??details.total_amount??candidate.gross_total??candidate.total_gross??candidate.total_amount);const type=d.document_type==='cash_report'?'BONit / Kassa':d.document_type==='invoice'?'Lieferantenrechnung':details.document_class==='supplier_purchase_statistics'?'Lieferantenstatistik · keine Rechnung':candidate.document_type==='invoice'?'Rechnung (Prüfung)':d.document_type;p.textContent=D(d.document_date)+' · '+type+' · '+(d.document_type==='cash_report'?'':supplier+' · ')+(amount!==null?EUR(amount)+' · ':'')+(d.status||'');const paths=[...new Set([...(d.extracted_data?.original_files||[]),d.storage_path].filter(Boolean))];if(paths.length){const box=document.createElement('div');box.hidden=true;for(const [index,path] of paths.entries()){const button=document.createElement('button');button.type='button';button.textContent='Original '+(index+1);button.style.margin='4px';button.onclick=async()=>{button.disabled=true;try{const result=await db.storage.from('invoice-originals').createSignedUrl(path,300);if(result.error)throw result.error;const original=/\.pdf$/i.test(path)?document.createElement('iframe'):document.createElement('img');if(original.tagName==='IFRAME')original.title='PDF-Original '+(index+1);else original.alt='Original '+(index+1)+' · '+D(d.document_date);original.src=result.data.signedUrl;original.style.cssText=original.tagName==='IFRAME'?'display:block;width:100%;height:70vh;border:0;margin:8px 0':'display:block;max-width:100%;height:auto;margin:8px 0';box.replaceChildren(original);box.hidden=false;}catch(error){box.textContent='Original konnte nicht geöffnet werden: '+error.message;box.hidden=false;}finally{button.disabled=false;}};p.append(button);}p.append(box);}E('archive').append(p);}
  E('summary').textContent=M?(isSep?'September 2026':'August 2026')+' · BONit Monatsabschluss Z '+M.z_number+' · '+M.days+' Abschlusstage · '+M.receipts+' Rechnungen. Keine Doppelzählung.':daily.length+' Umsatztage · '+docs.length+' archivierte Dokumente · BONit vor Archiv, keine Doppelzählung.';
