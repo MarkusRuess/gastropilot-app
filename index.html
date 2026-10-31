@@ -2494,7 +2494,7 @@ const groups={
  staff:['judithPersonnelTile','friedrichPersonnelTile','financeSection'],
  ledger:['ledgerComparisonSection','judithSimpleResult','judithRentTile'],
  articles:['topArticles','slowArticles','profitability','menuDashboardTile','judithCakePricingTile','kalkulationLink'],
- planning:['weeklyPurchase','recipeCostTile','kalkulationLink'],
+ planning:['weeklyPurchase','recipeCostTile'],
  upload:['intake'],archive:['centralArchive','archive'],bank:['financeSection']
 };
 let area=null;
@@ -2588,16 +2588,17 @@ function gpRenderReference(){
 }
 function setDailyCalendarVisibility(visible){const panel=el('gpDailyCalendarPanel');if(!panel)return;panel.hidden=!visible;panel.style.setProperty('display',visible?'block':'none','important');panel.setAttribute('aria-hidden',String(!visible));}
 function openArea(name){
- area=name;document.body.classList.toggle('gp-article-area-active',name==='articles');setDailyCalendarVisibility(name==='daily');
+ area=name;document.body.classList.toggle('gp-article-area-active',name==='articles');document.body.classList.toggle('gp-shopping-area-active',name==='planning');setDailyCalendarVisibility(name==='daily');
  const body=el('gpMockupDetailBody'),detail=el('gpMockupDetail');if(!body||!detail)return;
  const show=new Set(groups[name]||[]);
+ if(name==='planning'){['ledgerComparisonSection','financeSection','operating','monthlyCostOverview','judithSimpleResult','judithRentTile','kalkulationLink'].forEach(id=>show.delete(id));}
  if(name==='articles'){
   // Artikelanalyse: ausschließlich Artikel-Untermenüs, keine Buchhaltung oder allgemeinen Kennzahlen.
   ['ledgerComparisonSection','operating','monthlyCostOverview','financeSection','judithSimpleResult','judithRentTile'].forEach(id=>show.delete(id));
  }
  Array.from(body.children).forEach(node=>node.classList.toggle('gp-area-hidden',name!=='all'&&!show.has(node.id)));
  const ledgerSection=el('ledgerComparisonSection');
- if(ledgerSection&&name==='articles'){ledgerSection.classList.add('gp-area-hidden');ledgerSection.style.setProperty('display','none','important');}
+ if(ledgerSection&&(name==='articles'||name==='planning')){ledgerSection.classList.add('gp-area-hidden');ledgerSection.style.setProperty('display','none','important');}
  else if(ledgerSection&&name==='ledger'){ledgerSection.style.removeProperty('display');}
  el('gpMockupDetailTitle').textContent=areaNames[name]||name;const charts=el('gpMockupDailyCharts');if(charts)charts.hidden=name!=='daily'&&name!=='all';if(name==='daily'||name==='all')gpRenderCharts();
  if(name==='ledger'||name==='all'){const ledgerSection=el('ledgerComparisonSection');if(ledgerSection&&ledgerSection.parentElement!==body){body.appendChild(ledgerSection);}if(ledgerSection){ledgerSection.classList.remove('gp-area-hidden');ledgerSection.style.setProperty('display','block','important');ledgerSection.hidden=false;}const ledgerDisclosure=el('ledgerComparisonDisclosure');if(ledgerDisclosure)ledgerDisclosure.open=true;const ledgerTable=el('ledgerTablePanel');if(ledgerTable)ledgerTable.open=true;const panel=el('friedrichLedgerAnalysis')?.hidden?el('judithLedgerAnalysis'):el('friedrichLedgerAnalysis');if(panel&&!panel.hidden)panel.open=true;}
@@ -2605,7 +2606,7 @@ function openArea(name){
  document.querySelectorAll('#gpCockpitNav [data-gp-area]').forEach(b=>b.setAttribute('aria-current',String(b.dataset.gpArea===name)));
  detail.scrollIntoView({behavior:'smooth',block:'start'});
 }
-function home(){area=null;document.body.classList.remove('gp-article-area-active');setDailyCalendarVisibility(false);const d=el('gpMockupDetail');if(d)d.hidden=true;document.querySelectorAll('#gpCockpitNav [data-gp-area]').forEach(b=>b.setAttribute('aria-current','false'));window.scrollTo({top:0,behavior:'smooth'});}
+function home(){area=null;document.body.classList.remove('gp-article-area-active','gp-shopping-area-active');setDailyCalendarVisibility(false);const d=el('gpMockupDetail');if(d)d.hidden=true;document.querySelectorAll('#gpCockpitNav [data-gp-area]').forEach(b=>b.setAttribute('aria-current','false'));window.scrollTo({top:0,behavior:'smooth'});}
 function init(){
  const app=el('app'),switcher=el('businessSwitchCard'),nav=el('gpCockpitNav'),quick=el('gpCockpitQuick'),head=app?.querySelector(':scope > .row'),kpis=el('quickKpis'),summary=el('summary');
  if(!app||!switcher||!nav||!head||!kpis)return;
@@ -3109,6 +3110,7 @@ body.gp-article-area-active #gpJudithDetailNotice,
 body.gp-article-area-active #ledgerComparisonSection,
 body.gp-article-area-active #monthlyCostOverview,
 body.gp-article-area-active #financeSection{display:none!important}
+body.gp-shopping-area-active #gpMockupDetailBody #ledgerComparisonSection,body.gp-shopping-area-active #gpMockupDetailBody #financeSection,body.gp-shopping-area-active #gpMockupDetailBody #operating{display:none!important}
 </style><style id="gp-overview-responsive-cleanup-20261030">
 /* Übersicht: Bildbereich und Kennzahlen bleiben klar getrennt. */
 #businessHome #homeCards.homeGrid{
