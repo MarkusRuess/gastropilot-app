@@ -1222,14 +1222,14 @@ function drawWeeklyPurchase(){
   if(tab==='order'){
    const intro=document.createElement('p');intro.className='muted';intro.textContent='Bestellbedarf = Verbrauch der Vergleichswoche minus Lagerbestand; auf ganze Gebinde aufgerundet. Mengen vor Bestellung prüfen.';panel.append(intro);
    const lines=[];
-   for(const x of list.filter(x=>x.quantity>0)){
+   const orderItems=list.filter(x=>x.quantity>0);let showAllOrders=false;const moreButton=document.createElement('button');moreButton.type='button';moreButton.className='gpPurchaseMore';moreButton.textContent='Weitere Artikel anzeigen ('+Math.max(0,orderItems.length-10)+')';moreButton.onclick=()=>{showAllOrders=true;render('order');};for(const x of orderItems){
     const row=document.createElement('div');row.className='top-article';row.style.marginBottom='8px';
     const strong=document.createElement('strong');strong.textContent=x.name;
     const detail=document.createElement('div');detail.className='metrics';detail.textContent=fmt.format(x.demand)+' '+units(x)+' Bedarf · '+fmt.format(x.stock)+' '+units(x)+' Lager';
-    const qty=document.createElement('b');qty.textContent=x.quantity+' × '+label(x);row.append(strong,qty,detail);panel.append(row);
+    const qty=document.createElement('b');qty.textContent=x.quantity+' × '+label(x);row.append(strong,qty,detail);if(lines.length>=10&&!sessionStorage.getItem('gp-purchase-show-all'))row.classList.add('gpPurchaseExtra');panel.append(row);
     lines.push(x.name+': '+x.quantity+' × '+label(x));
    }
-   if(!lines.length){const p=document.createElement('p');p.textContent='Der erfasste Lagerbestand deckt den berechneten Bedarf.';panel.append(p);}
+   if(lines.length>10){const more=document.createElement('button');more.type='button';more.className='gpPurchaseMore';more.textContent='Weitere '+(lines.length-10)+' Artikel anzeigen';more.onclick=()=>{sessionStorage.setItem('gp-purchase-show-all','1');panel.querySelectorAll('.gpPurchaseExtra').forEach(e=>e.classList.remove('gpPurchaseExtra'));more.remove();};if(!sessionStorage.getItem('gp-purchase-show-all'))panel.append(more);}if(!lines.length){const p=document.createElement('p');p.textContent='Der erfasste Lagerbestand deckt den berechneten Bedarf.';panel.append(p);}
    const btn=document.createElement('button');btn.type='button';btn.textContent='📋 Bestellliste kopieren';btn.onclick=async()=>{const msg='Das Friedrich · Einkauf nächste Woche\n'+E('purchasePeriod').textContent+'\n\n'+lines.join('\n');try{await navigator.clipboard.writeText(msg);btn.textContent='✓ Kopiert';}catch(e){const ta=document.createElement('textarea');ta.value=msg;panel.append(ta);ta.select();}};panel.append(btn);
   }else if(tab==='stock'){
    const intro=document.createElement('p');intro.className='muted';intro.textContent='Lagerbestand in Litern bzw. Gramm eingeben. Speicherung auf diesem Gerät; keine automatische Inventur.';panel.append(intro);
@@ -3405,6 +3405,20 @@ document.addEventListener('visibilitychange',()=>{if(!document.hidden){last=0;vo
 document.getElementById('month')?.addEventListener('change',()=>{last=0;void update(true);});
 setInterval(()=>void update(),90000);
 })();
-</script></body></html>
+</script><style id="gp-purchase-final-layout-20261031">
+body:not(.gp-judith-design) #gpMockupDetailBody #weeklyPurchase{width:100%!important;max-width:none!important;grid-column:1/-1!important}
+body:not(.gp-judith-design) #gpMockupDetailBody #weeklyPurchase #purchaseCards{display:flex!important;flex-direction:column!important;width:100%!important;max-width:none!important;align-items:stretch!important}
+body:not(.gp-judith-design) #gpMockupDetailBody #weeklyPurchase #purchaseCards>.row{display:flex!important;width:100%!important;gap:9px!important;flex-wrap:wrap!important}
+body:not(.gp-judith-design) #gpMockupDetailBody #weeklyPurchase #purchaseCards>.row button{flex:1 1 170px;max-width:none;border-radius:11px;padding:12px 14px;font-weight:700}
+body:not(.gp-judith-design) #gpMockupDetailBody #weeklyPurchase #purchaseCards>.row button:disabled{background:#0d7667;color:#fff;opacity:1}
+body:not(.gp-judith-design) #gpMockupDetailBody #weeklyPurchase #gpPurchaseTabPanel{display:flex!important;flex-direction:column!important;width:100%!important;max-width:none!important;gap:8px!important}
+body:not(.gp-judith-design) #gpMockupDetailBody #weeklyPurchase #gpPurchaseTabPanel>.top-article{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(140px,auto)!important;align-items:center!important;column-gap:16px!important;padding:14px 18px!important;margin:0!important;border-radius:11px!important;width:100%!important}
+body:not(.gp-judith-design) #gpMockupDetailBody #weeklyPurchase #gpPurchaseTabPanel>.top-article strong{font-size:14px!important}
+body:not(.gp-judith-design) #gpMockupDetailBody #weeklyPurchase #gpPurchaseTabPanel>.top-article b{font-size:16px!important;text-align:right;white-space:normal}
+body:not(.gp-judith-design) #gpMockupDetailBody #weeklyPurchase #gpPurchaseTabPanel>.top-article .metrics{grid-column:1/-1;font-size:12px!important}
+body:not(.gp-judith-design) #gpMockupDetailBody #weeklyPurchase #gpPurchaseTabPanel>.gpPurchaseExtra{display:none!important}
+body:not(.gp-judith-design) #gpMockupDetailBody #weeklyPurchase #gpPurchaseTabPanel>.gpPurchaseMore{align-self:flex-start;padding:10px 16px}
+@media(max-width:650px){body:not(.gp-judith-design) #gpMockupDetailBody #weeklyPurchase #gpPurchaseTabPanel>.top-article{grid-template-columns:1fr!important}body:not(.gp-judith-design) #gpMockupDetailBody #weeklyPurchase #gpPurchaseTabPanel>.top-article b{text-align:left}}
+</style></body></html>
 
 
