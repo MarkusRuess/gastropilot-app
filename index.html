@@ -1203,13 +1203,13 @@ async function loadWeeklyPurchase(){
  drawWeeklyPurchase();
 }
 function drawWeeklyPurchase(){
- const host=E('purchaseCards');if(!host)return;host.replaceChildren();
+ const host=E('purchaseCards');if(!host)return;host.replaceChildren();host.style.setProperty('display','flex','important');host.style.setProperty('flex-direction','column','important');host.style.setProperty('width','100%','important');host.style.setProperty('grid-template-columns','none','important');
  const groups=new Map();
  for(const row of weeklyPurchaseRows){const x=purchaseGroup(row.name,row.quantity);if(!x)continue;const key=x.name.toLocaleLowerCase('de-AT');const old=groups.get(key)||{...x,amount:0};old.amount+=x.amount;groups.set(key,old);}
  const keg=Number(E('purchaseKeg').value)||50,can=Number(E('purchaseCan').value)||1500,dose=Number(E('purchaseDose').value)||8;
  const fmt=new Intl.NumberFormat('de-AT',{maximumFractionDigits:2});
- const nav=document.createElement('div');nav.className='row';nav.style.cssText='gap:8px;flex-wrap:wrap;margin:12px 0';
- const panel=document.createElement('div');panel.id='gpPurchaseTabPanel';
+ const nav=document.createElement('div');nav.className='row';nav.style.cssText='display:flex!important;width:100%!important;gap:8px;flex-wrap:wrap;margin:12px 0';
+ const panel=document.createElement('div');panel.id='gpPurchaseTabPanel';panel.style.setProperty('display','flex','important');panel.style.setProperty('flex-direction','column','important');panel.style.setProperty('width','100%','important');panel.style.setProperty('grid-template-columns','none','important');
  const tabs=[['order','🛒 Bestellliste'],['stock','📦 Lagerbestand'],['all','📋 Alle Artikel']];
  const getStock=(key)=>{try{return Number(localStorage.getItem('gp-friedrich-stock-'+key))||0;}catch(e){return 0;}};
  const setStock=(key,value)=>{try{localStorage.setItem('gp-friedrich-stock-'+key,String(Math.max(0,Number(value)||0)));}catch(e){}};
@@ -1223,7 +1223,7 @@ function drawWeeklyPurchase(){
    const intro=document.createElement('p');intro.className='muted';intro.textContent='Bestellbedarf = Verbrauch der Vergleichswoche minus Lagerbestand; auf ganze Gebinde aufgerundet. Mengen vor Bestellung prüfen.';panel.append(intro);
    const lines=[];
    const orderItems=list.filter(x=>x.quantity>0);let showAllOrders=false;const moreButton=document.createElement('button');moreButton.type='button';moreButton.className='gpPurchaseMore';moreButton.textContent='Weitere Artikel anzeigen ('+Math.max(0,orderItems.length-10)+')';moreButton.onclick=()=>{showAllOrders=true;render('order');};for(const x of orderItems){
-    const row=document.createElement('div');row.className='top-article';row.style.marginBottom='8px';
+    const row=document.createElement('div');row.className='top-article';row.style.cssText='display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;width:100%!important;box-sizing:border-box;margin-bottom:8px';
     const strong=document.createElement('strong');strong.textContent=x.name;
     const detail=document.createElement('div');detail.className='metrics';detail.textContent=fmt.format(x.demand)+' '+units(x)+' Bedarf · '+fmt.format(x.stock)+' '+units(x)+' Lager';
     const qty=document.createElement('b');qty.textContent=x.quantity+' × '+label(x);row.append(strong,qty,detail);if(lines.length>=10&&!sessionStorage.getItem('gp-purchase-show-all'))row.classList.add('gpPurchaseExtra');panel.append(row);
