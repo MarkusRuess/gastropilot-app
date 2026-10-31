@@ -1819,10 +1819,20 @@ async function refresh(){void loadLedgerComparison();if(E('recipeCostTile')&&!E(
  for(const d of daily){if(pricedDates.has(d.date))continue;const doc=archive.get(d.date)?.extracted_data;let list=doc?.article_sales_verification?.verified?doc.sales_items:articles.filter(x=>x.closing_date===d.date);if(!list?.length||list.some(x=>N(x.quantity)===null||N(x.gross_amount??x.gross_total)===null)||Math.abs(list.reduce((a,x)=>a+N(x.gross_amount??x.gross_total),0)-d.gross)>.03)continue;for(const x of list)addPricedArticle(x);pricedDates.add(d.date);}
  let liveArticleRows=[...pricedItems.values()];
  let articleSourceDays=pricedDates.size;
- if(!liveArticleRows.length&&articles.length){
-  const provisional=new Map(),dates=new Set();
-  for(const x of articles){const qty=N(x.quantity),amount=N(x.gross_amount);if(qty===null||amount===null||qty<=0)continue;const key=String(x.article_number||'').trim()||canonicalArticleName(x.article_name||'Unbenannt');const v=provisional.get(key)||{name:(x.article_number?x.article_number+' · ':'')+canonicalArticleName(x.article_name||'Unbenannt'),qty:0,gross:0,known:true};v.qty+=qty;v.gross+=amount;provisional.set(key,v);dates.add(x.closing_date);}
-  liveArticleRows=[...provisional.values()];articleSourceDays=dates.size;
+ // Ergänze neu importierte Tage, auch wenn ältere Tage bereits verifiziert sind.
+ // Pro Tag nur übernehmen, wenn die Artikel-Bruttosumme zum Z-Abschluss passt.
+ if(articles.length){
+  const provisional=new Map(),byDate=new Map(),addedDates=new Set();
+  for(const x of articles){if(pricedDates.has(x.closing_date))continue;const a=byDate.get(x.closing_date)||[];a.push(x);byDate.set(x.closing_date,a);}
+  for(const [date,items] of byDate){
+   const closing=daily.find(d=>d.date===date);if(!closing)continue;
+   const valid=items.every(x=>Number.isFinite(N(x.quantity))&&Number.isFinite(N(x.gross_amount)));
+   const sum=items.reduce((n,x)=>n+(N(x.gross_amount)||0),0);
+   if(!valid||Math.abs(sum-closing.gross)>.03)continue;
+   for(const x of items){const qty=N(x.quantity),amount=N(x.gross_amount);if(qty<=0)continue;const key=String(x.article_number||'').trim()||canonicalArticleName(x.article_name||'Unbenannt');const v=provisional.get(key)||{name:(x.article_number?x.article_number+' · ':'')+canonicalArticleName(x.article_name||'Unbenannt'),qty:0,gross:0,known:true};v.qty+=qty;v.gross+=amount;provisional.set(key,v);}
+   addedDates.add(date);
+  }
+  liveArticleRows=[...liveArticleRows,...provisional.values()];articleSourceDays+=addedDates.size;
  }
  const articleBusiness=BID;
  if(articleBusiness===JUDITH_ARTICLE_BUSINESS){
@@ -3246,6 +3256,12 @@ body.gp-article-area-active #financeSection{display:none!important}
   #businessHome .gp-home-analysis-card .gp-analysis-recommendation>span{font-size:14px!important}
 }
 </style><style id="judith-compact-dashboard-20261030">body.gp-judith-design #gpJudithMockupSections,body.gp-judith-design #gpJudithFinancialPreview,body.gp-judith-design #judithAnalysisLink,body.gp-judith-design #gpCockpitHint{display:none!important}body.gp-judith-design #gpMockupDetailBody{grid-template-columns:1fr!important}body.gp-judith-design #gpMockupDetailBody>details:not(.gp-area-hidden){grid-column:1/-1!important}body.gp-judith-design #gpMockupDetailBody #ledgerComparisonSection.gp-area-hidden{display:none!important;visibility:hidden!important}body.gp-judith-design #gpMockupDetailBody #gpReferencePreviews.gp-area-hidden{display:none!important}</style>
-</body></html>
+<script id="gp-top30-auto-refresh-20261031">
+(()=>{let last=0,busy=false;async function update(){if(document.hidden||busy||Date.now()-last<60000)return;const pane=document.getElementById('topArticlesDisclosure');if(!pane?.open)return;busy=true;last=Date.now();try{if(typeof refresh==='function')await refresh();}catch(e){console.warn('Top-30 Aktualisierung',e)}finally{busy=false;}}
+document.addEventListener('toggle',e=>{if(e.target?.id==='topArticlesDisclosure'){last=0;void update();}},true);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden){last=0;void update();}});
+setInterval(()=>void update(),90000);
+})();
+</script></body></html>
 
 
