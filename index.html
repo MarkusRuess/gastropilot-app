@@ -1210,7 +1210,7 @@ function drawWeeklyPurchase(){
  const fmt=new Intl.NumberFormat('de-AT',{maximumFractionDigits:2});
  const nav=document.createElement('div');nav.className='row';nav.style.cssText='display:flex!important;width:100%!important;gap:8px;flex-wrap:wrap;margin:12px 0';
  const panel=document.createElement('div');panel.id='gpPurchaseTabPanel';panel.style.setProperty('display','flex','important');panel.style.setProperty('flex-direction','column','important');panel.style.setProperty('width','100%','important');panel.style.setProperty('grid-template-columns','none','important');
- const tabs=[['order','🛒 Bestellliste'],['stock','📦 Lagerbestand'],['all','📋 Alle Artikel']];
+ const tabs=[['order','🛒 Bestellliste'],['stock','📦 Lagerbestand'],['all','📋 Alle Artikel'],['inventory','🧾 Inventur']];
  const getStock=(key)=>{try{return Number(localStorage.getItem('gp-friedrich-stock-'+key))||0;}catch(e){return 0;}};
  const setStock=(key,value)=>{try{localStorage.setItem('gp-friedrich-stock-'+key,String(Math.max(0,Number(value)||0)));}catch(e){}};
  const list=[...groups.entries()].map(([key,x])=>{const size=x.unit==='beer'?keg:x.unit==='coffee'?can:.75;const demand=x.unit==='coffee'?x.amount*dose:x.amount;const stock=getStock(key);const quantity=Math.max(0,Math.ceil((demand-stock-1e-8)/size));return {key,...x,size,demand,stock,quantity};}).sort((a,b)=>a.unit.localeCompare(b.unit)||b.demand-a.demand);
@@ -1238,9 +1238,42 @@ function drawWeeklyPurchase(){
    for(const x of list){const row=document.createElement('div');row.className='top-article';row.style.marginBottom='8px';const title=document.createElement('strong');title.textContent=x.name;const detail=document.createElement('div');detail.className='metrics';detail.textContent=fmt.format(x.demand)+' '+units(x)+' Bedarf · '+fmt.format(x.stock)+' '+units(x)+' Lager · '+x.quantity+' × '+label(x);row.append(title,detail);panel.append(row);}
   }
  };
- for(const [id,title] of tabs){const button=document.createElement('button');button.type='button';button.textContent=title;button.onclick=()=>{nav.querySelectorAll('button').forEach(b=>b.disabled=false);button.disabled=true;render(id);};nav.append(button);}
+ for(const [id,title] of tabs){const button=document.createElement('button');button.type='button';button.textContent=title;button.onclick=()=>{nav.querySelectorAll('button').forEach(b=>b.disabled=false);button.disabled=true;if(id==='inventory')void gpInventoryOpen();else render(id);};nav.append(button);}
  host.append(nav,panel);const settings=E('purchasePeriod');if(settings&&settings.parentElement){settings.insertAdjacentElement('afterend',nav);}nav.querySelector('button').click();
 }
+
+/* Laufende Inventur: gesondert von der Wochenbestellung, mit geschützter Supabase-Speicherung. */
+async function gpInventoryOpen(){
+ const panel=E('gpPurchaseTabPanel');if(!panel)return;
+ panel.replaceChildren();const heading=document.createElement('h3');heading.textContent='Inventur · Das Friedrich';panel.append(heading);
+ if(!BID||BID!=='6a5484d1-daf6-4263-897d-24cdf536aa29'){panel.append(document.createTextNode('Inventur nur für Das Friedrich verfügbar.'));return;}
+ const status=document.createElement('p');status.className='muted';status.textContent='Lagerbestand wird geladen …';panel.append(status);
+ const form=document.createElement('form');form.style.cssText='display:flex;flex-wrap:wrap;gap:8px;align-items:end;margin:12px 0';
+ const field=(label,type,value)=>{const wrap=document.createElement('label');wrap.textContent=label;wrap.style.cssText='display:flex;flex-direction:column;gap:4px;flex:1 1 125px';const input=document.createElement('input');input.type=type;input.value=value;input.required=label!=='Netto-EK je Einheit (€)';if(type==='number'){input.min='0';input.step='any';}wrap.append(input);form.append(wrap);return input;};
+ const name=field('Artikel','text',''),category=field('Kategorie','text','Getränke'),unit=field('Einheit','text','Flasche'),qty=field('Gezählter Bestand','number','0'),price=field('Netto-EK je Einheit (€)','number','');
+ const save=document.createElement('button');save.type='submit';save.textContent='Artikel speichern';form.append(save);panel.append(form);
+ const list=document.createElement('div');panel.append(list);
+ const month=new Date().toISOString().slice(0,7)+'-01';
+ const load=async()=>{
+  const {data,error}=await db.from('gp_inventory_items').select('id,name,category,unit,quantity,net_unit_price,counted_at').eq('business_id',BID).order('name');
+  if(error){status.textContent='Speichern/Laden nicht möglich: '+error.message;return;}
+  status.textContent=(data||[]).length+' Artikel gespeichert · Lagerstand auf allen angemeldeten Geräten verfügbar';
+  list.replaceChildren();let total=0,missing=0;
+  for(const x of data||[]){const row=document.createElement('div');row.className='top-article';row.style.cssText='display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between;margin:6px 0';
+   const title=document.createElement('strong');title.textContent=x.name+' · '+x.category;
+   const info=document.createElement('span');info.textContent=x.quantity+' '+x.unit+' · '+(x.net_unit_price==null?'Preis fehlt':(Number(x.quantity)*Number(x.net_unit_price)).toLocaleString('de-AT',{style:'currency',currency:'EUR'}));
+   const edit=document.createElement('button');edit.type='button';edit.textContent='Bearbeiten';edit.onclick=()=>{name.value=x.name;category.value=x.category;unit.value=x.unit;qty.value=x.quantity;price.value=x.net_unit_price??'';name.focus();form.dataset.editId=x.id;};
+   row.append(title,info,edit);list.append(row);
+   if(x.net_unit_price==null)missing++;else total+=Number(x.quantity)*Number(x.net_unit_price);
+  }
+  const summary=document.createElement('p');summary.textContent='Bewerteter Lagerwert netto: '+total.toLocaleString('de-AT',{style:'currency',currency:'EUR'})+(missing?' · '+missing+' Artikel ohne Preis (nicht bewertet)':'');list.prepend(summary);
+  const exportBtn=document.createElement('button');exportBtn.type='button';exportBtn.textContent='Inventurliste CSV exportieren';exportBtn.onclick=()=>{const rows=[['Artikel','Kategorie','Einheit','Menge','Netto-EK','Wert netto','Zählzeitpunkt'],...(data||[]).map(x=>[x.name,x.category,x.unit,x.quantity,x.net_unit_price??'',x.net_unit_price==null?'':Number(x.quantity)*Number(x.net_unit_price),x.counted_at])];const csv='\\uFEFF'+rows.map(row=>row.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(';')).join('\\r\\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download='Friedrich_Inventur_'+new Date().toISOString().slice(0,10)+'.csv';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);};list.append(exportBtn);
+  const snapshot=document.createElement('button');snapshot.type='button';snapshot.textContent='Monatsinventur festhalten';snapshot.onclick=async()=>{if(!confirm('Inventurstand für '+month.slice(0,7)+' speichern? Bitte zuvor alle Mengen kontrollieren.'))return;const rows=(data||[]).map(x=>({business_id:BID,inventory_month:month,item_id:x.id,article_name:x.name,category:x.category,unit:x.unit,quantity:x.quantity,net_unit_price:x.net_unit_price}));if(!rows.length){status.textContent='Keine Artikel vorhanden.';return;}const {error}=await db.from('gp_inventory_snapshots').upsert(rows,{onConflict:'business_id,inventory_month,item_id'});status.textContent=error?'Monatsabschluss fehlgeschlagen: '+error.message:'Monatsinventur '+month.slice(0,7)+' gespeichert ('+rows.length+' Artikel).';};list.append(snapshot);
+ };
+ form.onsubmit=async e=>{e.preventDefault();const payload={business_id:BID,name:name.value.trim(),category:category.value.trim(),unit:unit.value.trim(),quantity:Number(qty.value),net_unit_price:price.value===''?null:Number(price.value),counted_at:new Date().toISOString(),updated_at:new Date().toISOString()};if(!payload.name||!payload.unit||payload.quantity<0)return;save.disabled=true;const id=form.dataset.editId;const {error}=id?await db.from('gp_inventory_items').update(payload).eq('id',id).eq('business_id',BID):await db.from('gp_inventory_items').upsert(payload,{onConflict:'business_id,name'});save.disabled=false;if(error){status.textContent='Speichern fehlgeschlagen: '+error.message;return;}form.reset();delete form.dataset.editId;category.value='Getränke';unit.value='Flasche';qty.value='0';await load();};
+ await load();
+}
+
 for(const id of ['purchaseKeg','purchaseCan','purchaseDose']){const saved=localStorage.getItem(id);if(saved&&Number(saved)>0)E(id).value=saved;E(id).onchange=()=>{if(Number(E(id).value)>0)localStorage.setItem(id,E(id).value);drawWeeklyPurchase();};}
 
 let topArticleRows=[],topArticlePage=0,topArticleTotal=null,topArticleKey='';
