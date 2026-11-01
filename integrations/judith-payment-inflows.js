@@ -32,11 +32,14 @@ export function mountJudithPaymentInflows(container, {loadPayments}) {
     .judith-pay-nav>button:disabled{opacity:.35;cursor:default}
     .judith-pay-nav .judith-pay-month{min-width:195px;padding:10px 14px;font-size:17px;font-weight:750;text-transform:uppercase;background:#fff3f7;color:#8a315a;border:1px solid #efd2dd}
     .judith-pay-nav input{width:1px;height:1px;position:absolute;opacity:0;pointer-events:none}
-    .judith-payment-row{background:#fff;border:1px solid #efd8e0;border-radius:12px;padding:14px 16px;margin:10px 0;display:flex;align-items:center;gap:6px 12px;flex-wrap:wrap}
-    .judith-payment-row .judith-pay-invoice{font-weight:800;color:#aa2d65}
-    .judith-payment-row .judith-pay-name{flex-basis:100%;color:#57414d;overflow-wrap:anywhere}
-    .judith-payment-row .judith-pay-amount{margin-left:auto;font-weight:750;color:#4a3340}
-    @media(max-width:540px){.judith-pay-nav{gap:7px}.judith-pay-nav .judith-pay-month{min-width:155px;font-size:14px}.judith-payment-row .judith-pay-amount{margin-left:0}}
+    .judith-pay-table{width:100%;border-collapse:collapse;margin-top:16px;font-size:17px}
+    .judith-pay-table th{text-align:left;font-weight:750;border-bottom:1px solid #d8d8d8;padding:12px 12px 14px}
+    .judith-pay-table td{border-bottom:1px solid #ececec;padding:17px 12px;vertical-align:top}
+    .judith-pay-table th:last-child,.judith-pay-table td:last-child{text-align:right;white-space:nowrap}
+    .judith-pay-table strong{font-weight:800}
+    .judith-pay-table .judith-pay-date{white-space:nowrap}
+    @media(max-width:620px){.judith-pay-table{font-size:14px}.judith-pay-table td,.judith-pay-table th{padding:12px 5px}.judith-pay-table .judith-pay-date{white-space:normal}}
+
   `;
   container.append(style,title,nav,status,list);
   const money=new Intl.NumberFormat('de-AT',{style:'currency',currency:'EUR'});
@@ -50,16 +53,22 @@ export function mountJudithPaymentInflows(container, {loadPayments}) {
       const safe=rows.filter(r=>r && /^\d{4}-\d{2}-\d{2}$/.test(r.date) &&
         r.date.startsWith(month.value) && Number.isFinite(r.amount) && r.amount>0);
       status.textContent=safe.length+' Zahlungseingänge';displayMonth();
+      const table=document.createElement('table');table.className='judith-pay-table';
+      const head=document.createElement('thead');const header=document.createElement('tr');
+      for(const label of ['Datum · Rechnungsnummer','Kunde','Eingang']){const th=document.createElement('th');th.textContent=label;header.append(th)}
+      head.append(header);table.append(head);
+      const body=document.createElement('tbody');
       for(const row of safe){
-        const item=document.createElement('div');item.className='judith-payment-row';
-        const date=document.createElement('span');
-        date.textContent=row.date.slice(8,10)+'.'+row.date.slice(5,7)+'.'+row.date.slice(0,4)+' ';
-        const invoice=document.createElement('strong');
-        invoice.className='judith-pay-invoice';invoice.textContent=row.invoiceNumber||'Keine Rechnungsnummer';
-        const name=document.createElement('span');name.className='judith-pay-name';name.textContent=row.name||'Unbekannt';
-        const amount=document.createElement('span');amount.className='judith-pay-amount';amount.textContent=money.format(row.amount);
-        item.append(date,invoice,name,amount);list.append(item);
+        const tr=document.createElement('tr');
+        const first=document.createElement('td');first.className='judith-pay-date';
+        const date=document.createElement('span');date.textContent=row.date.slice(8,10)+'.'+row.date.slice(5,7)+'. · ';
+        const invoice=document.createElement('strong');invoice.textContent=row.invoiceNumber||'Keine Rechnungsnummer';
+        first.append(date,invoice);
+        const name=document.createElement('td');name.textContent=row.name||'Unbekannt';
+        const amount=document.createElement('td');amount.textContent=money.format(row.amount);
+        tr.append(first,name,amount);body.append(tr);
       }
+      table.append(body);list.append(table);
     } catch(e) {
       if(current!==request)return;displayMonth();
       status.textContent='Zahlungseingänge derzeit nicht verfügbar.';
