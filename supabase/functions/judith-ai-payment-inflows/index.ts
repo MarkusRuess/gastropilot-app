@@ -27,10 +27,14 @@ Deno.serve(async(req)=>{
     .gte('booking_date',start).lt('booking_date',end)
     .order('booking_date',{ascending:false}).limit(2000);
   if(error)throw error;
-  const items=(data||[]).map(x=>{
-   const text=[x.description,x.payee].filter(Boolean).join(' ');
-   const match=text.match(/(?:Re(?:chnungs)?[.\s-]*Nr\.?|RG[.\s-]*Nr\.?|Invoice[.\s-]*No\.?|Rechnung)\s*[:#-]?\s*([A-Za-z0-9][A-Za-z0-9\/-]{2,35})/i);
-   return {date:x.booking_date,name:x.payee||'',amount:Number(x.amount),invoiceNumber:match?.[1]||null};
+  const items=(data||[]).flatMap(x=>{
+    const name=String(x.payee||'').trim();
+    const detail=String(x.description||'');
+    if(['PAYONE','Mollie','AMAZON','PayLife','Klarna','SB Beheb','SB Ein'].some(v=>name.toLowerCase().includes(v.toLowerCase())))return [];
+    const candidates=detail.match(/125[0-9 ]{6,12}/g)||[];
+    const numbers=[...new Set(candidates.map(v=>v.replaceAll(' ','')).filter(v=>/^125[0-9]{6,9}$/.test(v)))];
+    if(numbers.length!==1)return [];
+    return [{date:x.booking_date,name,amount:Number(x.amount),invoiceNumber:numbers[0]}];
   });
   return reply({items});
  }catch(_e){return reply({error:'Zahlungseingänge nicht verfügbar'},500)}
