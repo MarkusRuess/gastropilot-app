@@ -1621,7 +1621,7 @@ async function updateCombinedManagementHome(){
  const describe=(id,label,target,goal,action)=>{
   if(!target)return;
   if(!hasSales.has(id)){
-   target.textContent='Für '+month+' liegen noch keine BONit-Tagesabschlüsse vor. Eine Einschätzung ist erst mit erfassten Umsätzen möglich.';
+   target.textContent='Für '+month+' liegen noch keine erfassten Tagesumsätze vor. Eine Einschätzung ist erst mit belegten Umsätzen möglich.';
    return;
   }
   const gross=grossFor(id),ratio=goal>0?gross/goal*100:0,remaining=goal-gross,achieved=ratio>=100;
