@@ -1609,7 +1609,7 @@ async function updateCombinedManagementHome(){
  const ids=['6a5484d1-daf6-4263-897d-24cdf536aa29','87889eaf-f865-4e3a-8f9a-cd01db483e0e'];
  const revenueEl=E('combinedManagementRevenue'),costEl=E('combinedManagementCosts'),resultEl=E('combinedManagementResult');
  revenueEl.textContent=costEl.textContent=resultEl.textContent='–';
- const friedrichBrief=E('homeFriedrichBrief'),judithBrief=E('homeJudithBrief');if(friedrichBrief)friedrichBrief.textContent='Werte werden geprüft …';if(judithBrief)judithBrief.textContent='Werte werden geprüft …';
+ const friedrichBrief=E('homeFriedrichBrief'),judithBrief=E('homeJudithBrief');if(friedrichBrief)friedrichBrief.textContent='Für diesen Monat sind noch keine belastbaren Umsatzwerte geladen.';if(judithBrief)judithBrief.textContent='Für diesen Monat sind noch keine belastbaren Umsatzwerte geladen.';
  try{
  const cards=[...E('homeCards').querySelectorAll('.homeBusiness')];
  const parseMoney=text=>{const m=String(text||'').match(/-?[\d.]+,\d{2}/);return m?Number(m[0].replace(/\./g,'').replace(',','.')):null};
@@ -2544,8 +2544,9 @@ async function showHome(){
  E('app').classList.add('hidden');E('businessHome').classList.remove('hidden');document.title='GastroPilot · Beide Betriebe';renderTopBusinessNav();
  const subtitle=document.querySelector('header small');if(subtitle)subtitle.textContent='Friedrich · Judith und die Torten';
  E('homeStatus').textContent='Monatswerte werden geladen …';
- try{await renderBusinessOverview(db,authorizedBusinesses,E('homeMonth').value,E('homeCards'),openBusiness);void updateCombinedManagementHome();E('homeStatus').textContent='Fehlende Werte bleiben leer, bis die Unterlagen erfasst sind.';}
+ try{await renderBusinessOverview(db,authorizedBusinesses,E('homeMonth').value,E('homeCards'),openBusiness);E('homeStatus').textContent='Fehlende Werte bleiben leer, bis die Unterlagen erfasst sind.';}
  catch(error){E('homeStatus').textContent='Betriebsübersicht konnte nicht geladen werden: '+error.message;}
+ finally{void updateCombinedManagementHome();}
 }
 async function openBusiness(member){
  if(openingBusiness||busy||!authorizedBusinesses.some(x=>x.business_id===member.business_id))return;
