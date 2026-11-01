@@ -2530,7 +2530,7 @@ async function process(){
    const setProgress=step=>{E('uploadStatus').textContent=(fileIndex+1)+'/'+files.length+' · '+file.name+' · '+step;};
    try{
     if(intake.alreadyRecognized){if(intake.document_type==='invoice')await autoBookInvoiceExpense({...intake.extracted_data,date:intake.document_date,supplier:intake.extracted_data?.supplier||intake.supplier,invoice_number:intake.extracted_data?.invoice_number||intake.invoice_number},intake.id);duplicate++;queue=queue.filter(f=>f!==file);if(isSpreadsheet(file))E('uploadStatus').textContent='Excel-Datei bereits im Archiv · '+file.name;else showArchivedDuplicate(file);continue;}
-    if(BID==='87889eaf-f865-4e3a-8f9a-cd01db483e0e'&&file.type==='application/pdf'&&/ums(?:a|ä)tze[-_ ]girokonto/i.test(file.name)){
+    if(BID==='87889eaf-f865-4e3a-8f9a-cd01db483e0e'&&(file.type==='application/pdf'||/\.pdf$/i.test(file.name))&&/(ums(?:a|ä)tze[-_ ]girokonto|kontoauszug|bankauszug|bankbeleg|umsatzliste|girokonto)/i.test(file.name)){
      setProgress('Bankauszug wird eingelesen …');
      const result=await importJudithBankPdf(file,intake);
      saved++;queue=queue.filter(f=>f!==file);
