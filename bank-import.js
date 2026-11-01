@@ -115,7 +115,8 @@ rowButton.onclick=async()=>{
    fresh.push(x);
   }
   const rows=[],freshCounts=new Map();for(const x of fresh){
-   const occurrence=(freshCounts.get(key(x))||0)+1;freshCounts.set(key(x),occurrence); // distinct import hash, PDF itself is never stored
+   const freshOccurrence=(freshCounts.get(key(x))||0)+1;freshCounts.set(key(x),freshOccurrence);
+   const occurrence=(counts.get(key(x))||0)+freshOccurrence; // distinct import hash, PDF itself is never stored
    const bytes=new TextEncoder().encode(iban+'|'+key(x)+'|'+occurrence);
    const digest=await crypto.subtle.digest('SHA-256',bytes);
    const hash=Array.from(new Uint8Array(digest)).map(b=>b.toString(16).padStart(2,'0')).join('');
