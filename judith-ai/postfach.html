@@ -44,7 +44,7 @@ try{
   const res=await fetch('https://sjnwfwcpgwsavygewwzb.supabase.co/functions/v1/judith-ai-status',{headers:{Authorization:'Bearer '+session.access_token,apikey:'sb_publishable__tucXG-IQGUhibMqMSUzCw_5RnH_sbQ'},cache:'no-store'});
   if(!res.ok){await sb.auth.signOut();fail('Kein Zugriff auf Judith AI.');}
   else{
-   const data=await res.json();jdPreloadData(session);void jdRefreshGoalProgress();loading.hidden=true;document.getElementById('app').hidden=false;document.getElementById('logout').hidden=false;
+   const data=await res.json();jdPreloadData(session);setTimeout(()=>void jdRefreshGoalProgress(),0);loading.hidden=true;document.getElementById('app').hidden=false;document.getElementById('logout').hidden=false;
    document.getElementById('user').textContent=session.user.email??'Gemeinsamer Zugang';
    document.getElementById('role').textContent=data.role??'Freigeschaltet';
    const s=data.settings??{};const m=data.mail_setup??{};const n=[["IMAP-Server",m.imap_host_configured],["SMTP-Server",m.smtp_host_configured],["Benutzername",m.mail_user_configured],["E-Mail-Passwort",m.mail_password_configured]];document.getElementById("current-host").textContent=m.imap_host||"nicht hinterlegt";document.getElementById("setup").textContent=n.map(([name,ok])=>name+": "+(ok?"hinterlegt":"fehlt")).join(" · ")+" · Verbindungstest: noch nicht durchgeführt";
