@@ -650,6 +650,7 @@ body:not(.gp-judith-design) #gpDailyCalendarGrid .gp-cal-weekday{font-size:10px!
 .invoice-inline-content .invoice-detail{color:#64748b;font-size:11px}
 .invoice-inline-content .invoice-table td,.invoice-inline-content .invoice-table th{vertical-align:top}
 @media(max-width:700px){.invoice-inline-content{padding:8px}.invoice-inline-content .item-entry{grid-template-columns:1fr 1fr}.invoice-inline-content .item-entry button{grid-column:span 2}.invoice-inline-content .invoice-table thead{display:none}.invoice-inline-content .invoice-table tbody tr:not(.invoice-detail){display:block;border:1px solid #e5eaf0;border-radius:9px;margin:8px 0;padding:6px}.invoice-inline-content .invoice-table tbody tr:not(.invoice-detail) td{display:flex;justify-content:space-between;gap:8px;border:0;padding:5px}.invoice-inline-content .invoice-table tbody tr:not(.invoice-detail) td:before{content:attr(data-label);color:#718096;font-size:11px}.invoice-inline-content .invoice-detail td{display:block}.invoice-month-label{flex-wrap:wrap}}
+#businessHome #combinedGrossHome{display:none!important}
 </style></head><body>
 <header><div class="gpHeaderBar"><button id="gpHeaderHome" type="button" aria-label="GastroPilot – zur Betriebsübersicht" style="appearance:none;background:transparent;border:0;padding:0;color:inherit;text-align:left;cursor:pointer;display:block"><strong>GastroPilot</strong><small>Dein Lokal. Deine Zahlen. Dein Überblick.</small></button><nav id="gpHeaderSwitch" class="hidden" aria-label="Betrieb wechseln"></nav></div></header>
 <main><section id="login" class="card"><div class="gpLoginHero"><div class="gpLoginBrand"><span class="gpChef">♧</span><h1>Gastro<span>Pilot</span></h1><p>FRIEDRICH · JUDITH UND DIE TORTEN</p><small>EINFACH. ÜBERSICHTLICH. ERFOLGREICH.</small></div><div class="gpLoginScenes"><div class="gpLoginScene gpFriedrich"><span>Das Friedrich<small>BROT & WASSER</small></span></div><div class="gpLoginScene gpJudith"><span>Judith<small>UND DIE TORTEN</small></span></div></div></div><div class="gpLoginPanel"><p class="gpWelcome">Willkommen bei</p><h2>Gastro<span>Pilot</span></h2><p class="gpLoginIntro">Die zentrale Übersicht für Das Friedrich und Judith und die Torten.</p><form id="loginForm"><label><span class="gpFieldLabel">E-Mail</span><input id="email" type="email" autocomplete="username" placeholder="✉  E-Mail" required></label><label><span class="gpFieldLabel">Passwort</span><input id="password" type="password" autocomplete="current-password" placeholder="♙  Passwort" required></label><button type="submit">Anmelden <span aria-hidden="true">→</span></button></form><p id="loginMsg" class="status"></p></div><div class="gpLoginBenefits"><div>▥<small>Umsätze<br>im Blick</small></div><div>🛒<small>Einkäufe<br>automatisch</small></div><div>♙<small>Personal<br>einfach planen</small></div><div>▤<small>Alles an<br>einem Ort</small></div></div><p class="gpLoginSignature">Mehr Zeit für das Wesentliche ♡</p></section>
@@ -1610,16 +1611,13 @@ async function updateCombinedManagementHome(){
  revenueEl.textContent=costEl.textContent=resultEl.textContent='–';
  const friedrichBrief=E('homeFriedrichBrief'),judithBrief=E('homeJudithBrief');if(friedrichBrief)friedrichBrief.textContent='Werte werden geprüft …';if(judithBrief)judithBrief.textContent='Werte werden geprüft …';
  try{
- const next=new Date(Date.UTC(Number(month.slice(0,4)),Number(month.slice(5,7)),1)).toISOString().slice(0,10);
- const [sales,invoices,ledger]=await Promise.all([
- db.from('bonit_daily_closings').select('business_id,gross_amount').in('business_id',ids).gte('closing_date',month+'-01').lt('closing_date',next),
- db.from('sales_invoices').select('business_id,invoice_date,gross_total').in('business_id',ids).gte('invoice_date',month+'-01').lt('invoice_date',next),
- db.from('gp_ledger_monthly').select('business_id,metric_key,amount,verification_status').in('business_id',ids).eq('month_start',month+'-01')
+ const [metrics,ledger]=await Promise.all([
+  Promise.all(ids.map((id,i)=>loadBusinessMetrics(db,id,month,i===1))),
+  db.from('gp_ledger_monthly').select('business_id,metric_key,amount,verification_status').in('business_id',ids).eq('month_start',month+'-01')
  ]);
  if(E('homeMonth')?.value!==month||E('businessHome')?.classList.contains('hidden'))return;
- if(sales.error)throw sales.error;if(invoices.error)throw invoices.error;if(ledger.error)throw ledger.error;
- const hasSales=new Set([...(sales.data||[]),...(invoices.data||[])].map(x=>x.business_id));
- const grossFor=id=>[...(sales.data||[]).filter(x=>x.business_id===id).map(x=>x.gross_amount),...(invoices.data||[]).filter(x=>x.business_id===id).map(x=>x.gross_total)].reduce((a,x)=>a+Number(x||0),0);
+ const hasSales=new Set(ids.filter((id,i)=>metrics[i].gross!==null));
+ const grossFor=id=>Number(metrics[ids.indexOf(id)].gross||0);
  const describe=(id,label,target,goal,action)=>{
   if(!target)return;
   if(!hasSales.has(id)){
@@ -1656,6 +1654,7 @@ async function updateCombinedManagementHome(){
   }else{targetEl.textContent='–';targetBar.style.width='0%';targetCaption.textContent='Noch nicht beide Umsätze erfasst';}
  }
 
+ if(ledger.error)throw ledger.error;
  const m=new Map((ledger.data||[]).filter(x=>x.verification_status==='verified').map(x=>[x.business_id+'|'+x.metric_key,Number(x.amount)]));
  const required=['net_revenue','personnel','purchases','fixed_costs','operating_result'];
  if(ids.every(id=>required.every(k=>m.has(id+'|'+k)))){
