@@ -18,7 +18,7 @@ Deno.serve(async(req)=>{
   const {data:access,error:accessError}=await admin.from('judith_ai_access').select('user_id').eq('user_id',user.id).eq('active',true).limit(1);
   if(accessError||!access?.length)return reply({error:'Keine Berechtigung'},403);
   const month=new URL(req.url).searchParams.get('month')||'';
-  if(!/^20\\d{2}-(0[1-9]|1[0-2])$/.test(month))return reply({error:'Ungültiger Monat'},400);
+  if(!/^20\d{2}-(0[1-9]|1[0-2])$/.test(month))return reply({error:'Ungültiger Monat'},400);
   const start=month+'-01';const [year,mon]=month.split('-').map(Number);
   const end=new Date(Date.UTC(year,mon,1)).toISOString().slice(0,10);
   const {data,error}=await admin.from('bank_transactions')
@@ -29,7 +29,7 @@ Deno.serve(async(req)=>{
   if(error)throw error;
   const items=(data||[]).map(x=>{
    const text=[x.description,x.payee].filter(Boolean).join(' ');
-   const match=text.match(/(?:Re(?:chnungs)?[.\\s-]*Nr\\.?|RG[.\\s-]*Nr\\.?|Invoice[.\\s-]*No\\.?|Rechnung)\\s*[:#-]?\\s*([A-Za-z0-9][A-Za-z0-9\\/-]{2,35})/i);
+   const match=text.match(/(?:Re(?:chnungs)?[.\s-]*Nr\.?|RG[.\s-]*Nr\.?|Invoice[.\s-]*No\.?|Rechnung)\s*[:#-]?\s*([A-Za-z0-9][A-Za-z0-9\/-]{2,35})/i);
    return {date:x.booking_date,name:x.payee||'',amount:Number(x.amount),invoiceNumber:match?.[1]||null};
   });
   return reply({items});
