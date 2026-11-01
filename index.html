@@ -2487,7 +2487,7 @@ async function importJudithBankPdf(file,intake){
   const source_hash='judith-bankpdf-'+digest+'-'+i;
   const {error}=await db.from('bank_transactions').insert({business_id:BID,account_name:'J.W. GmbH Girokonto',booking_date:e.date,payee:e.payee,description:e.description,amount:e.amount,source_hash});
   if(error){if(error.code==='23505'){duplicates++;continue;}throw error;}
-  existing.push({booking_date:e.date,payee:e.payee,amount:e.amount});added++;
+  if(existing)existing.push({booking_date:e.date,payee:e.payee,amount:e.amount});added++;
  }
  await db.from('documents').update({status:'reviewed',extracted_data:{...intake.extracted_data,document_class:'bank_statement',bank_import:{added,duplicates,skipped,parsed:entries.length},import_warning:skipped?'Mehrfachreferenzen zur Prüfung.':null}}).eq('id',intake.id).eq('business_id',BID);
  return {added,duplicates,skipped,parsed:entries.length};
