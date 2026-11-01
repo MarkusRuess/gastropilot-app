@@ -1611,13 +1611,11 @@ async function updateCombinedManagementHome(){
  revenueEl.textContent=costEl.textContent=resultEl.textContent='–';
  const friedrichBrief=E('homeFriedrichBrief'),judithBrief=E('homeJudithBrief');if(friedrichBrief)friedrichBrief.textContent='Werte werden geprüft …';if(judithBrief)judithBrief.textContent='Werte werden geprüft …';
  try{
- const [metrics,ledger]=await Promise.all([
-  Promise.all(ids.map((id,i)=>loadBusinessMetrics(db,id,month,i===1))),
-  db.from('gp_ledger_monthly').select('business_id,metric_key,amount,verification_status').in('business_id',ids).eq('month_start',month+'-01')
- ]);
- if(E('homeMonth')?.value!==month||E('businessHome')?.classList.contains('hidden'))return;
- const hasSales=new Set(ids.filter((id,i)=>metrics[i].gross!==null));
- const grossFor=id=>Number(metrics[ids.indexOf(id)].gross||0);
+ const cards=[...E('homeCards').querySelectorAll('.homeBusiness')];
+ const parseMoney=text=>{const m=String(text||'').match(/-?[\\d.]+,\\d{2}/);return m?Number(m[0].replace(/\\./g,'').replace(',','.')):null};
+ const cardGross=id=>{const name=id===ids[0]?'Friedrich':'Judith';const card=cards.find(x=>x.querySelector('h2')?.textContent.includes(name));return parseMoney(card?.querySelector('.homeMetric strong')?.textContent)};
+ const hasSales=new Set(ids.filter(id=>cardGross(id)!==null));
+ const grossFor=id=>cardGross(id)||0;
  const describe=(id,label,target,goal,action)=>{
   if(!target)return;
   if(!hasSales.has(id)){
@@ -1654,6 +1652,7 @@ async function updateCombinedManagementHome(){
   }else{targetEl.textContent='–';targetBar.style.width='0%';targetCaption.textContent='Noch nicht beide Umsätze erfasst';}
  }
 
+ const ledger=await db.from('gp_ledger_monthly').select('business_id,metric_key,amount,verification_status').in('business_id',ids).eq('month_start',month+'-01');
  if(ledger.error)throw ledger.error;
  const m=new Map((ledger.data||[]).filter(x=>x.verification_status==='verified').map(x=>[x.business_id+'|'+x.metric_key,Number(x.amount)]));
  const required=['net_revenue','personnel','purchases','fixed_costs','operating_result'];
@@ -1661,7 +1660,7 @@ async function updateCombinedManagementHome(){
  costEl.textContent=EUR(ids.reduce((a,id)=>a+m.get(id+'|personnel')+m.get(id+'|purchases')+m.get(id+'|fixed_costs'),0));
  resultEl.textContent=EUR(ids.reduce((a,id)=>a+m.get(id+'|operating_result'),0));
  }
- }catch(e){console.warn('Gemeinsame Managementübersicht:',e.message);}
+ }catch(e){console.warn('Gemeinsame Managementübersicht:',e.message);if(friedrichBrief?.textContent==='Werte werden geprüft …')friedrichBrief.textContent='Analyse konnte nicht geladen werden.';if(judithBrief?.textContent==='Werte werden geprüft …')judithBrief.textContent='Analyse konnte nicht geladen werden.';}
 }
 async function loadLedgerComparison(){
  const rows=E('ledgerComparisonRows'),status=E('ledgerComparisonStatus');if(!rows||!status||!BID)return;
