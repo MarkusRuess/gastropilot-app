@@ -2726,7 +2726,7 @@ function init(){
  const previews=document.createElement('section');previews.id='gpReferencePreviews';previews.innerHTML='<article class="gp-ref-panel gp-ref-ledger"><header><div><strong>▥ Buchhaltung & Monatsvergleich</strong><small>Saldenlisten, Kostenstruktur und vorläufiges Ergebnis</small></div><button type="button" data-gp-preview="ledger">Details ›</button></header><table class="gp-ref-table"><thead><tr><th>Kennzahl</th><th>August</th><th>September</th><th>Oktober</th></tr></thead><tbody id="gpRefLedgerBody"><tr><td colspan="4">Bestätigte Buchhaltungsdaten werden geladen.</td></tr></tbody></table><div class="gp-ref-actions"><button type="button" data-gp-preview="ledger">Saldenlisten ›</button><button type="button" data-gp-preview="costs">Fixkosten ›</button><button type="button" data-gp-preview="staff">Personal ›</button><button type="button" data-gp-preview="ledger">Ergebnis ›</button></div></article><article class="gp-ref-panel gp-ref-daily"><header><div><strong>▤ Tagesabschlüsse</strong><small>Umsätze, Bons, 10 % / 20 %</small></div><button type="button" data-gp-preview="daily">Details ›</button></header><div id="gpRefMini"></div><div id="gpRefCharts"></div><div class="gp-ref-actions"><button type="button" data-gp-preview="daily">Tagesliste ›</button><button type="button" data-gp-preview="daily">10 % / 20 % ›</button><button type="button" data-gp-preview="articles">Top 30 ›</button><button type="button" data-gp-preview="articles">Selten verkauft ›</button></div></article>';app.insertBefore(previews,shell.nextSibling);
  const calendarPanel=document.createElement('section');calendarPanel.id='gpDailyCalendarPanel';calendarPanel.hidden=true;calendarPanel.style.setProperty('display','none','important');calendarPanel.innerHTML='<header><div><strong>📅 Tagesumsätze im Monatskalender</strong><br><small id="gpDailyCalendarTitle">Monat auswählen</small></div><button type="button" data-gp-calendar-action="daily">Tagesabschlüsse öffnen ›</button></header><div id="gpDailyCalendarGrid" role="grid" aria-label="Tägliche Bruttoumsätze"></div><div id="gpDailyCalendarInfo" role="status">Wähle einen Tag, um den Umsatz zu sehen.</div>';app.insertBefore(calendarPanel,previews.nextSibling);
  const detail=document.createElement('section');detail.id='gpMockupDetail';detail.hidden=true;app.insertBefore(detail,shell.nextSibling);
- const dhead=document.createElement('div');dhead.id='gpMockupDetailHead';dhead.innerHTML='<strong id="gpMockupDetailTitle">Details</strong><div class="gp-detail-actions"><button type="button" id="gpMockupAll">Alle Funktionen</button> <button type="button" id="gpMockupBack">← Zur Übersicht</button></div>';detail.appendChild(dhead);
+ const dhead=document.createElement('div');dhead.id='gpMockupDetailHead';dhead.innerHTML='<strong id="gpMockupDetailTitle">Details</strong><div class="gp-detail-actions"><button type="button" id="gpMockupBack">← Zur Übersicht</button></div>';detail.appendChild(dhead);
  const chartsBox=document.createElement('div');chartsBox.id='gpMockupDailyCharts';chartsBox.hidden=true;chartsBox.innerHTML='<div id="gpDailyMini"></div><div id="gpMockupCharts"></div>';detail.appendChild(chartsBox);
  const body=document.createElement('div');body.id='gpMockupDetailBody';detail.appendChild(body);
  const extra=document.createElement('details');extra.id='gpMockupExtra';extra.innerHTML='<summary>Weitere Kennzahlen anzeigen</summary>';extra.appendChild(kpis);detail.appendChild(extra);
@@ -2745,7 +2745,7 @@ function init(){
  if(summary){summary.style.fontSize='11px';shell.appendChild(summary);}
  calendarPanel.addEventListener('click',e=>{const day=e.target.closest('[data-gp-date]');if(day){const date=day.dataset.gpDate;const row=gpLatest?.days?.find(x=>String(x.date).slice(0,10)===date);el('gpDailyCalendarInfo').textContent=row?'📅 '+date+' · Umsatz brutto: '+fmtEUR(Number(row.gross))+' · Bar: '+fmtEUR(Number(row.cash))+' · Karte: '+fmtEUR(Number(row.card)):'📅 '+date+' · Kein erfasster Tagesabschluss.';}else if(e.target.closest('[data-gp-calendar-action]'))openArea('daily');});
  previews.addEventListener('click',e=>{const b=e.target.closest('[data-gp-preview]');if(b)openArea(b.dataset.gpPreview);});
- el('gpMockupBack')?.addEventListener('click',home);el('gpMockupAll')?.addEventListener('click',()=>openArea('all'));
+ el('gpMockupBack')?.addEventListener('click',home);
  el('gpOverviewShortcut')?.addEventListener('click',home);
  el('gpUploadShortcut')?.addEventListener('click',()=>openArea('upload'));
  nav.addEventListener('click',e=>{const b=e.target.closest('[data-gp-area]');if(b)openArea(b.dataset.gpArea);});
@@ -2767,12 +2767,12 @@ body.gp-judith-design{--jd-ink:#56344c;--jd-pink:#bf568c;--jd-soft:#fff0f7;--jd-
 body.gp-judith-design #gpMockupShell{background:linear-gradient(140deg,#fff,#fff1f8);border-color:var(--jd-line);box-shadow:0 10px 32px #b54d8120}
 body.gp-judith-design #gpMockupBrand strong{color:#9e3972!important}
 body.gp-judith-design #gpMockupMetrics .gp-metric,body.gp-judith-design #gpMockupMetrics .gp-progress,body.gp-judith-design .gp-ref-panel,body.gp-judith-design #gpDailyCalendarPanel,body.gp-judith-design #gpJudithFinancialPreview{border-color:var(--jd-line)!important;box-shadow:0 4px 18px #a9547a12!important}
-body.gp-judith-design #gpReferencePreviews{grid-template-columns:repeat(2,minmax(0,1fr))}
+body.gp-judith-design #gpReferencePreviews{display:none!important}
 body.gp-judith-design #gpReferencePreviews .gp-ref-panel header{background:var(--jd-soft)!important}
 body.gp-judith-design #gpDailyCalendarPanel header strong{color:var(--jd-ink)}
 body.gp-judith-design #gpMockupStatus{color:#8d5575}
 #gpJudithFinancialPreview{display:none;background:#fff;border:1px solid #f0dce7;border-radius:16px;padding:17px;max-width:1460px;margin:0 auto 14px}
-body.gp-judith-design #gpJudithFinancialPreview{display:block}
+body.gp-judith-design #gpJudithFinancialPreview{display:none!important}
 #gpJudithFinancialPreview h2{margin:0 0 5px;font-size:20px;color:#713957}
 #gpJudithFinancialPreview .jd-sub{margin:0 0 14px;color:#8d6479;font-size:12px}
 #gpJudithFinancialPreview .jd-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
@@ -2812,7 +2812,7 @@ body.gp-judith-design #gpMockupMetrics .gp-progress-fill{background:#ec2e80!impo
 body.gp-judith-design #gpMockupMetrics .gp-metric .gp-note{color:#885b73!important}
 body.gp-judith-design #gpMockupMetrics .gp-metric .gp-note.jd-wrong-target{display:none!important}
 body.gp-judith-design #gpJudithFinancialPreview{margin-top:10px}
-body.gp-judith-design #gpJudithMockupSections{display:grid;grid-template-columns:1.15fr 1fr 1fr;gap:12px;margin:14px auto;max-width:1460px}
+body.gp-judith-design #gpJudithMockupSections{display:none!important}
 #gpJudithMockupSections{display:none}
 #gpJudithMockupSections .jd-mock-card{min-width:0;background:#fff;border:1px solid #efd6e3;border-radius:14px;padding:15px;box-shadow:0 4px 14px #a9547a0c}
 #gpJudithMockupSections h3{color:#c02472;font-size:17px;margin:0 0 10px}
@@ -2843,7 +2843,7 @@ const areaMap={
 'Personal':{title:'Personal · Judith',ids:['judithPersonnelTile'],message:'Nur für Judith zugeordnete Personalwerte verwenden.'},
 'Buchhaltung':{title:'Buchhaltung · Monatsvergleich',ids:['ledgerComparisonSection','judithSimpleResult','judithRentTile','judithLedgerAnalysis'],message:''},
 'Top Torten & Artikel':{title:'Top Torten & Artikel',ids:['topArticles','slowArticles','profitability','menuDashboardTile'],message:'Top-30-Auswertung auf Basis vorhandener Artikelbuchungen.'},
-'Bank & Liquidität':{title:'Bank & Liquidität',ids:['bankLiquidity','bankSection','cashAccounts'],message:'Für Judith sind derzeit keine Bankbewegungen erfasst. Kontostände bleiben offen.'},
+'Bank & Liquidität':{title:'Bank & Liquidität',ids:['bankLiquidity','bankSection','cashAccounts'],message:''},
 'Rechnungen':{title:'Rechnungen',ids:['financeSection','monthlyCostOverview'],message:'Lieferantenrechnungen nach Rechnungsmonat und Zahlungsstatus.'},
 'Saldenlisten':{title:'Saldenlisten',ids:['ledgerComparisonSection','ledgerDashboard','judithLedgerAnalysis'],message:'Vorhandene Saldenlistenwerte nach Monat.'},
 'Datenarchiv':{title:'Datenarchiv',ids:['centralArchive','archive'],message:'Erfasste Originaldaten von Judith.'}}
