@@ -23,7 +23,7 @@ export function mountJudithPaymentInflows(container, {loadPayments}) {
   function moveMonth(delta){const [y,m]=month.value.split('-').map(Number);const d=new Date(y,m-1+delta,1);const value=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');if(value>today)return;month.value=value;refresh();}
   prev.addEventListener('click',()=>moveMonth(-1));
   next.addEventListener('click',()=>moveMonth(1));
-  label.addEventListener('click',()=>month.showPicker?.()||month.focus());
+  label.addEventListener('click',()=>{if(typeof month.showPicker==='function')month.showPicker();else month.focus();});
   const status=document.createElement('p');status.setAttribute('role','status');
   const list=document.createElement('div');
   const style=document.createElement('style');style.textContent=`
