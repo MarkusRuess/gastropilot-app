@@ -97,7 +97,7 @@ rowButton.onclick=async()=>{
  const account='Volksbank';
  try{
   const auth=await supabase.auth.getUser();if(auth.error||!auth.data.user)throw Error('Bitte anmelden.');
-  const m=await supabase.from('business_members').select('business_id,role').eq('user_id',auth.data.user.id).eq('business_id',businesses[iban]).eq('role','owner').limit(1);
+  const m=await supabase.from('business_members').select('business_id,role,businesses(name)').eq('user_id',auth.data.user.id).eq('business_id',businesses[iban]).eq('role','owner').limit(1);
   if(m.error||!m.data?.length)throw Error('Kein Inhaberzugriff auf das Konto dieses Betriebs.');
   const selected=window.GastroPilotBusiness.choose(m.data);
   if(!selected||selected.business_id!==businesses[iban])throw Error('Aktiver Betrieb passt nicht zum Konto. Bitte Betrieb wechseln.');
