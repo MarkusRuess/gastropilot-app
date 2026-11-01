@@ -23,7 +23,7 @@ export function mountJudithPaymentInflows(container, {loadPayments}) {
       const rows=await loadPayments({month:month.value});
       if(current!==request)return;
       if(!Array.isArray(rows))throw Error('Ungültige Antwort');
-      const safe=rows.filter(r=>r && /^\\d{4}-\\d{2}-\\d{2}$/.test(r.date) &&
+      const safe=rows.filter(r=>r && /^\d{4}-\d{2}-\d{2}$/.test(r.date) &&
         r.date.startsWith(month.value) && Number.isFinite(r.amount) && r.amount>0);
       status.textContent=safe.length+' Zahlungseingänge';
       for(const row of safe){
