@@ -2421,7 +2421,8 @@ async function loadRecentUploads(){
  for(const row of data){
   const meta=row.extracted_data||{},item=document.createElement('div');
   const duplicate=!!meta.duplicate_of;
-  const done=['auto_imported','reviewed'].includes(row.status)&&row.document_type!=='other';
+  const bankImported=!!meta.bank_import&&row.status==='reviewed';
+  const done=(['auto_imported','reviewed'].includes(row.status)&&row.document_type!=='other')||bankImported;
   const review=row.status==='auto_review';
   const failed=row.status==='error';
   item.className='uploadReceipt '+(failed?'error':done||duplicate?'done':'pending');
@@ -2430,8 +2431,8 @@ async function loadRecentUploads(){
   const time=new Intl.DateTimeFormat('de-AT',{timeZone:'Europe/Vienna',day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit'}).format(new Date(row.created_at));
   detail.textContent=time+' · '+(meta.original_name||'Beleg')+(meta.import_warning?' · '+meta.import_warning:'');
   badge.className='uploadBadge';
-  badge.textContent=duplicate?'✓ Bereits vorhanden':failed?'⚠ Lesen fehlgeschlagen':review?'⚠ Gelesen · prüfen':done?'✓ Gelesen & archiviert':'✓ Gesichert · Lesen ausstehend';
-  if(business==='87889eaf-f865-4e3a-8f9a-cd01db483e0e'&&row.document_type==='other'&&row.storage_path&&/(girokonto|bankauszug|kontoauszug)/i.test(meta.original_name||'')){
+  badge.textContent=duplicate?'✓ Bereits vorhanden':failed?'⚠ Lesen fehlgeschlagen':review?'⚠ Gelesen · prüfen':bankImported?'✓ Bankauszug gelesen · '+meta.bank_import.added+' Zahlungen übernommen':done?'✓ Gelesen & archiviert':'✓ Gesichert · Lesen ausstehend';
+  if(business==='87889eaf-f865-4e3a-8f9a-cd01db483e0e'&&row.document_type==='other'&&!bankImported&&row.storage_path&&/(girokonto|bankauszug|kontoauszug)/i.test(meta.original_name||'')){
    const retry=document.createElement('button');retry.type='button';retry.textContent='▶ Jetzt auslesen';retry.disabled=busy;
    retry.onclick=async()=>{
     if(busy)return;
