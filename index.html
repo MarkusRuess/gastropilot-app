@@ -2840,11 +2840,11 @@ let activeJudithArea=null;
 const areaMap={
 'Tortenaufträge':{title:'Tortenaufträge · Finanzübersicht',ids:['judithCakePricingTile'],message:'Auftragsdaten aus Judith AI sind noch nicht vollständig verbunden; Kassenumsätze bleiben getrennt.'},
 'Rezepte & Kalkulation':{title:'Rezepte & Kalkulation',ids:['recipeCostTile'],message:'Vorhandene Zutaten, Einkaufspreise und Rezepturen. Fehlende Rezeptmengen bleiben offen.'},
-'Kosten & Einkauf':{title:'Kosten & Einkauf',ids:['monthlyCostOverview','purchaseItemsCalc','costAlertsTile'],message:''},
+'Kosten & Einkauf':{title:'Kosten & Einkauf',ids:['financeSection','costAlertsTile'],message:'Rechnungen und Einkaufspreise für den gewählten Monat. Ältere Belege über den Monatswähler ansehen.'},
 'Personal':{title:'Personal · Judith',ids:['judithPersonnelTile'],message:'Nur für Judith zugeordnete Personalwerte verwenden.'},
 'Buchhaltung':{title:'Buchhaltung · Monatsvergleich',ids:['ledgerComparisonSection','judithSimpleResult','judithRentTile','judithLedgerAnalysis'],message:''},
 'Top Torten & Artikel':{title:'Top Torten & Artikel',ids:['topArticles','slowArticles','profitability','menuDashboardTile'],message:'Top-30-Auswertung auf Basis vorhandener Artikelbuchungen.'},
-'Bank & Liquidität':{title:'Bank & Liquidität',ids:['bankLiquidity','bankSection','cashAccounts'],message:''},
+'Bank & Liquidität':{title:'Bank & Liquidität',ids:['gpJudithBankView'],message:''},
 'Rechnungen':{title:'Rechnungen',ids:['financeSection','monthlyCostOverview'],message:'Lieferantenrechnungen nach Rechnungsmonat und Zahlungsstatus.'},
 'Saldenlisten':{title:'Saldenlisten',ids:['ledgerComparisonSection','ledgerDashboard','judithLedgerAnalysis'],message:'Vorhandene Saldenlistenwerte nach Monat.'},
 'Datenarchiv':{title:'Datenarchiv',ids:['centralArchive','archive'],message:'Erfasste Originaldaten von Judith.'}}
@@ -3478,6 +3478,7 @@ body:not(.gp-judith-design) #gpMockupDetailBody #weeklyPurchase #gpPurchaseTabPa
 body:not(.gp-judith-design) #gpMockupDetailBody #weeklyPurchase #gpPurchaseTabPanel>.gpPurchaseExtra{display:none!important}
 body:not(.gp-judith-design) #gpMockupDetailBody #weeklyPurchase #gpPurchaseTabPanel>.gpPurchaseMore{align-self:flex-start;padding:10px 16px}
 @media(max-width:650px){body:not(.gp-judith-design) #gpMockupDetailBody #weeklyPurchase #gpPurchaseTabPanel>.top-article{grid-template-columns:1fr!important}body:not(.gp-judith-design) #gpMockupDetailBody #weeklyPurchase #gpPurchaseTabPanel>.top-article b{text-align:left}}
-</style><link rel="stylesheet" href="friedrich-weinsortiment.css"><script defer src="friedrich-weinsortiment.js"></script></body></html>
+</style><link rel="stylesheet" href="friedrich-weinsortiment.css"><script defer src="friedrich-weinsortiment.js"></script><script type="module" src="./judith-bank-view.js?v=20261101a"></script>
+</body></html>
 
 
