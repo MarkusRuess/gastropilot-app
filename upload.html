@@ -2298,12 +2298,12 @@ async function saveResult(
 
     // Originale nur dann eindeutig zuordnen, wenn der Scan genau einen Beleg ergibt.
     let originalPaths=[];
-    if(kind==='invoice'){
-      if(state.invoice.results.length!==1){
-        throw Error('Bitte jede Lieferantenrechnung einzeln scannen und speichern, damit Originale eindeutig zugeordnet bleiben.');
+    if(kind==='invoice'||kind==='cash_report'){
+      if(state[kind].results.length!==1){
+        throw Error('Bitte jeden Beleg mit allen zugehörigen Seiten einzeln scannen und speichern.');
       }
-      if(!state.invoice.files.length)throw Error('Originaldatei fehlt. Bitte erneut auswählen.');
-      for(const entry of state.invoice.files){
+      if(!state[kind].files.length)throw Error('Originaldatei fehlt. Bitte erneut auswählen.');
+      for(const entry of state[kind].files){
         const file=entry.file;
         if(file.size>20*1024*1024)throw Error('Datei zu groß (maximal 20 MB je Original).');
         const ext=({'application/pdf':'pdf','image/jpeg':'jpg','image/png':'png','image/webp':'webp'})[file.type];
@@ -2337,6 +2337,11 @@ async function saveResult(
     }
 
     saved=true;
+    let articleWarning='';
+    if(kind==='cash_report'&&businessId==='6a5484d1-daf6-4263-897d-24cdf536aa29'){
+      const articleResult=await db.functions.invoke('analyze-receipt',{body:{business_id:businessId,mode:'article_sales',document_id:insertedDocument.data.id}});
+      if(articleResult.error||articleResult.data?.error)articleWarning='Einzelartikel noch nicht vollständig übernommen: '+(articleResult.data?.error||articleResult.error?.message||'Erkennung fehlgeschlagen');
+    }
     if(kind==='invoice'){
       const mapped={food:'food',beverage:'drinks',drinks:'drinks',cleaning:'nonfood',consumables:'nonfood',packaging:'nonfood',equipment:'nonfood',nonfood:'nonfood',other:'other',unknown:'other'};
       const weights={};
@@ -2397,6 +2402,8 @@ async function saveResult(
     };
     statusEl.append(confirmation,document.createTextNode(' · Der Beleg wurde in GastroPilot übernommen. '),done);
     if(expenseWarning)statusEl.append(document.createTextNode(' '+expenseWarning));
+    if(articleWarning)statusEl.append(document.createTextNode(' · '+articleWarning));
+    else if(kind==='cash_report'&&businessId==='6a5484d1-daf6-4263-897d-24cdf536aa29')statusEl.append(document.createTextNode(' · Einzelartikel geprüft und in die Analyse übernommen.'));
     statusEl.scrollIntoView({behavior:'smooth',block:'center'});
 
     const next=$(id+'Results').querySelector('.result');
