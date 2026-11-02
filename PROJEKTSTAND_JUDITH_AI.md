@@ -81,3 +81,10 @@ Rosa Dashboard, Menükacheln, Responsive-CSS und Kalenderdarstellung im Quellcod
 - Die Checkbox schreibt/liest über `judith-ai-payment-reviews` (JWT, aktive Judith-AI-Berechtigung, Judith-only Buchungsprüfung) in `judith_ai_payment_reviews` (RLS aktiv). Zahlungseingangsliste benötigt `id` aus bereits aktiver `judith-ai-payment-inflows` Version 4.
 - Statische Prüfung und Berechtigungskonfiguration sind keine echten End-to-End-Tests. Zwei getrennte echte Mitarbeiter-Sessions stehen für die Abnahme nicht zur Verfügung; A setzt → B liest/entfernt → A liest erneut bleibt offen.
 - Kein Merge oder Produktivdeploy vor erfolgreichen Tests. Keine Kunden- oder Zahlungsdaten verändert.
+
+
+## 2026-11-02 – Wiederherstellung Zahlungseingänge nach PR #53
+- Live-Fehlerbild: Liste meldete „Zahlungseingänge derzeit nicht verfügbar“, obwohl der Zahlungsabruf selbst HTTP 200 lieferte.
+- Ursache im Frontend behoben: Der zusätzliche Review-Abruf verwendete den globalen `jdHeaders()`-Helper statt der bereits im Zahlungsabruf bestätigten Supabase-Sitzung. Review-Lese- und Schreibaufrufe verwenden nun dieselbe frisch gelesene Sitzung wie der Zahlungsabruf, einschließlich `Authorization` und Publishable API-Key.
+- Änderung ausschließlich `judith-ai/postfach.html` in `main`, Commit `f107d5dd75caf21f34a116d7b77950db3ca24fa6`. Keine Datenbank-, Zahlungs-, Friedrich- oder ETRON-Änderungen.
+- Noch erforderlich: Browser-Neuladen und Live-Bestätigung, dass die Zahlungsliste wieder lädt; danach Checkbox-Speicherung praktisch testen.
