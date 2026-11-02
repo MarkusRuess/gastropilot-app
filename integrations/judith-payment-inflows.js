@@ -37,6 +37,9 @@ export function mountJudithPaymentInflows(container, {loadPayments}) {
     .judith-pay-table td{border-bottom:1px solid #ececec;padding:17px 12px;vertical-align:top}
     .judith-pay-table th:last-child,.judith-pay-table td:last-child{text-align:right;white-space:nowrap}
     .judith-pay-table strong{font-weight:800}
+    .judith-pay-check{text-align:center!important;min-width:85px}
+    .judith-pay-check input{width:22px;height:22px;accent-color:#278755;cursor:pointer}
+    .judith-pay-checked{background:#f0faf3}
     .judith-pay-table .judith-pay-date{white-space:nowrap}
     @media(max-width:620px){.judith-pay-table{font-size:14px}.judith-pay-table td,.judith-pay-table th{padding:12px 5px}.judith-pay-table .judith-pay-date{white-space:normal}}
 
@@ -52,10 +55,10 @@ export function mountJudithPaymentInflows(container, {loadPayments}) {
       if(!Array.isArray(rows))throw Error('Ungültige Antwort');
       const safe=rows.filter(r=>r && /^\d{4}-\d{2}-\d{2}$/.test(r.date) &&
         r.date.startsWith(month.value) && Number.isFinite(r.amount) && r.amount>0);
-      status.textContent=safe.length+' Zahlungseingänge';displayMonth();
+      status.textContent=safe.length+' Zahlungseingänge · Häkchen derzeit nur auf diesem Gerät gespeichert';displayMonth();
       const table=document.createElement('table');table.className='judith-pay-table';
       const head=document.createElement('thead');const header=document.createElement('tr');
-      for(const label of ['Datum · Rechnungsnummer','Kunde','Eingang']){const th=document.createElement('th');th.textContent=label;header.append(th)}
+      for(const label of ['Datum · Rechnungsnummer','Kunde','Kontrolliert','Eingang']){const th=document.createElement('th');th.textContent=label;header.append(th)}
       head.append(header);table.append(head);
       const body=document.createElement('tbody');
       for(const row of safe){
@@ -65,8 +68,21 @@ export function mountJudithPaymentInflows(container, {loadPayments}) {
         const invoice=document.createElement('strong');invoice.textContent=row.invoiceNumber||'Keine Rechnungsnummer';
         first.append(date,invoice);
         const name=document.createElement('td');name.textContent=row.name||'Unbekannt';
+        const checkedCell=document.createElement('td');checkedCell.className='judith-pay-check';
+        const checkbox=document.createElement('input');checkbox.type='checkbox';
+        // Device-local interim state only; never interpret as an ETRON booking.
+        const key='judith-ai-payment-check-v1:'+row.date+':'+(row.invoiceNumber||'')+':'+(row.name||'')+':'+row.amount;
+        try{checkbox.checked=localStorage.getItem(key)==='1'}catch(_){}
+        tr.classList.toggle('judith-pay-checked',checkbox.checked);
+        checkbox.setAttribute('aria-label','Rechnung kontrolliert: '+(row.invoiceNumber||row.name||row.date));
+        checkbox.addEventListener('change',()=>{
+          try{if(checkbox.checked)localStorage.setItem(key,'1');else localStorage.removeItem(key)}
+          catch(_){checkbox.checked=!checkbox.checked;return}
+          tr.classList.toggle('judith-pay-checked',checkbox.checked);
+        });
+        checkedCell.append(checkbox);
         const amount=document.createElement('td');amount.textContent=money.format(row.amount);
-        tr.append(first,name,amount);body.append(tr);
+        tr.append(first,name,checkedCell,amount);body.append(tr);
       }
       table.append(body);list.append(table);
     } catch(e) {
