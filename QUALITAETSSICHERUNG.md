@@ -25,3 +25,12 @@ Gemeinsame GastroPilot-Zentrale, Friedrich, Judith und ausschließlich lesende P
 
 ## Freigaberegel
 Keine produktive Übernahme allein aufgrund dieser Statiktests. Freigabe erst nach grüner CI, Review der Mandantentrennung und expliziter Genehmigung.
+
+## Verifizierte Nachprüfung (2026-11-02)
+- GitHub Actions Run 41424111246, Job 125206435684, static-checks: completed/success. Dies ist ausschließlich ein statischer Smoke-Test.
+- Supabase RLS: bank_transactions SELECT/INSERT/UPDATE nur für owner-Mitgliedschaft derselben business_id; gp_ledger_monthly SELECT/INSERT/UPDATE für private.is_business_member(business_id). Vollständige Rechteprüfung und negative Laufzeittests stehen aus.
+- Zahlungs-Edge-Function judith-ai-payment-inflows Version 3: verify_jwt=true; getUser(token), aktive judith_ai_access-Zuordnung, festes Judith-business_id, positive Beträge, Monatsgrenzen, Limit 2000. Keine Datenbankänderung vorgenommen.
+- Befund: Rechnungsnummer nur Regex 125... aus description, keine Rechnungs-/Kundenverifikation, keine semantische Dublettenprüfung; Ergebnisse können legitime Eingänge auslassen oder falsch zuordnen. Als offene Sicherheits-/Qualitätsaufgabe behandeln.
+- Backup: Supabase-Projekt aktiv, aber weder Backup-Zeitpunkt noch Wiederherstellbarkeit durch verfügbare Projektmetadaten nachgewiesen. Keine Wiederherstellung getestet.
+- Supabase Security Advisor: 23 RLS-Tabellen ohne Policies und deaktivierte Leaked-Password-Prüfung. Kein automatischer produktiver Eingriff.
+- Kein Beleg für vollständige Mandantentrennung, produktive Freigabe bleibt gesperrt.
