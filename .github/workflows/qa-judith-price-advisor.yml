@@ -1,10 +1,10 @@
 name: Judith Price Advisor Tests
 on:
   pull_request:
-    paths: ['judith-ai/**', 'supabase/functions/judith-ai-price-advisor/**', 'scripts/test-price-advisor*.mjs', '.github/workflows/qa-judith-price-advisor.yml']
+    paths: ['judith-ai/**', 'supabase/functions/judith-ai-price-advisor/**', 'supabase/functions/judith-ai-photo-order/**', 'scripts/test-price-advisor*.mjs', '.github/workflows/qa-judith-price-advisor.yml']
   push:
     branches: [main]
-    paths: ['judith-ai/**', 'supabase/functions/judith-ai-price-advisor/**', 'scripts/test-price-advisor*.mjs', '.github/workflows/qa-judith-price-advisor.yml']
+    paths: ['judith-ai/**', 'supabase/functions/judith-ai-price-advisor/**', 'supabase/functions/judith-ai-photo-order/**', 'scripts/test-price-advisor*.mjs', '.github/workflows/qa-judith-price-advisor.yml']
 permissions:
   contents: read
 jobs:
@@ -17,6 +17,7 @@ jobs:
           node-version: '24'
       - run: node --test scripts/test-price-advisor*.mjs
       - run: node --check judith-ai/price-advisor.js
+      - run: node scripts/check-judith-inline.mjs
       - name: Live endpoint refuses anonymous requests
         run: |
           code=$(curl --silent --show-error --output /tmp/price-anon.json --write-out '%{http_code}' --request POST --header 'Content-Type: application/json' --data '{"action":"calculate","portions":20}' https://sjnwfwcpgwsavygewwzb.supabase.co/functions/v1/judith-ai-price-advisor)
