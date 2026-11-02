@@ -35,3 +35,9 @@ Keine Änderungen an Friedrich, index.html, Kundenpreisen, Kundenaufträgen, bes
 
 ## Offene Weiterentwicklung
 Betriebliche Kapazität/Stundensätze/Zeitansätze/Portionsgrößen bestätigen und versionierbar konfigurieren; Rezepturpreiseinheiten vollständig normalisieren; komplexe E-Mail-/Dekorinterpretation und Vergleich je Portion verfeinern; belegpositionsbezogene Zutatenpreisaktualisierung; gespeicherte Kalkulationsversionen samt Kostenstichtag und Übernahme Foto-Entwurf→Auftrag; authentifizierte Mitarbeiter-/Mobilabnahme. Nach jeder Änderung diese Datei und betroffene Projektstände pflegen.
+
+## Technische Veröffentlichung – Zwischenstand
+- Entwicklungscommit `a250a01a2155ea93346dc6a0ab7c9ae311824f07`, PR #56.
+- Separate Tabelle angewendet; RLS=true, anon SELECT=false, authenticated SELECT=false, service_role INSERT=true direkt in PostgreSQL nachgewiesen.
+- Neue Edge Function aktiv, Version 1, verify_jwt=true. Security Advisor meldet für die neue Tabelle RLS ohne Policies; absichtlich ohne direkten Clientzugriff, nicht durch eine offene Policy „behoben“. [Supabase RLS](https://supabase.com/docs/guides/database/postgres/row-level-security).
+- GitHub-Actions-Workflow ergänzt: 16 Tests, Syntaxprüfung und echter anonymer Live-POST muss HTTP 401 liefern. Laufresultat separat nachtragen.
