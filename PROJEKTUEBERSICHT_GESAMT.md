@@ -113,3 +113,6 @@ Ausdrücklich beauftragte Judith-Schnittstellenentwicklung: Dokument→sichere Z
 - 18 geänderte Repository-Dateien geprüft: kein Friedrich-Code, keine gemeinsame GastroPilot-Startseite, kein gemeinsamer Belegimport geändert.
 - **Keine vollständige authentifizierte Live-Bedienabnahme:** Browser meldet weiterhin „Keine Anmeldung vorhanden“. Foto-/Mail-/Kalenderabläufe sind durch Programm-/Datenbanktests geprüft, aber nicht als echte Mitarbeiter-Browsersitzung bestätigt. Keine Testkonten angelegt.
 - Sechs Positionen aus drei echten Rechnungen weiterhin `review_source`; keine ungeprüfte Preisübernahme erzwungen. [Detailstand](PROJEKTSTAND_PREISKALKULATION.md).
+
+
+Preisberater-QA 2026-11-02: Rechenfehler bei numerischen Dezimalwerten sowie Hochzeitstag-/Portionsinterpretation korrigiert. 26 echte Datensätze lesend geprüft; 28 Programmtests + 19 PostgreSQL-Assertions bestanden. Keine Betriebsdatenänderung, keine Friedrich-Änderung. Angemeldete Live-Bedienung und belastbare wirtschaftliche Freigabe bleiben offen. [Prüfbericht](PROJEKTSTAND_PREISKALKULATION.md).

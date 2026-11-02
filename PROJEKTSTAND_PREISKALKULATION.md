@@ -1,5 +1,5 @@
 # Projektstand Preiskalkulation
-Stand 2026-11-02, Version 20261102.1. Auftrag: gemeinsamer Preisberater GastroPilot Judith ↔ Judith AI. [Gesamtübersicht](PROJEKTUEBERSICHT_GESAMT.md).
+Stand 2026-11-02, aktuelle Version 20261102.3 (historische Stände folgen chronologisch). Auftrag: gemeinsamer Preisberater GastroPilot Judith ↔ Judith AI. [Gesamtübersicht](PROJEKTUEBERSICHT_GESAMT.md).
 
 ## Technischer Umfang
 | Teil | Implementierung |
@@ -101,3 +101,43 @@ Phase-2-Nachprüfung: Sitzung-Header stehen jetzt vor dem Rendern eines zwischen
 - 18 geänderte Repository-Dateien geprüft: kein Friedrich-Code, keine gemeinsame GastroPilot-Startseite, kein gemeinsamer Belegimport geändert.
 - **Keine vollständige authentifizierte Live-Bedienabnahme:** Browser meldet weiterhin „Keine Anmeldung vorhanden“. Foto-/Mail-/Kalenderabläufe sind durch Programm-/Datenbanktests geprüft, aber nicht als echte Mitarbeiter-Browsersitzung bestätigt. Keine Testkonten angelegt.
 - Sechs Positionen aus drei echten Rechnungen weiterhin `review_source`; keine ungeprüfte Preisübernahme erzwungen. [Detailstand](PROJEKTSTAND_PREISKALKULATION.md).
+
+## Abschließende Qualitätskontrolle – 2026-11-02, Version 20261102.3
+**Ergebnis: Programmfehler nachgewiesen und korrigiert; keine uneingeschränkte fachliche oder authentifizierte Live-Abnahme.**
+
+### Prüfmethoden und Ergebnisse
+| Bereich | Nachweis | Ergebnis / Grenze |
+|---|---|---|
+| Echte Aufträge | Alle 26 vorhandenen Anfragen/Aufträge lesend aus Supabase geprüft und mit echtem Rezept-/Kostensnapshot im Rechenkern nachgerechnet | 14 mit vorhandenen Angaben berechenbar; 12 benötigen eindeutige Portionen. Keine Kundenpreise/Auftragsdaten ergänzt oder geändert. Dieser Replay ist kein authentifizierter Live-HTTP-Test. |
+| Fotoerkennung | Aktiver Foto-Handler und Foto→Entwurf→Auftrag-Vertrag geprüft; Datenqualität alter Foto-Erfassungen geprüft | Fehlende Portionen und auffällige Stückzahlen in Alt-Erfassungen bleiben offen. Kein eindeutig zugehöriges handschriftliches Original für diese bestehenden Fotoaufträge verfügbar; keine neue echte OCR-Auslesung als bestanden behauptet. |
+| E-Mail | Zwei echte gespeicherte Nachrichten samt vorhandenem Auftragsbezug gelesen; alle vorhandenen Mail-Aufträge im Replay berücksichtigt | Wiederholte eindeutige Personenangaben und abweichende Gäste-Metadaten geprüft. Keine Mails geändert oder versendet. |
+| Kalender | 12 datierte Datensätze nachgewiesen; bestehende Darstellung und Syntax geprüft | Ohne angemeldete Sitzung keine visuell bestätigte Bedienung/Preisempfehlung im Kalender. |
+| Mitarbeitereinschätzungen | Anfangsbestand: 0 Einschätzungen, 0 Kalkulationen, 0 Entwürfe; isolierte Tests und echte PostgreSQL-Assertions mit Rollback | Keine bestehende echte Mitarbeiter-Synchronisation zum Gegenprüfen vorhanden. Persistenz/Zuordnung technisch geprüft; echte Mitarbeiter-Browserbedienung unbestätigt. |
+| Originalbelege | Alle drei zu den sechs offenen Positionen referenzierten Originalfotos abgerufen und visuell geprüft; Quell-Hashes stimmen mit gespeicherten Nachweisen überein | Vier Positionen betreffen Kontaktlinsen bzw. Tankstelle/Getränk/Pfand, keine bestätigten Rezeptzutaten. Zwei Positionen betreffen Eier und einen noch ungeklärten möglichen Doppelbeleg. Keine automatische Freigabe/Buchung/Preisübernahme. |
+| Datenschutz/Erhaltung | Vorher-/Nachher-Prüfsummen der Aufträge, Kunden, Dokumente und bestehenden Einschätzungen verglichen | Identisch. Keine Betriebs-/Kunden-/Auftragsdaten dauerhaft verändert; keine zusätzlichen Testkonten. |
+
+### Nachgewiesene Programmfehler und Korrekturen
+1. **Schwerwiegender Dezimalfehler:** Bereits numerische Datenbankwerte mit genau drei Nachkommastellen wurden durch die deutsche Tausender-Erkennung verändert (z. B. numerisch 2.868 → 2868). Numerische Werte werden jetzt ohne Textlokalisierung übernommen; deutsche Texteingaben wie 1.250,50 bleiben unterstützt. In einer echten nachgerechneten Rezeptkalkulation führte der Fehler zu einem unrealistischen vierstelligen Vorschlag. Keine vorhandenen Kalkulationsdatensätze mussten repariert werden (Bestand vor Prüfung: 0).
+2. **Hochzeitstag fälschlich Hochzeit:** Jubiläums-/Hochzeitstagsbeschriftungen lösen nicht mehr pauschal den Hochzeits-Zeitansatz aus.
+3. **Mehrfach identisch genannte Portionen:** Zweimal „12 Personen“ wird als ein eindeutiger Wert erkannt. Echte widersprüchliche Werte bleiben unklar. Eine Abweichung zwischen expliziter Beschreibung und Gäste-Metadaten wird nur für die Kalkulation behandelt und sichtbar gewarnt; die Auftragsdaten bleiben unverändert.
+4. **Vorhandene Prinzess-Schreibweisen:** „Prinzess Torte“/„Prinzess-Torte“ können die vorhandene Prinzesstorte-Rezeptur eindeutig treffen. Keine automatische Gleichsetzung einer normalen Sachertorte mit einer Holzverpackungsvariante.
+5. **Unvollständiger Angebotsumfang:** Bei Liefer-/Aufbau-/Verkostungswünschen steht ausdrücklich dabei, dass diese Positionen separat kalkuliert werden müssen. Der Hinweis auf ungeklärte Belege behauptet nicht mehr pauschal, diese seien Rezeptzutaten.
+
+### Wirtschaftliche Plausibilität
+Die arithmetischen Fehler sind behoben. **Eine belastbare betriebliche Preisfreigabe ist weiterhin offen:** 400 produktive Stunden/Monat, geschätzte Fertigungs-/Dekorzeiten, 20 % Zielmarge, angenommene Umsatzsteuer und teilweise fehlende Rezepturen/Größenbezüge sind keine bestätigten Ist-Werte. Bestehende Rezepturen enthalten teils sehr kurze Arbeitszeiten; der Mindest-Schätzansatz verhindert deren ungeprüfte Übernahme, ersetzt aber keine echte Zeitaufnahme. Lieferung, Aufbau, Verkostung und nicht erfasste Zusatzartikel sind keine bestätigten Vollkosten. Alle Vorschläge bleiben ausdrücklich Schätzungen, keine verbindlichen Kundenangebote.
+
+### Offene Rechnungen nach Originalprüfung
+| Positionen | Feststellung am Original | Umgang |
+|---|---|---|
+| 1 Sammelposition Kontaktlinsen | Vier Kontaktlinsen, kein Lebensmittel-/Tortenzutatenbeleg | Keine Rezeptpreiszuordnung; betrieblicher Zweck nicht nachgewiesen |
+| 3 Positionen Tankstelle | Diesel, Getränk und Pfand getrennt sichtbar | Keine Rezeptpreiszuordnung; Fahrzeug-/Betriebszweck nicht nachgewiesen |
+| 2 Eierpositionen | Unterschiedliche Eiergrößen/Einzelpreise am echten Lieferantenbeleg sichtbar, Empfänger J.W. GmbH | Möglicher Doppelbeleg zu vorhandener, anders beschriebener Ausgabe bleibt ungeklärt; dort kein Original-/Dokumentverweis hinterlegt. Keine Doppelbuchung oder neue Preisfreigabe erzwungen |
+
+Die Rechnungsstatus und sechs `review_source`-Datensätze bleiben bewusst unverändert. Eine formale Zuordnung oder steuerliche Behandlung wird aus den Fotos nicht abgeleitet.
+
+### Automatische Tests versus Live-Bedienung
+- **28 automatische Programmtests bestanden**, einschließlich der neuen Dezimal-, Jubiläums-, Portions-, Rezeptschreibweisen- und Konfliktfälle. Beide eingebetteten JavaScript-Module syntaktisch geprüft.
+- **19 echte PostgreSQL-Assertions erneut bestanden**, sämtliche Testdaten zurückgerollt; keine Testkonten angelegt.
+- **Tatsächlich live beobachtet:** Öffentliche Judith-AI-Seite ist erreichbar, zeigt jedoch weiterhin „Keine Anmeldung vorhanden“. Eine angemeldete Foto-/Mail-/Kalender-/Team-Bedienung ist damit nicht bestätigt. Keine Authentifizierung umgangen oder Berechtigung erweitert.
+- Originalfotos und echte Kunden-/Finanzdaten bleiben außerhalb des Repositorys; dort nur dieser sachliche Prüfbericht und anonymisierte Regressionstests.
+- Korrekturen im Entwicklungsbranch `fix/judith-price-final-qa-20261102`; Veröffentlichungsnachweise werden nach erfolgreichem Deployment angefügt.

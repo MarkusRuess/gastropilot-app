@@ -1,5 +1,5 @@
 import {createClient} from 'npm:@supabase/supabase-js@2.57.0';
-import {calculate,costRates,extract,number,similarOrders,currentMail} from './engine.mjs';
+import {calculate,costRates,extract,number,similarOrders,currentMail,matchRecipe} from './engine.mjs';
 const JUDITH='87889eaf-f865-4e3a-8f9a-cd01db483e0e';
 const cors={'Access-Control-Allow-Origin':'https://markusruess.github.io','Access-Control-Allow-Headers':'authorization,apikey,content-type','Access-Control-Allow-Methods':'POST,OPTIONS','Vary':'Origin','Cache-Control':'no-store'};
 const uuid=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -24,7 +24,7 @@ Deno.serve(async(req:Request)=>{
    const {data,error}=await db.rpc('judith_price_attach_draft',{p_draft_id:b.draft_id,p_inquiry_id:b.inquiry_id,p_user_id:user.id});
    return error||!data?send({error:'Entwurf gehört nicht zu diesem Auftrag'},409):send({ok:true});
   }
-  let text=String(b.text||'').slice(0,12000),source='',inquiryId:string|null=null,agreedPrice:number|null=null;
+  let text=String(b.text||'').slice(0,12000),source='',inquiryId:string|null=null,agreedPrice:number|null=null,portionConflict=false;
   if(b.draft_id){
    const {error}=await db.from('judith_ai_price_drafts').upsert({id:b.draft_id,user_id:user.id},{onConflict:'id',ignoreDuplicates:true});
    if(error)return send({error:'Entwurf konnte nicht gesichert werden'},503);
@@ -45,7 +45,7 @@ Deno.serve(async(req:Request)=>{
    const {data:o,error:oe}=await db.from('judith_ai_inquiries').select('id,occasion,details,guests,message_id').eq('id',b.inquiry_id).maybeSingle();
    if(oe||!o)return send({error:'Auftrag nicht verfügbar'},404);
    if(b.message_id&&o.message_id!==b.message_id)return send({error:'E-Mail gehört nicht zum Auftrag'},409);
-   text=o.occasion+'\n'+o.details;agreedPrice=extract(text).customer_price;if(!extract(text).portions&&o.guests)text+='\n'+o.guests+' Personen';inquiryId=o.id;source='order:'+o.id;
+   text=o.occasion+'\n'+o.details;const facts=extract(text);agreedPrice=facts.customer_price;portionConflict=!!(facts.portions&&o.guests>0&&facts.portions!==Number(o.guests));if(!facts.portions&&!facts.portions_ambiguous&&o.guests)text+='\n'+o.guests+' Personen';inquiryId=o.id;source='order:'+o.id;
   }
   if(!source)source='text:'+await digest(text);
   if(b.action==='opinion'){
@@ -53,7 +53,7 @@ Deno.serve(async(req:Request)=>{
    const {error}=await db.from('judith_ai_price_opinions').insert({business_id:JUDITH,source_key:source,inquiry_id:inquiryId,user_id:user.id,amount_gross:amount,note:String(b.note||'').slice(0,1000)});
    return error?send({error:'Einschätzung konnte nicht gespeichert werden'},503):send({ok:true,inquiry_id:inquiryId});
   }
-  const parsed=extract(text),input={...parsed,text,portions:b.portions??parsed.portions,cakes:b.cakes??1,customer_price:agreedPrice??b.customer_price??parsed.customer_price,wedding:b.wedding??parsed.wedding,labor_minutes:b.labor_minutes};
+  const parsed=extract(text),input={...parsed,text,portions:b.portions??parsed.portions,cakes:b.cakes??1,customer_price:agreedPrice??b.customer_price??parsed.customer_price,wedding:b.wedding??parsed.wedding,labor_minutes:b.labor_minutes,portion_conflict:portionConflict};
   if(!input.portions){const ops=await db.from('judith_ai_price_opinions').select('amount_gross,note,created_at').eq('business_id',JUDITH).eq('source_key',source).order('created_at',{ascending:false}).limit(20);if(ops.error)return send({error:'Einschätzungen nicht abrufbar'},503);return send({ok:true,needs_input:true,fields:parsed,inquiry_id:inquiryId,opinions:ops.data||[],message:'Portionenzahl fehlt oder ist mehrdeutig. Bitte ergänzen.'});}
   const start=new Date();start.setUTCMonth(start.getUTCMonth()-12);const from=start.toISOString().slice(0,10);
   const queries=[
@@ -72,7 +72,7 @@ Deno.serve(async(req:Request)=>{
   // Link table contains Judith records only (enforced by the private invoice hook).
   const unresolved=invoiceLinks.some((l:any)=>l.status.startsWith('review_'));
   for(const c of catalog){if(c.price_source?.startsWith('judith_invoice:')&&!invoiceLinks.some((l:any)=>l.document_id===c.price_source.slice(15)&&l.ingredient_id===c.id&&l.status==='matched'))c.current_price_net=null;}
-  const matches=recipes.filter((r:any)=>text.toLowerCase().includes(r.name.toLowerCase()));const recipe=matches.length===1?matches[0]:null;
+  const recipe=matchRecipe(text,recipes);
   let ingredients:any[]=[];if(recipe){const r=await db.from('gp_recipe_ingredients').select('ingredient_name,quantity,unit,fallback_price_net,matched_ingredient_id').eq('recipe_id',recipe.id);if(r.error)return send({error:'Rezeptur nicht verfügbar'},503);ingredients=r.data||[];}
   const rates=costRates(ledger,personnel,expenses,new Date(),bankFixed);let result;
   try{result=calculate(input,{recipe,ingredients,catalog,rates,unresolvedInvoices:unresolved})}catch(e){return send({error:(e as Error).message},400)}

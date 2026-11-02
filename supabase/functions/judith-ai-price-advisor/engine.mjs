@@ -1,10 +1,10 @@
 // Pure calculation. Internal context must never be returned to staff.
-export const VERSION='20261102.2';
-export function number(value){if(value===null||value===undefined||value==='')return null;const n=Number(String(value).replace(/€/g,'').replace(/\s/g,'').replace(/\.(?=\d{3}(?:\D|$))/g,'').replace(',','.'));return Number.isFinite(n)&&n>=0?n:null;}
+export const VERSION='20261102.3';
+export function number(value){if(typeof value==='number')return Number.isFinite(value)&&value>=0?value:null;if(value===null||value===undefined||value==='')return null;const n=Number(String(value).replace(/€/g,'').replace(/\s/g,'').replace(/\.(?=\d{3}(?:\D|$))/g,'').replace(',','.'));return Number.isFinite(n)&&n>=0?n:null;}
 export function extract(text=''){
  const p=[...text.matchAll(/(?:preis(?:\s+brutto)?|budget|gesamt(?:preis)?)\s*[:=]?\s*(\d{1,3}(?:[. ]\d{3})+(?:,\d{1,2})?|\d+(?:[.,]\d{1,2})?)\s*(?:€|eur)?/gi)].map(m=>number(m[1]));
  const portions=[...text.matchAll(/(\d{1,4})\s*(?:portionen|personen|gäste|gaste)/gi)].map(m=>Number(m[1]));
- return {portions:portions.length===1?portions[0]:null,customer_price:p.length===1?p[0]:null,wedding:/hochzeit|wedding/i.test(text)};
+ const unique=[...new Set(portions)];return {portions:unique.length===1?unique[0]:null,portions_ambiguous:unique.length>1,customer_price:p.length===1?p[0]:null,wedding:/\bhochzeit(?:storten?)?\b|\bwedding\b/i.test(text)};
 }
 export function costRates(ledger,personnel,expenses,now=new Date(),bankFixed=[]){
  const current=now.toISOString().slice(0,7),months=new Map();let grossEstimated=false;
@@ -28,6 +28,8 @@ export function calculate(input,context){
  const portions=number(input.portions),cakes=number(input.cakes)??1;
  if(!portions||portions>2000||!Number.isInteger(portions)||!cakes||cakes>100||!Number.isInteger(cakes))throw Error('Portionen (1–2000) und Tortenanzahl (1–100) bitte prüfen.');
  const warnings=['Vorläufige Schätzung: Kapazitätsannahme, 20 % Zielmarge und 10 % Umsatzsteuer sind noch nicht betrieblich bestätigt.'];
+ if(input.portion_conflict)warnings.push('Personenzahl im Auftrag und Beschreibung weichen voneinander ab; vor dem Angebot prüfen.');
+ if(/liefer|zustell|verkost|aufbau/i.test(input.text||''))warnings.push('Lieferung, Aufbau und Verkostung sind nicht eingerechnet; separat kalkulieren.');
  const wedding=!!input.wedding;
  let material=portions*1.8,packaging=3*cakes,minutes=(wedding?180:60)*cakes+portions*2;
  let recipeUsed=false;
@@ -39,7 +41,7 @@ export function calculate(input,context){
    let total=0,valid=true;
    for(const row of context.ingredients){
     const catalog=context.catalog?.find(c=>c.id===row.matched_ingredient_id);
-    // Never silently convert kg/g/l/ml: mismatched units require a reviewed recipe.
+    // Convert only compatible mass/volume units; never infer a package size.
     const converted=catalog?unitPrice(catalog.current_price_net,catalog.canonical_unit,row.unit):null;const price=converted??number(row.fallback_price_net);
     if(price===null||!Number.isFinite(Number(row.quantity))||Number(row.quantity)<=0){valid=false;break;}
     if(converted===null)warnings.push('Mindestens ein Zutatenpreis ist ein Rezeptur-Schätzwert.');
@@ -51,7 +53,7 @@ export function calculate(input,context){
  if(!recipeUsed)warnings.push('Rezeptur fehlt oder ist unvollständig: Material und Verpackung vorläufig geschätzt.');
  if(recipeUsed)warnings.push('Rezepturmenge und Portionsgröße vor Angebot prüfen; Dekorzeit vorläufig geschätzt.');
  const manual=number(input.labor_minutes);if(manual!==null){if(manual<1||manual>100000)throw Error('Arbeitszeit bitte prüfen.');minutes=manual;}else warnings.push('Herstellungs- und Dekorzeit geschätzt.');
- const rates=context.rates;if(rates.grossEstimated)warnings.push('Ein Teil der Kostenbasis liegt nur brutto vor und ist konservativ als Schätzung berücksichtigt.');if(context.unresolvedInvoices)warnings.push('Rechnungspositionen sind noch nicht sicher zugeordnet; Zutatenkosten können unvollständig sein.');
+ const rates=context.rates;if(rates.grossEstimated)warnings.push('Ein Teil der Kostenbasis liegt nur brutto vor und ist konservativ als Schätzung berücksichtigt.');if(context.unresolvedInvoices)warnings.push('Neue Belege enthalten ungeklärte Positionen; diese wurden nicht als bestätigte Rezeptkosten übernommen.');
  if(!rates.hasPersonnel||!rates.hasFixed)warnings.push('Kostenbasis unvollständig: fehlende Kosten durch Schätzsätze ergänzt.');
  const net=(material+packaging+minutes/60*(rates.hourly+rates.overheadHourly))/0.8;
  const gross=Math.ceil(net*1.1/5)*5;
@@ -66,3 +68,5 @@ export function similarOrders(input,orders){
 
 export function unitPrice(value,from,to){const units={kg:['mass',1],g:['mass',.001],l:['volume',1],liter:['volume',1],ml:['volume',.001],stück:['piece',1],stk:['piece',1],st:['piece',1]};const a=units[String(from).toLowerCase().trim()],b=units[String(to).toLowerCase().trim()],p=number(value);return p!==null&&a&&b&&a[0]===b[0]?p*b[1]/a[1]:null;}
 export function currentMail(text){return String(text||'').split(/(?:\r?\n)(?:Von:|From:|Am .{5,100} schrieb|On .{5,100} wrote|-----Original Message-----|>)/i)[0];}
+
+export function matchRecipe(text,recipes){const normalize=s=>String(s||'').toLowerCase().replace(/prinzess[ -]+torte/g,'prinzesstorte').replace(/[^a-zäöüß0-9]/g,'');const value=normalize(text);const matches=recipes.filter(r=>value.includes(normalize(r.name)));return matches.length===1?matches[0]:null;}
