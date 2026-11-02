@@ -1,7 +1,7 @@
 // Local component interaction tests with fixtures; no account and no production writes.
 import {createServer} from 'node:http';import fs from 'node:fs';import path from 'node:path';import assert from 'node:assert/strict';import {createRequire} from 'node:module';const {chromium}=createRequire(import.meta.url)('playwright');
 const root=path.resolve(new URL('..',import.meta.url).pathname);
-const server=createServer((req,res)=>{const file=path.join(root,new URL(req.url,'http://localhost').pathname);if(file.startsWith(root)&&fs.existsSync(file)&&fs.statSync(file).isFile()){res.setHeader('Content-Type',file.endsWith('.html')?'text/html':'text/javascript');res.end(fs.readFileSync(file));}else{res.setHeader('Content-Type','text/html');res.end('<!doctype html><meta name="viewport" content="width=device-width, initial-scale=1"><style>body{font:16px system-ui;margin:12px}button{padding:10px}label{display:block}table{border-collapse:collapse}.gp-area-hidden{display:none}</style><div id="app"><nav id="gpCockpitNav"></nav><p id="purchasePeriod"></p><div id="purchaseCards"></div><div id="gpMockupDetailBody"></div></div>');}});
+const server=createServer((req,res)=>{const file=path.join(root,new URL(req.url,'http://localhost').pathname);if(file.startsWith(root)&&fs.existsSync(file)&&fs.statSync(file).isFile()){res.setHeader('Content-Type',file.endsWith('.html')?'text/html':'text/javascript');res.end(fs.readFileSync(file));}else{res.setHeader('Content-Type','text/html');res.end('<!doctype html><meta name="viewport" content="width=device-width, initial-scale=1"><style>body{font:16px system-ui;margin:12px}button{padding:10px}label{display:block}table{border-collapse:collapse}.gp-area-hidden{display:none}</style><div id="app"><nav id="gpCockpitNav"></nav><p id="purchasePeriod"></p><div id="purchaseCards"></div><section id="gpMockupDetail" hidden><strong id="gpMockupDetailTitle"></strong><div id="gpMockupDetailBody"></div></section></div>');}});
 await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));const base='http://127.0.0.1:'+server.address().port;const browser=await chromium.launch({headless:true});
 try{for(const width of [1200,390]){const page=await browser.newPage({viewport:{width,height:900},timezoneId:'Europe/Vienna'});const errors=[];page.on('pageerror',e=>errors.push(e.message));await page.goto(base);
 await page.evaluate(async()=>{
@@ -13,7 +13,14 @@ await page.evaluate(async()=>{
  window.db=db;window.addEventListener('gp:stock-open',()=>document.getElementById('friedrichStock')?.classList.remove('gp-area-hidden'));
  await mountStock(db,()=>window.biz);window.mount=mountStock;window.plan=()=>renderStockPlanning(db,F,document.getElementById('purchaseCards'));
 });
-await page.locator('#friedrichStockTile').click();await page.getByText('Gemeinsamer Supabase-Bestand',{exact:false}).waitFor();
+// Reproduce the real cockpit: hidden parent and stale article-only visibility.
+await page.evaluate(()=>document.body.classList.add('gp-friedrich-article-view','gp-article-area-active'));
+await page.locator('#friedrichStockTile').click();
+assert.equal(await page.locator('#gpMockupDetail').isVisible(),true);
+assert.equal(await page.locator('#friedrichStock').isVisible(),true);
+assert.equal(await page.locator('#friedrichStockTile').getAttribute('data-gp-area'),'stock');
+assert.equal(await page.locator('#friedrichStockTile').getAttribute('aria-current'),'true');
+assert.equal(await page.evaluate(()=>document.body.classList.contains('gp-friedrich-article-view')),false);await page.getByText('Gemeinsamer Supabase-Bestand',{exact:false}).waitFor();
 const f=page.locator('#friedrichStock form').first();assert.equal(await f.locator('input[type=number]').inputValue(),'');await f.locator('input[type=number]').fill('0');await f.locator('input[type=datetime-local]').fill('2026-11-01T23:00');await f.locator('input[type=checkbox]').check();await f.getByText('Zählung speichern',{exact:true}).click();await page.waitForFunction(()=>window.calls.some(x=>x.table==='gp_f_stock_counts'));assert.equal(await page.evaluate(()=>window.calls.find(x=>x.table==='gp_f_stock_counts').value.quantity),0);
 await page.getByRole('button',{name:'Alle Artikel',exact:true}).click();await page.getByText('Entkoffeinierter Kaffee',{exact:true}).first().waitFor();await page.getByText('Gebinde / Reserve bearbeiten oder Artikel ergänzen',{exact:true}).click();assert.equal(await page.getByLabel('Einkaufsgebinde in Bestandseinheiten').getAttribute('readonly'),'');
 await page.evaluate(()=>window.plan());await page.getByText('Bestellmenge offen: Bestand oder Einkaufsgebinde unbekannt',{exact:true}).first().waitFor({state:'visible'});
