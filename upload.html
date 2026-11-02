@@ -1635,6 +1635,11 @@ async function gpAutoIntake(file){
   const {data,error}=await db.functions.invoke('analyze-receipt',{body:{business_id:businessId,mode:'auto',images}});
   if(error)throw error;
   if(!data?.documents?.length)throw Error(data?.error||'Kein Dokument erkannt');
+  if(businessId===GP_FRIEDRICH&&data.documents.every(d=>Array.isArray(d.inventory_counts)&&d.inventory_counts.length)){
+   const {stageInventoryRecognition}=await import('./friedrich-stock.js?v=20261102-lager');
+   await stageInventoryRecognition(db,businessId,user.id,data.documents);
+   status.textContent='Zählliste erkannt. Unter Lager & Inventur → Zuordnungen & Belege einzelne Mengen und Zählzeitpunkte bestätigen. Keine Fotos gespeichert.';return;
+  }
   const kinds=new Set(data.documents.map(d=>d.document_type));
   if(kinds.size!==1||![...kinds].every(k=>k==='cash_report'||k==='invoice'))throw Error('Dokumenttyp nicht eindeutig. Bitte Tagesabschluss oder Rechnung im bisherigen Upload getrennt auswählen.');
   const kind=[...kinds][0],other=kind==='invoice'?'cash_report':'invoice';
@@ -1912,6 +1917,7 @@ function gpSuggestCost(name){
  if(/milch|butter|eier|mehl|zucker|käse|brot|fleisch|wurst|schinken|obst|gemüse|tomate|salat|schokolade|nudel|reis/.test(n))return 'food';
  return 'unknown';
 }
+const GP_FRIEDRICH='6a5484d1-daf6-4263-897d-24cdf536aa29';
 function gpInvoiceItemEditor(host,doc){
  const section=document.createElement('section');section.className='gp-invoice-items';
  const heading=document.createElement('h3');heading.textContent='Einkaufsartikel & Kostenstellen';section.append(heading);
@@ -1919,9 +1925,10 @@ function gpInvoiceItemEditor(host,doc){
  const items=Array.isArray(doc.purchase_items)&&doc.purchase_items.length?doc.purchase_items:doc.sales_items||[];
  for(const item of items){
   const line=document.createElement('div');line.className='gp-item-line';line.style.cssText='display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:8px 0;padding:8px;border:1px solid #ddd;border-radius:8px';
+  if(businessId===GP_FRIEDRICH)line.gpOriginalItem={...item};
   const name=document.createElement('input');name.className='gp-item-name';name.value=item.name||'';name.placeholder='Artikel';
-  const qty=document.createElement('input');qty.className='gp-item-qty';qty.type='number';qty.min='0';qty.step='any';qty.placeholder='Menge';qty.value=item.quantity??'';
-  const net=document.createElement('input');net.className='gp-item-net';net.type='number';net.min='0';net.step='0.01';net.placeholder='Netto €';net.value=item.net??'';
+  const qty=document.createElement('input');qty.className='gp-item-qty';qty.type='number';qty.min='0';qty.step='any';qty.placeholder='Menge';qty.value=item.quantity??'';if(businessId===GP_FRIEDRICH)qty.removeAttribute('min');
+  const net=document.createElement('input');net.className='gp-item-net';net.type='number';net.min='0';net.step='0.01';net.placeholder='Netto €';net.value=businessId===GP_FRIEDRICH?(item.line_net??item.net??''):(item.net??'');if(businessId===GP_FRIEDRICH)net.removeAttribute('min');
   const cat=document.createElement('select');cat.className='gp-item-category';
   for(const [key,label] of Object.entries(gpCostNames)){const option=document.createElement('option');option.value=key;option.textContent=label;cat.append(option);}
   cat.value=gpCostNames[item.category]?item.category:gpSuggestCost(item.name);
@@ -1937,8 +1944,9 @@ function gpCollectInvoiceItems(host){
   const name=line.querySelector('.gp-item-name').value.trim();if(!name)continue;
   const qty=line.querySelector('.gp-item-qty').value,net=line.querySelector('.gp-item-net').value;
   const quantity=qty===''?null:Number(qty),amount=net===''?null:Number(net);
-  if((quantity!==null&&(!Number.isFinite(quantity)||quantity<0))||(amount!==null&&(!Number.isFinite(amount)||amount<0)))throw Error('Ungültige Artikelmenge oder Nettobetrag');
-  out.push({name,quantity,net:amount,category:line.querySelector('.gp-item-category').value});
+  if((quantity!==null&&(!Number.isFinite(quantity)||(businessId!==GP_FRIEDRICH&&quantity<0)))||(amount!==null&&(!Number.isFinite(amount)||(businessId!==GP_FRIEDRICH&&amount<0))))throw Error('Ungültige Artikelmenge oder Nettobetrag');
+  if(businessId===GP_FRIEDRICH){const original=line.gpOriginalItem||{};out.push({...original,name,quantity,net:amount,line_net:amount,category:line.querySelector('.gp-item-category').value,...(quantity!==original.quantity?{total_base_quantity:null,quantity_basis:'review_required'}:{})});}
+  else out.push({name,quantity,net:amount,category:line.querySelector('.gp-item-category').value});
  }
  return out;
 }
@@ -4048,4 +4056,5 @@ $('logout').onclick=async()=>{
 </script>
 </body>
 </html>
+
 
