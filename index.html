@@ -2039,7 +2039,9 @@ async function refresh(){void loadLedgerComparison();if(E('recipeCostTile')&&!E(
 }
 async function image(file){return await new Promise((resolve,reject)=>{const url=URL.createObjectURL(file),img=new Image();img.onload=()=>{const scale=Math.min(1,2400/Math.max(img.width,img.height)),canvas=document.createElement('canvas');canvas.width=Math.round(img.width*scale);canvas.height=Math.round(img.height*scale);canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);canvas.toBlob(b=>{URL.revokeObjectURL(url);b?resolve(b):reject(Error('Bildfehler'));},'image/jpeg',.85);};img.onerror=()=>{URL.revokeObjectURL(url);reject(Error('Foto nicht lesbar'));};img.src=url;});}
 function withTimeout(promise,ms,message){let timer;return Promise.race([promise,new Promise((_,reject)=>{timer=setTimeout(()=>reject(Error(message)),ms);})]).finally(()=>clearTimeout(timer));}
-async function pages(file,onProgress=()=>{}){if(file.type!=='application/pdf'){onProgress('Foto wird vorbereitet …');return [await image(file)];}onProgress('PDF wird geöffnet …');const pdfjs=await import('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.min.mjs');pdfjs.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.worker.min.mjs';const pdf=await pdfjs.getDocument({data:new Uint8Array(await file.arrayBuffer())}).promise;if(pdf.numPages>12)throw Error('Maximal 12 PDF-Seiten');const out=[];for(let i=1;i<=pdf.numPages;i++){onProgress('PDF-Seite '+i+'/'+pdf.numPages+' wird umgewandelt …');const page=await pdf.getPage(i),base=page.getViewport({scale:1}),v=page.getViewport({scale:Math.min(2,2200/Math.max(base.width,base.height))}),canvas=document.createElement('canvas');canvas.width=Math.round(v.width);canvas.height=Math.round(v.height);await page.render({canvasContext:canvas.getContext('2d'),viewport:v}).promise;out.push(await new Promise((resolve,reject)=>canvas.toBlob(b=>b?resolve(b):reject(Error('PDF-Seite '+i+' konnte nicht umgewandelt werden')),'image/jpeg',.85)));}return out;}
+async function pages(file,onProgress=()=>{}){if(file.type!=='application/pdf'){onProgress('Foto wird vorbereitet …');return [await image(file)];}onProgress('PDF wird geöffnet …');const pdfjs=await import('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.min.mjs');pdfjs.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.worker.min.mjs';const bytes=await file.arrayBuffer();
+ const pdfDigest=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',bytes)),b=>b.toString(16).padStart(2,'0')).join('');
+ const pdf=await pdfjs.getDocument({data:new Uint8Array(bytes)}).promise;if(pdf.numPages>12)throw Error('Maximal 12 PDF-Seiten');const out=[];for(let i=1;i<=pdf.numPages;i++){onProgress('PDF-Seite '+i+'/'+pdf.numPages+' wird umgewandelt …');const page=await pdf.getPage(i),base=page.getViewport({scale:1}),v=page.getViewport({scale:Math.min(2,2200/Math.max(base.width,base.height))}),canvas=document.createElement('canvas');canvas.width=Math.round(v.width);canvas.height=Math.round(v.height);await page.render({canvasContext:canvas.getContext('2d'),viewport:v}).promise;out.push(await new Promise((resolve,reject)=>canvas.toBlob(b=>b?resolve(b):reject(Error('PDF-Seite '+i+' konnte nicht umgewandelt werden')),'image/jpeg',.85)));}return out;}
 async function b64(blob){return await new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(String(r.result).split(',')[1]);r.onerror=()=>reject(Error('Datei nicht lesbar'));r.readAsDataURL(blob);});}
 const isSpreadsheet=file=>/\.(xlsx|xls)$/i.test(file?.name||'');
 async function parseSpreadsheet(file){
@@ -2489,23 +2491,28 @@ async function importJudithBankPdf(file,intake){
  }
  finish();
  if(!entries.length)throw Error('Keine sicheren Bankbuchungen erkannt. Original bleibt archiviert.');
- const bankRows=entries.filter(e=>e.date.startsWith('2026-')&&e.amount>0&&!/PAYONE|Mollie|AMAZON|PayLife|Klarna|SB Beheb|SB Ein/i.test(e.payee)&&/125[0-9 ]{6,12}/.test(e.description));
- if(!bankRows.length)throw Error('Keine Rechnungszahlungen erkannt; bitte Bankauszug prüfen.');
- const digest=String(intake.extracted_data?.source_sha256||'');
- const {data:existing,error:existingError}=await db.from('bank_transactions').select('booking_date,payee,amount,description').eq('business_id',BID).gte('booking_date',entries[entries.length-1].date<entries[0].date?entries[entries.length-1].date:entries[0].date).limit(2000);
- if(existingError)throw existingError;
- const norm=v=>String(v||'').toLowerCase().replace(/\s+/g,' ').trim();
+ const norm=v=>String(v||'').toLowerCase().replace(/\\s+/g,' ').trim();
+ const invoiceNumbers=v=>[...new Set((String(v||'').match(/125[0-9 ]{6,12}/g)||[]).map(x=>x.replaceAll(' ','')).filter(x=>/^125[0-9]{6,9}$/.test(x)))];
+ const candidates=entries.filter(e=>/^20\\d{2}-\\d{2}-\\d{2}$/.test(e.date)&&e.amount>0&&!/PAYONE|Mollie|AMAZON|PayLife|Klarna|SB Beheb|SB Ein/i.test(e.payee)&&invoiceNumbers(e.description).length);
+ if(!candidates.length)throw Error('Keine Rechnungszahlungen erkannt; bitte Bankauszug prüfen.');
  let added=0,duplicates=0,skipped=0;
- for(let i=0;i<bankRows.length;i++){
-  const e=bankRows[i],numbers=[...new Set((e.description.match(/125[0-9 ]{6,12}/g)||[]).map(v=>v.replace(/ /g,'')))];
-  if(numbers.length!==1){skipped++;continue;}
-  if((existing||[]).some(x=>x.booking_date===e.date&&Number(x.amount)===e.amount&&norm(x.payee)===norm(e.payee))){duplicates++;continue;}
-  const source_hash='judith-bankpdf-'+digest+'-'+i;
+ for(let i=0;i<candidates.length;i++){
+  const e=candidates[i];
+  if(invoiceNumbers(e.description).length!==1){skipped++;continue;}
+  const {data:existing,error:existingError}=await db.from('bank_transactions')
+   .select('payee,description,source_hash').eq('business_id',BID).eq('booking_date',e.date).eq('amount',e.amount).limit(1000);
+  if(existingError)throw existingError;
+  if(existing.length===1000)throw Error('Zu viele gleich datierte Bankbuchungen; Import zur Prüfung angehalten.');
+  const samePayee=existing.filter(x=>norm(x.payee)===norm(e.payee));
+  if(samePayee.some(x=>norm(x.description)===norm(e.description))){duplicates++;continue;}
+  if(samePayee.some(x=>!norm(x.description))){skipped++;continue;}
+  const source_hash='judith-bankpdf-'+pdfDigest+'-'+i;
   const {error}=await db.from('bank_transactions').insert({business_id:BID,account_name:'J.W. GmbH Girokonto',booking_date:e.date,payee:e.payee,description:e.description,amount:e.amount,source_hash});
   if(error){if(error.code==='23505'){duplicates++;continue;}throw error;}
-  if(existing)existing.push({booking_date:e.date,payee:e.payee,amount:e.amount});added++;
+  added++;
  }
- await db.from('documents').update({status:'reviewed',extracted_data:{...intake.extracted_data,document_class:'bank_statement',bank_import:{added,duplicates,skipped,parsed:entries.length},import_warning:skipped?'Mehrfachreferenzen zur Prüfung.':null}}).eq('id',intake.id).eq('business_id',BID);
+ const {error:archiveError}=await db.from('documents').update({status:'reviewed',extracted_data:{...intake.extracted_data,document_class:'bank_statement',bank_import:{added,duplicates,skipped,parsed:entries.length},import_warning:skipped?'Mehrfachreferenzen oder uneindeutige Dubletten zur Prüfung.':null}}).eq('id',intake.id).eq('business_id',BID);
+ if(archiveError)throw archiveError;
  return {added,duplicates,skipped,parsed:entries.length};
 }
 
