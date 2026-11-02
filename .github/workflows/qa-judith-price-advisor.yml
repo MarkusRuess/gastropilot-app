@@ -1,0 +1,24 @@
+name: Judith Price Advisor Tests
+on:
+  pull_request:
+    paths: ['judith-ai/**', 'supabase/functions/judith-ai-price-advisor/**', 'scripts/test-price-advisor*.mjs', '.github/workflows/qa-judith-price-advisor.yml']
+  push:
+    branches: [main]
+    paths: ['judith-ai/**', 'supabase/functions/judith-ai-price-advisor/**', 'scripts/test-price-advisor*.mjs', '.github/workflows/qa-judith-price-advisor.yml']
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: node --test scripts/test-price-advisor*.mjs
+      - run: node --check judith-ai/price-advisor.js
+      - name: Live endpoint refuses anonymous requests
+        run: |
+          code=$(curl --silent --show-error --output /tmp/price-anon.json --write-out '%{http_code}' --request POST --header 'Content-Type: application/json' --data '{"action":"calculate","portions":20}' https://sjnwfwcpgwsavygewwzb.supabase.co/functions/v1/judith-ai-price-advisor)
+          test "$code" = 401
+          echo "Anonymous live request rejected: HTTP $code"
