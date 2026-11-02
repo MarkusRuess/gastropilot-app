@@ -95,3 +95,7 @@ Rosa Dashboard, Menükacheln, Responsive-CSS und Kalenderdarstellung im Quellcod
 - Aktuelle produktive Zahlungsabruf-/Kontrollhäkchen-Implementierung aus `main` unverändert übernommen; andere GastroPilot-Anwendungen nicht verändert.
 - Kalender: Vor dem Setzen von „Torte abgeholt“ ist eine ausdrückliche Bestätigung erforderlich. **Rückgängig-Funktion noch offen:** Aktuelle Supabase-Edge-Function `judith-ai-inbox` erlaubt nur `confirm`, `pickup`, `delete_images`, `edit`, kein Undo. Eine Rücknahme darf nicht nur im Browser simuliert werden.
 - Prüfung: Geänderte Dateien in PR #54 kontrolliert; Syntax des separaten Zahlungsmoduls geprüft; authentifizierter Live-Test und CI-Test nicht bestätigt. Produktivstatus erst nach nachgewiesenem Merge/Deployment.
+
+
+## 2026-11-02 – Gemeinsamer Preisberater
+Neue ausdrücklich beauftragte Schnittstelle und Judith-AI-Oberfläche: [PROJEKTSTAND_PREISKALKULATION.md](PROJEKTSTAND_PREISKALKULATION.md). Kosten nur serverseitig und ausschließlich Judith; gekennzeichnete Schätzungen, keine automatischen Kundenpreisänderungen/Versand. 16 Rechen-/Schnittstellentests bestanden; authentifizierte Live-Abnahme noch offen. [Gesamtübersicht](PROJEKTUEBERSICHT_GESAMT.md).
