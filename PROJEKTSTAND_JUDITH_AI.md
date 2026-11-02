@@ -79,3 +79,8 @@ Rosa Dashboard, Menükacheln, Responsive-CSS und Kalenderdarstellung im Quellcod
 
 ## Gemeinsame Projektübersicht
 Die verbindliche projektübergreifende Übersicht aller vier ChatGPT-Projekte, ihrer Zuständigkeiten, Repositories, Supabase-Verbindungen, Schnittstellen und Trennungsregeln steht in [PROJEKTUEBERSICHT_GESAMT.md](PROJEKTUEBERSICHT_GESAMT.md). Bei künftigen Änderungen diesen Projektstand aktualisieren; bei Änderungen an Architektur, Schnittstellen oder Zuständigkeiten zusätzlich die gemeinsame Übersicht und weitere betroffene Projektstanddateien pflegen.
+
+## 2026-11-02 – Zahlungsanzeige: Kontrollhäkchen (Entwicklungsbranch)
+- `integrations/judith-payment-inflows.js`: vierte Tabellenspalte „Kontrolliert“, Checkbox je Zahlung, rosa/grüne Hervorhebung. Zwischenspeicherung ausschließlich im lokalen Browser (localStorage), keine Änderung an `bank_transactions`, ETRON oder GastroPilot.
+- **Einschränkung:** Keine Synchronisierung zwischen Geräten/Benutzern; lokale Markierung kann durch Browserdatenlöschung verschwinden. Die Zuordnung basiert derzeit auf Datum, Rechnungsnummer, Name und Betrag; identische Buchungen sind nicht eindeutig unterscheidbar. Deshalb **nicht produktionsreif für gemeinsame Sekretariatskontrolle**.
+- Noch erforderlich: autorisierte Judith-AI-only Prüftabelle mit stabiler Transaktions-ID, RLS/Edge-Function, Mitarbeiter-/Zeitstempel, Rechte- und Browser-E2E-Tests. Keine produktive Migration ausgeführt.
