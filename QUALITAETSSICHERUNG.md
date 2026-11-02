@@ -34,3 +34,11 @@ Keine produktive Übernahme allein aufgrund dieser Statiktests. Freigabe erst na
 - Backup: Supabase-Projekt aktiv, aber weder Backup-Zeitpunkt noch Wiederherstellbarkeit durch verfügbare Projektmetadaten nachgewiesen. Keine Wiederherstellung getestet.
 - Supabase Security Advisor: 23 RLS-Tabellen ohne Policies und deaktivierte Leaked-Password-Prüfung. Kein automatischer produktiver Eingriff.
 - Kein Beleg für vollständige Mandantentrennung, produktive Freigabe bleibt gesperrt.
+
+## Sicherheitsabnahme – weiterer Befund 2026-11-02
+- RLS-Policy-Prüfung: documents, expenses, bonit_article_sales, gp_inventory_items und sales_invoices jeweils mit business_id-Mitgliedschaft; bonit_article_sales INSERT zusätzlich fest auf Friedrich beschränkt. Negative Auth-API-Tests nicht ausgeführt.
+- Berechtigungsrisiko: sales_invoices DELETE erlaubt jedem business member seines Betriebs das Löschen; gp_ledger_monthly UPDATE erlaubt jedem business member Änderungen. Vor Anpassung Rollen-/Workflowanforderungen prüfen.
+- Bankimport: UNIQUE(business_id,source_hash) laut Projektstand; semantische Dubletten mit unterschiedlichen Hashes weiterhin möglich.
+- Zahlungsschnittstelle: keine serverseitige Verifikation der erkannten Rechnungsnummer gegen sales_invoices, keine eindeutige Buchungs-ID in Rückgabe; vollständige Zahlungszuordnung und Dublettenfreiheit nicht belegt.
+- Supabase-Backups: keine Backup- oder Restore-Liste über verfügbare Schnittstelle; Wiederherstellung nicht verifiziert. Sicherheitswarnungen: 23 RLS-ohne-Policy INFO (Zugriffswege prüfen), deaktivierte Passwort-Leak-Prüfung WARN (Priorität hoch bei Auth-Review).
+- Keine produktiven Änderungen, keine Freigabe.
