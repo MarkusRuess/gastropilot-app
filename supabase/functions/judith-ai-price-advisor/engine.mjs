@@ -2,7 +2,7 @@
 export const VERSION='20261102.1';
 export function number(value){if(value===null||value===undefined||value==='')return null;const n=Number(String(value).replace(/€/g,'').replace(/\s/g,'').replace(/\.(?=\d{3}(?:\D|$))/g,'').replace(',','.'));return Number.isFinite(n)&&n>=0?n:null;}
 export function extract(text=''){
- const p=[...text.matchAll(/(?:preis(?:\s+brutto)?|budget|gesamt(?:preis)?)\s*[:=]?\s*(\d+(?:[.,]\d{1,2})?)\s*(?:€|eur)?/gi)].map(m=>number(m[1]));
+ const p=[...text.matchAll(/(?:preis(?:\s+brutto)?|budget|gesamt(?:preis)?)\s*[:=]?\s*(\d{1,3}(?:[. ]\d{3})+(?:,\d{1,2})?|\d+(?:[.,]\d{1,2})?)\s*(?:€|eur)?/gi)].map(m=>number(m[1]));
  const portions=[...text.matchAll(/(\d{1,4})\s*(?:portionen|personen|gäste|gaste)/gi)].map(m=>Number(m[1]));
  return {portions:portions.length===1?portions[0]:null,customer_price:p.length===1?p[0]:null,wedding:/hochzeit|wedding/i.test(text)};
 }

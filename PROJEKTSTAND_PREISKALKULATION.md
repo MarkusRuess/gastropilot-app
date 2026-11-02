@@ -41,3 +41,11 @@ Betriebliche Kapazität/Stundensätze/Zeitansätze/Portionsgrößen bestätigen 
 - Separate Tabelle angewendet; RLS=true, anon SELECT=false, authenticated SELECT=false, service_role INSERT=true direkt in PostgreSQL nachgewiesen.
 - Neue Edge Function aktiv, Version 1, verify_jwt=true. Security Advisor meldet für die neue Tabelle RLS ohne Policies; absichtlich ohne direkten Clientzugriff, nicht durch eine offene Policy „behoben“. [Supabase RLS](https://supabase.com/docs/guides/database/postgres/row-level-security).
 - GitHub-Actions-Workflow ergänzt: 16 Tests, Syntaxprüfung und echter anonymer Live-POST muss HTTP 401 liefern. Laufresultat separat nachtragen.
+
+## Nachgewiesenes Ergebnis 2026-11-02
+- PR [#56](https://github.com/MarkusRuess/gastropilot-app/pull/56) zusammengeführt, Produktivcommit `e7e5c007112888d7d6c75e62bfa0fee62d62d3d3`.
+- GitHub Actions [Testlauf 41452733035](https://github.com/MarkusRuess/gastropilot-app/actions/runs/41452733035): erfolgreich, alle 16 Tests und echter anonymer Live-POST (HTTP 401) bestanden.
+- GitHub-Pages-[Deployment 41452819480](https://github.com/MarkusRuess/gastropilot-app/actions/runs/41452819480): erfolgreich.
+- Live-Seite `https://markusruess.github.io/gastropilot-app/judith-ai/postfach.html` neu geladen: Preisberater-Kachel im tatsächlich ausgelieferten DOM nachgewiesen; keine Anwendungs-JavaScript-Fehler in der Browserkonsole beobachtet.
+- Sichtbare Seite bleibt ohne Sitzung gesperrt („Keine Anmeldung vorhanden“). **Keine authentifizierte Live-Kalkulation oder echte Team-Synchronisation bestätigt.** Nicht vollständig abgenommen.
+- Nachprüfung ergänzt Tausendertrennzeichen in deutschen Textpreisen (z. B. 1.250,50 EUR); gleicher Testumfang erneut erfolgreich.

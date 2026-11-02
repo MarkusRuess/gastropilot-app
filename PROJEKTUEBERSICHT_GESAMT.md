@@ -97,3 +97,5 @@ Judith: Bank-PDF / Beleg
 - [Projektstand Preiskalkulation](PROJEKTSTAND_PREISKALKULATION.md) ist die verbindliche Detailreferenz.
 - Dieser Auftrag erlaubt Entwicklung, Migration der separaten Einschätzungs-Tabelle, Veröffentlichung und Livekontrolle; die frühere Beschränkung dieser Bestandsaufnahme auf den QA-Branch gilt nicht als Sperre dieses konkreten Auftrags. QA-Branch geprüft, nicht pauschal zusammengeführt.
 
+
+Preisberater: PR #56 produktiv zusammengeführt, Pages-Deployment 41452819480 erfolgreich. Live-DOM enthält die Kachel; 16 Tests und anonymer HTTP-401-Test erfolgreich. Authentifizierte fachliche Abnahme offen, siehe [Projektstand](PROJEKTSTAND_PREISKALKULATION.md).
