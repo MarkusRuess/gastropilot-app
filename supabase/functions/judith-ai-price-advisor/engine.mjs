@@ -13,10 +13,10 @@ export function costRates(ledger,personnel,expenses,now=new Date()){
  for(const x of ledger){if(x.verification_status!=='verified')continue;const m=month(x.month_start);if(m&&['personnel','fixed_costs'].includes(x.metric_key))m[x.metric_key==='personnel'?'lp':'lf']+=Math.abs(Number(x.amount)||0);}
  for(const x of personnel){const m=month(x.accounting_month);if(m)m.p+=Number(x.total_costs)||0;}
  for(const x of expenses){const m=month(x.accounting_month||x.expense_date);if(m&&['rent','energy','insurance','leasing','telecom','fixed_costs'].includes(x.category)&&x.net_amount!==null)m.f+=Number(x.net_amount)||0;}
- const values=[...months.entries()].filter(([k])=>k<current).sort((a,b)=>b[0].localeCompare(a[0])).slice(0,3);const pending=months.get(current);
- const avg=(key)=>values.length?values.reduce((s,[,v])=>s+Math.max(v[key],v[key==='p'?'lp':'lf']),0)/values.length:0;
+ const values=[...months.entries()].filter(([k])=>k<current).sort((a,b)=>b[0].localeCompare(a[0]));const pending=months.get(current);
+ const used=new Set();const avg=(key)=>{const selected=values.filter(([,v])=>Math.max(v[key],v[key==='p'?'lp':'lf'])>0).slice(0,3);for(const [m] of selected)used.add(m);return selected.length?selected.reduce((s,[,v])=>s+Math.max(v[key],v[key==='p'?'lp':'lf']),0)/selected.length:0};
  // Productive hours are an explicit temporary assumption, never presented as measured.
- const p=Math.max(avg('p'),pending?.p||0,pending?.lp||0),f=Math.max(avg('f'),pending?.f||0,pending?.lf||0);if(pending)values.unshift([current,pending]);return {hourly:p>0?p/400:35,overheadHourly:f>0?f/400:8,months:values.map(([k])=>k),estimatedHours:400,hasPersonnel:p>0,hasFixed:f>0};
+ const p=Math.max(avg('p'),pending?.p||0,pending?.lp||0),f=Math.max(avg('f'),pending?.f||0,pending?.lf||0);if(pending&&(pending.p||pending.f||pending.lp||pending.lf))used.add(current);return {hourly:p>0?p/400:35,overheadHourly:f>0?f/400:8,months:[...used].sort().reverse(),estimatedHours:400,hasPersonnel:p>0,hasFixed:f>0};
 }
 export function calculate(input,context){
  const portions=number(input.portions),cakes=number(input.cakes)??1;
