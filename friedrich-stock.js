@@ -13,13 +13,27 @@ export async function mountStock(db,getBusiness){
  context={db,getBusiness};
  const nav=document.getElementById('gpCockpitNav');if(!nav)return;
  let tile=document.getElementById('friedrichStockTile');
- if(!tile){tile=el('button');tile.id='friedrichStockTile';tile.type='button';tile.append(el('span','📦'),el('strong','Lager & Inventur'),el('small','Bestand · Zählungen · Monatsinventur'));tile.onclick=()=>{window.dispatchEvent(new CustomEvent('gp:stock-open'));void renderStock();};nav.append(tile);}
+ if(!tile){tile=el('button');tile.id='friedrichStockTile';tile.dataset.gpArea='stock';tile.type='button';tile.append(el('span','📦'),el('strong','Lager & Inventur'),el('small','Bestand · Zählungen · Monatsinventur'));tile.onclick=()=>{openStock();};nav.append(tile);}
  tile.hidden=getBusiness()!==FRIEDRICH;
  if(getBusiness()!==FRIEDRICH&&host){++run;host.replaceChildren();host.classList.add('gp-area-hidden');}
  if(!host){host=el('section',undefined,'card gp-area-hidden');host.id='friedrichStock';(document.getElementById('gpMockupDetailBody')||document.getElementById('app')).append(host);}
  if(!document.getElementById('friedrichStockStyle')){const s=el('style');s.id='friedrichStockStyle';s.textContent='#friedrichStock{grid-column:1/-1;width:100%;box-sizing:border-box}#friedrichStock .stock-form{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin:14px 0;padding:12px;border:1px solid #dce6ed;border-radius:12px}#friedrichStock label{display:flex;flex-direction:column;gap:5px}#friedrichStock input,#friedrichStock select{max-width:100%;box-sizing:border-box;padding:10px;font:inherit}#friedrichStock td,#friedrichStock th{padding:9px;text-align:left;vertical-align:top}#friedrichStock .stock-scroll{overflow:auto}#friedrichStock .stock-warning{color:#955300}#friedrichStock button{margin:4px}body.gp-judith-design #friedrichStockTile,body.gp-judith-design #friedrichStock{display:none!important}#friedrichStockTile[hidden]{display:none!important}';document.head.append(s);}
  if(!host.dataset.routeHandled&&getBusiness()===FRIEDRICH){host.dataset.routeHandled='1';const params=new URLSearchParams(location.search);if(params.has('lager'))queueMicrotask(()=>{window.dispatchEvent(new CustomEvent('gp:stock-open'));void renderStock();});if(params.has('einkauf'))queueMicrotask(()=>document.querySelector('[data-gp-area=planning]')?.click());}
  return host;
+}
+function openStock(){
+ if(!active()||!host)return;
+ window.dispatchEvent(new CustomEvent('gp:stock-open'));
+ // Explicitly select the new route so legacy article CSS cannot keep the panel hidden.
+ document.querySelectorAll('#gpCockpitNav [data-gp-area]').forEach(b=>b.setAttribute('aria-current',String(b.dataset.gpArea==='stock')));
+ document.body.classList.remove('gp-friedrich-article-view','gp-article-area-active','gp-shopping-area-active');
+ const body=document.getElementById('gpMockupDetailBody'),detail=document.getElementById('gpMockupDetail');
+ if(body){if(host.parentElement!==body)body.append(host);Array.from(body.children).forEach(node=>node.classList.toggle('gp-area-hidden',node!==host));}
+ host.hidden=false;host.classList.remove('gp-area-hidden');
+ if(detail)detail.hidden=false;
+ const title=document.getElementById('gpMockupDetailTitle');if(title)title.textContent='Lager & Inventur';
+ void renderStock();
+ host.scrollIntoView({behavior:'smooth',block:'start'});
 }
 function active(){return context?.getBusiness()===FRIEDRICH;}
 async function state(at){return check(context.db.rpc('gp_f_stock_state',at?{p_at:at}:{}));}

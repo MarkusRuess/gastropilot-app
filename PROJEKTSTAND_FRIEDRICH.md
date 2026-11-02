@@ -151,3 +151,8 @@ Neue Tabellen erzwingen Friedrichs business_id. RLS erlaubt bestehende Friedrich
 - Alle 27 ursprünglichen Inventurdatensätze stimmen einschließlich Mengen/Preisen/Zeitpunkten mit dem Fingerabdruck vor Migration überein. Supabase-Sicherheitsadvisor meldet keine neuen Lagerobjekte.
 - Offene Quellenzuordnungen und Tageszeitgrenzen oben bleiben bestehen. Veröffentlichung ist keine Bestätigung erfundener Bestände oder vollständiger Cocktailrezepte.
 
+
+## Menükorrektur 2026-11-02
+- Lager-Kachel an data-gp-area=stock angebunden; Öffnen setzt aktiven Bereich, zeigt den übergeordneten Detailbereich und entfernt veraltete Artikelansicht-Klassen. Keine Datenbank-/Betriebsdatenänderung.
+- Modul-URL aktualisiert, damit Browser die Korrektur laden.
+- Chromium-Fixturetest erweitert: zunächst versteckter Detail-Elternbereich und aktive Artikelansicht, anschließend Klick auf Lager-Kachel, sichtbarer Bereich und aktiver Navigationsstatus. Produktive angemeldete Abnahme weiterhin offen; CI-Status über zugehörigen PR prüfen.
