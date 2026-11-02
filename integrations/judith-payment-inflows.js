@@ -91,7 +91,7 @@ export function mountJudithPaymentInflows(container, {loadPayments, saveReview})
       table.append(body);list.append(table);
     } catch(e) {
       if(current!==request)return;displayMonth();
-      status.textContent='Zahlungseingänge derzeit nicht verfügbar.';
+      status.textContent='Zahlungseingänge derzeit nicht verfügbar.'+(e&&e.message?' ('+String(e.message).slice(0,180)+')':'');
     }
   }
   month.addEventListener('change',refresh);
