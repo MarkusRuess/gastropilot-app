@@ -163,3 +163,9 @@ Neue Tabellen erzwingen Friedrichs business_id. RLS erlaubt bestehende Friedrich
 - Nutzer meldet weiterhin keinerlei sichtbares Öffnen. Fehler im tatsächlichen Nutzerbrowser bleibt offen.
 - Test auf echte Cockpit-HTML, klassische Navigationsskripte und CSS erweitert; ausschließlich Auth-/Datenmodule mit schreibfreien Fixtures ersetzt. CI 41503425196 bestätigt Artikelanalyse→Lager und Übersicht→Lager bei 1200/390 px. Kein angemeldeter Produktionstest und kein Nachweis, dass der Nutzer dieselbe ausgelieferte Seitenversion sieht.
 - Zur Eingrenzung fehlt die vollständige tatsächlich verwendete Browseradresse bzw. Information über Home-Bildschirm-App. Keine weitere spekulative Produktivkorrektur vorgenommen.
+
+
+## Leerer Lagerbereich – Antwortreihenfolge 2026-11-02
+- Nachgewiesener Codefehler: Eine veraltete Bestandsantwort führte trotz neuerer Renderanforderung `host.replaceChildren()` aus und konnte die bereits angezeigten Daten vollständig leeren. Veraltete Antworten werden jetzt ohne DOM-Änderung verworfen.
+- Regressionsfall in echten Cockpit-HTML/Chromium-Fixtures: zweimal öffnen, zweite Antwort zuerst, erste Antwort zuletzt; Überschrift und Daten müssen erhalten bleiben. Test für 390/1200 px. Keine Betriebsdaten-/Schemaänderung; Judith unverändert.
+- Versionskennung des Modulimports geändert; bestehende produktive Adresse und Anmeldung bleiben erhalten. Angemeldete Live-Abnahme weiterhin separat auszuweisen.

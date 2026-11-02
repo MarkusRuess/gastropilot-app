@@ -45,6 +45,20 @@ assert.equal(await page.locator('#friedrichStock').isVisible(),true,'Real cockpi
 await page.locator('#gpMockupBack').click();
 await page.locator('#friedrichStockTile').click();
 assert.equal(await page.locator('#friedrichStock').isVisible(),true,'Stock reopens from overview');
+// Newest request resolves first; an older response must not erase its panel.
+await page.evaluate(async()=>{
+ const {mountStock}=await import('/friedrich-stock.js');
+ window.pendingStock=[];
+ await mountStock({rpc:()=>new Promise(resolve=>window.pendingStock.push(resolve))},()=> '6a5484d1-daf6-4263-897d-24cdf536aa29');
+});
+await page.locator('#friedrichStockTile').click();
+await page.locator('#friedrichStockTile').click();
+await page.evaluate(()=>window.pendingStock.at(-1)({data:[]}));
+await page.getByText('Gemeinsamer Supabase-Bestand',{exact:false}).waitFor();
+await page.evaluate(()=>window.pendingStock[0]({data:[]}));
+await page.getByText('Gemeinsamer Supabase-Bestand',{exact:false}).waitFor();
+assert.equal(await page.locator('#friedrichStock h2').count(),1,'Older response must not clear newest render');
+console.log('Out-of-order stock responses preserve panel at '+width+'px');
 console.log('Actual cockpit navigation passed at '+width+'px with mocked read-only stock data');
 await page.close();console.log('Fixture browser interactions passed at '+width+'px; no production UI session.');}
 }finally{await browser.close();await new Promise(resolve=>server.close(resolve));}
