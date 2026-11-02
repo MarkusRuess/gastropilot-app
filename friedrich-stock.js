@@ -29,7 +29,7 @@ function openStock(){
  document.body.classList.remove('gp-friedrich-article-view','gp-article-area-active','gp-shopping-area-active');
  const body=document.getElementById('gpMockupDetailBody'),detail=document.getElementById('gpMockupDetail');
  if(body){if(host.parentElement!==body)body.append(host);Array.from(body.children).forEach(node=>node.classList.toggle('gp-area-hidden',node!==host));}
- host.hidden=false;host.classList.remove('gp-area-hidden');
+ host.hidden=false;host.classList.remove('gp-area-hidden','mobileHidden');
  if(detail)detail.hidden=false;
  const title=document.getElementById('gpMockupDetailTitle');if(title)title.textContent='Lager & Inventur';
  void renderStock();

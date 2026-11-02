@@ -171,3 +171,9 @@ Neue Tabellen erzwingen Friedrichs business_id. RLS erlaubt bestehende Friedrich
 - Versionskennung des Modulimports geändert; bestehende produktive Adresse und Anmeldung bleiben erhalten. Angemeldete Live-Abnahme weiterhin separat auszuweisen.
 
 - Korrektur veröffentlicht: PR #65, Produktivcommit `7b0be58210db2e0a1a44ebb76a91de0e8f0ce136`; PR-CI [41513883313](https://github.com/MarkusRuess/gastropilot-app/actions/runs/41513883313) erfolgreich einschließlich Antwortreihenfolge-Test im echten Cockpit mit Fixtures bei 390/1200 px. Pages-Deployment [41514028606](https://github.com/MarkusRuess/gastropilot-app/actions/runs/41514028606) erfolgreich. Live-DOM unter der unveränderten Adresse https://markusruess.github.io/gastropilot-app/ enthält den aktualisierten Modulimport `20261102-response-race`. Verfügbarer Browser bleibt unangemeldet; keine Bestätigung der Bedienung im Nutzerkonto.
+
+
+## Mobilnavigation – tatsächlicher Betriebsstart 2026-11-02
+- Ursache nachgewiesen: `openBusiness()` ruft nach `refresh()` die alte Funktion `showMobilePanel('monthlyReference')` auf. Diese versieht alle anderen `section.card`, einschließlich des dynamisch angelegten Lagers, mit `mobileHidden`. CSS blendet sie mit `display:none!important` aus. Bisherige Cockpit-Fixtures ließen diesen letzten Startschritt aus.
+- Lager-Öffner und Friedrich-only Stock-Route entfernen jetzt ausdrücklich `mobileHidden`. Bestehende Adresse, Login, Judith und Betriebsdaten unverändert.
+- Chromium-Regression bildet den echten abschließenden Startfilter nach und prüft vor/nach Lagerklick sowohl Sichtbarkeit als auch Entfernung der Sperrklasse auf 390/1200 px. Veröffentlichung/CI-Nachweis folgt.

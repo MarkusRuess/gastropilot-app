@@ -726,7 +726,7 @@ body:has(.judith-theme) #ledgerComparisonSection .ledger-actions,body:has(.judit
 <script src="./business-switch.js"></script><script type="module">
 import {createClient} from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 import {loadBankFixedCosts} from './bank-costs-integration.js';
-import {mountStock,renderStockPlanning} from './friedrich-stock.js?v=20261102-response-race';
+import {mountStock,renderStockPlanning} from './friedrich-stock.js?v=20261102-mobile-hidden';
 import {renderBusinessOverview,loadPersonnelAverage,JUDITH_PERSONNEL_REFERENCE,SALES_TARGETS} from './business-overview.js?v=20261030-ausgangsrechnungen';
 const db=createClient('https://sjnwfwcpgwsavygewwzb.supabase.co','sb_publishable__tucXG-IQGUhibMqMSUzCw_5RnH_sbQ');
 let BID=null,authorizedBusinesses=[],switchingBusiness=false;const E=id=>document.getElementById(id),N=v=>v==null||v===''?null:Number(v),EUR=v=>v==null||!Number.isFinite(v)?'–':new Intl.NumberFormat('de-AT',{style:'currency',currency:'EUR'}).format(v),D=v=>v?.split('-').reverse().join('.')||'–';
@@ -2781,6 +2781,7 @@ function openArea(name){
  area=name;document.body.classList.toggle('gp-article-area-active',name==='articles');document.body.classList.toggle('gp-shopping-area-active',name==='planning'&&!document.body.classList.contains('gp-judith-design'));setDailyCalendarVisibility(name==='daily');
  const body=el('gpMockupDetailBody'),detail=el('gpMockupDetail');if(!body||!detail)return;
  const show=new Set(groups[name]||[]);
+ if(name==='stock'&&!document.body.classList.contains('gp-judith-design'))el('friedrichStock')?.classList.remove('mobileHidden');
  if(name==='planning'&&!document.body.classList.contains('gp-judith-design')){['ledgerComparisonSection','financeSection','operating','monthlyCostOverview','judithSimpleResult','judithRentTile','kalkulationLink'].forEach(id=>show.delete(id));}
  if(name==='articles'){
   // Artikelanalyse: ausschließlich Artikel-Untermenüs, keine Buchhaltung oder allgemeinen Kennzahlen.

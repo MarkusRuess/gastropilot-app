@@ -37,11 +37,15 @@ await page.evaluate(async()=>{
  const {mountStock}=await import('/friedrich-stock.js');
  await mountStock({rpc:async()=>({data:[]})},()=> '6a5484d1-daf6-4263-897d-24cdf536aa29');
 });
+// Actual openBusiness ends with showMobilePanel('monthlyReference').
+await page.evaluate(()=>{for(const section of document.querySelectorAll('#app section.card'))section.classList.toggle('mobileHidden',!['monthlyReference','salesSection'].includes(section.id));});
+assert.equal(await page.locator('#friedrichStock').isVisible(),false,'Startup mobile filter hides stock before click');
 await page.locator('[data-gp-area="articles"]').click();
 await page.locator('#friedrichStockTile').click();
 await page.locator('#friedrichStock [role=status]').waitFor({state:'visible'});
 assert.equal(await page.locator('#gpMockupDetail').isVisible(),true,'Real cockpit parent must open');
 assert.equal(await page.locator('#friedrichStock').isVisible(),true,'Real cockpit CSS must show stock');
+assert.equal(await page.locator('#friedrichStock').evaluate(e=>e.classList.contains('mobileHidden')),false,'Stock route must remove startup mobileHidden');
 await page.locator('#gpMockupBack').click();
 await page.locator('#friedrichStockTile').click();
 assert.equal(await page.locator('#friedrichStock').isVisible(),true,'Stock reopens from overview');
