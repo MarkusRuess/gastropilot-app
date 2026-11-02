@@ -84,3 +84,13 @@ Die verbindliche projektübergreifende Übersicht aller vier ChatGPT-Projekte, i
 - `integrations/judith-payment-inflows.js`: vierte Tabellenspalte „Kontrolliert“, Checkbox je Zahlung, rosa/grüne Hervorhebung. Zwischenspeicherung ausschließlich im lokalen Browser (localStorage), keine Änderung an `bank_transactions`, ETRON oder GastroPilot.
 - **Einschränkung:** Keine Synchronisierung zwischen Geräten/Benutzern; lokale Markierung kann durch Browserdatenlöschung verschwinden. Die Zuordnung basiert derzeit auf Datum, Rechnungsnummer, Name und Betrag; identische Buchungen sind nicht eindeutig unterscheidbar. Deshalb **nicht produktionsreif für gemeinsame Sekretariatskontrolle**.
 - Noch erforderlich: autorisierte Judith-AI-only Prüftabelle mit stabiler Transaktions-ID, RLS/Edge-Function, Mitarbeiter-/Zeitstempel, Rechte- und Browser-E2E-Tests. Keine produktive Migration ausgeführt.
+
+## 2026-11-02 – Gemeinsame Kontrollhäkchen für Kundenzahlungen
+**Status: im Entwicklungsbranch implementiert, statisch geprüft; nicht produktiv veröffentlicht; zwei echte Mitarbeiter-Logins noch nicht getestet.**
+- `integrations/judith-payment-inflows.js`: Checkbox zwischen Kunde und Eingang, grüne Zeilenmarkierung, serverseitige Speicherung beim Setzen/Entfernen, Fehler-Rollback, Aktualisierung bei Rückkehr in den Tab und alle 60 Sekunden.
+- `judith-ai/postfach.html`: lädt gemeinsamen Kontrollstatus nach Zahlungsabruf und schreibt Änderungen über eigene autorisierte Edge Function. Monatsnavigation, Rechnungsnummern und Beträge bleiben in der Anzeige unverändert.
+- Supabase: `public.judith_ai_payment_reviews` mit Transaktions-ID als Primärschlüssel, Boolean, Mitarbeiter-ID, Zeitstempel. RLS aktiv, keine Policies; keine direkte Client-Berechtigung. 0 Markierungen beim Datenbanktest.
+- `judith-ai-payment-reviews` Version 1 aktiv, JWT erforderlich; prüft aktiven `judith_ai_access`-Eintrag und Judith-`business_id`; Lesen und Setzen/Entfernen nur für Rechnungsnummern-Zahlungen.
+- Bestehende lesende Funktion `judith-ai-payment-inflows` Version 4: ergänzt ausschließlich die stabile Transaktions-ID im JSON, ohne sichtbare Zahlungsfelder oder Filter zu ändern.
+- Kein Bild, PDF, Bankbetrag oder Rechnungstext in der Prüftabelle. Keine ETRON-Buchung, keine Friedrich-Änderung.
+- **Prüfung:** GitHub-Dateien nach Commits erneut gelesen; API-Versionen und RLS gelesen. **Noch offen:** echte authentifizierte Tests mit zwei getrennten Mitarbeiterkonten (A setzt, B sieht und entfernt, A sieht Aktualisierung), mobile Browserabnahme, Freigabe zur Veröffentlichung. Ohne diese Tests keine Produktivfreigabe.
