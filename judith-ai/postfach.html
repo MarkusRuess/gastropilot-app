@@ -27,6 +27,7 @@
 import {createClient} from 'https://esm.sh/@supabase/supabase-js@2.57.0';
 import {mountPriceAdvisor} from './price-advisor.js?build=20261102-phase2';
 const sb=createClient('https://sjnwfwcpgwsavygewwzb.supabase.co','sb_publishable__tucXG-IQGUhibMqMSUzCw_5RnH_sbQ',{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:false}});
+window.jdHeaders=async()=>{const {data:{session}}=await sb.auth.getSession();return session?{Authorization:'Bearer '+session.access_token,apikey:'sb_publishable__tucXG-IQGUhibMqMSUzCw_5RnH_sbQ'}:null};
 const loading=document.getElementById('loading');
 let jdPreloadPromise=null;
 function jdPreloadData(session){
@@ -337,7 +338,6 @@ jpoGet('save').addEventListener('click',async()=>{const btn=jpoGet('save'),statu
 
 const jdApi='https://sjnwfwcpgwsavygewwzb.supabase.co/functions/v1/';
 mountPriceAdvisor(document.getElementById("judith-price-advisor"));
-window.jdHeaders=async()=>{const {data:{session}}=await sb.auth.getSession();return session?{Authorization:'Bearer '+session.access_token,apikey:'sb_publishable__tucXG-IQGUhibMqMSUzCw_5RnH_sbQ'}:null};
 async function jdRefreshGoalProgress(){
  const value=document.getElementById('jd-goal-percent');
  const fill=document.getElementById('jd-goal-fill');

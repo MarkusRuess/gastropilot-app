@@ -88,3 +88,5 @@ Keine Änderungen an index.html, Friedrich-Dateien, Friedrich-Importfunktionen, 
 - Security Advisor geprüft. Erwartete RLS-ohne-Policy-Meldungen bei service-only Tabellen sind kein Anlass für offene Mitarbeiter-Policies. Bestehende fremde Befunde unverändert.
 - Browser weiterhin ohne Judith-AI-Sitzung. Authentifizierte vollständige Live-Bedienprüfung kann damit weiterhin nicht bestätigt werden; automatisierte Vertrags-/UI-Tests sind keine echte Mitarbeiter-Browserabnahme.
 - Produktivdeployment, Quellcode-Versionen und GitHub-Nachweise werden beim Abschluss ergänzt.
+
+Phase-2-Nachprüfung: Sitzung-Header stehen jetzt vor dem Rendern eines zwischengespeicherten Kalenders bereit. Dadurch entsteht beim automatischen Preisabruf kein irreführender Anmeldefehler allein durch die Initialisierungsreihenfolge. Reihenfolge automatisiert geprüft. GitHub-CI 41457080014 erfolgreich; neue Edge Functions Preisberater/Fotobestellung jeweils Version 4 aktiv mit JWT.
