@@ -99,3 +99,6 @@ Judith: Bank-PDF / Beleg
 
 
 Preisberater: PR #56 produktiv zusammengeführt, Pages-Deployment 41452819480 erfolgreich. Live-DOM enthält die Kachel; 16 Tests und anonymer HTTP-401-Test erfolgreich. Authentifizierte fachliche Abnahme offen, siehe [Projektstand](PROJEKTSTAND_PREISKALKULATION.md).
+
+## Preisberater Phase 2 – 2026-11-02
+Ausdrücklich beauftragte Judith-Schnittstellenentwicklung: Dokument→sichere Zutatenpreis-/Rezeptzuordnung (Judith-only Trigger), frische Kostenbasis und dauerhafte Empfehlung/Einschätzung→Auftrag. Neue service-only Tabellen, Entwurfs-UUID und transaktionale Zuordnung. Friedrich und gemeinsame Importfunktionen unverändert. 24 Programmtests + 19 PostgreSQL-Assertions bestanden; echte Mitarbeiter-Browserabnahme mangels Sitzung offen. Details: [PROJEKTSTAND_PREISKALKULATION.md](PROJEKTSTAND_PREISKALKULATION.md).

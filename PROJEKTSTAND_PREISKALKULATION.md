@@ -51,3 +51,40 @@ Betriebliche Kapazität/Stundensätze/Zeitansätze/Portionsgrößen bestätigen 
 - Nachprüfung ergänzt Tausendertrennzeichen in deutschen Textpreisen (z. B. 1.250,50 EUR); gleicher Testumfang erneut erfolgreich.
 
 Nachprüfung: Monate mit nur Materialbelegen dürfen bekannte Personalkosten nicht rechnerisch senken; Kategorie-spezifische Auswahl der Kostenmonate getestet.
+
+## Phase 2 – 2026-11-02, Version 20261102.2
+Dieser Abschnitt ergänzt/ersetzt die Einschränkungen der ersten Version, soweit ausdrücklich beschrieben.
+
+### Umgesetzt
+| Bereich | Tatsächliche Änderung |
+|---|---|
+| Fotos | Aktuelle korrigierte Formularwerte werden bei jeder Berechnung gelesen; Tortenanzahl und Portionen getrennt. KI-Extraktionsschema um portions ergänzt. Entwurfs-UUID bleibt bis zum erfolgreichen Speichern erhalten. |
+| Auftragsbindung | judith_ai_price_drafts + eindeutige optionale price_draft_id am Auftrag; Foto-Speicherung ist je Entwurf idempotent. Service-only RPC verbindet Empfehlungen und Einschätzungen atomar; geprüfte Entwurfseigentümerschaft und tatsächlicher Auftragsbezug. Ein DB-Trigger fängt gleichzeitig eintreffende Kalkulationen/Einschätzungen ab. |
+| E-Mail | Aktueller Nachrichtenteil ohne typischen zitierten Verlauf. Bei vorhandener Auftragszuordnung wird dessen ID/vereinbarter Preis verwendet. Neue mailbasierte Aufträge übernehmen gespeicherte Werte per Trigger. Erneutes Öffnen aktualisiert den Preisberater. |
+| Kalender | Empfiehlt mit frischen serverseitigen Auftragsdaten, zeigt gespeicherte Empfehlungen und Team-Einschätzungen am Auftrag. Fehler bei parallelen alten Antworten nach Eingabekorrektur abgefangen. |
+| Persistenz | judith_ai_price_calculations speichert versionierte Ergebnisse, Kostenfingerabdruck und Auftragsschlüssel. Gleiche Eingaben/Kosten werden dedupliziert; Vergangenheit wird nicht durch neue Kosten überschrieben. Speichern muss erfolgreich sein, bevor die Oberfläche Erfolg meldet. |
+| Rechnungen | Neuer Judith-only Dokument-Trigger; eindeutige normalisierte Namen/Aliase, sichere kg/g- und L/ml-Umrechnung, positive Nettopreise, Mengensummenprüfung und Datumsschutz. Sichere Positionen aktualisieren Judith-Zutatenkatalog/Preishistorie; noch unverbundene eindeutige Rezeptzutaten werden verknüpft. Keine Änderung bestehender gemeinsamer Importfunktionen. |
+| Laufende Kosten | Frische Personal-, geprüfte Saldenlisten-, Rechnungs- und Bank-Fixkostendaten bei jeder Kalkulation. Fehlende Gesamtlöhne aus vorhandenen Lohn-/Dienstgeberkomponenten. Verschiedene Fixkostenkategorien werden kombiniert; je Kategorie wird Rechnung/Zahlung nicht addiert. Bankbeträge ohne Nettoangabe konservativ brutto und ausdrücklich geschätzt. |
+| Schutz | Bestehende vereinbarte Preise serverseitig maßgeblich, Vergleichsfeld dann gesperrt. Keine Preisänderung am Auftrag, kein Mailversand. Keine internen Kostensätze, Gehälter oder Rechnungspositionen in API/Frontend. |
+
+### Automatik: klare Grenzen
+- Übernahme nur bei `reviewed`/`auto_imported`, ohne `needs_review`, ohne Duplikatwarnung, mit eindeutigem Nettopreis und Datum. Andere Belege werden automatisch beurteilt und als Prüfbedarf gespeichert, aber nicht zu bestätigten Zutatenpreisen gemacht.
+- Karton/Gebinde unbekannter Größe, fehlende Preise, mehrdeutige Aliase, widersprüchliche Zeilensummen oder unterschiedliche Preise am gleichen Tag bleiben ausdrücklich offen. Ältere Rechnungen ersetzen keine neueren Katalogpreise.
+- Aktueller echter Datenbefund nach Migration: **sechs Positionen aus drei Judith-Rechnungen mit `review_source`**. Die Dokumente stehen bereits im bestehenden Prüfstatus; keine Freigabe und keine Preisübernahme erzwungen.
+- Ältere Phase-1-Text-Hashes werden nicht blind einem Auftrag zugeordnet. Neue Fotos und E-Mails verwenden stabile IDs.
+- Empfehlungen bleiben Schätzungen (Kapazität, Zeit, Zielmarge/USt und unvollständige Rezepturen). Kein automatisches Angebot, keine verdeckte Veränderung vereinbarter Preise. Noch keine detaillierte KI-Interpretation beliebiger Dekor-Fotos oder unbekannter Gebinde.
+
+### Datenbank und Berechtigungen
+Migrationen `20261102_judith_price_phase2.sql` und `20261102_judith_price_guard_numeric.sql` angewendet. Neue Tabellen: `judith_ai_price_drafts`, `judith_ai_price_calculations`, `judith_price_invoice_links`. Alle mit RLS, ohne direkten SELECT für anon/authenticated. Interne Triggerfunktionen im nicht freigegebenen Schema `gp_price_private`, fester Judith-Filter. RPC `judith_price_attach_draft` ist SECURITY INVOKER, nur service_role darf ausführen. Bestehende Mitarbeiterberechtigungen unverändert.
+
+Keine Änderungen an index.html, Friedrich-Dateien, Friedrich-Importfunktionen, Finanzdatensätzen oder Zahlungsanzeige. Einziger Zusatz an Auftragsstruktur: nullable, eindeutiger Verweis price_draft_id für neue Fotoaufträge. Bestehende Aufträge und Kundenpreise nicht überschrieben.
+
+### Nachweise vor Veröffentlichung
+- **24 automatische Programmtests bestanden**: Rechenkern, serverseitige API-Verträge, echte Foto-Save-Handlerlogik mit simulierter DB, ID-Zuordnung, Wiederholung ohne zweiten Auftrag, Persistenz/Deduplikation, E-Mail-Auftragsprüfung, UI-Antwortrennen, Formular-Korrekturen, Wiederöffnen, Kostenschutz und Kostenkategorien.
+- JavaScript-Syntax: beide eingebetteten Live-Seiten-Skripte sowie Preisberater-Modul bestanden.
+- **19 echte PostgreSQL-Assertions bestanden**: Rechnung→Zutat, Einheiten, Datum, Wiederholung, unbekannte Packung, Konflikte, fehlerhafte Mengen/Zeilensummen, Quellprüfung, mehrdeutige Aliase, Friedrich-Ausschluss, Entwurf→Auftrag einschließlich später eintreffender Einschätzung, unveränderter Kundenpreis.
+- Sämtliche SQL-Testdaten ausschließlich innerhalb einer Transaktion; ROLLBACK ausgeführt, verbliebene QA-Zutaten=0 direkt nachgewiesen. Keine Testkonten angelegt.
+- Direkte Datenbankprüfung: RLS aktiv; anon/authenticated SELECT auf allen drei neuen Tabellen=false.
+- Security Advisor geprüft. Erwartete RLS-ohne-Policy-Meldungen bei service-only Tabellen sind kein Anlass für offene Mitarbeiter-Policies. Bestehende fremde Befunde unverändert.
+- Browser weiterhin ohne Judith-AI-Sitzung. Authentifizierte vollständige Live-Bedienprüfung kann damit weiterhin nicht bestätigt werden; automatisierte Vertrags-/UI-Tests sind keine echte Mitarbeiter-Browserabnahme.
+- Produktivdeployment, Quellcode-Versionen und GitHub-Nachweise werden beim Abschluss ergänzt.

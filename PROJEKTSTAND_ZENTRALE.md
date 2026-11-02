@@ -76,3 +76,7 @@ Berechtigte Betriebskennzahlen -> gemeinsame Gesamtumsatzansicht
 | Datum | Maßnahme | Status |
 | --- | --- | --- |
 | 2026-11-02 | GitHub-/Supabase-Bestandsaufnahme, vorhandene Betriebsdokumentationen berücksichtigt; Zentrale-Projektstand neu angelegt | Dokumentation; keine App-/DB-Änderung |
+
+
+## Preisberater Phase 2 – 2026-11-02
+Neue Judith-only Rechnungszuordnung und laufende Kostenbasis; persistierte Empfehlungen, Team-Einschätzungen und sichere Foto-/Mail-/Auftragszuordnung. Keine Änderung vereinbarter Kundenpreise oder Friedrich-Funktionen. 24 Programmtests und 19 echte PostgreSQL-Assertions bestanden; Testdaten zurückgerollt. Neue service-only Tabellen mit RLS ohne direkten Mitarbeiter-/anonymen Zugriff. Vorhandene sechs Rechnungspositionen aus drei Belegen bleiben wegen ungeprüfter Quelle offen. Authentifizierte Live-Bedienung im verfügbaren Browser mangels Sitzung nicht bestätigt. Vollständige Details, Dateien, Grenzen und Nachweise: [PROJEKTSTAND_PREISKALKULATION.md](PROJEKTSTAND_PREISKALKULATION.md), [Gesamtübersicht](PROJEKTUEBERSICHT_GESAMT.md).
