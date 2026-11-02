@@ -2491,9 +2491,9 @@ async function importJudithBankPdf(file,intake){
  }
  finish();
  if(!entries.length)throw Error('Keine sicheren Bankbuchungen erkannt. Original bleibt archiviert.');
- const norm=v=>String(v||'').toLowerCase().replace(/\\s+/g,' ').trim();
+ const norm=v=>String(v||'').toLowerCase().replace(/\s+/g,' ').trim();
  const invoiceNumbers=v=>[...new Set((String(v||'').match(/125[0-9 ]{6,12}/g)||[]).map(x=>x.replaceAll(' ','')).filter(x=>/^125[0-9]{6,9}$/.test(x)))];
- const candidates=entries.filter(e=>/^20\\d{2}-\\d{2}-\\d{2}$/.test(e.date)&&e.amount>0&&!/PAYONE|Mollie|AMAZON|PayLife|Klarna|SB Beheb|SB Ein/i.test(e.payee)&&invoiceNumbers(e.description).length);
+ const candidates=entries.filter(e=>/^20\d{2}-\d{2}-\d{2}$/.test(e.date)&&e.amount>0&&!/PAYONE|Mollie|AMAZON|PayLife|Klarna|SB Beheb|SB Ein/i.test(e.payee)&&invoiceNumbers(e.description).length);
  if(!candidates.length)throw Error('Keine Rechnungszahlungen erkannt; bitte Bankauszug prüfen.');
  let added=0,duplicates=0,skipped=0;
  for(let i=0;i<candidates.length;i++){
