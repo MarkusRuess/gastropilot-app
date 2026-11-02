@@ -94,3 +94,8 @@ Die verbindliche projektübergreifende Übersicht aller vier ChatGPT-Projekte, i
 - Bestehende lesende Funktion `judith-ai-payment-inflows` Version 4: ergänzt ausschließlich die stabile Transaktions-ID im JSON, ohne sichtbare Zahlungsfelder oder Filter zu ändern.
 - Kein Bild, PDF, Bankbetrag oder Rechnungstext in der Prüftabelle. Keine ETRON-Buchung, keine Friedrich-Änderung.
 - **Prüfung:** GitHub-Dateien nach Commits erneut gelesen; API-Versionen und RLS gelesen. **Noch offen:** echte authentifizierte Tests mit zwei getrennten Mitarbeiterkonten (A setzt, B sieht und entfernt, A sieht Aktualisierung), mobile Browserabnahme, Freigabe zur Veröffentlichung. Ohne diese Tests keine Produktivfreigabe.
+
+## 2026-11-02 – Dashboard-Kacheln (Entwicklungsbranch)
+- Commit `588ee6fb283a78f9ef72c00c48e21471a1505775` in `judith-ai/postfach.html`: Dashboard bleibt sichtbar, ein Bereich gleichzeitig, erneuter Klick schließt, Scrollen zum Inhalt, Zurück-Schaltfläche ausgeblendet, weitere Funktionen standardmäßig geschlossen.
+- Zahlungsmodul und Supabase-Daten unverändert; bestehende Fachlogik nicht bearbeitet.
+- **Status:** Code gespeichert, Browser-/Mobile-/Integrationstests und Live-Veröffentlichung noch nicht nachgewiesen.
