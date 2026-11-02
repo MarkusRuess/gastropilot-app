@@ -131,7 +131,7 @@ Neue Tabellen erzwingen Friedrichs business_id. RLS erlaubt bestehende Friedrich
 - **20 Node-Tests bestanden:** Bestellrundung, Reserve, unbekannt/Null, Kalenderwoche, Kaffeeanzeige, CSV, PDF-XRef, Retouren-/Gebindeerhalt und unveränderte Judith-Normalisierung.
 - **PostgreSQL-Assertion-Suite bestanden, anschließend vollständiger ROLLBACK:** Umrechnung, Zählreset, verspätet geladene alte Lieferung, Retouren, bestätigte 0, Monatsversionen/Korrekturgrund/Monatsgrenze, mehrere Artikelzeilen, Tageszeitkonflikt, Wiederholungsimport, geänderte Gebinde, Pfand, Re-Extraktionskonflikt/Audit, doppelte Ausgaben, Originalartikel unverändert, Eigentümerzugriff und negative RLS-/Anonymtests. Keine Testkonten oder verbleibenden Testdaten.
 - Inline-Syntax aller vier betroffenen Seiten und Edge-TypeScript geprüft; `pdfinfo` bestätigt gültiges A4-PDF.
-- Browser-Komponententests für 390/1200 px: `scripts/test-friedrich-stock-ui.mjs` und eigener GitHub-Actions-Workflow. Lokale Ausführung zunächst durch fehlende Chromium-Binary blockiert; noch kein bestandener Browsertest.
+- Browser-Komponententests für 390/1200 px: `scripts/test-friedrich-stock-ui.mjs` und eigener GitHub-Actions-Workflow. Lokale Ausführung zunächst durch fehlende Chromium-Binary blockiert; lokal kein bestandener Browsertest; nachfolgend GitHub-CI erfolgreich.
 - **Authentifizierte Live-Bedienung offen:** verfügbarer produktiver Browser zeigt Anmeldeformular. Keine echten Zählungen oder Kundenpreise für Tests verändert.
 
 ### Fachlich offene Quellen und Grenzen
@@ -141,5 +141,13 @@ Neue Tabellen erzwingen Friedrichs business_id. RLS erlaubt bestehende Friedrich
 4. Historische Rechnungspositionen werden zur Zuordnung bereitgestellt. Verlorene Mengenfelder können über die bestehende Originalauslesung ergänzt werden; keine pauschale kostenpflichtige Neuauslesung aller Belege angestoßen.
 5. Bewertung: letzter bestätigter Netto-Einstandspreis vor Stichtag, sonst vorhandener Stammpreis. Historische Stammpreise besitzen kein Gültigkeitsdatum. Keine FIFO-/Durchschnittspreisbewertung oder vollständige steuerliche Abnahme.
 
-**Veröffentlichungsnachweise werden nach erfolgreichem Merge, Deployment und Live-Abruf ergänzt.**
+### Veröffentlichungsnachweis – 2026-11-02
+- PR [#62](https://github.com/MarkusRuess/gastropilot-app/pull/62) zusammengeführt; Produktivcommit `ea688e4e28bdcde10c363cafd2856f24c5c62b86`.
+- [PR-CI 41464789972](https://github.com/MarkusRuess/gastropilot-app/actions/runs/41464789972) erfolgreich: 20 Node-Tests, Syntaxprüfungen und tatsächliche Chromium-Komponenteninteraktionen bei **1200 und 390 px** mit Fixtures. Die Logs bestätigen beide Durchläufe. Keine produktive Mitarbeitersitzung simuliert.
+- [Produktiv-CI 41498904986](https://github.com/MarkusRuess/gastropilot-app/actions/runs/41498904986) ebenfalls erfolgreich.
+- [Pages-Deployment 41498904979](https://github.com/MarkusRuess/gastropilot-app/actions/runs/41498904979) erfolgreich. Live-Seite erneut geöffnet: neuer Lager-Modulimport und Lager-Routing im tatsächlich ausgelieferten DOM nachgewiesen. Anmeldeformular sichtbar; authentifizierte Bedienabnahme weiterhin offen.
+- Supabase-Migration `friedrich_stock_inventory_v1` erfolgreich angewendet. Produktiv lesend bestätigt: 32 Artikelprofile, 47 Rezeptkomponenten, 229 historische Belegpositionen zur Prüfung. Keine neuen tatsächlichen Zählungen oder Monatsabschlüsse für Tests angelegt.
+- `analyze-receipt` Version **46 ACTIVE**, bestehende Authentifizierung unverändert. Zusätzliche Lagerfelder im deployten Quellcode bestätigt.
+- Alle 27 ursprünglichen Inventurdatensätze stimmen einschließlich Mengen/Preisen/Zeitpunkten mit dem Fingerabdruck vor Migration überein. Supabase-Sicherheitsadvisor meldet keine neuen Lagerobjekte.
+- Offene Quellenzuordnungen und Tageszeitgrenzen oben bleiben bestehen. Veröffentlichung ist keine Bestätigung erfundener Bestände oder vollständiger Cocktailrezepte.
 
