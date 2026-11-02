@@ -379,12 +379,10 @@ tile?.addEventListener('click',()=>{
  if(widget)return;
  widget=mountJudithPaymentInflows(document.getElementById('judith-payment-inflows-content'),{
   async loadPayments({month}){
-   const {createClient}=await import('https://esm.sh/@supabase/supabase-js@2');
-   const client=createClient('https://sjnwfwcpgwsavygewwzb.supabase.co','sb_publishable__tucXG-IQGUhibMqMSUzCw_5RnH_sbQ');
-   const {data:{session}}=await client.auth.getSession();
-   if(!session)throw Error('Anmeldung erforderlich');
+   const authHeaders=await jdHeaders();
+   if(!authHeaders)throw Error('Anmeldung erforderlich');
    const res=await fetch('https://sjnwfwcpgwsavygewwzb.supabase.co/functions/v1/judith-ai-payment-inflows?month='+encodeURIComponent(month),{
-    headers:{Authorization:'Bearer '+session.access_token,apikey:'sb_publishable__tucXG-IQGUhibMqMSUzCw_5RnH_sbQ'},cache:'no-store'
+    headers:authHeaders,cache:'no-store'
    });
    if(!res.ok)throw Error('Abruf nicht möglich');
    const items=(await res.json()).items;
