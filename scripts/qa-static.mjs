@@ -1,0 +1,14 @@
+import { readFileSync, existsSync } from 'node:fs';
+import assert from 'node:assert/strict';
+const read = p => readFileSync(p,'utf8');
+const main = read('index.html');
+assert.match(main,/business_members/,'Business membership check missing');
+assert.match(main,/authorizedBusinesses/,'Authorized business list missing');
+assert.match(main,/business_id/,'Business-scoped data access missing');
+assert.match(main,/gp_ledger_monthly/,'Central revenue source missing');
+assert.match(main,/bank_transactions/,'Bank integration missing');
+const ai='judith-ai/postfach.html';
+assert.ok(existsSync(ai),'Judith AI UI missing');
+assert.match(read(ai),/judith-ai-payment-inflows/,'Payment interface missing');
+assert.match(read(ai),/month/,'Monthly payment view missing');
+console.log('PASS: static central and interface smoke checks (not runtime authorization tests)');

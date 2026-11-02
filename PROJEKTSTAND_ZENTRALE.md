@@ -76,3 +76,14 @@ Berechtigte Betriebskennzahlen -> gemeinsame Gesamtumsatzansicht
 | Datum | Maßnahme | Status |
 | --- | --- | --- |
 | 2026-11-02 | GitHub-/Supabase-Bestandsaufnahme, vorhandene Betriebsdokumentationen berücksichtigt; Zentrale-Projektstand neu angelegt | Dokumentation; keine App-/DB-Änderung |
+
+
+## QA-Nachtrag 2026-11-02 (nur Entwicklungsbranch)
+- GitHub Actions Run 41424111246: statische Checks erfolgreich. Keine E2E-Freigabe.
+- RLS für bank_transactions und gp_ledger_monthly anhand der Policies lesend geprüft; negative Mandantentests offen.
+- Judith-AI-Zahlungsfunktion Version 3: JWT und aktive Zugangsprüfung; Judith-business_id fest; Kunden-/Rechnungsabgleich und Dublettensicherheit nicht vollständig belegt.
+- Backup/Restore nicht nachgewiesen. Produktive Änderungen unterbleiben. Details: QUALITAETSSICHERUNG.md.
+
+
+## Gemeinsame Projektübersicht
+Die verbindliche projektübergreifende Übersicht aller vier ChatGPT-Projekte, ihrer Zuständigkeiten, Repositories, Supabase-Verbindungen, Schnittstellen und Trennungsregeln steht in [PROJEKTUEBERSICHT_GESAMT.md](PROJEKTUEBERSICHT_GESAMT.md). Bei künftigen Änderungen diesen Projektstand aktualisieren; bei Änderungen an Architektur, Schnittstellen oder Zuständigkeiten zusätzlich die gemeinsame Übersicht und weitere betroffene Projektstanddateien pflegen.
