@@ -97,5 +97,8 @@ export function mountJudithPaymentInflows(container, {loadPayments, saveReview})
   month.addEventListener('change',refresh);
   displayMonth();
   refresh();
-  return {refresh, destroy(){request++;container.replaceChildren()}};
+  const onVisible=()=>{if(document.visibilityState==='visible'&&container.isConnected)refresh()};
+  document.addEventListener('visibilitychange',onVisible);
+  const timer=setInterval(()=>{if(document.visibilityState==='visible'&&container.isConnected)refresh()},60000);
+  return {refresh, destroy(){request++;clearInterval(timer);document.removeEventListener('visibilitychange',onVisible);container.replaceChildren()}};
 }
