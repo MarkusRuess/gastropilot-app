@@ -1,5 +1,7 @@
 # PROJEKTSTAND – GastroPilot Friedrich
 
+> Gemeinsame Zuständigkeiten: [PROJEKTUEBERSICHT_GESAMT.md](PROJEKTUEBERSICHT_GESAMT.md). Neuer Lagerstand und Prüfgrenzen siehe Änderungsabschnitt **Lager & Inventur 2026-11-02** am Ende. Frühere Zahlen oben sind die historische Bestandsaufnahme.
+
 **Stand:** 2026-11-02  
 **Repository:** MarkusRuess/gastropilot-app  
 **Betrieb:** Das Friedrich – Brot & Wasser RA GmbH  
@@ -88,3 +90,56 @@ Weitere relevante Tabellen: `monthly_bonit_summaries`, `sales_invoices`, `sales_
 | Datum | Änderung | Verifikation |
 |---|---|---|
 | 2026-11-02 | Erste technische Bestandsaufnahme und Erstellung dieser Dokumentation; keine App-/DB-Änderung | GitHub-Datei nach Erstellung erneut abrufen |
+
+## Lager & Inventur 2026-11-02 – ausdrücklich beauftragte Weiterentwicklung
+
+### Implementierung
+- Eigene Friedrich-Kachel **📦 Lager & Inventur**: Lagerbestand, alle Artikel, gelegentliche Einzelzählungen, Belegzuordnung, Rezepturen und Monatsinventur. Keine tägliche Gesamtzählung; keine Mitarbeiter-/Zeiterfassung.
+- Ein zentraler Upload. Friedrichs Rechnungseditor erhält Artikelnummer, Rechnungseinheit, Mengen, Einzelpreise, Positionssummen, Verpackungsangaben und Lieferdatum. Handschriftliche Listen werden als Daten ohne Fotoarchivierung zur Bestätigung bereitgestellt.
+- `friedrich-stock.js` / `friedrich-stock-engine.mjs`: gemeinsame Bestands-/Einkaufsansichten, echte UTF-8-CSV mit BOM/CRLF und eigenständiges A4-PDF ohne PDF-Dienst.
+- `index.html`: Friedrich-only Modulanbindung statt lokaler Wochenbestände. `upload.html`: Originalpositionsfelder und Retouren nur im Friedrich-Zweig erhalten. `supabase/functions/analyze-receipt/index.ts`: zusätzliche Extraktion ebenfalls ausschließlich Friedrich; Judith-Normalisierung unverändert getestet.
+- `einkaufsplanung.html` verwendet denselben Supabase-Bestand. `friedrich-inventur.html` führt zum gemeinsamen Bestand; alte lokale Einträge bleiben unverändert und nur lesend exportierbar.
+- Additive SQL-Quellen: `sql/friedrich-stock.sql`, `sql/friedrich-stock-rules.sql`, `sql/friedrich-stock-actions.sql`. Keine alten Mengen, Preise, Monatsstände, Dokumente oder Ausgaben überschrieben.
+
+### Neue Datenverbindungen
+| Objekt | Aufgabe |
+|---|---|
+| `gp_f_stock_products` → `gp_inventory_items` | Lager-Einheit, Umrechnungsfaktor, belegtes Einkaufsgebinde, Reserve |
+| `gp_f_stock_counts` | Unveränderliche Einzelzählungen einschließlich bestätigter Nullbestände, Zeitpunkt und Tagesvollständigkeit |
+| `gp_f_stock_rules` | Bonit-Artikelnummer → mehrere Zutaten und Verbrauch je Verkauf |
+| `gp_f_stock_lines` → `documents` | Original-/Kandidatenpositionen, bestätigte Lieferungen, Retouren, Pfand/Transport, Konflikte |
+| `gp_f_stock_supplier_rules` | Bestätigte Artikelnummer + Lieferant + Einheit + Verpackungsmerkmale für spätere automatische Zuordnung |
+| `gp_f_stock_losses` | Gesonderte belegte Verluste; keine versteckte Verlustpauschale |
+| `gp_f_stock_closings` | Unveränderliche Monatsendversionen mit Korrekturgrund, Mengen, Preisen, Zählzeit und Warnungen |
+| `gp_f_stock_line_audit` | Vorheriger Stand jeder Lieferpositionskorrektur |
+| `gp_f_stock_sales` | Eine Importquelle je Tag/Z; mehrere Artikel-/Gratiszeilen innerhalb desselben Berichts bleiben additiv |
+| `gp_f_stock_state()` | Gemeinsame zeitliche Bestandsrechnung für Lager und Einkauf |
+| `gp_f_stock_confirm()` / `gp_f_stock_add_product()` / `gp_f_stock_close()` | Transaktionale Belegbestätigung, Stammdatenanlage, versionierter Monatsabschluss |
+
+Neue Tabellen erzwingen Friedrichs business_id. RLS erlaubt bestehende Friedrich-Eigentümer; keine neuen Judith-Policies. Bestands-RPCs verwenden SECURITY INVOKER. Eng begrenzte Capture-/Audit-Trigger liegen im nicht freigegebenen Schema `gp_stock_private`. Ein zusätzlicher Friedrich-only Ausgabentrigger verhindert erneute Kostenbuchungen derselben Lieferanten-/Rechnungsidentität; fehlende Identität bleibt zur Prüfung offen.
+
+### Mengen und Zeit
+- Villacher Bonit **2000**: **0,33 l** je Verkauf, Einkaufsgebinde **50 l**, auch bei alter Bonit-Beschriftung 0,3 l. Keine pauschalen 5 % Schankverlust.
+- Illy: **1.500 g je Dose**, **8 g** je einfachem bekanntem Bezug, **16 g** für Espresso groß **1401**. Alte 5 Dosen werden rechnerisch zu 7.500 g umgerechnet; Original bleibt unverändert. Keine 6-kg-VPE. Andere Kaffees, insbesondere entkoffeiniert, werden nicht per allgemeinem Namensmuster Illy zugeordnet.
+- Wein in 0,75-l-Flaschen: 1/8 l = 1/6 Flasche. Eindeutige vorhandene Bonit-Nummern wiederverwendet. Weißer Spritzer: 0,125 l Hauswein + 0,125 l Soda. Weitere belegte Zutatenmengen stammen aus `gp_ingredient_links`.
+- Einkauf: Verbrauch der letzten abgeschlossenen Kalenderwoche × (1 + Reserve) − verfügbarer Bestand, auf tatsächliche Einkaufsgebinde aufrunden. Unbekannter Bestand oder Gebinde → **offen**. Fehlende reguläre Bonit-Tage Do–So und Summenabweichungen sichtbar; keine erfundene Hochrechnung.
+- Bestand: letzte gültige Einzelzählung + spätere bestätigte Lieferungen − spätere Verkäufe − Verluste. Beleg-/Zähldatum entscheidet, nicht Uploaddatum. Alte Nullmengen bleiben unbekannt; neue bestätigte 0 wird einschließlich Monatsabschluss gespeichert. Negative Rechenmengen werden nicht still auf 0 gekappt.
+- Wiederholte Rechnungsidentität erzeugt keine zweite Lieferung. Abweichende Re-Extraktion sperrt den betroffenen Bestand zur Prüfung und bewahrt Original/Kandidat/Audit. Geänderte Gebindemerkmale benötigen neue Bestätigung.
+- Monatsabschluss zum Monatsende; Folgemonatslieferungen ausgeschlossen. Korrekturen erzeugen weitere Versionen und benötigen einen Grund. Alte `gp_inventory_snapshots` bleiben lesbar/exportierbar.
+
+### Geprüft und noch nicht bestätigt
+- **20 Node-Tests bestanden:** Bestellrundung, Reserve, unbekannt/Null, Kalenderwoche, Kaffeeanzeige, CSV, PDF-XRef, Retouren-/Gebindeerhalt und unveränderte Judith-Normalisierung.
+- **PostgreSQL-Assertion-Suite bestanden, anschließend vollständiger ROLLBACK:** Umrechnung, Zählreset, verspätet geladene alte Lieferung, Retouren, bestätigte 0, Monatsversionen/Korrekturgrund/Monatsgrenze, mehrere Artikelzeilen, Tageszeitkonflikt, Wiederholungsimport, geänderte Gebinde, Pfand, Re-Extraktionskonflikt/Audit, doppelte Ausgaben, Originalartikel unverändert, Eigentümerzugriff und negative RLS-/Anonymtests. Keine Testkonten oder verbleibenden Testdaten.
+- Inline-Syntax aller vier betroffenen Seiten und Edge-TypeScript geprüft; `pdfinfo` bestätigt gültiges A4-PDF.
+- Browser-Komponententests für 390/1200 px: `scripts/test-friedrich-stock-ui.mjs` und eigener GitHub-Actions-Workflow. Lokale Ausführung zunächst durch fehlende Chromium-Binary blockiert; noch kein bestandener Browsertest.
+- **Authentifizierte Live-Bedienung offen:** verfügbarer produktiver Browser zeigt Anmeldeformular. Keine echten Zählungen oder Kundenpreise für Tests verändert.
+
+### Fachlich offene Quellen und Grenzen
+1. Bonit-Tagesaggregate haben keine Verkaufsuhrzeiten. Bei Überschneidung einer Tagesabrechnung mit einer Zählung mitten am Tag bleibt die exakte Menge unbekannt. Eine ausdrücklich vollständige Tagesendzählung oder spätere Zählung löst dies. Keine erfundenen Uhrzeiten.
+2. Vorhandene Artikel ohne bestätigte Mengen/Preise bleiben offen; alte 0 wird nicht umgedeutet. Fünf vorhandene Rezeptzutaten werden ausschließlich als Stammdaten mit unbekanntem Bestand ergänzt.
+3. Nicht belegte Cocktailkomponenten, Frizzante-Produktidentität, weitere Kaffeesorten und größere Gebinde bleiben zu prüfen. Bei Sarti ist die vorhandene 90-ml-Frizzante-Grundlage übernommen; weitere Mengen ausdrücklich offen.
+4. Historische Rechnungspositionen werden zur Zuordnung bereitgestellt. Verlorene Mengenfelder können über die bestehende Originalauslesung ergänzt werden; keine pauschale kostenpflichtige Neuauslesung aller Belege angestoßen.
+5. Bewertung: letzter bestätigter Netto-Einstandspreis vor Stichtag, sonst vorhandener Stammpreis. Historische Stammpreise besitzen kein Gültigkeitsdatum. Keine FIFO-/Durchschnittspreisbewertung oder vollständige steuerliche Abnahme.
+
+**Veröffentlichungsnachweise werden nach erfolgreichem Merge, Deployment und Live-Abruf ergänzt.**
+

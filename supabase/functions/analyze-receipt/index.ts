@@ -138,20 +138,22 @@ function normalizeSalesItems(value: unknown) {
     }));
 }
 
-function normalizePurchaseItems(value: unknown) {
+function normalizePurchaseItems(value: unknown, friedrich = false) {
+  const signed = (v: unknown) => typeof v === "number" && Number.isFinite(v) ? v : null;
   if (!Array.isArray(value)) return [];
   return value
     .filter((item: any) => item && typeof item.name === "string" && item.name.trim())
     .map((item: any) => ({
       name: item.name.trim(),
+      ...(friedrich ? {package_count: signed(item.package_count),units_per_pack: signed(item.units_per_pack),pack_size: signed(item.pack_size),pack_unit: textOrNull(item.pack_unit),total_base_quantity: signed(item.total_base_quantity),base_unit: textOrNull(item.base_unit),quantity_basis: textOrNull(item.quantity_basis),delivery_date: textOrNull(item.delivery_date),line_kind: textOrNull(item.line_kind)} : {}),
       article_number: textOrNull(item.article_number),
-      quantity: quantity(item.quantity),
+      quantity: friedrich ? signed(item.quantity) : quantity(item.quantity),
       unit: textOrNull(item.unit),
       unit_price_net: amount(item.unit_price_net),
       unit_price_gross: amount(item.unit_price_gross),
-      line_net: amount(item.line_net),
-      line_vat: amount(item.line_vat),
-      line_gross: amount(item.line_gross),
+      line_net: friedrich ? signed(item.line_net) : amount(item.line_net),
+      line_vat: friedrich ? signed(item.line_vat) : amount(item.line_vat),
+      line_gross: friedrich ? signed(item.line_gross) : amount(item.line_gross),
       tax_rate: typeof item.tax_rate === "number" && Number.isFinite(item.tax_rate) ? item.tax_rate : null,
     }));
 }
@@ -875,7 +877,9 @@ Gib ausschließlich gültiges JSON zurück.
     if(savedDocument && body.mode!=="invoice_items"){extracted={documents:[savedDocument.extracted_data]};}else{
     const content: any[] = [{
       type: "input_text",
-      text: instructions,
+      text: instructions + (businessId === "6a5484d1-daf6-4263-897d-24cdf536aa29" ? `
+FRIEDRICH LAGER: Jede Rechnungsposition zusätzlich mit package_count, units_per_pack, pack_size, pack_unit, total_base_quantity, base_unit, quantity_basis, delivery_date, line_kind (goods/deposit/transport) erfassen. quantity und unit bleiben unverändert aus der gedruckten Mengenspalte. total_base_quantity ist die tatsächlich gelieferte Gesamtmenge in l, g oder Stück. Wenn quantity bereits Gesamtstücke ist, Kartoninhalt NICHT nochmals multiplizieren. quantity_basis erläutert dies. Unklare Gebinde null statt Annahmen. Retouren mit negativem Vorzeichen; Pfand und Transportgebinde getrennt. Mengen und Netto-Einzelpreise getrennt von Positionssummen. Lieferdatum aus Beleg; fehlt es, null. Handschriftliche Zähllisten als document_type unknown mit inventory_counts:[{name,quantity,unit,counted_at}] erkennen, keine Rechnung daraus machen. Nur lesbare Angaben übernehmen, Zählzeit niemals erfinden.
+` : ""),
     }];
 
     for (
@@ -990,6 +994,7 @@ Gib ausschließlich gültiges JSON zurück.
             : "unknown",
 
         date: textOrNull(document.date),
+        ...(businessId === "6a5484d1-daf6-4263-897d-24cdf536aa29" ? {delivery_date:textOrNull(document.delivery_date), inventory_counts:Array.isArray(document.inventory_counts)?document.inventory_counts.map((x:any)=>({name:textOrNull(x.name),quantity:quantity(x.quantity),unit:textOrNull(x.unit),counted_at:textOrNull(x.counted_at)})).filter((x:any)=>x.name):[]} : {}),
         period_start: textOrNull(document.period_start),
         period_end: textOrNull(document.period_end),
         paid_receipt_count: count(document.paid_receipt_count),
@@ -1048,7 +1053,7 @@ Gib ausschließlich gültiges JSON zurück.
           ),
 
         purchase_items:
-          normalizePurchaseItems(document.purchase_items),
+          normalizePurchaseItems(document.purchase_items, businessId === "6a5484d1-daf6-4263-897d-24cdf536aa29"),
 
         // NEU:
         // Artikelgruppenstatistik wird
@@ -1084,7 +1089,7 @@ Gib ausschließlich gültiges JSON zurück.
         return json({error:"Keine Produktpositionen mit ausreichend lesbaren Mengen/Preisen erkannt. Originalrechnung bleibt unverändert."},422);
       }
       const original=savedDocument.extracted_data||{};
-      const merged={...original,purchase_items:recognized.purchase_items,purchase_items_checked_at:new Date().toISOString(),purchase_items_source:"original_invoice_reprocess"};
+      const merged={...original,...(businessId === "6a5484d1-daf6-4263-897d-24cdf536aa29" ? {delivery_date:recognized.delivery_date} : {}),purchase_items:recognized.purchase_items,purchase_items_checked_at:new Date().toISOString(),purchase_items_source:"original_invoice_reprocess"};
       const updated=await supabase.from("documents").update({extracted_data:merged}).eq("id",savedDocument.id).eq("business_id",businessId).select("id").maybeSingle();
       if(updated.error||!updated.data)return json({error:"Produktpositionen konnten nicht im Archiv gespeichert werden"},500);
       return json({success:true,updated:true,documents:[{...recognized,...merged}]});
@@ -1155,3 +1160,4 @@ Gib ausschließlich gültiges JSON zurück.
     }, 500);
   }
 });
+

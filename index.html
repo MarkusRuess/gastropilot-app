@@ -726,6 +726,7 @@ body:has(.judith-theme) #ledgerComparisonSection .ledger-actions,body:has(.judit
 <script src="./business-switch.js"></script><script type="module">
 import {createClient} from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 import {loadBankFixedCosts} from './bank-costs-integration.js';
+import {mountStock,renderStockPlanning} from './friedrich-stock.js?v=20261102-lager';
 import {renderBusinessOverview,loadPersonnelAverage,JUDITH_PERSONNEL_REFERENCE,SALES_TARGETS} from './business-overview.js?v=20261030-ausgangsrechnungen';
 const db=createClient('https://sjnwfwcpgwsavygewwzb.supabase.co','sb_publishable__tucXG-IQGUhibMqMSUzCw_5RnH_sbQ');
 let BID=null,authorizedBusinesses=[],switchingBusiness=false;const E=id=>document.getElementById(id),N=v=>v==null||v===''?null:Number(v),EUR=v=>v==null||!Number.isFinite(v)?'–':new Intl.NumberFormat('de-AT',{style:'currency',currency:'EUR'}).format(v),D=v=>v?.split('-').reverse().join('.')||'–';
@@ -1188,7 +1189,7 @@ function canonicalArticleName(name){const text=String(name||'');if(/gisp(?:er)?g
 function purchaseGroup(name,quantity){
  name=canonicalArticleName(name);
  const n=String(name||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase(),q=Number(quantity);if(!Number.isFinite(q)||q<=0)return null;
- if(/villacher/.test(n)&&/0[,.]3/.test(n))return {name:'Villacher · Fassbier',unit:'beer',amount:q*.3};
+ if(/villacher/.test(n)&&/0[,.]3/.test(n))return {name:'Villacher · Fassbier',unit:'beer',amount:q*.33};
  if(/espresso|verlangerter|melange|cappuc|cafe latte|caffe latte|kaffee lat/.test(n)&&!/hafermilch/.test(n))return {name:'Illy Kaffee · 1,5-kg-Dosen',unit:'coffee',amount:q*(/espresso.*gro/.test(n)?2:1)};
  if(/spritzer|spritz|hugo|cocktail|uberschwemmung/.test(n))return null;
  const freix=/freixen|freixent/.test(n),prosecco=/prosecco|valdob|valdio/.test(n);
@@ -1198,6 +1199,8 @@ function purchaseGroup(name,quantity){
  return null;
 }
 async function loadWeeklyPurchase(){
+ await mountStock(db,()=>BID);
+ if(BID==='6a5484d1-daf6-4263-897d-24cdf536aa29'){await renderStockPlanning(db,BID,E('purchaseCards'));return;}
  const w=purchaseWindow();const [sales,reports]=await Promise.all([query('bonit_article_sales','closing_date,article_name,quantity',w.from,w.until),query('documents','document_date,document_type,created_at,extracted_data',w.from,w.until)]);
  const sources=new Set(sales.map(x=>x.closing_date)),latest=new Map();for(const d of reports.filter(x=>x.document_type==='cash_report')){const old=latest.get(d.document_date);if(!old||old.created_at<d.created_at)latest.set(d.document_date,d);}
  weeklyPurchaseRows=sales.map(x=>({name:x.article_name,quantity:x.quantity}));for(const [day,d] of latest){if(sources.has(day))continue;const items=d.extracted_data?.sales_items;if(Array.isArray(items)&&items.length){sources.add(day);weeklyPurchaseRows.push(...items.map(x=>({name:x.article_name||x.name,quantity:x.quantity})));}}
@@ -1291,7 +1294,7 @@ async function gpInventoryOpen(){
    if(Number(x.quantity)>0){if(x.net_unit_price==null)missing++;else total+=Number(x.quantity)*Number(x.net_unit_price);}
   }
   const summary=document.createElement('p');summary.style.cssText='font-weight:700;padding:14px;background:#eaf5f2;border-radius:10px';summary.textContent='Bewerteter Teilbestand netto (kein Gesamtwert): '+total.toLocaleString('de-AT',{style:'currency',currency:'EUR'})+(missing?' · '+missing+' Artikel ohne Preis (nicht bewertet)':'');list.prepend(summary);
-  const exportBtn=document.createElement('button');exportBtn.type='button';exportBtn.textContent='Inventurliste CSV exportieren';exportBtn.onclick=()=>{const rows=[['Artikel','Kategorie','Einheit','Menge','Netto-EK','Wert netto','Zählzeitpunkt'],...(data||[]).map(x=>[x.name,x.category,x.unit,x.quantity,x.net_unit_price??'',x.net_unit_price==null?'':Number(x.quantity)*Number(x.net_unit_price),x.counted_at])];const csv='\\uFEFF'+rows.map(row=>row.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(';')).join('\\r\\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download='Friedrich_Inventur_'+new Date().toISOString().slice(0,10)+'.csv';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);};list.append(exportBtn);
+  const exportBtn=document.createElement('button');exportBtn.type='button';exportBtn.textContent='Inventurliste CSV exportieren';exportBtn.onclick=()=>{const rows=[['Artikel','Kategorie','Einheit','Menge','Netto-EK','Wert netto','Zählzeitpunkt'],...(data||[]).map(x=>[x.name,x.category,x.unit,x.quantity,x.net_unit_price??'',x.net_unit_price==null?'':Number(x.quantity)*Number(x.net_unit_price),x.counted_at])];const csv='\uFEFF'+rows.map(row=>row.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(';')).join('\r\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download='Friedrich_Inventur_'+new Date().toISOString().slice(0,10)+'.csv';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);};list.append(exportBtn);
   const snapshot=document.createElement('button');snapshot.type='button';snapshot.textContent='Monatsinventur festhalten';snapshot.onclick=async()=>{if(!confirm('Inventurstand für '+month.slice(0,7)+' speichern? Bitte zuvor alle Mengen kontrollieren.'))return;const rows=(data||[]).filter(x=>Number(x.quantity)>0).map(x=>({business_id:BID,inventory_month:month,item_id:x.id,article_name:x.name,category:x.category,unit:x.unit,quantity:x.quantity,net_unit_price:x.net_unit_price}));if(!rows.length){status.textContent='Keine Artikel vorhanden.';return;}const {error}=await db.from('gp_inventory_snapshots').upsert(rows,{onConflict:'business_id,inventory_month,item_id'});status.textContent=error?'Monatsabschluss fehlgeschlagen: '+error.message:'Monatsinventur '+month.slice(0,7)+' gespeichert ('+rows.length+' Artikel).';};list.append(snapshot);
  };
  form.onsubmit=async e=>{e.preventDefault();const payload={business_id:BID,name:name.value.trim(),category:category.value.trim(),unit:unit.value.trim(),quantity:Number(qty.value),net_unit_price:price.value===''?null:Number(price.value),counted_at:new Date().toISOString(),updated_at:new Date().toISOString()};if(!payload.name||!payload.unit||payload.quantity<0)return;save.disabled=true;const id=form.dataset.editId;const {error}=id?await db.from('gp_inventory_items').update(payload).eq('id',id).eq('business_id',BID):await db.from('gp_inventory_items').upsert(payload,{onConflict:'business_id,name'});save.disabled=false;if(error){status.textContent='Speichern fehlgeschlagen: '+error.message;return;}form.reset();delete form.dataset.editId;category.value='Getränke';unit.value='Flasche';qty.value='0';await load();};
@@ -2673,7 +2676,7 @@ async function refreshVisibleDashboard(){if(!user||E('app').classList.contains('
 </script><script>setTimeout(()=>{const f=document.getElementById('loginForm'),m=document.getElementById('loginMsg');if(f&&!f.onsubmit&&m)m.textContent='Die Anwendung konnte nicht geladen werden. Bitte Seite neu laden. Falls diese Meldung bleibt, ist die Programm-Bibliothek blockiert.'},4500);window.addEventListener('error',e=>{const m=document.getElementById('loginMsg');if(m)m.textContent='Ladefehler: '+e.message});window.addEventListener('unhandledrejection',e=>{const m=document.getElementById('loginMsg');if(m)m.textContent='Verbindungsfehler: '+(e.reason?.message||String(e.reason))});</script><script>
 (function(){
 'use strict';
-const areaNames={daily:'Tagesabschlüsse',costs:'Kosten & Einkauf',staff:'Personal',ledger:'Buchhaltung & Monatsvergleich',articles:'Artikelanalyse',planning:'Einkaufsplanung',upload:'Unterlagen hochladen',archive:'Datenarchiv',bank:'Bank & Liquidität',all:'Alle Auswertungen'};
+const areaNames={daily:'Tagesabschlüsse',costs:'Kosten & Einkauf',staff:'Personal',ledger:'Buchhaltung & Monatsvergleich',articles:'Artikelanalyse',planning:'Einkaufsplanung',stock:'Lager & Inventur',upload:'Unterlagen hochladen',archive:'Datenarchiv',bank:'Bank & Liquidität',all:'Alle Auswertungen'};
 const groups={
  daily:['salesSection','monthlyReference','operating','dailyArchiveDisclosure'],
  costs:['monthlyCostOverview','financeSection','purchaseItemsCalc','costAlertsTile','purchaseAssign'],
@@ -2681,6 +2684,7 @@ const groups={
  ledger:['ledgerComparisonSection','judithSimpleResult','judithRentTile'],
  articles:['topArticles','slowArticles','profitability','menuDashboardTile','judithCakePricingTile','kalkulationLink'],
  planning:['weeklyPurchase','recipeCostTile','kalkulationLink'],
+ stock:['friedrichStock'],
  upload:['intake'],archive:['centralArchive','archive'],bank:['financeSection']
 };
 let area=null;
@@ -2792,6 +2796,7 @@ function openArea(name){
  document.querySelectorAll('#gpCockpitNav [data-gp-area]').forEach(b=>b.setAttribute('aria-current',String(b.dataset.gpArea===name)));
  detail.scrollIntoView({behavior:'smooth',block:'start'});
 }
+window.addEventListener('gp:stock-open',()=>{if(!document.body.classList.contains('gp-judith-design'))openArea('stock');});
 function home(){area=null;document.body.classList.remove('gp-article-area-active','gp-shopping-area-active');setDailyCalendarVisibility(false);const d=el('gpMockupDetail');if(d)d.hidden=true;document.querySelectorAll('#gpCockpitNav [data-gp-area]').forEach(b=>b.setAttribute('aria-current','false'));window.scrollTo({top:0,behavior:'smooth'});}
 function init(){
  const app=el('app'),switcher=el('businessSwitchCard'),nav=el('gpCockpitNav'),quick=el('gpCockpitQuick'),head=app?.querySelector(':scope > .row'),kpis=el('quickKpis'),summary=el('summary');
@@ -3562,5 +3567,6 @@ body:not(.gp-judith-design) #gpMockupDetailBody #weeklyPurchase #gpPurchaseTabPa
 @media(max-width:650px){body:not(.gp-judith-design) #gpMockupDetailBody #weeklyPurchase #gpPurchaseTabPanel>.top-article{grid-template-columns:1fr!important}body:not(.gp-judith-design) #gpMockupDetailBody #weeklyPurchase #gpPurchaseTabPanel>.top-article b{text-align:left}}
 </style><link rel="stylesheet" href="friedrich-weinsortiment.css"><script defer src="friedrich-weinsortiment.js"></script><script type="module" src="./judith-bank-view.js?v=20261101a"></script>
 </body></html>
+
 
 

@@ -127,3 +127,7 @@ Preisberater-QA 2026-11-02: Rechenfehler bei numerischen Dezimalwerten sowie Hoc
 - 19 PostgreSQL-Assertions mit vollständigem Rollback erfolgreich. Keine tatsächliche Mitarbeiter-Einschätzung erzeugt oder bestehende Kundendaten verändert.
 - Acht geänderte Dateien kontrolliert; kein Friedrich-Code oder gemeinsame GastroPilot-Startseite geändert.
 - **Abnahmestatus: technisch geprüfte Korrektur veröffentlicht, keine vollständige fachliche/angemeldete Live-Freigabe.** Fehlende Browser-Sitzung, fehlende Portionen und unbestätigte betriebliche Zeit-/Kapazitätsansätze bleiben ausdrücklich offen. Die sechs Rechnungspositionen bleiben ohne ungeprüfte Kostenübernahme im bisherigen Prüfstatus.
+
+
+## 2026-11-02 – Friedrich Lager & Inventur
+Ausdrücklich beauftragte Friedrich-only Entwicklung: eigener Lagerbereich, gemeinsame Supabase-Bestandsberechnung für Einkauf und Inventur, belegbezogene Lieferungen, Einzelzählungen, Bonit-Rezeptverbrauch, getrennte Verluste und versionierte Monatsstände mit PDF/CSV. Neue Objekte ausschließlich `gp_f_stock_*` und `gp_stock_private`; Details, Tests und Abnahmegrenzen in [PROJEKTSTAND_FRIEDRICH.md](PROJEKTSTAND_FRIEDRICH.md). Der zentrale Upload erhält ausschließlich im Friedrich-Zweig zusätzliche Mengen-/Gebindefelder; Judith AI und Judiths Schnittstellen bleiben unverändert. QA-Branch lesend verglichen, nicht pauschal übernommen. Dieser konkrete Auftrag erlaubt getestete Migration und Veröffentlichung.

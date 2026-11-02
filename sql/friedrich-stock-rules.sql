@@ -1,0 +1,30 @@
+
+-- Exact Bonit IDs verified against the existing article data. Wine stock stays in bottles.
+insert into public.gp_f_stock_rules(article_number,item_id,per_sale,note) values
+('3017','3d2aaa20-dab4-4c32-b4e9-44fb4aa4bcfd',0.16666666666666666,'Bestehender BONit-Artikel: Flasche bzw. 1/8 l bei 0,75-l-Flasche; keine Reserve enthalten.'),
+('3030','3d2aaa20-dab4-4c32-b4e9-44fb4aa4bcfd',1,'Bestehender BONit-Artikel: Flasche bzw. 1/8 l bei 0,75-l-Flasche; keine Reserve enthalten.'),
+('4016','82884fda-827b-422f-9012-2871d467f8f4',0.16666666666666666,'Bestehender BONit-Artikel: Flasche bzw. 1/8 l bei 0,75-l-Flasche; keine Reserve enthalten.'),
+('4017','82884fda-827b-422f-9012-2871d467f8f4',1,'Bestehender BONit-Artikel: Flasche bzw. 1/8 l bei 0,75-l-Flasche; keine Reserve enthalten.'),
+('3051','1b472e75-9d73-43f4-a57c-e1f9d666a0fa',0.16666666666666666,'Bestehender BONit-Artikel: Flasche bzw. 1/8 l bei 0,75-l-Flasche; keine Reserve enthalten.'),
+('3052','1b472e75-9d73-43f4-a57c-e1f9d666a0fa',1,'Bestehender BONit-Artikel: Flasche bzw. 1/8 l bei 0,75-l-Flasche; keine Reserve enthalten.'),
+('3010','a72c34fc-20b8-45b5-8b1e-e7b1c38252ce',0.16666666666666666,'Bestehender BONit-Artikel: Flasche bzw. 1/8 l bei 0,75-l-Flasche; keine Reserve enthalten.'),
+('3015','15adda0b-81dc-4cdb-b979-10daf7383924',0.16666666666666666,'Bestehender BONit-Artikel: Flasche bzw. 1/8 l bei 0,75-l-Flasche; keine Reserve enthalten.'),
+('3005','15adda0b-81dc-4cdb-b979-10daf7383924',1,'Bestehender BONit-Artikel: Flasche bzw. 1/8 l bei 0,75-l-Flasche; keine Reserve enthalten.'),
+('3012','a6b47f0e-88f3-413f-99d2-080967d6ef9b',0.16666666666666666,'Bestehender BONit-Artikel: Flasche bzw. 1/8 l bei 0,75-l-Flasche; keine Reserve enthalten.'),
+('3002','a6b47f0e-88f3-413f-99d2-080967d6ef9b',1,'Bestehender BONit-Artikel: Flasche bzw. 1/8 l bei 0,75-l-Flasche; keine Reserve enthalten.'),
+('3091','e0c4a117-6e6f-4cf1-a630-fbcde95b5796',0.16666666666666666,'Bestehender BONit-Artikel: Flasche bzw. 1/8 l bei 0,75-l-Flasche; keine Reserve enthalten.'),
+('3016','9f45ebc5-4fdf-44bf-b155-09566e8ebc53',0.16666666666666666,'Bestehender BONit-Artikel: Flasche bzw. 1/8 l bei 0,75-l-Flasche; keine Reserve enthalten.'),
+('3006','9f45ebc5-4fdf-44bf-b155-09566e8ebc53',1,'Bestehender BONit-Artikel: Flasche bzw. 1/8 l bei 0,75-l-Flasche; keine Reserve enthalten.'),
+('3050','ef1db665-15be-4cbe-9144-e9cc6246eb62',0.16666666666666666,'Bestehender BONit-Artikel: Flasche bzw. 1/8 l bei 0,75-l-Flasche; keine Reserve enthalten.'),
+('3044','3cbc1eb2-73d3-499e-a048-b822a1d2a02b',0.16666666666666666,'Bestehender BONit-Artikel: Flasche bzw. 1/8 l bei 0,75-l-Flasche; keine Reserve enthalten.'),
+('3040','3cbc1eb2-73d3-499e-a048-b822a1d2a02b',1,'Bestehender BONit-Artikel: Flasche bzw. 1/8 l bei 0,75-l-Flasche; keine Reserve enthalten.'),
+('4013','f90047c3-bebf-4b37-9366-34fc88e21c0c',0.16666666666666666,'Bestehender BONit-Artikel: Flasche bzw. 1/8 l bei 0,75-l-Flasche; keine Reserve enthalten.'),
+('3020','dc8cf964-070e-4435-9d98-402c5b195906',0.13333333333333333,'Bestehender BONit-Artikel: Flasche bzw. 1/8 l bei 0,75-l-Flasche; keine Reserve enthalten.'),
+('3019','dc8cf964-070e-4435-9d98-402c5b195906',1,'Bestehender BONit-Artikel: Flasche bzw. 1/8 l bei 0,75-l-Flasche; keine Reserve enthalten.'),
+('3022','955e68f4-9d00-4330-87dd-26aab021cb70',0.13333333333333333,'Bestehender BONit-Artikel: Flasche bzw. 1/8 l bei 0,75-l-Flasche; keine Reserve enthalten.'),
+('3021','955e68f4-9d00-4330-87dd-26aab021cb70',1,'Bestehender BONit-Artikel: Flasche bzw. 1/8 l bei 0,75-l-Flasche; keine Reserve enthalten.'),
+('2003','f17cb124-7933-4353-b9be-fea4de6bda52',1,'Bestehender BONit-Artikel: Flasche bzw. 1/8 l bei 0,75-l-Flasche; keine Reserve enthalten.'),
+('2004','86d99778-85d8-4a5a-aa18-95cc7ee089f5',1,'Bestehender BONit-Artikel: Flasche bzw. 1/8 l bei 0,75-l-Flasche; keine Reserve enthalten.'),
+('4019','052329df-be4f-4b86-a28b-a0787ac60205',1,'Bestehender BONit-Artikel: Flasche bzw. 1/8 l bei 0,75-l-Flasche; keine Reserve enthalten.'),
+('4009','9f2f43d0-8728-4951-b50f-0a27cba40cff',1,'Bestehender BONit-Artikel: Flasche bzw. 1/8 l bei 0,75-l-Flasche; keine Reserve enthalten.');
+
