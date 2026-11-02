@@ -1,7 +1,7 @@
 // Local component interaction tests with fixtures; no account and no production writes.
 import {createServer} from 'node:http';import fs from 'node:fs';import path from 'node:path';import assert from 'node:assert/strict';import {createRequire} from 'node:module';const {chromium}=createRequire(import.meta.url)('playwright');
 const root=path.resolve(new URL('..',import.meta.url).pathname);
-const server=createServer((req,res)=>{const file=path.join(root,new URL(req.url,'http://localhost').pathname);if(file.startsWith(root)&&fs.existsSync(file)&&fs.statSync(file).isFile()){res.setHeader('Content-Type',file.endsWith('.html')?'text/html':'text/javascript');res.end(fs.readFileSync(file));}else{res.setHeader('Content-Type','text/html');res.end('<!doctype html><meta name="viewport" content="width=device-width, initial-scale=1"><style>body{font:16px system-ui;margin:12px}button{padding:10px}label{display:block}table{border-collapse:collapse}.gp-area-hidden{display:none}</style><div id="app"><nav id="gpCockpitNav"></nav><p id="purchasePeriod"></p><div id="purchaseCards"></div><section id="gpMockupDetail" hidden><strong id="gpMockupDetailTitle"></strong><div id="gpMockupDetailBody"></div></section></div>');}});
+const server=createServer((req,res)=>{const urlPath=new URL(req.url,'http://localhost').pathname;if(urlPath==='/cockpit-test'){res.setHeader('Content-Type','text/html');res.end(fs.readFileSync(path.join(root,'index.html'),'utf8').replace(/<script\b[^>]*type=["']module["'][^>]*>[\s\S]*?<\/script>/gi,'').replace(/<script\b[^>]*src=[^>]*>[\s\S]*?<\/script>/gi,''));return;}const file=path.join(root,urlPath);if(file.startsWith(root)&&fs.existsSync(file)&&fs.statSync(file).isFile()){res.setHeader('Content-Type',file.endsWith('.html')?'text/html':'text/javascript');res.end(fs.readFileSync(file));}else{res.setHeader('Content-Type','text/html');res.end('<!doctype html><meta name="viewport" content="width=device-width, initial-scale=1"><style>body{font:16px system-ui;margin:12px}button{padding:10px}label{display:block}table{border-collapse:collapse}.gp-area-hidden{display:none}</style><div id="app"><nav id="gpCockpitNav"></nav><p id="purchasePeriod"></p><div id="purchaseCards"></div><section id="gpMockupDetail" hidden><strong id="gpMockupDetailTitle"></strong><div id="gpMockupDetailBody"></div></section></div>');}});
 await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));const base='http://127.0.0.1:'+server.address().port;const browser=await chromium.launch({headless:true});
 try{for(const width of [1200,390]){const page=await browser.newPage({viewport:{width,height:900},timezoneId:'Europe/Vienna'});const errors=[];page.on('pageerror',e=>errors.push(e.message));await page.goto(base);
 await page.evaluate(async()=>{
@@ -30,5 +30,21 @@ const download=page.waitForEvent('download');await page.getByRole('button',{name
 await page.getByRole('button',{name:'Zuordnungen & Belege',exact:true}).click();await page.getByText('Lieferung Bier · Lieferant',{exact:false}).click();const review=page.locator('#friedrichStock details').first();await review.getByLabel('Gelieferte Gesamtmenge (Retouren negativ)').fill('50');await review.getByRole('button',{name:'Zuordnung bestätigen'}).click();await page.waitForFunction(()=>window.calls.some(x=>x.name==='gp_f_stock_confirm'));
 assert.equal(await page.evaluate(()=>window.calls.find(x=>x.name==='gp_f_stock_confirm').args.p_quantity),50);
 await page.screenshot({path:'/tmp/friedrich-stock-ui-'+width+'.png',fullPage:true});assert.deepEqual(errors,[]);
-await page.evaluate(async()=>{window.biz='87889eaf-f865-4e3a-8f9a-cd01db483e0e';await window.mount(window.db,()=>window.biz);});assert.equal(await page.locator('#friedrichStockTile').isVisible(),false);assert.equal(await page.locator('#friedrichStock').innerText(),'');await page.close();console.log('Fixture browser interactions passed at '+width+'px; no production UI session.');}
+await page.evaluate(async()=>{window.biz='87889eaf-f865-4e3a-8f9a-cd01db483e0e';await window.mount(window.db,()=>window.biz);});assert.equal(await page.locator('#friedrichStockTile').isVisible(),false);assert.equal(await page.locator('#friedrichStock').innerText(),'');await page.goto(base+'/cockpit-test');
+await page.evaluate(async()=>{
+ document.getElementById('login').classList.add('hidden');document.getElementById('app').classList.remove('hidden');
+ document.body.classList.remove('gp-judith-design');document.body.classList.add('gp-cockpit-active');
+ const {mountStock}=await import('/friedrich-stock.js');
+ await mountStock({rpc:async()=>({data:[]})},()=> '6a5484d1-daf6-4263-897d-24cdf536aa29');
+});
+await page.locator('[data-gp-area="articles"]').click();
+await page.locator('#friedrichStockTile').click();
+await page.locator('#friedrichStock [role=status]').waitFor({state:'visible'});
+assert.equal(await page.locator('#gpMockupDetail').isVisible(),true,'Real cockpit parent must open');
+assert.equal(await page.locator('#friedrichStock').isVisible(),true,'Real cockpit CSS must show stock');
+await page.locator('#gpMockupBack').click();
+await page.locator('#friedrichStockTile').click();
+assert.equal(await page.locator('#friedrichStock').isVisible(),true,'Stock reopens from overview');
+console.log('Actual cockpit navigation passed at '+width+'px with mocked read-only stock data');
+await page.close();console.log('Fixture browser interactions passed at '+width+'px; no production UI session.');}
 }finally{await browser.close();await new Promise(resolve=>server.close(resolve));}
