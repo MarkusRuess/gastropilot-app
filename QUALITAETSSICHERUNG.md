@@ -42,3 +42,20 @@ Keine produktive Übernahme allein aufgrund dieser Statiktests. Freigabe erst na
 - Zahlungsschnittstelle: keine serverseitige Verifikation der erkannten Rechnungsnummer gegen sales_invoices, keine eindeutige Buchungs-ID in Rückgabe; vollständige Zahlungszuordnung und Dublettenfreiheit nicht belegt.
 - Supabase-Backups: keine Backup- oder Restore-Liste über verfügbare Schnittstelle; Wiederherstellung nicht verifiziert. Sicherheitswarnungen: 23 RLS-ohne-Policy INFO (Zugriffswege prüfen), deaktivierte Passwort-Leak-Prüfung WARN (Priorität hoch bei Auth-Review).
 - Keine produktiven Änderungen, keine Freigabe.
+
+## Mandantentrennung – isolierte, schreibgeschützte RLS-Prüfung (2026-11-02)
+Testmethode: Supabase SQL, `BEGIN READ ONLY; SET LOCAL ROLE anon/authenticated; SET LOCAL request.jwt.claim.sub=<synthetische, nicht zugeordnete UUID>; SELECT count(*); ROLLBACK;`. Es wurden **keine echten Testkonten angelegt, keine produktiven Daten verändert und keine REST-API-Aufrufe mit echten Zugangstokens ausgeführt**. Daher keine vollständige API- oder Cross-Tenant-Abnahme.
+
+| Tabelle | anon SELECT | authenticated, synthetische UUID ohne Mitgliedschaft SELECT | Friedrich→Judith / Judith→Friedrich REST | Fremd-INSERT | Fremd-UPDATE | Fremd-DELETE |
+| --- | --- | --- | --- | --- | --- | --- |
+| bank_transactions | 0 Zeilen | 0 Zeilen | OFFEN | OFFEN | OFFEN | OFFEN |
+| documents | 0 | 0 | OFFEN | OFFEN | OFFEN | OFFEN |
+| expenses | 0 | 0 | OFFEN | OFFEN | OFFEN | OFFEN |
+| gp_ledger_monthly | 0 | 0 | OFFEN | OFFEN | OFFEN | OFFEN |
+| sales_invoices | 0 | 0 | OFFEN | OFFEN | OFFEN | OFFEN |
+| bonit_article_sales | OFFEN | 0 | OFFEN | OFFEN | OFFEN | OFFEN |
+| gp_inventory_items | OFFEN | 0 | OFFEN | OFFEN | OFFEN | OFFEN |
+| businesses | OFFEN | 0 | OFFEN | OFFEN | OFFEN | OFFEN |
+| business_members | OFFEN | 0 | OFFEN | OFFEN | OFFEN | OFFEN |
+
+Interpretation: 0 Zeilen bestätigt ausschließlich das Ergebnis der angegebenen SQL-Rollensimulation. Kein Nachweis, dass ein tatsächlich zu Friedrich gehörender Account Judith-Daten nicht lesen kann, und umgekehrt. Für einen vollständigen Negativtest benötigt man isolierte Testkonten, synthetische Testdatensätze und authentifizierte REST-Anfragen in einer **nichtproduktiven Testumgebung**. Diese waren hier nicht verfügbar; deshalb keine Schreibversuche an produktiven Tabellen.
