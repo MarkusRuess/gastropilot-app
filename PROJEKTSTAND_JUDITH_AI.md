@@ -75,3 +75,9 @@ Rosa Dashboard, Menükacheln, Responsive-CSS und Kalenderdarstellung im Quellcod
 
 ## Prüfprotokoll
 2026-11-02: GitHub-Repository gefunden; `judith-ai/postfach.html` und `index.html` gelesen; Supabase-Projekt und Tabellen gelesen; RLS-Policy-Abfrage ausgeführt; keine Anwendung oder Geschäftsdaten verändert. Diese Datei ist ausschließlich Dokumentation. **Keine Live-Funktionsabnahme erfolgt.**
+
+## 2026-11-02 – Isolierter PR: gemeinsame Zahlungskontrolle
+- Branch `qa/judith-ai-payment-checkbox-only-20261102` basiert auf `main`; ausschließlich Judith-AI-Frontenddateien und diese Dokumentation. Keine Änderung an Friedrich, GastroPilot oder ETRON.
+- Die Checkbox schreibt/liest über `judith-ai-payment-reviews` (JWT, aktive Judith-AI-Berechtigung, Judith-only Buchungsprüfung) in `judith_ai_payment_reviews` (RLS aktiv). Zahlungseingangsliste benötigt `id` aus bereits aktiver `judith-ai-payment-inflows` Version 4.
+- Statische Prüfung und Berechtigungskonfiguration sind keine echten End-to-End-Tests. Zwei getrennte echte Mitarbeiter-Sessions stehen für die Abnahme nicht zur Verfügung; A setzt → B liest/entfernt → A liest erneut bleibt offen.
+- Kein Merge oder Produktivdeploy vor erfolgreichen Tests. Keine Kunden- oder Zahlungsdaten verändert.
