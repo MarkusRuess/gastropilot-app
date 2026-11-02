@@ -41,7 +41,7 @@ async function renderStock(){
  if(!active()||!host)return;const token=++run;host.replaceChildren(el('h2','📦 Lager & Inventur · Das Friedrich'));
  const status=el('p','Lagerdaten werden geladen …');status.setAttribute('role','status');host.append(status);
  try{
- const items=await state();if(!active()||token!==run){host.replaceChildren();return;}
+ const items=await state();if(!active()||token!==run)return;
  status.textContent='Gemeinsamer Supabase-Bestand · Gelegentlich einzelne Artikel zählen. Keine tägliche Gesamtzählung nötig.';
  const nav=el('div',undefined,'row');host.append(nav);
  for(const [key,title] of [['stock','Lagerbestand'],['all','Alle Artikel'],['inventory','Inventur'],['review','Zuordnungen & Belege'],['recipes','Bonit & Rezepturen']]){const b=button(nav,title,()=>{currentTab=key;return renderStock();});b.disabled=currentTab===key;}
