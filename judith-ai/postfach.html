@@ -372,7 +372,7 @@ document.addEventListener('visibilitychange',()=>{if(document.visibilityState===
 (function(){const ids=["judith-payment-inflows","judith-prospects","judith-production-plan","judith-photo-order","judith-calendar","judith-orders","judith-customers","judith-signatur","office-inbox"];const sections=ids.map(id=>document.getElementById(id)).filter(Boolean);document.body.classList.add('jd-nav-mode');function show(id){for(const el of sections)el.classList.toggle('jd-active-panel',el.id===id);const el=document.getElementById(id);const active=!!el&&sections.includes(el);document.body.classList.toggle('jd-in-section',active);if(active){if(el.tagName==='DETAILS')el.open=true;requestAnimationFrame(()=>{el.scrollIntoView({block:'start',behavior:'instant'});});}else requestAnimationFrame(()=>window.scrollTo({top:0,behavior:'instant'}));}const todayCard=document.getElementById('jd-today-card');function openToday(){const now=new Date();jc.year=now.getFullYear();jc.month=now.getMonth();jc.selected=jcDate(now);show('judith-calendar');if(jc.loaded)jcRender();}todayCard?.addEventListener('click',openToday);todayCard?.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openToday();}});document.querySelectorAll('.jd-cards a,.jd-extra a').forEach(a=>a.addEventListener('click',e=>{const id=a.getAttribute('href')?.slice(1);if(!id)return;e.preventDefault();if(id==='jd-home'){show('');return;}if(id==='jd-settings'){show('');document.getElementById('jd-settings')?.setAttribute('open','');return;}if(ids.includes(id))show(id);}));document.getElementById('jd-back')?.addEventListener('click',()=>show(''));})();
 </script>
 <script type="module">
-import {mountJudithPaymentInflows} from '../integrations/judith-payment-inflows.js?build=20261101-table';
+import {mountJudithPaymentInflows} from '../integrations/judith-payment-inflows.js?build=20261102-shared';
 let widget;
 const tile=document.querySelector('a[href="#judith-payment-inflows"]');
 tile?.addEventListener('click',()=>{
@@ -387,7 +387,26 @@ tile?.addEventListener('click',()=>{
     headers:{Authorization:'Bearer '+session.access_token,apikey:'sb_publishable__tucXG-IQGUhibMqMSUzCw_5RnH_sbQ'},cache:'no-store'
    });
    if(!res.ok)throw Error('Abruf nicht möglich');
-   return (await res.json()).items;
+   const items=(await res.json()).items;
+   if(!items.length)return items;
+   const authHeaders=await jdHeaders();
+   if(!authHeaders)throw Error('Anmeldung erforderlich');
+   const result=await fetch(jdApi+'judith-ai-payment-reviews',{
+    method:'POST',headers:{...authHeaders,'Content-Type':'application/json'},
+    body:JSON.stringify({ids:items.map(item=>item.id)})
+   });
+   if(!result.ok)throw Error('Kontrollstatus nicht verfügbar');
+   const reviews=new Map((await result.json()).reviews.map(r=>[r.transaction_id,r.reviewed]));
+   return items.map(item=>({...item,reviewed:reviews.get(item.id)===true}));
+  },
+  async saveReview({id,reviewed}){
+   const authHeaders=await jdHeaders();
+   if(!authHeaders)throw Error('Anmeldung erforderlich');
+   const response=await fetch(jdApi+'judith-ai-payment-reviews',{
+    method:'POST',headers:{...authHeaders,'Content-Type':'application/json'},
+    body:JSON.stringify({id,reviewed})
+   });
+   if(!response.ok)throw Error('Speichern fehlgeschlagen');
   }
  });
 });

@@ -4,7 +4,7 @@
  * that authorizes the Judith AI staff user and returns ONLY J.W. GmbH incoming payments.
  * Never query bank_transactions from a public client or expose balances/outgoing payments.
  */
-export function mountJudithPaymentInflows(container, {loadPayments}) {
+export function mountJudithPaymentInflows(container, {loadPayments, saveReview}) {
   if (!(container instanceof HTMLElement) || typeof loadPayments !== 'function')
     throw new TypeError('Container and authorized loadPayments function required');
   container.replaceChildren();
@@ -37,6 +37,9 @@ export function mountJudithPaymentInflows(container, {loadPayments}) {
     .judith-pay-table td{border-bottom:1px solid #ececec;padding:17px 12px;vertical-align:top}
     .judith-pay-table th:last-child,.judith-pay-table td:last-child{text-align:right;white-space:nowrap}
     .judith-pay-table strong{font-weight:800}
+    .judith-pay-check{text-align:center!important;min-width:85px}
+    .judith-pay-check input{width:22px;height:22px;accent-color:#278755;cursor:pointer}
+    .judith-pay-checked{background:#f0faf3}
     .judith-pay-table .judith-pay-date{white-space:nowrap}
     @media(max-width:620px){.judith-pay-table{font-size:14px}.judith-pay-table td,.judith-pay-table th{padding:12px 5px}.judith-pay-table .judith-pay-date{white-space:normal}}
 
@@ -55,7 +58,7 @@ export function mountJudithPaymentInflows(container, {loadPayments}) {
       status.textContent=safe.length+' Zahlungseingänge';displayMonth();
       const table=document.createElement('table');table.className='judith-pay-table';
       const head=document.createElement('thead');const header=document.createElement('tr');
-      for(const label of ['Datum · Rechnungsnummer','Kunde','Eingang']){const th=document.createElement('th');th.textContent=label;header.append(th)}
+      for(const label of ['Datum · Rechnungsnummer','Kunde','Kontrolliert','Eingang']){const th=document.createElement('th');th.textContent=label;header.append(th)}
       head.append(header);table.append(head);
       const body=document.createElement('tbody');
       for(const row of safe){
@@ -65,8 +68,25 @@ export function mountJudithPaymentInflows(container, {loadPayments}) {
         const invoice=document.createElement('strong');invoice.textContent=row.invoiceNumber||'Keine Rechnungsnummer';
         first.append(date,invoice);
         const name=document.createElement('td');name.textContent=row.name||'Unbekannt';
+        const checkedCell=document.createElement('td');checkedCell.className='judith-pay-check';
+        const checkbox=document.createElement('input');checkbox.type='checkbox';
+        checkbox.checked=row.reviewed===true;
+        tr.classList.toggle('judith-pay-checked',checkbox.checked);
+        checkbox.setAttribute('aria-label','Rechnung kontrolliert: '+(row.invoiceNumber||row.name||row.date));
+        checkbox.addEventListener('change',async()=>{
+          const desired=checkbox.checked;
+          checkbox.disabled=true;
+          try {
+            await saveReview({id:row.id,reviewed:desired});
+            tr.classList.toggle('judith-pay-checked',desired);
+          } catch(_) {
+            checkbox.checked=!desired;
+            status.textContent='Kontrollstatus konnte nicht gespeichert werden.';
+          } finally {checkbox.disabled=false}
+        });
+        checkedCell.append(checkbox);
         const amount=document.createElement('td');amount.textContent=money.format(row.amount);
-        tr.append(first,name,amount);body.append(tr);
+        tr.append(first,name,checkedCell,amount);body.append(tr);
       }
       table.append(body);list.append(table);
     } catch(e) {
@@ -77,5 +97,8 @@ export function mountJudithPaymentInflows(container, {loadPayments}) {
   month.addEventListener('change',refresh);
   displayMonth();
   refresh();
-  return {refresh, destroy(){request++;container.replaceChildren()}};
+  const onVisible=()=>{if(document.visibilityState==='visible'&&container.isConnected)refresh()};
+  document.addEventListener('visibilitychange',onVisible);
+  const timer=setInterval(()=>{if(document.visibilityState==='visible'&&container.isConnected)refresh()},60000);
+  return {refresh, destroy(){request++;clearInterval(timer);document.removeEventListener('visibilitychange',onVisible);container.replaceChildren()}};
 }
