@@ -88,3 +88,10 @@ Rosa Dashboard, Menükacheln, Responsive-CSS und Kalenderdarstellung im Quellcod
 - Ursache im Frontend behoben: Der zusätzliche Review-Abruf verwendete den globalen `jdHeaders()`-Helper statt der bereits im Zahlungsabruf bestätigten Supabase-Sitzung. Review-Lese- und Schreibaufrufe verwenden nun dieselbe frisch gelesene Sitzung wie der Zahlungsabruf, einschließlich `Authorization` und Publishable API-Key.
 - Änderung ausschließlich `judith-ai/postfach.html` in `main`, Commit `f107d5dd75caf21f34a116d7b77950db3ca24fa6`. Keine Datenbank-, Zahlungs-, Friedrich- oder ETRON-Änderungen.
 - Noch erforderlich: Browser-Neuladen und Live-Bestätigung, dass die Zahlungsliste wieder lädt; danach Checkbox-Speicherung praktisch testen.
+
+
+## 2026-11-02 – Isolierte Dashboard-Navigation (PR #54)
+- Ausschließlich `judith-ai/postfach.html`: Rosa Dashboard bleibt sichtbar; Funktionsbereiche werden unterhalb der Kacheln angezeigt, jeweils nur ein Bereich; erneutes Anklicken schließt den Bereich. Weitere Funktionen standardmäßig eingeklappt; kein Zurück-Button.
+- Aktuelle produktive Zahlungsabruf-/Kontrollhäkchen-Implementierung aus `main` unverändert übernommen; andere GastroPilot-Anwendungen nicht verändert.
+- Kalender: Vor dem Setzen von „Torte abgeholt“ ist eine ausdrückliche Bestätigung erforderlich. **Rückgängig-Funktion noch offen:** Aktuelle Supabase-Edge-Function `judith-ai-inbox` erlaubt nur `confirm`, `pickup`, `delete_images`, `edit`, kein Undo. Eine Rücknahme darf nicht nur im Browser simuliert werden.
+- Prüfung: Geänderte Dateien in PR #54 kontrolliert; Syntax des separaten Zahlungsmoduls geprüft; authentifizierter Live-Test und CI-Test nicht bestätigt. Produktivstatus erst nach nachgewiesenem Merge/Deployment.
