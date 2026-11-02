@@ -156,3 +156,5 @@ Neue Tabellen erzwingen Friedrichs business_id. RLS erlaubt bestehende Friedrich
 - Lager-Kachel an data-gp-area=stock angebunden; Öffnen setzt aktiven Bereich, zeigt den übergeordneten Detailbereich und entfernt veraltete Artikelansicht-Klassen. Keine Datenbank-/Betriebsdatenänderung.
 - Modul-URL aktualisiert, damit Browser die Korrektur laden.
 - Chromium-Fixturetest erweitert: zunächst versteckter Detail-Elternbereich und aktive Artikelansicht, anschließend Klick auf Lager-Kachel, sichtbarer Bereich und aktiver Navigationsstatus. Produktive angemeldete Abnahme weiterhin offen; CI-Status über zugehörigen PR prüfen.
+
+- Menükorrektur veröffentlicht über PR #63, Commit `f1252d7d3e618498eb251a05a77ee8b7ef8d48de`; ergänzende Isolation der sechs bestehenden Betriebsmenüs in `2ef58b0c5973d410575fe777111e5192c38f405e`. PR-CI 41501209063 bestätigt Syntax und Chromium-Interaktionen bei 1200/390 px, keine Produktionssitzung. Der verfügbare Live-Browser zeigt weiterhin die Anmeldung; keine Betriebsdaten geändert.
