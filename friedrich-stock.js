@@ -171,7 +171,7 @@ async function quickCount(parent,items,status){
   const last=el('small');const showLast=c=>{last.textContent=c?'Letzte Zählung: '+fmt(c.quantity)+' '+x.unit+' · '+new Date(c.counted_at).toLocaleString('de-AT'):'Noch keine bestätigte Zählung';};showLast(latest.get(x.item_id)||(x.counted_at?{quantity:x.baseline,counted_at:x.counted_at}:null));
   row.append(last);list.append(row);fields.push({x,row,qty,showLast,request:crypto.randomUUID()});
  }
- search.oninput=()=>{const q=search.value.trim().toLocaleLowerCase('de-AT');for(const f of fields)f.row.hidden=!f.x.name.toLocaleLowerCase('de-AT').includes(q);};
+ search.oninput=()=>{const q=search.value.trim().toLocaleLowerCase('de-AT');for(const f of fields){const match=f.x.name.toLocaleLowerCase('de-AT').includes(q);f.row.hidden=!match;f.row.style.display=match?'grid':'none';}};
  const save=el('button','💾 Zählungen speichern');save.type='submit';save.style.cssText='min-height:52px;font-size:18px;width:100%;margin:14px 0';form.append(save);
  let retry=null;
  form.onsubmit=async e=>{
