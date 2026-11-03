@@ -1148,7 +1148,7 @@ function renderMonthOverview(daily,monthly=null) {
  const period=E('month').value;if(!/^\d{4}-\d{2}$/.test(period))return;
  const [year,month]=period.split('-').map(Number);
  E('monthOverviewTitle').textContent=new Intl.DateTimeFormat('de-AT',{month:'long',year:'numeric',timeZone:'UTC'}).format(new Date(Date.UTC(year,month-1,1)));
- const gross=monthly?monthly.gross:sum(daily,'gross'),days=monthly?monthly.days:daily.length;
+ const gross=monthly?monthly.gross+(friedrichInvoiceDays.size?[...friedrichInvoiceDays.values()].flat().reduce((s,i)=>s+(N(i.gross_total)||0),0):0):sum(daily,'gross'),days=monthly?monthly.days:daily.length;
  E('monthOverviewStats').replaceChildren();
  for(const [label,value] of [['Umsatz brutto',EUR(gross)],['Erfasste Tage',String(days)],['Ø pro Tag',gross!==null&&days?EUR(gross/days):'–']]){
   const box=document.createElement('div'),small=document.createElement('small'),strong=document.createElement('strong');small.textContent=label;strong.textContent=value;box.append(small,strong);E('monthOverviewStats').append(box);
@@ -2033,12 +2033,12 @@ async function refresh(){void loadLedgerComparison();if(E('recipeCostTile')&&!E(
      item.qty+=N(a.quantity);item.gross+=N(a.gross_amount);byArticle.set(key,item);
     }
    }
-   const total=[...zByDay.values()].reduce((v,n)=>v+(n||0),0);
-   const invoiceIds=(invoiceRows.data||[]).map(x=>x.id).filter(Boolean);
+   const bonitArticleTotal=[...zByDay.values()].reduce((v,n)=>v+(n||0),0);
+   const invoiceIds=!isJudith?(invoiceRows.data||[]).map(x=>x.id).filter(Boolean):[];
    if(invoiceIds.length){const {data:invoiceItems,error:invoiceError}=await db.from('sales_invoice_items').select('invoice_id,item_name,quantity,gross_amount').eq('business_id',BID).in('invoice_id',invoiceIds);if(invoiceError)throw invoiceError;for(const item of invoiceItems||[]){const label=canonicalArticleName(item.item_name||'Unbenannt');const key='invoice:'+label.toLocaleLowerCase('de-AT');const entry=byArticle.get(key)||{name:label+' · Ausgangsrechnung',qty:0,gross:0,known:true};entry.qty+=N(item.quantity)||0;entry.gross+=N(item.gross_amount)||0;byArticle.set(key,entry);}}
    const rows=[...byArticle.values()].filter(x=>x.qty!==0||x.gross!==0).sort((a,b)=>b.gross-a.gross).slice(0,30);
    topArticleRows=rows.map(x=>({...x,variants:[{label:x.name,articleName:x.name,qty:x.qty,gross:x.gross}]}));
-   topArticleTotal=total;
+   topArticleTotal=bonitArticleTotal+(invoiceRows.data||[]).reduce((s,i)=>s+(N(i.gross_total)||0),0);
    const label=new Intl.DateTimeFormat('de-AT',{month:'long',year:'numeric',timeZone:'UTC'}).format(new Date(monthStart+'T12:00:00Z'));
    E('topArticleNote').textContent=label+' · '+verified.size+' von '+zByDay.size+' Z-Berichten geprüft · '+monthArticles.length+' Artikelzeilen'+(missing.length?' · Nicht abgeglichen: '+missing.join(', '):' · Alle Verkaufstage abgeglichen')+' · Aktualisiert: '+new Date().toLocaleTimeString('de-AT',{hour:'2-digit',minute:'2-digit'});
    drawTopArticles();
