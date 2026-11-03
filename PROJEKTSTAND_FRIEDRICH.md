@@ -92,3 +92,6 @@ Weitere relevante Tabellen: `monthly_bonit_summaries`, `sales_invoices`, `sales_
 
 ## Gemeinsame Projektübersicht
 Die verbindliche projektübergreifende Übersicht aller vier ChatGPT-Projekte, ihrer Zuständigkeiten, Repositories, Supabase-Verbindungen, Schnittstellen und Trennungsregeln steht in [PROJEKTUEBERSICHT_GESAMT.md](PROJEKTUEBERSICHT_GESAMT.md). Bei künftigen Änderungen diesen Projektstand aktualisieren; bei Änderungen an Architektur, Schnittstellen oder Zuständigkeiten zusätzlich die gemeinsame Übersicht und weitere betroffene Projektstanddateien pflegen.
+
+## 2026-11-03 – Umsatzquellen
+Code auf QA-Branch: Bonit-, Rechnungs- und Gesamtumsatz-Kacheln; Rechnungsdetails im Kalender; Rechnungspositionen in Top-30. Datenbank unverändert. Tests und Live-Veröffentlichung noch offen.
