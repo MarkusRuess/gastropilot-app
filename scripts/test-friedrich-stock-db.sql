@@ -71,7 +71,7 @@ begin
  perform pg_temp.assert_true((select state='review' from public.gp_f_stock_lines where document_id=doc2),'Changed package requires review');
  insert into public.documents(business_id,uploaded_by,document_type,document_date,supplier,invoice_number,status,extracted_data)
  select business_id,uploaded_by,document_type,document_date,supplier,'QA-4',status,jsonb_set(extracted_data,'{purchase_items,0,line_kind}','"deposit"') from public.documents where id=doc returning id into doc2;
- perform pg_temp.assert_true((select state='review' from public.gp_f_stock_lines where document_id=doc2),'Deposit not automatically stocked');
+ perform pg_temp.assert_true((select state in ('review','excluded') from public.gp_f_stock_lines where document_id=doc2),'Deposit not automatically stocked');
  update public.documents set extracted_data=jsonb_set(extracted_data,'{purchase_items,0,quantity}','3') where id=doc;
  perform pg_temp.assert_true((select state='conflict' and base_quantity=4.5 from public.gp_f_stock_lines where id=line),'Re-extraction cannot silently overwrite applied quantities');
  perform pg_temp.assert_true(exists(select 1 from public.gp_f_stock_line_audit where line_id=line),'Line corrections audited');

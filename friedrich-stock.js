@@ -1,3 +1,4 @@
+import {purchaseCost,actualCost} from './friedrich-stock-costs.mjs?v=20261103';
 import {FRIEDRICH,number,orderQuantity,csv,exportRows,inventoryPdf,lastWeek,coffeeDisplay} from './friedrich-stock-engine.mjs?v=20261102';
 const fmt=v=>number(v)===null?'unbekannt':new Intl.NumberFormat('de-AT',{maximumFractionDigits:3}).format(v);
 const el=(tag,text,cls)=>{const e=document.createElement(tag);if(text!==undefined)e.textContent=text;if(cls)e.className=cls;return e;};
@@ -44,7 +45,8 @@ async function renderStock(){
  const items=await state();if(!active()||token!==run)return;
  status.textContent='Gemeinsamer Supabase-Bestand · Gelegentlich einzelne Artikel zählen. Keine tägliche Gesamtzählung nötig.';
  const nav=el('div',undefined,'row');host.append(nav);
- for(const [key,title] of [['stock','Lagerbestand'],['all','Alle Artikel'],['inventory','Inventur'],['review','Zuordnungen & Belege'],['recipes','Bonit & Rezepturen']]){const b=button(nav,title,()=>{currentTab=key;return renderStock();});b.disabled=currentTab===key;}
+ for(const [key,title] of [['stock','Lagerbestand'],['all','Alle Artikel'],['inventory','Inventur'],['receipts','Wareneingänge'],['movements','Lagerbewegungen'],['costs','Wareneinsatz'],['review','Zuordnungen & Belege'],['recipes','Bonit & Rezepturen']]){const b=button(nav,title,()=>{currentTab=key;return renderStock();});b.disabled=currentTab===key;}
+ if(['receipts','movements','costs'].includes(currentTab))return await costs(host,items,status);
  if(currentTab==='review')return await review(host,items,status);
  if(currentTab==='recipes')return await recipes(host,items,status);
  if(currentTab==='inventory')return await inventory(host,items,status);
@@ -57,7 +59,7 @@ async function renderStock(){
  const note=input(form,'Notiz','text','',false);const save=el('button','Zählung speichern');save.type='submit';form.append(save);host.append(form);
  const request=crypto.randomUUID();form.onsubmit=async e=>{e.preventDefault();if(!active())return;save.disabled=true;try{await check(context.db.from('gp_f_stock_counts').insert({business_id:FRIEDRICH,item_id:chosen.value,quantity:number(q.value),counted_at:new Date(when.value).toISOString(),day_complete:complete.checked,note:note.value,request_id:request}));await renderStock();}catch(e){status.textContent=e.message;save.disabled=false;}};
  const wrap=el('div',undefined,'stock-scroll'),table=el('table'),thead=el('thead'),tr=el('tr');for(const h of ['Artikel','Bestand','Netto-EK / Wert','Letzte Zählung','Hinweis'])tr.append(el('th',h));thead.append(tr);table.append(thead);const tbody=el('tbody');table.append(tbody);wrap.append(table);host.append(wrap);
- for(const x of items){if(currentTab==='stock'&&x.baseline===null)continue;const row=el('tr');
+ for(const x of items){const row=el('tr');
  row.append(el('td',x.name),el('td',fmt(x.quantity)+' '+x.unit+(x.unit==='g'?' · '+coffeeDisplay(x.quantity):'')),el('td',fmt(x.net_unit_price)+' € / '+fmt(x.value_net)+' €'),el('td',x.counted_at?new Date(x.counted_at).toLocaleString('de-AT'):'unbekannt'),el('td',(x.source_conflict?'Quellkonflikt; Bestand gesperrt. ':x.timing_warning?'Tageszeit prüfen: Tagesbonit kann Zählung am selben Tag nicht minutengenau aufteilen. ':'')+(x.quantity!==null&&x.quantity<0?'NEGATIV – Belege/Zählung fehlen. ':'')+'Basis '+fmt(x.baseline)+'; Zugang '+fmt(x.received)+'; Verkauf −'+fmt(x.consumed)+'; Verlust −'+fmt(x.loss)));tbody.append(row);}
  const gaps=[...new Set(items.flatMap(x=>x.missing_days||[]))];if(gaps.length)host.append(el('p','Fehlende Bonit-Artikeltage seit den Zählungen (regulär Do–So): '+gaps.join(', ')+'. Rechnerische Bestände sind unvollständig.','stock-warning'));
  exports(host,items,'aktuell');
@@ -119,3 +121,32 @@ export async function stageInventoryRecognition(db,businessId,userId,documents){
  if(businessId!==FRIEDRICH)throw Error('Zähllisten nur für Friedrich.');
  for(const d of documents){await check(db.from('documents').insert({business_id:FRIEDRICH,uploaded_by:userId,document_type:'other',document_date:d.date||null,status:'reviewed',extracted_data:{...d,inventory_counts:d.inventory_counts}}));}
 }
+
+async function costs(parent,items,status){
+ const f=el('div',undefined,'stock-form'),month=input(f,'Monat','month',new Date().toLocaleDateString('sv-SE').slice(0,7));parent.append(f);const box=el('div');parent.append(box);
+ async function load(){
+ const selected=month.value,tab=currentTab;if(!/^\d{4}-\d{2}$/.test(selected))return;const start=selected+'-01',end=new Date(Date.UTC(Number(selected.slice(0,4)),Number(selected.slice(5,7)),1)).toISOString().slice(0,10),prev=new Date(Date.parse(start+'T12:00Z')-86400000).toISOString().slice(0,10),last=new Date(Date.parse(end+'T12:00Z')-86400000).toISOString().slice(0,10);
+ const [lines,counts,checks,expenses,bonit,invoices,openState,endState]=await Promise.all([
+ all(context.db,'gp_f_stock_lines','*',q=>q.gte('delivery_date',start).lt('delivery_date',end)),all(context.db,'gp_f_stock_counts'),all(context.db,'gp_f_stock_period_checks','*',q=>q.eq('inventory_month',start)),all(context.db,'expenses','document_id,category',q=>q.gte('expense_date',start).lt('expense_date',end)),all(context.db,'bonit_daily_closings','net_amount',q=>q.gte('closing_date',start).lt('closing_date',end)),all(context.db,'sales_invoices','net_total',q=>q.gte('service_date',start).lt('service_date',end)),state(viennaMidnight(start)),state(viennaMidnight(end))]);
+ if(!active()||selected!==month.value||tab!==currentTab)return;box.replaceChildren();
+ if(currentTab!=='costs'){
+ box.append(el('h3',currentTab==='receipts'?'Wareneingänge (keine erneuten Ausgaben)':'Lagerbewegungen'));
+ for(const l of lines)box.append(el('p',l.delivery_date+' · '+l.supplier+' · '+l.name+' · '+l.state+' · '+fmt(l.base_quantity)+' '+(items.find(x=>x.item_id===l.item_id)?.unit||'')+' · Netto '+fmt(l.base_quantity===null||l.base_price===null?null:l.base_quantity*l.base_price)+' € · '+l.note));
+ if(currentTab==='movements')for(const x of items)box.append(el('p',x.name+' · seit letzter Zählung: Zugang '+fmt(x.received)+' / Rezeptverbrauch −'+fmt(x.consumed)+' / Verlust −'+fmt(x.loss)+' '+x.unit));
+ return;
+ }
+ const purchases=purchaseCost(lines);
+ if(expenses.some(e=>e.category!=='nonfood'&&(!e.document_id||!lines.some(l=>l.document_id===e.document_id))))purchases.warnings.push('Einkaufsbelege ohne vollständige Positionen vorhanden.');
+ const physical=(rows,day)=>rows.map(x=>{const c=counts.filter(c=>c.item_id===x.item_id&&c.day_complete&&new Date(c.counted_at).toLocaleDateString('sv-SE',{timeZone:'Europe/Vienna'})===day).sort((a,b)=>b.counted_at.localeCompare(a.counted_at))[0];return {physical:!!c,value:c&&typeof x.net_unit_price==='number'?Number(c.quantity)*x.net_unit_price:null};});
+ const revenue=[...bonit.map(x=>x.net_amount),...invoices.map(x=>x.net_total)];const netRevenue=revenue.length&&revenue.every(x=>typeof x==='number')?revenue.reduce((s,v)=>s+v,0):null;
+ const result=actualCost({opening:physical(openState,prev),closing:physical(endState,last),purchases,revenue:netRevenue,complete:checks[0]?.purchases_complete===true,ended:end<=new Date().toLocaleDateString('sv-SE',{timeZone:'Europe/Vienna'})});
+ const value=items.every(x=>typeof x.value_net==='number')?items.reduce((s,x)=>s+x.value_net,0):null;
+ for(const [label,v,suffix] of [['Wareneinkauf netto (bestätigte Positionen)',purchases.net,' €'],['Aktueller Lagerwert netto',value,' €'],['Tatsächlicher Wareneinsatz netto',result.cost,' €'],['Nettoumsatz',netRevenue,' €'],['Wareneinsatzquote',result.ratio,' %'],['Zielquote',26,' %'],['Abweichung vom Ziel',result.deviation,' Prozentpunkte']])box.append(el('p',label+': '+fmt(v)+suffix));
+ for(const warning of result.warnings)box.append(el('p',warning,'stock-warning'));
+ box.append(el('p','Wareneinsatz = Anfangsinventur + Wareneinkäufe − Endinventur. Bonit-Verbrauch wird hier nicht zusätzlich abgezogen. Lagerwert und Wareneinkauf sind bei offenen Daten unvollständig.'));
+ const label=el('label','Alle Einkaufsbelege dieses Monats sind vollständig erfasst'),c=el('input');c.type='checkbox';c.checked=checks[0]?.purchases_complete===true;label.append(c);box.append(label);button(box,'Belegvollständigkeit speichern',async()=>{await check(context.db.from('gp_f_stock_period_checks').upsert({business_id:FRIEDRICH,inventory_month:start,purchases_complete:c.checked,checked_at:new Date().toISOString()},{onConflict:'business_id,inventory_month'}));await load();});
+ }
+ month.onchange=()=>load().catch(e=>{status.textContent=e.message;});await load();
+}
+
+function viennaMidnight(day){const d=new Date(day+'T00:00:00Z');const h=Number(new Intl.DateTimeFormat('en-GB',{timeZone:'Europe/Vienna',hour:'2-digit',hourCycle:'h23'}).format(d));return new Date(d.getTime()-h*3600000-1).toISOString();}
