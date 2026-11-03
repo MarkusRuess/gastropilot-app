@@ -1,0 +1,22 @@
+name: Judith order archive checks
+on:
+  push:
+    branches: [main, 'feat/judith-order-archive-*']
+    paths: ['judith-ai/**', 'supabase/functions/judith-ai-inbox/**', 'scripts/test-judith-archive*', '.github/workflows/qa-judith-archive.yml']
+  pull_request:
+    paths: ['judith-ai/**', 'supabase/functions/judith-ai-inbox/**', 'scripts/test-judith-archive*', '.github/workflows/qa-judith-archive.yml']
+permissions:
+  contents: read
+jobs:
+  archive:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: node scripts/check-judith-inline.mjs
+      - run: node --test scripts/test-judith-archive-server.mjs scripts/test-judith-calendar.mjs scripts/test-judith-calendar-server.mjs scripts/test-judith-backlist.mjs scripts/test-judith-backlist-server.mjs scripts/test-price-advisor*.mjs
+      - run: npm install --no-save --package-lock=false playwright@1.56.1
+      - run: npx playwright install --with-deps chromium
+      - run: node scripts/test-judith-archive-browser.mjs

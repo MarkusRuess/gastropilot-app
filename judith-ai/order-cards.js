@@ -1,3 +1,4 @@
+import {archiveButton} from './order-archive.js?build=20261103-archive1';
 // The existing inquiry status remains compatible with recipe and office workflows.
 export const orderStages={confirmed:'🟡 Beauftragt',in_progress:'🔵 In Arbeit',ready:'🟠 Abholbereit',picked_up:'🟢 Abgeholt'};
 export const orderStage=o=>o.status==='picked_up'?'picked_up':o.status==='confirmed'?(o.fulfillment_status||'confirmed'):'inquiry';
@@ -29,7 +30,7 @@ export function calendarOrderCard(order,customer,options){
   body.hidden=false;toggle.textContent='Auftrag schließen';toggle.setAttribute('aria-expanded','true');
   if(mounted)return;mounted=true;
   body.append(el('p',order.details||'Keine weiteren Angaben'),el('p',[customer.email,customer.phone,order.guests?'Personen: '+order.guests:''].filter(Boolean).join(' · ')));
-  statusControls(body,order,options.saveStatus);
+  statusControls(body,order,options.saveStatus);archiveButton(body,order,customer,options.archiveOrder);
   const edit=el('button','✏️ Auftrag bearbeiten');edit.type='button';edit.onclick=()=>options.editOrder(body,order);body.append(edit);
   const customerEdit=el('button','✏️ Kundendaten');customerEdit.type='button';customerEdit.onclick=()=>options.editCustomer(body,customer);body.append(customerEdit);
   if(options.attachments)body.append(options.attachments(order));
