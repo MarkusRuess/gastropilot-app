@@ -1,7 +1,7 @@
 import test from 'node:test';import assert from 'node:assert/strict';import {readFileSync} from 'node:fs';import {stripTypeScriptTypes} from 'node:module';
 let handler,row,active,authenticated,writes,race;
 const id='22222222-2222-4222-8222-222222222222';
-function reset(){row={id,status:'confirmed',fulfillment_status:null,picked_up_at:null,picked_up_by:null,details:'Kundenpreis 250 €'};active=true;authenticated=true;writes=[];race=false}reset();
+function reset(){row={id,archived_at:null,archived_by:null,status:'confirmed',fulfillment_status:null,picked_up_at:null,picked_up_by:null,details:'Kundenpreis 250 €'};active=true;authenticated=true;writes=[];race=false}reset();
 function createClient(){return {auth:{getUser:async()=>({data:{user:authenticated?{id:'staff'}:null},error:null})},from(table){let changes,filters=[];const q={select(){return q},eq(k,v){filters.push([k,v]);return q},is(k,v){filters.push([k,v]);return q},update(v){changes=v;return q},async maybeSingle(){if(table==='judith_ai_access')return {data:{active},error:null};if(table!=='judith_ai_inquiries')throw Error('Unexpected table '+table);if(changes&&race)row.fulfillment_status='ready';if(!filters.every(([k,v])=>row[k]===v))return {data:null,error:null};if(changes){writes.push(structuredClone(changes));Object.assign(row,changes)}return {data:{...row},error:null}},single(){return q.maybeSingle()}};return q}}}
 const Deno={env:{get:()=> 'test'},serve(fn){handler=fn}};
 new Function('Deno','createClient',stripTypeScriptTypes(readFileSync('supabase/functions/judith-ai-inbox/index.ts','utf8').replace(/^import .*\n/gm,'')))(Deno,createClient);

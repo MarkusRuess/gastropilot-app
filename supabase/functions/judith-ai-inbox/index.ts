@@ -12,21 +12,26 @@ Deno.serve(async(req:Request)=>{
  const {data:{user},error}=await auth.auth.getUser(token);
  if(error||!user)return send({error:"Invalid session"},401);
  const db=createClient(url,service,{auth:{persistSession:false,autoRefreshToken:false}});
- const {data:staff,error:staffError}=await db.from("judith_ai_access").select("active").eq("user_id",user.id).maybeSingle();
+ const {data:staff,error:staffError}=await db.from("judith_ai_access").select("active,role").eq("user_id",user.id).maybeSingle();
  if(staffError)return send({error:"Access check unavailable"},503);
  if(!staff?.active)return send({error:"Forbidden"},403);
+ const canArchiveOrders=staff.role==='owner';
+ const view=new URL(req.url).searchParams.get('view');
+ if(req.method==='GET'&&view==='archive'&&!canArchiveOrders)return send({error:'Archivzugriff nicht erlaubt'},403);
  // Orders archive is complete and remains separate from inbox attachment retention.
- if(req.method==="GET"&&new URL(req.url).searchParams.get("view")==="orders"){
+ if(req.method==="GET"&&new URL(req.url).searchParams.get("view")==="orders"||req.method==="GET"&&view==="archive"){
   const inquiries:any[]=[],customers=new Map<string,any>();let cursor="";
-  for(;;){let query=db.from("judith_ai_inquiries").select("id,message_id,customer_id,occasion,requested_date,guests,details,status,fulfillment_status,picked_up_at,created_at,customer:judith_ai_customers(id,name,email,phone)").order("id",{ascending:true}).limit(500);if(cursor)query=query.gt("id",cursor);
+  for(;;){let query=db.from("judith_ai_inquiries").select("id,message_id,customer_id,occasion,requested_date,guests,details,status,fulfillment_status,picked_up_at,created_at,archived_at,customer:judith_ai_customers(id,name,email,phone)").order("id",{ascending:true}).limit(500);query=view==='archive'?query.not('archived_at','is',null):query.is('archived_at',null);if(cursor)query=query.gt("id",cursor);
    const {data:page,error:pageError}=await query;if(pageError||!page)return send({error:"Aufträge konnten nicht vollständig geladen werden"},503);
    for(const row of page){const {customer,...order}=row;inquiries.push(order);if(customer?.id)customers.set(customer.id,customer);}if(page.length<500)break;const last=page[page.length-1]?.id;if(!last||last===cursor)return send({error:"Aufträge konnten nicht vollständig geladen werden"},503);cursor=last;
   }
-  return send({ok:true,inquiries,customers:[...customers.values()],attachments:[]});
+  return send({ok:true,can_archive_orders:canArchiveOrders,inquiries,customers:[...customers.values()],attachments:[]});
  }
  // Sign customer photos only when their existing order is opened.
  if(req.method==="GET"&&new URL(req.url).searchParams.get("view")==="order_attachments"){
   const id=new URL(req.url).searchParams.get("inquiry_id")||"";if(!/^[0-9a-f-]{36}$/i.test(id))return send({error:"Ungültiger Auftrag"},400);
+  const {data:parent,error:parentError}=await db.from('judith_ai_inquiries').select('id,archived_at').eq('id',id).is('archived_at',null).maybeSingle();
+  if(parentError)return send({error:'Auftrag nicht verfügbar'},503);if(!parent)return send({error:'Auftrag nicht aktiv'},404);
   const {data:files,error:fileError}=await db.from("judith_ai_attachments").select("id,message_id,inquiry_id,filename,mime_type,storage_path").eq("inquiry_id",id).is("deleted_at",null).limit(1000);if(fileError)return send({error:"Anhänge konnten nicht geladen werden"},503);
   const signed=files?.length?await db.storage.from("judith-ai-attachments").createSignedUrls(files.map(f=>f.storage_path),600):{data:[],error:null};if(signed.error)return send({error:"Anhänge konnten nicht geöffnet werden"},503);
   const urls=new Map((signed.data||[]).filter(x=>x.path&&x.signedUrl).map(x=>[x.path,x.signedUrl]));return send({ok:true,attachments:(files||[]).flatMap(f=>urls.has(f.storage_path)?[{id:f.id,inquiry_id:f.inquiry_id,message_id:f.message_id,filename:f.filename,mime_type:f.mime_type,url:urls.get(f.storage_path)}]:[])});
@@ -38,7 +43,7 @@ Deno.serve(async(req:Request)=>{
   if(!valid(start)||!valid(end)||new Date(start).getUTCDay()!==1||Date.parse(end)-Date.parse(start)!==6*86400000)return send({error:"Ungültige Kalenderwoche"},400);
   const inquiries:any[]=[],customers=new Map<string,any>();let cursor="";
   for(;;){
-   let query=db.from("judith_ai_inquiries").select("id,customer_id,occasion,requested_date,details,status,fulfillment_status,picked_up_at,customer:judith_ai_customers(id,name)").in("status",["confirmed"]).or(`and(requested_date.gte.${start},requested_date.lte.${end}),requested_date.is.null`).order("id",{ascending:true}).limit(500);
+   let query=db.from("judith_ai_inquiries").select("id,customer_id,occasion,requested_date,details,status,fulfillment_status,picked_up_at,customer:judith_ai_customers(id,name)").in("status",["confirmed"]).is("archived_at",null).or(`and(requested_date.gte.${start},requested_date.lte.${end}),requested_date.is.null`).order("id",{ascending:true}).limit(500);
    if(cursor)query=query.gt("id",cursor);
    const {data:page,error:pageError}=await query;
    if(pageError||!page)return send({error:"Backliste konnte nicht vollständig geladen werden"},503);
@@ -81,9 +86,22 @@ Deno.serve(async(req:Request)=>{
    return send({ok:true,customer:updated});
   }
   const id=body?.inquiry_id,action=body?.action;
-  if(typeof id!=="string"||!/^[0-9a-f-]{36}$/i.test(id)||!["confirm","pickup","delete_images","edit","set_status"].includes(action))return send({error:"Ungültige Anfrage"},400);
-  const {data:existing,error:ee}=await db.from("judith_ai_inquiries").select("id,status,picked_up_at,fulfillment_status").eq("id",id).maybeSingle();
+  if(typeof id!=="string"||!/^[0-9a-f-]{36}$/i.test(id)||!["confirm","pickup","delete_images","edit","set_status","archive_order","restore_order"].includes(action))return send({error:"Ungültige Anfrage"},400);
+  if(['archive_order','restore_order'].includes(action)&&!canArchiveOrders)return send({error:'Nur berechtigte Eigentümer dürfen Aufträge archivieren oder wiederherstellen'},403);
+  const {data:existing,error:ee}=await db.from("judith_ai_inquiries").select("id,status,picked_up_at,fulfillment_status,archived_at,archived_by").eq("id",id).maybeSingle();
   if(ee||!existing)return send({error:"Anfrage nicht gefunden"},404);
+  if(action==='archive_order'||action==='restore_order'){
+   const archive=action==='archive_order';
+   if(archive===Boolean(existing.archived_at))return send({ok:true,inquiry:existing});
+   const changes=archive?{archived_at:new Date().toISOString(),archived_by:user.id}:{archived_at:null,archived_by:null};
+   let query=db.from('judith_ai_inquiries').update(changes).eq('id',id);
+   query=archive?query.is('archived_at',null):query.eq('archived_at',existing.archived_at);
+   const {data:updated,error:archiveError}=await query.select('id,status,fulfillment_status,picked_up_at,archived_at,archived_by').maybeSingle();
+   if(archiveError)return send({error:'Archivänderung konnte nicht gespeichert werden'},503);
+   if(!updated)return send({error:'Auftrag inzwischen geändert. Bitte neu laden.'},409);
+   return send({ok:true,inquiry:updated});
+  }
+  if(existing.archived_at)return send({error:'Auftrag ist archiviert. Bitte zuerst wiederherstellen.'},409);
   if(action==="edit"){
    const p=body?.changes||{};
    const updates:any={};
@@ -92,7 +110,7 @@ Deno.serve(async(req:Request)=>{
    if(typeof p.requested_date==="string"&&/^\d{4}-\d{2}-\d{2}$/.test(p.requested_date)&&!Number.isNaN(Date.parse(p.requested_date)))updates.requested_date=p.requested_date;
    if(p.guests!==undefined&&Number.isInteger(p.guests)&&p.guests>=0&&p.guests<=10000)updates.guests=p.guests;
    if(!Object.keys(updates).length)return send({error:"Keine gültigen Änderungen"},400);
-   const {data:updated,error:ue}=await db.from("judith_ai_inquiries").update(updates).eq("id",id).select("id,occasion,requested_date,guests,details,status").single();
+   const {data:updated,error:ue}=await db.from("judith_ai_inquiries").update(updates).eq("id",id).is("archived_at",null).select("id,occasion,requested_date,guests,details,status").single();
    if(ue)return send({error:"Änderungen konnten nicht gespeichert werden"},503);
    return send({ok:true,inquiry:updated});
   }
@@ -117,7 +135,7 @@ Deno.serve(async(req:Request)=>{
    const updates:any=target==='picked_up'
     ?{status:'picked_up',picked_up_at:new Date().toISOString(),picked_up_by:user.id}
     :{status:'confirmed',fulfillment_status:target==='confirmed'?null:target,picked_up_at:null,picked_up_by:null};
-   let query=db.from('judith_ai_inquiries').update(updates).eq('id',id).eq('status',existing.status);
+   let query=db.from('judith_ai_inquiries').update(updates).eq('id',id).is('archived_at',null).eq('status',existing.status);
    query=existing.fulfillment_status===null?query.is('fulfillment_status',null):query.eq('fulfillment_status',existing.fulfillment_status);
    query=existing.picked_up_at===null?query.is('picked_up_at',null):query.eq('picked_up_at',existing.picked_up_at);
    const {data:updated,error:ue}=await query.select('id,status,fulfillment_status,picked_up_at').maybeSingle();
@@ -129,7 +147,7 @@ Deno.serve(async(req:Request)=>{
  if(req.method==="GET"){
   // Retention is enforced whenever an authorized staff member opens the inbox or customer area.
   const cutoff=new Date(Date.now()-30*86400000).toISOString();
-  const {data:expired,error:expiryError}=await db.from("judith_ai_attachments").select("id,storage_path,judith_ai_inquiries!inner(picked_up_at,status)").is("deleted_at",null).eq("judith_ai_inquiries.status","picked_up").lt("judith_ai_inquiries.picked_up_at",cutoff).limit(100);
+  const {data:expired,error:expiryError}=await db.from("judith_ai_attachments").select("id,storage_path,judith_ai_inquiries!inner(picked_up_at,status)").is("deleted_at",null).eq("judith_ai_inquiries.status","picked_up").is("judith_ai_inquiries.archived_at",null).lt("judith_ai_inquiries.picked_up_at",cutoff).limit(100);
   if(!expiryError&&expired?.length){
    const paths=expired.map(f=>f.storage_path);
    const {error:storageError}=await db.storage.from("judith-ai-attachments").remove(paths);
@@ -139,13 +157,14 @@ Deno.serve(async(req:Request)=>{
  if(req.method==="GET"&&new URL(req.url).searchParams.get("view")==="customers"){
   const {data:customers,error:ce}=await db.from("judith_ai_customers").select("id,name,email,phone,created_at").order("name",{ascending:true}).limit(200);
   if(ce)return send({error:"Kunden konnten nicht geladen werden"},503);
-  const {data:inquiries,error:ie}=await db.from("judith_ai_inquiries").select("id,customer_id,occasion,requested_date,guests,details,status,fulfillment_status,picked_up_at,created_at").order("created_at",{ascending:false}).limit(500);
+  const {data:inquiries,error:ie}=await db.from("judith_ai_inquiries").select("id,customer_id,occasion,requested_date,guests,details,status,fulfillment_status,picked_up_at,created_at,archived_at").is("archived_at",null).order("created_at",{ascending:false}).limit(500);
   if(ie)return send({error:"Anfragen konnten nicht geladen werden"},503);
-  const {data:files}=await db.from("judith_ai_attachments").select("id,message_id,inquiry_id,filename,mime_type,byte_size,storage_path").is("deleted_at",null).limit(1000);
+  const {data:allFiles}=await db.from("judith_ai_attachments").select("id,message_id,inquiry_id,filename,mime_type,byte_size,storage_path").is("deleted_at",null).limit(1000);
+  const activeIds=new Set((inquiries||[]).map(o=>o.id));const files=(allFiles||[]).filter(f=>!f.inquiry_id||activeIds.has(f.inquiry_id));
   const signedFiles=files?.length?(await db.storage.from("judith-ai-attachments").createSignedUrls(files.map(f=>f.storage_path),600)).data||[]:[];
   const signedByPath=new Map<string,string>();for(const item of signedFiles)if(item.path&&item.signedUrl)signedByPath.set(item.path,item.signedUrl);
   const attachments=(files||[]).flatMap(f=>{const signedUrl=signedByPath.get(f.storage_path);return signedUrl?[{id:f.id,message_id:f.message_id,inquiry_id:f.inquiry_id,filename:f.filename,mime_type:f.mime_type,url:signedUrl}]:[]})
-  return send({ok:true,customers:customers||[],inquiries:inquiries||[],attachments});
+  return send({ok:true,can_archive_orders:canArchiveOrders,customers:customers||[],inquiries:inquiries||[],attachments});
  }
  if(req.method==="DELETE"){let payload:unknown;try{payload=await req.json()}catch{return send({error:"Invalid request"},400)}const id=(payload as {message_id?:unknown})?.message_id;if(typeof id!=="string"||!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id))return send({error:"Invalid message ID"},400);const {data:removed,error:removeError}=await db.from("judith_ai_mail_messages").delete().eq("id",id).eq("direction","inbound").select("id").maybeSingle();if(removeError)return send({error:"Endgültiges Löschen fehlgeschlagen"},503);if(!removed)return send({error:"E-Mail nicht gefunden"},404);return send({ok:true,deleted:true});}
  const {data:storedFiles}=await db.from("judith_ai_attachments").select("id,message_id,filename,mime_type,storage_path").is("deleted_at",null).limit(500);
