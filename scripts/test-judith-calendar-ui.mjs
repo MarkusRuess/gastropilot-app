@@ -31,7 +31,7 @@ try{for(const width of [1280,390]){
  let before=requests.filter(r=>r.method==='PATCH').length;page.once('dialog',d=>d.dismiss());await setStage('picked_up');assert.equal(requests.filter(r=>r.method==='PATCH').length,before);assertions++;
  page.once('dialog',d=>d.accept());await setStage('picked_up');await page.locator('.jo-heading').filter({hasText:'🟢 Abgeholt'}).waitFor();
  await setStage('ready');await page.locator('.jo-heading').filter({hasText:'🟠 Abholbereit'}).waitFor();assert.equal(orders[1].picked_up_at,null);assertions++;
- await page.reload();await page.locator('.jd-cards a[href="#judith-orders"]').click();await page.locator('#load-orders').click();await page.locator('#orders-list summary').filter({hasText:'🟠 Abholbereit'}).waitFor();assertions++;
+ await page.reload();await page.locator('.jd-cards a[href="#judith-orders"]').click();await page.locator('#orders-section>summary').click();await page.locator('#load-orders').click();await page.locator('#orders-list summary').filter({hasText:'🟠 Abholbereit'}).waitFor();assertions++;
  // Backstube links to this same orders view, so status is not maintained separately.
  assert.equal(await page.locator('.jd-extra a').filter({hasText:'Backstube'}).getAttribute('href'),'#judith-orders');assertions++;
  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);assert.deepEqual(errors,[]);assertions+=2;
