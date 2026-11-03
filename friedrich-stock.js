@@ -1,5 +1,5 @@
 import {purchaseCost,actualCost} from './friedrich-stock-costs.mjs?v=20261103';
-import {FRIEDRICH,number,orderQuantity,csv,exportRows,inventoryPdf,lastWeek,coffeeDisplay} from './friedrich-stock-engine.mjs?v=20261102';
+import {FRIEDRICH,number,orderQuantity,csv,exportRows,inventoryPdf,lastWeek,coffeeDisplay,countingInfo,countedQuantity,countedValue} from './friedrich-stock-engine.mjs?v=20261103-counted';
 const fmt=v=>number(v)===null?'unbekannt':new Intl.NumberFormat('de-AT',{maximumFractionDigits:3}).format(v);
 const el=(tag,text,cls)=>{const e=document.createElement(tag);if(text!==undefined)e.textContent=text;if(cls)e.className=cls;return e;};
 function input(form,label,type='text',value='',required=true){const l=el('label',label),i=el('input');i.type=type;i.value=value;i.required=required;if(type==='number')i.step='any';l.append(i);form.append(l);return i;}
@@ -37,7 +37,17 @@ function openStock(){
  host.scrollIntoView({behavior:'smooth',block:'start'});
 }
 function active(){return context?.getBusiness()===FRIEDRICH;}
-async function state(at){return check(context.db.rpc('gp_f_stock_state',at?{p_at:at}:{}));}
+async function state(at){
+ const items=await check(context.db.rpc('gp_f_stock_state',at?{p_at:at}:{}));if(!items.length)return items;
+ const [catalog,lines]=await Promise.all([all(context.db,'gp_inventory_items','id,unit'),all(context.db,'gp_f_stock_lines','item_id,name,source_kind,state,raw_data')]);
+ return items.map(x=>countingInfo(x,catalog.find(i=>i.id===x.item_id),lines));
+}
+function bottleChoice(parent,x){
+ if(!x.bottle||x.count_factor!==null)return null;
+ if(!x.bottle_sizes.length){parent.append(el('small','Flaschengröße nicht belegt. Bitte bestehende Gebindezuordnung prüfen.','stock-warning'));return null;}
+ const size=select(parent,'Flaschengröße laut Rechnung',[['','Bitte Größe wählen'],...x.bottle_sizes.map(n=>[String(n),fmt(n)+' l'])]);size.required=false;return size;
+}
+const countingNote=(x,n,size)=>x.bottle?'Volle Flaschen: '+n+' × '+fmt(x.count_factor??number(size))+' '+x.unit+'; angebrochene Flaschen nicht enthalten.':'';
 async function renderStock(){
  if(!active()||!host)return;
  ++run;host.style.minHeight='';host.replaceChildren(el('h2','📦 Lager & Inventur · Das Friedrich'));
@@ -66,17 +76,19 @@ async function renderStockContent(panel){
  if(currentTab==='review')return await review(host,items,status);
  if(currentTab==='recipes')return await recipes(host,items,status);
  if(currentTab==='inventory')return await inventory(host,items,status);
- host.append(el('p','Fehlende Bestände sind unbekannt. Rechnerische Mengen hängen von vollständigen Belegen und Rezepturen ab. Verluste werden separat erfasst; Reserve erhöht nur den Bestellvorschlag.','muted'));
+ host.append(el('p','Die letzte tatsächliche Zählung bleibt sichtbar. Ihr Warenwert bezieht sich auf den Zählzeitpunkt und den vorhandenen Netto-EK. Rechenbestand und Bonit-Verbrauch stehen getrennt daneben; fehlende Werte bleiben unbekannt. Verluste werden separat erfasst; Reserve erhöht nur den Bestellvorschlag.','muted'));
  const form=el('form',undefined,'stock-form');
- const chosen=select(form,'Einzelnen Artikel zählen',items.map(x=>[x.item_id,x.name+' ('+x.unit+')']));
+ const chosen=select(form,'Einzelnen Artikel zählen',items.map(x=>[x.item_id,x.name+' ('+x.count_unit+')']));
  const q=input(form,'Tatsächlich vorhandene Menge','number');q.min='0';
+ const packageBox=el('div');form.append(packageBox);let bottleSize=null;
+ const syncCount=()=>{packageBox.replaceChildren();const x=items.find(x=>x.item_id===chosen.value);if(!x)return;q.step=x.bottle?'1':'any';q.parentElement.firstChild.textContent=x.bottle?'Anzahl voller Flaschen':'Tatsächlich vorhandene Menge in '+x.unit;bottleSize=bottleChoice(packageBox,x);};chosen.onchange=syncCount;syncCount();
  const when=input(form,'Zählzeitpunkt','datetime-local');
  const dayWrap=el('label','Zählung enthält alle Verkäufe und Lieferungen dieses Tages'),complete=el('input');complete.type='checkbox';dayWrap.append(complete);form.append(dayWrap);
  const note=input(form,'Notiz','text','',false);const save=el('button','Zählung speichern');save.type='submit';form.append(save);host.append(form);
- const request=crypto.randomUUID();form.onsubmit=async e=>{e.preventDefault();if(!active())return;save.disabled=true;try{await check(context.db.from('gp_f_stock_counts').insert({business_id:FRIEDRICH,item_id:chosen.value,quantity:number(q.value),counted_at:new Date(when.value).toISOString(),day_complete:complete.checked,note:note.value,request_id:request}));await renderStock();}catch(e){status.textContent=e.message;save.disabled=false;}};
- const wrap=el('div',undefined,'stock-scroll'),table=el('table'),thead=el('thead'),tr=el('tr');for(const h of ['Artikel','Bestand','Netto-EK / Wert','Letzte Zählung','Hinweis'])tr.append(el('th',h));thead.append(tr);table.append(thead);const tbody=el('tbody');table.append(tbody);wrap.append(table);host.append(wrap);
+ const request=crypto.randomUUID();form.onsubmit=async e=>{e.preventDefault();if(!active())return;save.disabled=true;try{await check(context.db.from('gp_f_stock_counts').insert({business_id:FRIEDRICH,item_id:chosen.value,quantity:countedQuantity(items.find(x=>x.item_id===chosen.value),q.value,bottleSize?.value),counted_at:new Date(when.value).toISOString(),day_complete:complete.checked,note:[note.value,countingNote(items.find(x=>x.item_id===chosen.value),q.value,bottleSize?.value)].filter(Boolean).join(' · '),request_id:request}));await renderStock();}catch(e){status.textContent=e.message;save.disabled=false;}};
+ const wrap=el('div',undefined,'stock-scroll'),table=el('table'),thead=el('thead'),tr=el('tr');for(const h of ['Artikel','Letzte tatsächliche Zählung','Netto-EK / Zählwert','Zählzeitpunkt','Rechenbestand / Verbrauch'])tr.append(el('th',h));thead.append(tr);table.append(thead);const tbody=el('tbody');table.append(tbody);wrap.append(table);host.append(wrap);
  for(const x of items){const row=el('tr');
- row.append(el('td',x.name),el('td',fmt(x.quantity)+' '+x.unit+(x.unit==='g'?' · '+coffeeDisplay(x.quantity):'')),el('td',fmt(x.net_unit_price)+' € / '+fmt(x.value_net)+' €'),el('td',x.counted_at?new Date(x.counted_at).toLocaleString('de-AT'):'unbekannt'),el('td',(x.source_conflict?'Quellkonflikt; Bestand gesperrt. ':x.timing_warning?'Tageszeit prüfen: Tagesbonit kann Zählung am selben Tag nicht minutengenau aufteilen. ':'')+(x.quantity!==null&&x.quantity<0?'NEGATIV – Belege/Zählung fehlen. ':'')+'Basis '+fmt(x.baseline)+'; Zugang '+fmt(x.received)+'; Verkauf −'+fmt(x.consumed)+'; Verlust −'+fmt(x.loss)));tbody.append(row);}
+ row.append(el('td',x.name),el('td',fmt(x.baseline)+' '+x.unit+(x.unit==='g'?' · '+coffeeDisplay(x.baseline):x.bottle&&x.count_factor&&x.unit==='l'?' · '+fmt(x.baseline===null?null:x.baseline/x.count_factor)+' volle Flaschen':'')),el('td',fmt(x.net_unit_price)+' € je '+x.unit+' / '+fmt(countedValue(x))+' €'),el('td',x.counted_at?new Date(x.counted_at).toLocaleString('de-AT'):'unbekannt'),el('td','Rechenbestand: '+fmt(x.quantity)+' '+x.unit+'. '+(x.source_conflict?'Quellkonflikt; Rechenbestand offen. ':x.timing_warning?'Tageszeit prüfen: Tagesbonit kann Zählung am selben Tag nicht minutengenau aufteilen. ':'')+(x.quantity!==null&&x.quantity<0?'NEGATIV – Belege/Zählung fehlen. ':'')+'Zugang '+fmt(x.received)+'; Verkauf −'+fmt(x.consumed)+'; Verlust −'+fmt(x.loss)));tbody.append(row);}
  const gaps=[...new Set(items.flatMap(x=>x.missing_days||[]))];if(gaps.length)host.append(el('p','Fehlende Bonit-Artikeltage seit den Zählungen (regulär Do–So): '+gaps.join(', ')+'. Rechnerische Bestände sind unvollständig.','stock-warning'));
  exports(host,items,'aktuell');
  const loss=el('form',undefined,'stock-form'),li=select(loss,'Verlustartikel',items.map(x=>[x.item_id,x.name+' ('+x.unit+')'])),lq=input(loss,'Verlustmenge','number'),lt=input(loss,'Zeitpunkt','datetime-local'),ln=input(loss,'Grund');lq.min='0.001';const ls=el('button','Verlust separat speichern');loss.append(ls);const lr=crypto.randomUUID();loss.onsubmit=async e=>{e.preventDefault();if(!active())return;ls.disabled=true;try{await check(context.db.from('gp_f_stock_losses').insert({business_id:FRIEDRICH,item_id:li.value,quantity:number(lq.value),occurred_at:new Date(lt.value).toISOString(),reason:ln.value,request_id:lr}));await renderStock();}catch(e){status.textContent=e.message;ls.disabled=false;}};host.append(loss);
@@ -195,16 +207,17 @@ async function quickCount(parent,items,status){
  const when=input(form,'Zählzeitpunkt für diese Eingaben','datetime-local');
  const localNow=()=>{const d=new Date();return new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,16);};when.value=localNow();
  const dw=el('label','Alle Verkäufe und Lieferungen dieses Tages bereits enthalten'),complete=el('input');complete.type='checkbox';dw.append(complete);form.append(dw);
- form.append(el('p','Menge eingeben = Artikel auswählen. Leere Felder bleiben unverändert; 0 bestätigt einen leeren Bestand. Mengen in der jeweils angezeigten Einheit eingeben. Zuletzt gezählte Artikel stehen oben.','muted'));
+ form.append(el('p','Menge eingeben = Artikel auswählen. Leere Felder bleiben unverändert; 0 bestätigt einen leeren Bestand. Bei Flaschen nur volle Flaschen zählen; angebrochene Flaschen nicht mitzählen. GastroPilot rechnet in die Lagereinheit um. Zuletzt gezählte Artikel stehen oben.','muted'));
  const list=el('div');form.append(list);const fields=[];
  const sorted=[...items].sort((a,b)=>(Date.parse(latest.get(b.item_id)?.counted_at||b.counted_at)||0)-(Date.parse(latest.get(a.item_id)?.counted_at||a.counted_at)||0)||a.name.localeCompare(b.name,'de'));
  const selectedIDs=new Set();
  const addItem=x=>{
   if(selectedIDs.has(x.item_id))return;selectedIDs.add(x.item_id);
   const row=el('div');row.style.cssText='padding:12px 0;border-bottom:1px solid #dce6ed;display:grid;grid-template-columns:minmax(0,1fr) minmax(95px,120px);gap:8px;align-items:center';row.dataset.quickItem=x.item_id;
-  const label=el('label',x.name+' · '+x.unit),qty=el('input');qty.type='number';qty.min='0';qty.step='any';qty.inputMode='decimal';qty.setAttribute('aria-label',x.name+' · Menge in '+x.unit);qty.style.cssText='font-size:20px;min-height:50px;width:100%;box-sizing:border-box';row.append(label,qty);
+  const label=el('label',x.name+' · '+x.count_unit),qty=el('input');qty.type='number';qty.min='0';qty.step=x.bottle?'1':'any';qty.inputMode='decimal';qty.setAttribute('aria-label',x.name+' · Menge in '+x.count_unit);qty.style.cssText='font-size:20px;min-height:50px;width:100%;box-sizing:border-box';row.append(label,qty);
+  const packageBox=el('div');packageBox.style.gridColumn='1/-1';row.append(packageBox);const size=bottleChoice(packageBox,x);
   const last=el('small');const showLast=c=>{last.textContent=c?'Letzte Zählung: '+fmt(c.quantity)+' '+x.unit+' · '+new Date(c.counted_at).toLocaleString('de-AT'):'Noch keine bestätigte Zählung';};showLast(latest.get(x.item_id)||(x.counted_at?{quantity:x.baseline,counted_at:x.counted_at}:null));
-  last.style.gridColumn='1/-1';row.append(last);list.append(row);fields.push({x,row,qty,showLast,request:crypto.randomUUID()});
+  last.style.gridColumn='1/-1';row.append(last);list.append(row);fields.push({x,row,qty,size,showLast,request:crypto.randomUUID()});
  };
  const counted=sorted.filter(x=>latest.has(x.item_id)||x.counted_at);for(const x of counted.slice(0,10))addItem(x);
  const results=el('div');results.id='quickCountSearchResults';search.parentElement.after(results);
@@ -222,7 +235,7 @@ async function quickCount(parent,items,status){
   if(!selected.length){status.textContent='Keine Mengen eingegeben.';return;}
   if(selected.some(f=>number(f.qty.value)===null||Number(f.qty.value)<0)){status.textContent='Bitte gültige Mengen ab 0 eingeben.';return;}
   const at=new Date(when.value);if(!Number.isFinite(at.getTime())||at>new Date()){status.textContent='Bitte gültigen Zählzeitpunkt wählen.';return;}
-  const rows=selected.map(f=>({business_id:FRIEDRICH,item_id:f.x.item_id,quantity:Number(f.qty.value),counted_at:at.toISOString(),day_complete:complete.checked,note:'Mobile Schnellzählung',request_id:f.request}));
+  let rows;try{rows=selected.map(f=>({business_id:FRIEDRICH,item_id:f.x.item_id,quantity:countedQuantity(f.x,f.qty.value,f.size?.value),counted_at:at.toISOString(),day_complete:complete.checked,note:['Mobile Schnellzählung',countingNote(f.x,f.qty.value,f.size?.value)].filter(Boolean).join(' · '),request_id:f.request}));}catch(e){status.textContent=e.message;return;}
   const signature=JSON.stringify(rows);
   if(retry&&retry!==signature){status.textContent='Vorheriger Speicherversuch unklar. Bitte unveränderte Eingaben zuerst erneut speichern.';return;}
   const position={top:window.scrollY,left:window.scrollX};parent.style.minHeight=parent.getBoundingClientRect().height+'px';
@@ -230,9 +243,10 @@ async function quickCount(parent,items,status){
   try{
    await check(db.from('gp_f_stock_counts').upsert(rows,{onConflict:'request_id',ignoreDuplicates:true}));
    if(!active()||!form.isConnected)return;
-   for(const f of selected){f.showLast({quantity:Number(f.qty.value),counted_at:at.toISOString()});f.qty.value='';f.request=crypto.randomUUID();}
+   for(const f of selected){f.showLast({quantity:rows.find(r=>r.item_id===f.x.item_id).quantity,counted_at:at.toISOString()});f.qty.value='';f.request=crypto.randomUUID();}
    retry=null;when.value=localNow();status.textContent=selected.length+' Zählungen gespeichert. Position und Suche bleiben erhalten.';
   }catch(e){if(active())status.textContent='Speichern nicht bestätigt: '+e.message+' Erneut speichern ist duplikatsicher.';}
   finally{save.disabled=false;selected.forEach(f=>f.qty.disabled=false);if(active()&&form.isConnected)requestAnimationFrame(()=>window.scrollTo({...position,behavior:'instant'}));}
  };
 }
+
