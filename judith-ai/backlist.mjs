@@ -1,7 +1,7 @@
 // Deterministic local interpretation; never calls AI or writes an order.
 const clean=s=>String(s??'').trim().replace(/\s+/g,' ');
-const unknown=s=>!clean(s)||/^(?:bitte prüfen|unklar|offen|unbekannt|\?)$/i.test(clean(s));
-const sizeName=s=>clean(s).replace(/(\d)\s*cm\b/gi,'$1 cm').replace(/\s*[x×]\s*/g,' × ');
+const unknown=s=>!clean(s)||/^(?:bitte prüfen|unklar|offen|unbekannt|keine Angabe|nicht angegeben|\?)$/i.test(clean(s));
+const sizeName=s=>clean(s).replace(/(\d)\s*cm\b/gi,'$1 cm').replace(/(\d)\s*[x×]\s*(?=\d)/g,'$1 × ');
 const flavourName=s=>{const x=clean(s);for(const [re,name] of [[/^sacher(?:torte)?$/i,'Sacher'],[/^prinzess(?:en)?[- ]?(?:torte)?$/i,'Prinzess'],[/^punsch(?:torte)?$/i,'Punsch'],[/^schoko(?:laden?)?(?:torte)?$/i,'Schokolade'],[/^erdbeer(?:e|en|torte)?$/i,'Erdbeere'],[/^himbeer(?:e|en|torte)?$/i,'Himbeere']])if(re.test(x))return name;return x;};
 export const detailText=o=>String(o.details||'').replace(/\\n/g,'\n');
 export function parseFillings(value){const text=clean(value);if(unknown(text))return null;if(/^(?:keine(?: Füllung)?|ohne(?: Füllung)?|ungefüllt)$/i.test(text))return [];if(/\b(?:oder|eventuell|vielleicht)\b|\?/i.test(text))return null;const parts=text.split(/\s*(?:\+|;|,|\/|\bund\b|&)\s*/i).map(clean).filter(Boolean);return parts.length?[...new Map(parts.map(s=>[s.toLocaleLowerCase('de'),s])).values()]:null;}
