@@ -33,7 +33,7 @@ try{for(const width of [1280,390]){
  await setStage('ready');await page.locator('.jo-heading').filter({hasText:'🟠 Abholbereit'}).waitFor();assert.equal(orders[1].picked_up_at,null);assertions++;
  await page.reload();await page.locator('.jd-cards a[href="#judith-orders"]').click();await page.locator('#load-orders').click();await page.locator('#orders-list summary').filter({hasText:'🟠 Abholbereit'}).waitFor();assertions++;
  // Backstube links to this same orders view, so status is not maintained separately.
- assert.ok((await page.locator('.jd-extra').innerHTML()).includes('href="#judith-orders">👩‍🍳 Backstube'));assertions++;
+ assert.equal(await page.locator('.jd-extra a').filter({hasText:'Backstube'}).getAttribute('href'),'#judith-orders');assertions++;
  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);assert.deepEqual(errors,[]);assertions+=2;
  await page.close();console.log(`Calendar browser checks passed: ${width}px`);
 }console.log(`${assertions} browser assertions passed`)}finally{await browser.close();server.close()}
