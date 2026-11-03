@@ -15,6 +15,22 @@ Deno.serve(async(req:Request)=>{
  const {data:staff,error:staffError}=await db.from("judith_ai_access").select("active").eq("user_id",user.id).maybeSingle();
  if(staffError)return send({error:"Access check unavailable"},503);
  if(!staff?.active)return send({error:"Forbidden"},403);
+ // Orders archive is complete and remains separate from inbox attachment retention.
+ if(req.method==="GET"&&new URL(req.url).searchParams.get("view")==="orders"){
+  const inquiries:any[]=[],customers=new Map<string,any>();let cursor="";
+  for(;;){let query=db.from("judith_ai_inquiries").select("id,message_id,customer_id,occasion,requested_date,guests,details,status,fulfillment_status,picked_up_at,created_at,customer:judith_ai_customers(id,name,email,phone)").order("id",{ascending:true}).limit(500);if(cursor)query=query.gt("id",cursor);
+   const {data:page,error:pageError}=await query;if(pageError||!page)return send({error:"Aufträge konnten nicht vollständig geladen werden"},503);
+   for(const row of page){const {customer,...order}=row;inquiries.push(order);if(customer?.id)customers.set(customer.id,customer);}if(page.length<500)break;const last=page[page.length-1]?.id;if(!last||last===cursor)return send({error:"Aufträge konnten nicht vollständig geladen werden"},503);cursor=last;
+  }
+  return send({ok:true,inquiries,customers:[...customers.values()],attachments:[]});
+ }
+ // Sign customer photos only when their existing order is opened.
+ if(req.method==="GET"&&new URL(req.url).searchParams.get("view")==="order_attachments"){
+  const id=new URL(req.url).searchParams.get("inquiry_id")||"";if(!/^[0-9a-f-]{36}$/i.test(id))return send({error:"Ungültiger Auftrag"},400);
+  const {data:files,error:fileError}=await db.from("judith_ai_attachments").select("id,message_id,inquiry_id,filename,mime_type,storage_path").eq("inquiry_id",id).is("deleted_at",null).limit(1000);if(fileError)return send({error:"Anhänge konnten nicht geladen werden"},503);
+  const signed=files?.length?await db.storage.from("judith-ai-attachments").createSignedUrls(files.map(f=>f.storage_path),600):{data:[],error:null};if(signed.error)return send({error:"Anhänge konnten nicht geöffnet werden"},503);
+  const urls=new Map((signed.data||[]).filter(x=>x.path&&x.signedUrl).map(x=>[x.path,x.signedUrl]));return send({ok:true,attachments:(files||[]).flatMap(f=>urls.has(f.storage_path)?[{id:f.id,inquiry_id:f.inquiry_id,message_id:f.message_id,filename:f.filename,mime_type:f.mime_type,url:urls.get(f.storage_path)}]:[])});
+ }
  // Dedicated backlist read: no attachment signing or retention side effects.
  if(req.method==="GET"&&new URL(req.url).searchParams.get("view")==="backlist"){
   const params=new URL(req.url).searchParams,start=params.get("start")||"",end=params.get("end")||"";
@@ -22,7 +38,7 @@ Deno.serve(async(req:Request)=>{
   if(!valid(start)||!valid(end)||new Date(start).getUTCDay()!==1||Date.parse(end)-Date.parse(start)!==6*86400000)return send({error:"Ungültige Kalenderwoche"},400);
   const inquiries:any[]=[],customers=new Map<string,any>();let cursor="";
   for(;;){
-   let query=db.from("judith_ai_inquiries").select("id,customer_id,occasion,requested_date,details,status,fulfillment_status,customer:judith_ai_customers(id,name)").in("status",["confirmed","picked_up"]).or(`and(requested_date.gte.${start},requested_date.lte.${end}),requested_date.is.null`).order("id",{ascending:true}).limit(500);
+   let query=db.from("judith_ai_inquiries").select("id,customer_id,occasion,requested_date,details,status,fulfillment_status,picked_up_at,customer:judith_ai_customers(id,name)").in("status",["confirmed"]).or(`and(requested_date.gte.${start},requested_date.lte.${end}),requested_date.is.null`).order("id",{ascending:true}).limit(500);
    if(cursor)query=query.gt("id",cursor);
    const {data:page,error:pageError}=await query;
    if(pageError||!page)return send({error:"Backliste konnte nicht vollständig geladen werden"},503);
