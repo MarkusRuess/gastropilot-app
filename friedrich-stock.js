@@ -47,7 +47,7 @@ function bottleChoice(parent,x){
  if(!x.bottle_sizes.length){parent.append(el('small','Flaschengröße nicht belegt. Bitte bestehende Gebindezuordnung prüfen.','stock-warning'));return null;}
  const size=select(parent,'Flaschengröße laut Rechnung',[['','Bitte Größe wählen'],...x.bottle_sizes.map(n=>[String(n),fmt(n)+' l'])]);size.required=false;return size;
 }
-const countingNote=(x,n,size)=>x.bottle?'Volle Flaschen: '+n+' × '+fmt(x.count_factor??number(size))+' '+x.unit+'; angebrochene Flaschen nicht enthalten.':'';
+const countingNote=(x,n,size)=>x.bottle?'Volle Flaschen: '+n+(Number(n)===0?'':' × '+fmt(x.count_factor??number(size))+' '+x.unit)+'; angebrochene Flaschen nicht enthalten.':'';
 async function renderStock(){
  if(!active()||!host)return;
  ++run;host.style.minHeight='';host.replaceChildren(el('h2','📦 Lager & Inventur · Das Friedrich'));

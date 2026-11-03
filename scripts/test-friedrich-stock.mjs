@@ -47,5 +47,5 @@ test('Aperol invoice volumes require explicit choice when ambiguous, no default'
  const invoice=n=>({source_kind:'delivery',state:'review',name:'Aperol '+n+' l',raw_data:{name:'Aperol '+n+' l'}});
  const x=countingInfo(raw,{},[invoice('0,7'),invoice('1'),invoice('1')]);assert.deepEqual(x.bottle_sizes,[.7,1]);assert.equal(x.count_factor,null);
  assert.throws(()=>countedQuantity(x,3));assert.equal(countedQuantity(x,3,'.7'),2.1);assert.equal(countedQuantity(x,3,'1'),3);assert.throws(()=>countedQuantity(x,3,'0.75'));
- assert.throws(()=>countedQuantity(countingInfo(raw),1));assert.equal(litresInLabel('Flasche à 700 ml'),.7);
+ assert.throws(()=>countedQuantity(countingInfo(raw),1));assert.equal(countedQuantity(countingInfo(raw),0),0);assert.equal(litresInLabel('Flasche à 700 ml'),.7);
 });

@@ -16,6 +16,7 @@ export function countingInfo(x,original={},lines=[]){
 export function countedQuantity(x,value,size){
  const n=number(value),factor=x.count_factor??number(size);
  if(n===null||n<0||x.bottle&&!Number.isInteger(n))throw Error('Bitte die Anzahl voller Flaschen als ganze Zahl ab 0 eingeben.');
+ if(n===0)return 0; // Confirmed empty is independent of bottle volume.
  if(factor===null||factor<=0)throw Error('Flaschengröße laut Rechnung auswählen; keine Größe wird geschätzt.');
  if(x.bottle_sizes?.length&& !x.bottle_sizes.includes(factor))throw Error('Flaschengröße ist nicht belegt.');
  return Math.round(n*factor*1e9)/1e9;
