@@ -179,3 +179,9 @@ Neue Tabellen erzwingen Friedrichs business_id. RLS erlaubt bestehende Friedrich
 - Chromium-Regression bildet den echten abschließenden Startfilter nach und prüft vor/nach Lagerklick sowohl Sichtbarkeit als auch Entfernung der Sperrklasse auf 390/1200 px. Veröffentlichung/CI-Nachweis folgt.
 
 - Mobilkorrektur veröffentlicht über PR #66, Commit `46911a1222d5f1683010134a20d3af767b3bbac5`. PR-CI 41514685699 und Produktiv-CI 41514866374 erfolgreich: echter Cockpit-Startfilter inklusive `mobileHidden` bei 390/1200 px nachgebildet und Öffnung geprüft. Pages-Deployment 41514866366 erfolgreich. Unter der unveränderten produktiven Adresse nach erneutem Laden sowohl aktualisierten Modulimport `20261102-mobile-hidden` als auch Entfernen der Mobil-Sperrklasse im Live-DOM bestätigt. Kein angemeldeter Produktionstest möglich (verfügbarer Browser zeigt Anmeldung); keine Betriebsdatenänderung.
+
+## 2026-11-03 – Friedrich Umsatztrennung, isolierter PR #67
+- `index.html`: Bonit, Ausgangsrechnungen und Gesamtumsatz getrennte Brutto-Kacheln, Rechnungsliste nach Leistungsdatum im Tageskalender, Rechnungspositionen in der Top-30-Auswertung mit Herkunft.
+- Keine Änderung von Supabase-Daten, Judith AI oder Berechtigungen.
+- SQL-Abgleich November: Bonit 1.021,50 EUR; Rechnungen 115,20 EUR; Gesamt 1.136,70 EUR. Rechnung 17-2026: 36 Brötchen, 115,20 EUR, Leistung 05.11.
+- Statische Code-Prüfung bestanden. Browser-E2E und CI für PR #67 noch nicht nachgewiesen; Live-Freigabe daher offen.
