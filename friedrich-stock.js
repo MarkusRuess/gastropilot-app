@@ -56,7 +56,7 @@ async function renderStockContent(panel){
  const items=await state();if(!active()||token!==run)return;
  status.textContent='Gemeinsamer Supabase-Bestand · Gelegentlich einzelne Artikel zählen. Keine tägliche Gesamtzählung nötig.';
  if(currentSection==='buy'){
- const choose=select(host,'Ansicht',[['receipts','Wareneingänge & Rechnungen'],['movements','Lagerbewegungen'],['costs','Wareneinsatz'],['review','Zuordnungen & Belege'],['recipes','Bonit & Rezepturen']]);choose.value=currentTab;
+ const choose=select(host,'Ansicht',[['receipts','Wareneingänge & Rechnungen'],['movements','Lagerbewegungen'],['costs','Wareneinsatz'],['review','Zuordnungen & Belege'],['recipes','Bonit & Rezepturen']]);choose.value=currentTab;choose.setAttribute('aria-label','Ansicht');
  choose.onchange=()=>{currentTab=choose.value;void renderStock();};
  button(host,'Wöchentliche Einkaufsplanung öffnen',()=>document.querySelector('[data-gp-area="planning"]')?.click());
  button(host,'Bonit-Artikelanalyse öffnen',()=>document.querySelector('[data-gp-area="articles"]')?.click());
