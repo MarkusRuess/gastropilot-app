@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {stripTypeScriptTypes} from 'node:module';
-import {orderQuantity,csv,coffeeDisplay,exportRows,lastWeek,inventoryPdf} from '../friedrich-stock-engine.mjs';
+import {orderQuantity,csv,coffeeDisplay,exportRows,lastWeek,inventoryPdf,countingInfo,countedQuantity,countedValue,litresInLabel} from '../friedrich-stock-engine.mjs';
 test('Beer rounds to 50 litre barrels',()=>assert.equal(orderQuantity(120,10,45,50),2));
 test('Coffee rounds to individual 1500 g cans',()=>assert.equal(orderQuantity(7500,0,1000,1500),5));
 test('Unknown stock is not zero',()=>assert.equal(orderQuantity(100,0,null,50),null));
@@ -27,3 +27,25 @@ test('Friedrich invoice preserves signed returns and packaging',()=>{const x=nor
 test('Judith normalization retains previous shape and behavior',()=>{const x=normalize(invoice,false)[0];assert.equal(x.quantity,null);assert.equal(x.line_net,-300);assert.equal(x.article_number,'007');assert.equal(x.pack_size,undefined);assert.equal(Object.keys(x).length,10);});
 test('No invented package defaults',()=>assert.equal(normalize([{name:'Unknown'}],true)[0].pack_size,null));
 test('Shared upload retains Friedrich item evidence',()=>{const s=fs.readFileSync(new URL('../upload.html',import.meta.url),'utf8');assert.match(s,/line.gpOriginalItem=\{\.\.\.item\}/);assert.match(s,/out.push\(\{\.\.\.original,name,quantity/);});
+
+
+test('Full bottles convert once, stored litres and original event remain unchanged',()=>{
+ const old={item_id:'wine',unit:'l',pack_label:'Flasche à 0,75 l',baseline:7.5,quantity:null,net_unit_price:12};
+ const x=countingInfo(old);assert.equal(x.baseline,7.5);assert.equal(old.baseline,7.5);assert.equal(countedQuantity(x,10),7.5);assert.equal(countedValue(x),90);
+ assert.equal(countedQuantity(x,0),0);assert.throws(()=>countedQuantity(x,1.5));
+});
+test('Unknown count or price never becomes zero',()=>{
+ assert.equal(countedValue({baseline:null,net_unit_price:12}),null);assert.equal(countedValue({baseline:7.5,net_unit_price:null}),null);assert.equal(countedValue({baseline:0,net_unit_price:12}),0);
+});
+test('Explicit HOFER packaging and unconverted unit quantities',()=>{
+ const x=countingInfo({item_id:'829bea07-8d63-42ba-9c9c-be0503e166c7',unit:'l',pack_label:'Flasche à 1 l'});assert.equal(countedQuantity(x,4),4);
+ const piece=countingInfo({unit:'Stück'}, {unit:'Flasche'});assert.equal(countedQuantity(piece,3),3);
+ const coffee=countingInfo({unit:'g',pack_label:'Dose à 1,5 kg'});assert.equal(countedQuantity(coffee,7500),7500);
+});
+test('Aperol invoice volumes require explicit choice when ambiguous, no default',()=>{
+ const raw={item_id:'87dd191f-3ee0-40fb-a72e-600cd57eaa6a',unit:'l'};
+ const invoice=n=>({source_kind:'delivery',state:'review',name:'Aperol '+n+' l',raw_data:{name:'Aperol '+n+' l'}});
+ const x=countingInfo(raw,{},[invoice('0,7'),invoice('1'),invoice('1')]);assert.deepEqual(x.bottle_sizes,[.7,1]);assert.equal(x.count_factor,null);
+ assert.throws(()=>countedQuantity(x,3));assert.equal(countedQuantity(x,3,'.7'),2.1);assert.equal(countedQuantity(x,3,'1'),3);assert.throws(()=>countedQuantity(x,3,'0.75'));
+ assert.throws(()=>countedQuantity(countingInfo(raw),1));assert.equal(countedQuantity(countingInfo(raw),0),0);assert.equal(litresInLabel('Flasche à 700 ml'),.7);
+});

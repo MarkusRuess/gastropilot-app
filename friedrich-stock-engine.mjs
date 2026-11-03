@@ -1,5 +1,27 @@
 export const FRIEDRICH='6a5484d1-daf6-4263-897d-24cdf536aa29';
 export const number=v=>v===null||v===undefined||v===''?null:Number.isFinite(Number(v))?Number(v):null;
+// Only explicit existing packaging data, never a default bottle volume.
+export function litresInLabel(label){
+ const m=String(label||'').match(/(?:^|\s)(\d+(?:[.,]\d+)?)\s*(ml|cl|l|liter)\b/i);
+ return m?Math.round(Number(m[1].replace(',','.'))*({ml:.001,cl:.01,l:1,liter:1}[m[2].toLowerCase()])*1e9)/1e9:null;
+}
+export function countingInfo(x,original={},lines=[]){
+ const bottle=/flasch/i.test((original.unit||'')+' '+(x.pack_label||''))||['829bea07-8d63-42ba-9c9c-be0503e166c7','87dd191f-3ee0-40fb-a72e-600cd57eaa6a'].includes(x.item_id);
+ if(!bottle)return {...x,count_unit:x.unit,count_factor:1,bottle:false,bottle_sizes:[]};
+ if(x.unit!=='l')return {...x,count_unit:'volle Flaschen',count_factor:1,bottle:true,bottle_sizes:[]};
+ const documented=litresInLabel(x.pack_label)||litresInLabel(original.unit);
+ const sizes=documented?[documented]:[...new Set(lines.filter(l=>l.source_kind==='delivery'&&l.state!=='excluded'&&(l.item_id===x.item_id||x.item_id==='87dd191f-3ee0-40fb-a72e-600cd57eaa6a'&&/^aperol\b/i.test(l.name||''))).map(l=>litresInLabel(l.raw_data?.pack_label)||litresInLabel(l.raw_data?.name||l.name)).filter(v=>v>0))].sort((a,b)=>a-b);
+ return {...x,bottle:true,count_unit:'volle Flaschen',count_factor:sizes.length===1?sizes[0]:null,bottle_sizes:sizes};
+}
+export function countedQuantity(x,value,size){
+ const n=number(value),factor=x.count_factor??number(size);
+ if(n===null||n<0||x.bottle&&!Number.isInteger(n))throw Error('Bitte die Anzahl voller Flaschen als ganze Zahl ab 0 eingeben.');
+ if(n===0)return 0; // Confirmed empty is independent of bottle volume.
+ if(factor===null||factor<=0)throw Error('Flaschengröße laut Rechnung auswählen; keine Größe wird geschätzt.');
+ if(x.bottle_sizes?.length&& !x.bottle_sizes.includes(factor))throw Error('Flaschengröße ist nicht belegt.');
+ return Math.round(n*factor*1e9)/1e9;
+}
+export function countedValue(x){const q=number(x.baseline),p=number(x.net_unit_price);return q===null||p===null?null:q*p;}
 export function orderQuantity(demand,reserve,stock,pack){
  const d=number(demand),s=number(stock),p=number(pack),r=number(reserve);
  if(d===null||s===null||p===null||p<=0||r===null||r<0)return null;
@@ -32,3 +54,4 @@ export function inventoryPdf(items,label){
  const start=out.length;out+=`xref\n0 ${objs.length}\n0000000000 65535 f \n`+offsets.slice(1).map(n=>String(n).padStart(10,'0')+' 00000 n \n').join('')+`trailer\n<< /Size ${objs.length} /Root 1 0 R >>\nstartxref\n${start}\n%%EOF`;
  return new Uint8Array([...out].map(c=>c.charCodeAt(0)));
 }
+

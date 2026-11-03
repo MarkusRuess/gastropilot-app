@@ -9,7 +9,11 @@ await page.evaluate(async()=>{
  const F='6a5484d1-daf6-4263-897d-24cdf536aa29';window.biz=F;window.calls=[];
  const items=[{item_id:'4c1c36d5-f7c2-4298-87ca-24ceecbe80ce',name:'Villacher Fassbier',unit:'l',quantity:45,baseline:50,received:0,consumed:5,loss:0,net_unit_price:3,value_net:135,counted_at:'2026-10-31T22:00Z',count_kind:'gezählt',pack_size:50,pack_label:'Fass à 50 l',reserve_percent:10},{item_id:'e4e19947-6ee2-4671-a8ca-b2fa52cac6d5',name:'Illy Kaffee 1,5 kg Dose',unit:'g',quantity:null,baseline:null,net_unit_price:.04,value_net:null,pack_size:1500,pack_label:'Dose à 1,5 kg',reserve_percent:0},{item_id:'decaf',name:'Entkoffeinierter Kaffee',unit:'g',quantity:null,baseline:null,pack_size:null,reserve_percent:0}];
  for(let n=0;n<11;n++)items.push({item_id:'extra-'+n,name:'Zusatzartikel '+n,unit:'Stück',quantity:null,baseline:null,pack_size:1,reserve_percent:0});
- const data={gp_f_stock_counts:[{item_id:items[1].item_id,quantity:7500,counted_at:'2026-11-03T10:00Z',created_at:'2026-11-03T10:00Z'}],gp_f_stock_rules:[{article_number:'2000',item_id:items[0].item_id,per_sale:.33,note:'Betreiber'},{article_number:'1400',item_id:items[1].item_id,per_sale:8,note:'Betreiber'}],gp_f_stock_sales:[{business_id:F,article_number:'2000',article_name:'Villacher',closing_date:'2026-10-30',quantity:100,gross_amount:440}],bonit_daily_closings:[{closing_date:'2026-10-30',gross_amount:440}],gp_f_stock_closings:[],gp_inventory_snapshots:[],gp_f_stock_lines:[{id:'line',name:'Lieferung Bier',source_kind:'delivery',supplier:'Lieferant',raw_data:{quantity:1,unit:'Fass'},delivery_date:'2026-11-01',state:'review'}]};
+ items.find(x=>x.item_id==='extra-10').pack_label='Flasche à 0,75 l';Object.assign(items.find(x=>x.item_id==='extra-10'),{unit:'l',baseline:7.5,quantity:null,net_unit_price:12,counted_at:'2026-11-01T10:10Z',timing_warning:true});
+ const data={gp_inventory_items:[{id:'extra-10',unit:'Flasche'}],gp_f_stock_counts:[{item_id:items[1].item_id,quantity:7500,counted_at:'2026-11-03T10:00Z',created_at:'2026-11-03T10:00Z'}],gp_f_stock_rules:[{article_number:'2000',item_id:items[0].item_id,per_sale:.33,note:'Betreiber'},{article_number:'1400',item_id:items[1].item_id,per_sale:8,note:'Betreiber'}],gp_f_stock_sales:[{business_id:F,article_number:'2000',article_name:'Villacher',closing_date:'2026-10-30',quantity:100,gross_amount:440}],bonit_daily_closings:[{closing_date:'2026-10-30',gross_amount:440}],gp_f_stock_closings:[],gp_inventory_snapshots:[],gp_f_stock_lines:[{id:'line',name:'Lieferung Bier',source_kind:'delivery',supplier:'Lieferant',raw_data:{quantity:1,unit:'Fass'},delivery_date:'2026-11-01',state:'review'}]};
+ items.push({item_id:'87dd191f-3ee0-40fb-a72e-600cd57eaa6a',name:'Aperol',unit:'l',quantity:null,baseline:3,pack_size:null,reserve_percent:0});
+ data.gp_f_stock_counts.push({item_id:'87dd191f-3ee0-40fb-a72e-600cd57eaa6a',quantity:3,counted_at:'2026-11-02T10:00Z',created_at:'2026-11-02T10:00Z'});
+ data.gp_f_stock_lines.push(...[.7,1].map(n=>({name:'Aperol '+n+' l',source_kind:'delivery',state:'review',raw_data:{name:'Aperol '+n+' l'}})));
  const db={rpc:async(name,args)=>{window.calls.push({name,args});if(name==='gp_f_stock_state')return {data:structuredClone(items)};if(name==='gp_f_stock_close'){data.gp_f_stock_closings.push({inventory_month:args.p_month,revision:1,payload:{items},created_at:new Date().toISOString()});return {data:{revision:1}};}return {data:null};},from(table){const q={filters:[],select(){return q},eq(k,v){q.filters.push([k,v]);return q},in(){return q},order(){return q},gte(){return q},lt(){return q},limit(){return q},range(){return q},insert(value){window.calls.push({table,value});if(table==='gp_f_stock_counts'){items[0].quantity=value.quantity;items[0].baseline=value.quantity;}q.write=true;return q},update(value){window.calls.push({table,value});q.write=true;return q},upsert(value){window.calls.push({table,value});q.write=true;return q},then(resolve){resolve({data:q.write?null:structuredClone(data[table]||[])});}};return q;}};
  for(let n=0;n<11;n++)data.gp_f_stock_counts.push({item_id:'extra-'+n,quantity:2,counted_at:'2026-11-01T10:'+String(n).padStart(2,'0')+'Z',created_at:'2026-11-01T10:00Z'});
  window.db=db;window.addEventListener('gp:stock-open',()=>document.getElementById('friedrichStock')?.classList.remove('gp-area-hidden'));
@@ -57,7 +61,26 @@ await page.getByText('1 Zählungen gespeichert.',{exact:false}).waitFor();
 const repeatBatch=await page.evaluate(()=>window.calls.filter(x=>x.table==='gp_f_stock_counts'&&Array.isArray(x.value)).at(-1).value);
 assert.notEqual(repeatBatch[0].request_id,firstBatch.find(x=>x.item_id===repeatBatch[0].item_id).request_id,'New counting round creates a new history event');
 
-await page.getByRole('button',{name:'📦 Lagerbestand',exact:true}).click();await page.getByText('Entkoffeinierter Kaffee',{exact:true}).first().waitFor();await page.getByText('Gebinde / Reserve bearbeiten oder Artikel ergänzen',{exact:true}).click();assert.equal(await page.getByLabel('Einkaufsgebinde in Bestandseinheiten').getAttribute('readonly'),'');
+await page.getByLabel('Artikel suchen',{exact:true}).fill('Zusatzartikel 10');
+await page.getByLabel('Zusatzartikel 10 · Menge in volle Flaschen',{exact:true}).fill('2');
+await page.getByRole('button',{name:'💾 ALLE ZÄHLUNGEN SPEICHERN',exact:true}).click();
+await page.getByText('1 Zählungen gespeichert.',{exact:false}).waitFor();
+await page.waitForFunction(()=>window.calls.filter(x=>x.table==='gp_f_stock_counts'&&Array.isArray(x.value)).at(-1).value[0].item_id==='extra-10');
+const bottles=await page.evaluate(()=>window.calls.filter(x=>x.table==='gp_f_stock_counts'&&Array.isArray(x.value)).at(-1).value[0]);
+assert.equal(bottles.quantity,1.5,'Two full 0.75-l bottles saved as 1.5 l once');assert.match(bottles.note,/Volle Flaschen/);
+await page.getByText('Letzte Zählung: 1,5 l',{exact:false}).waitFor();
+await page.getByLabel('Aperol · Menge in volle Flaschen',{exact:true}).fill('3');
+await page.getByRole('button',{name:'💾 ALLE ZÄHLUNGEN SPEICHERN',exact:true}).click();
+await page.getByText('Flaschengröße laut Rechnung auswählen; keine Größe wird geschätzt.',{exact:true}).waitFor();
+await page.getByLabel('Flaschengröße laut Rechnung',{exact:false}).selectOption('0.7');
+await page.getByRole('button',{name:'💾 ALLE ZÄHLUNGEN SPEICHERN',exact:true}).click();
+await page.waitForFunction(()=>window.calls.filter(x=>x.table==='gp_f_stock_counts'&&Array.isArray(x.value)).at(-1).value[0].item_id==='87dd191f-3ee0-40fb-a72e-600cd57eaa6a');
+assert.equal(await page.evaluate(()=>window.calls.filter(x=>x.table==='gp_f_stock_counts'&&Array.isArray(x.value)).at(-1).value[0].quantity),2.1);
+
+await page.getByRole('button',{name:'📦 Lagerbestand',exact:true}).click();
+const wineRow=page.locator('tr').filter({has:page.getByText('Zusatzartikel 10',{exact:true})});
+await wineRow.waitFor();assert.match(await wineRow.innerText(),/7,5 l.*10 volle Flaschen/);assert.match(await wineRow.innerText(),/90 €/);assert.match(await wineRow.innerText(),/Rechenbestand: unbekannt/);
+await page.getByText('Entkoffeinierter Kaffee',{exact:true}).first().waitFor();await page.getByText('Gebinde / Reserve bearbeiten oder Artikel ergänzen',{exact:true}).click();assert.equal(await page.getByLabel('Einkaufsgebinde in Bestandseinheiten').getAttribute('readonly'),'');
 await page.evaluate(()=>window.plan());await page.getByText('Bestellmenge offen: Bestand oder Einkaufsgebinde unbekannt',{exact:true}).first().waitFor({state:'visible'});
 assert.match(await page.locator('#purchaseCards').innerText(),/Reserve/);
 await page.getByRole('button',{name:'📄 Monatsinventur',exact:true}).click();await page.getByRole('button',{name:'Monatsendstand speichern'}).click();await page.getByText(/Version 1/).first().waitFor();
@@ -104,3 +127,4 @@ console.log('Out-of-order stock responses preserve panel at '+width+'px');
 console.log('Actual cockpit navigation passed at '+width+'px with mocked read-only stock data');
 await page.close();console.log('Fixture browser interactions passed at '+width+'px; no production UI session.');}
 }finally{await browser.close();await new Promise(resolve=>server.close(resolve));}
+
