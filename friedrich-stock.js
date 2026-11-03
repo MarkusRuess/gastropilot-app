@@ -9,7 +9,7 @@ const check=async p=>{const r=await p;if(r.error)throw Error(r.error.message);re
 async function all(db,table,columns='*',configure=q=>q){let rows=[];for(let from=0;;from+=500){const data=await check(configure(db.from(table).select(columns).eq('business_id',FRIEDRICH)).range(from,from+499));rows.push(...data);if(data.length<500)return rows;}}
 function download(blob,name){const a=el('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1500);}
 function exports(host,items,label){button(host,'CSV herunterladen',()=>download(new Blob([csv(exportRows(items))],{type:'text/csv;charset=utf-8'}),'Friedrich_Inventur_'+label+'.csv'));button(host,'PDF herunterladen',()=>download(new Blob([inventoryPdf(items,label)],{type:'application/pdf'}),'Friedrich_Inventur_'+label+'.pdf'));}
-let context=null,host=null,currentTab='stock',run=0;
+let context=null,host=null,currentTab='stock',run=0,currentSection='stock';
 export async function mountStock(db,getBusiness){
  context={db,getBusiness};
  const nav=document.getElementById('gpCockpitNav');if(!nav)return;
@@ -39,13 +39,28 @@ function openStock(){
 function active(){return context?.getBusiness()===FRIEDRICH;}
 async function state(at){return check(context.db.rpc('gp_f_stock_state',at?{p_at:at}:{}));}
 async function renderStock(){
+ if(!active()||!host)return;
+ ++run;host.style.minHeight='';host.replaceChildren(el('h2','📦 Lager & Inventur · Das Friedrich'));
+ const grid=el('div');grid.id='friedrichStockTiles';grid.style.cssText='display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px';host.append(grid);
+ for(const [key,title,tab] of [['quick','⚡ Schnellzählung','quick'],['stock','📦 Lagerbestand','stock'],['buy','🛒 Einkauf & Verbrauch','receipts'],['inventory','📄 Monatsinventur','inventory']]){
+ const b=el('button',title);b.type='button';b.dataset.stockSection=key;b.setAttribute('aria-expanded',String(currentSection===key));b.style.cssText='min-height:85px;padding:14px;text-align:left;font-size:17px;font-weight:700;color:#193344;background:'+(currentSection===key?'#e8f5ee':'#f8fafb')+';border:1px solid '+(currentSection===key?'#78a98e':'#dce6ed')+';border-radius:12px';
+ b.onclick=()=>{currentSection=currentSection===key?null:key;currentTab=tab;void renderStock();};grid.append(b);
+ if(currentSection===key){const panel=el('div');panel.id='friedrichStockPanel';panel.dataset.stockSectionContent=key;panel.style.cssText='grid-column:1/-1;min-width:0;width:100%';grid.append(panel);void renderStockContent(panel);}
+ }
+}
+async function renderStockContent(panel){
+ const host=panel;
  if(!active()||!host)return;const token=++run;host.replaceChildren(el('h2','📦 Lager & Inventur · Das Friedrich'));
  const status=el('p','Lagerdaten werden geladen …');status.setAttribute('role','status');host.append(status);
  try{
  const items=await state();if(!active()||token!==run)return;
  status.textContent='Gemeinsamer Supabase-Bestand · Gelegentlich einzelne Artikel zählen. Keine tägliche Gesamtzählung nötig.';
- const nav=el('div',undefined,'row');host.append(nav);
- for(const [key,title] of [['quick','⚡ Schnellzählung'],['stock','Lagerbestand'],['all','Alle Artikel'],['inventory','Inventur'],['receipts','Wareneingänge'],['movements','Lagerbewegungen'],['costs','Wareneinsatz'],['review','Zuordnungen & Belege'],['recipes','Bonit & Rezepturen']]){const b=button(nav,title,()=>{currentTab=key;return renderStock();});b.disabled=currentTab===key;}
+ if(currentSection==='buy'){
+ const choose=select(host,'Ansicht',[['receipts','Wareneingänge & Rechnungen'],['movements','Lagerbewegungen'],['costs','Wareneinsatz'],['review','Zuordnungen & Belege'],['recipes','Bonit & Rezepturen']]);choose.value=currentTab;
+ choose.onchange=()=>{currentTab=choose.value;void renderStock();};
+ button(host,'Wöchentliche Einkaufsplanung öffnen',()=>document.querySelector('[data-gp-area="planning"]')?.click());
+ button(host,'Bonit-Artikelanalyse öffnen',()=>document.querySelector('[data-gp-area="articles"]')?.click());
+ }
  if(currentTab==='quick')return await quickCount(host,items,status);
  if(['receipts','movements','costs'].includes(currentTab))return await costs(host,items,status);
  if(currentTab==='review')return await review(host,items,status);
@@ -65,7 +80,7 @@ async function renderStock(){
  const gaps=[...new Set(items.flatMap(x=>x.missing_days||[]))];if(gaps.length)host.append(el('p','Fehlende Bonit-Artikeltage seit den Zählungen (regulär Do–So): '+gaps.join(', ')+'. Rechnerische Bestände sind unvollständig.','stock-warning'));
  exports(host,items,'aktuell');
  const loss=el('form',undefined,'stock-form'),li=select(loss,'Verlustartikel',items.map(x=>[x.item_id,x.name+' ('+x.unit+')'])),lq=input(loss,'Verlustmenge','number'),lt=input(loss,'Zeitpunkt','datetime-local'),ln=input(loss,'Grund');lq.min='0.001';const ls=el('button','Verlust separat speichern');loss.append(ls);const lr=crypto.randomUUID();loss.onsubmit=async e=>{e.preventDefault();if(!active())return;ls.disabled=true;try{await check(context.db.from('gp_f_stock_losses').insert({business_id:FRIEDRICH,item_id:li.value,quantity:number(lq.value),occurred_at:new Date(lt.value).toISOString(),reason:ln.value,request_id:lr}));await renderStock();}catch(e){status.textContent=e.message;ls.disabled=false;}};host.append(loss);
- if(currentTab==='all')settings(host,items,status);
+ settings(host,items,status);
  }catch(e){if(active())status.textContent='Lager konnte nicht geladen werden: '+e.message;}
 }
 function settings(parent,items,status){
@@ -78,6 +93,24 @@ async function inventory(parent,items,status){
  const form=el('div',undefined,'stock-form'),month=input(form,'Monat','month',new Date(new Date().getFullYear(),new Date().getMonth()-1,1).toLocaleDateString('sv-SE').slice(0,7)),reason=input(form,'Korrekturgrund (bei neuer Version)','text','',false);parent.append(form);
  parent.append(el('p','Monatsende: rechnerischer Stand einschließlich bestätigter Nullbestände. Jede Korrektur erzeugt eine neue Version; bestehende Monatsstände bleiben erhalten.','muted'));
  button(form,'Monatsendstand speichern',async()=>{if(!active())return;const r=await check(context.db.rpc('gp_f_stock_close',{p_month:month.value+'-01',p_reason:reason.value}));status.textContent='Monat '+month.value+' · Version '+r.revision+' gespeichert';await history();});
+ const preview=el('section');parent.append(preview);
+ let previewRun=0;
+ async function showMonth(){
+  const turn=++previewRun;preview.replaceChildren(el('p','Monatsendstand wird geladen …'));
+  const [y,m]=month.value.split('-').map(Number);if(!y||!m)return;
+  const start=Date.UTC(y,m,1),zone=new Intl.DateTimeFormat('en',{timeZone:'Europe/Vienna',timeZoneName:'shortOffset'}).formatToParts(new Date(start)).find(p=>p.type==='timeZoneName').value;
+  const match=zone.match(/GMT([+-])(\d+)/);const offset=match?(match[1]==='-'?-1:1)*Number(match[2]):0;const cutoff=new Date(start-offset*3600000-1);
+  if(cutoff>new Date()){preview.replaceChildren(el('p','Der gewählte Monat ist noch nicht abgeschlossen.'));return;}
+  try{
+   const rows=await state(cutoff.toISOString());if(!active()||turn!==previewRun||!preview.isConnected)return;
+   preview.replaceChildren(el('h3','Monatsendstand '+month.value+' · rechnerisch'));
+   const valued=rows.filter(x=>number(x.quantity)!==null&&number(x.net_unit_price)!==null&&number(x.value_net)!==null);
+   preview.append(el('p','Bewerteter Teilbestand netto: '+fmt(valued.reduce((sum,x)=>sum+Number(x.value_net),0))+' € · '+(rows.length-valued.length)+' Artikel ohne gesicherte Menge oder Preis. Kein gesicherter Gesamtwarenwert bei Datenlücken.'));
+   const wrap=el('div',undefined,'stock-scroll'),table=el('table'),head=el('tr');for(const title of ['Artikel','Einheit','Menge','Netto-EK','Warenwert','Letzte Zählung'])head.append(el('th',title));table.append(head);
+   for(const x of rows){const tr=el('tr');for(const text of [x.name,x.unit,fmt(x.quantity),fmt(x.net_unit_price),fmt(x.value_net),x.counted_at?new Date(x.counted_at).toLocaleString('de-AT'):'unbekannt'])tr.append(el('td',text));table.append(tr);}wrap.append(table);preview.append(wrap);exports(preview,rows,month.value+'_Vorschau');
+  }catch(e){preview.replaceChildren(el('p','Monatsendstand nicht verfügbar: '+e.message));}
+ }
+ month.onchange=showMonth;await showMonth();
  const list=el('div');parent.append(list);
  async function history(){const rows=await all(context.db,'gp_f_stock_closings','*',q=>q.order('inventory_month',{ascending:false}).order('revision',{ascending:false}));if(!active())return;list.replaceChildren();for(const r of rows){const box=el('section');box.append(el('h3',r.inventory_month.slice(0,7)+' · Version '+r.revision),el('p',r.reason||'Erstabschluss'),el('p',new Date(r.created_at).toLocaleString('de-AT')));exports(box,r.payload.items,r.inventory_month.slice(0,7)+'_v'+r.revision);list.append(box);}const legacy=await all(context.db,'gp_inventory_snapshots');if(legacy.length){list.append(el('p',legacy.length+' frühere Monatspositionen unverändert im bisherigen Archiv erhalten.'));const groups=Map.groupBy(legacy,x=>x.inventory_month);for(const [month,rs] of groups){const box=el('section');box.append(el('h3','Bisheriger Monatsstand '+month));exports(box,rs.map(x=>({...x,name:x.article_name,value_net:x.net_unit_price===null?null:Number(x.quantity)*Number(x.net_unit_price),count_kind:'historischer Monatsstand',counted_at:x.recorded_at})),month+'_bisherig');list.append(box);}}}
  await history();
@@ -165,14 +198,23 @@ async function quickCount(parent,items,status){
  form.append(el('p','Menge eingeben = Artikel auswählen. Leere Felder bleiben unverändert; 0 bestätigt einen leeren Bestand. Mengen in der jeweils angezeigten Einheit eingeben. Zuletzt gezählte Artikel stehen oben.','muted'));
  const list=el('div');form.append(list);const fields=[];
  const sorted=[...items].sort((a,b)=>(Date.parse(latest.get(b.item_id)?.counted_at||b.counted_at)||0)-(Date.parse(latest.get(a.item_id)?.counted_at||a.counted_at)||0)||a.name.localeCompare(b.name,'de'));
- for(const x of sorted){
-  const row=el('div');row.style.cssText='padding:12px 0;border-bottom:1px solid #dce6ed;display:grid;gap:8px';row.dataset.quickItem=x.item_id;
-  const label=el('label',x.name+' · '+x.unit),qty=el('input');qty.type='number';qty.min='0';qty.step='any';qty.inputMode='decimal';qty.setAttribute('aria-label',x.name+' · Menge in '+x.unit);qty.style.cssText='font-size:20px;min-height:50px;width:100%;box-sizing:border-box';label.append(qty);row.append(label);
+ const selectedIDs=new Set();
+ const addItem=x=>{
+  if(selectedIDs.has(x.item_id))return;selectedIDs.add(x.item_id);
+  const row=el('div');row.style.cssText='padding:12px 0;border-bottom:1px solid #dce6ed;display:grid;grid-template-columns:minmax(0,1fr) minmax(95px,120px);gap:8px;align-items:center';row.dataset.quickItem=x.item_id;
+  const label=el('label',x.name+' · '+x.unit),qty=el('input');qty.type='number';qty.min='0';qty.step='any';qty.inputMode='decimal';qty.setAttribute('aria-label',x.name+' · Menge in '+x.unit);qty.style.cssText='font-size:20px;min-height:50px;width:100%;box-sizing:border-box';row.append(label,qty);
   const last=el('small');const showLast=c=>{last.textContent=c?'Letzte Zählung: '+fmt(c.quantity)+' '+x.unit+' · '+new Date(c.counted_at).toLocaleString('de-AT'):'Noch keine bestätigte Zählung';};showLast(latest.get(x.item_id)||(x.counted_at?{quantity:x.baseline,counted_at:x.counted_at}:null));
-  row.append(last);list.append(row);fields.push({x,row,qty,showLast,request:crypto.randomUUID()});
+  last.style.gridColumn='1/-1';row.append(last);list.append(row);fields.push({x,row,qty,showLast,request:crypto.randomUUID()});
+ };
+ const counted=sorted.filter(x=>latest.has(x.item_id)||x.counted_at);for(const x of counted.slice(0,10))addItem(x);
+ const results=el('div');results.id='quickCountSearchResults';search.parentElement.after(results);
+ search.oninput=()=>{results.replaceChildren();const q=search.value.trim().toLocaleLowerCase('de-AT');if(!q)return;
+ for(const x of sorted.filter(x=>x.name.toLocaleLowerCase('de-AT').includes(q))){
+  const b=button(results,selectedIDs.has(x.item_id)?x.name+' · bereits ausgewählt':'+ '+x.name,()=>{addItem(x);search.oninput();});b.disabled=selectedIDs.has(x.item_id);
  }
- search.oninput=()=>{const q=search.value.trim().toLocaleLowerCase('de-AT');for(const f of fields){const match=f.x.name.toLocaleLowerCase('de-AT').includes(q);f.row.hidden=!match;f.row.style.display=match?'grid':'none';}};
- const save=el('button','💾 Zählungen speichern');save.type='submit';save.style.cssText='min-height:52px;font-size:18px;width:100%;margin:14px 0';form.append(save);
+ if(!results.children.length)results.append(el('p','Kein passender Friedrich-Artikel.'));
+ };
+ const save=el('button','💾 ALLE ZÄHLUNGEN SPEICHERN');save.type='submit';save.style.cssText='min-height:52px;font-size:18px;width:100%;margin:14px 0';form.append(save);
  let retry=null;
  form.onsubmit=async e=>{
   e.preventDefault();if(!active()||save.disabled)return;
