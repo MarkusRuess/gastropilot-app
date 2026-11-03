@@ -49,6 +49,7 @@ assert.equal(firstBatch.length,2,'Only filled quantities saved in one batch');
 assert.ok(firstBatch.some(x=>x.quantity===0),'Explicit zero preserved');
 assert.ok(firstBatch.every(x=>x.business_id==='6a5484d1-daf6-4263-897d-24cdf536aa29'));
 assert.equal(await page.getByLabel('Artikel suchen',{exact:true}).inputValue(),'Villacher','Search preserved');
+await page.waitForFunction(p=>Math.abs(window.scrollY-p)<5,scrollBefore,{timeout:3000});
 assert.ok(Math.abs((await page.evaluate(()=>window.scrollY))-scrollBefore)<5,'Scroll position preserved');
 await page.getByLabel('Villacher Fassbier · Menge in l',{exact:true}).fill('50');
 await page.getByRole('button',{name:'💾 ALLE ZÄHLUNGEN SPEICHERN',exact:true}).click();
