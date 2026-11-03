@@ -15,6 +15,23 @@ Deno.serve(async(req:Request)=>{
  const {data:staff,error:staffError}=await db.from("judith_ai_access").select("active").eq("user_id",user.id).maybeSingle();
  if(staffError)return send({error:"Access check unavailable"},503);
  if(!staff?.active)return send({error:"Forbidden"},403);
+ // Dedicated backlist read: no attachment signing or retention side effects.
+ if(req.method==="GET"&&new URL(req.url).searchParams.get("view")==="backlist"){
+  const params=new URL(req.url).searchParams,start=params.get("start")||"",end=params.get("end")||"";
+  const valid=(s:string)=>/^\d{4}-\d{2}-\d{2}$/.test(s)&&Number.isFinite(Date.parse(s))&&new Date(s).toISOString().slice(0,10)===s;
+  if(!valid(start)||!valid(end)||new Date(start).getUTCDay()!==1||Date.parse(end)-Date.parse(start)!==6*86400000)return send({error:"Ungültige Kalenderwoche"},400);
+  const inquiries:any[]=[],customers=new Map<string,any>();let cursor="";
+  for(;;){
+   let query=db.from("judith_ai_inquiries").select("id,customer_id,occasion,requested_date,details,status,fulfillment_status,customer:judith_ai_customers(id,name)").in("status",["confirmed","picked_up"]).or(`and(requested_date.gte.${start},requested_date.lte.${end}),requested_date.is.null`).order("id",{ascending:true}).limit(500);
+   if(cursor)query=query.gt("id",cursor);
+   const {data:page,error:pageError}=await query;
+   if(pageError||!page)return send({error:"Backliste konnte nicht vollständig geladen werden"},503);
+   for(const row of page){const {customer,...order}=row;inquiries.push(order);if(customer?.id)customers.set(customer.id,customer);}
+   if(page.length<500)break;
+   const last=page[page.length-1]?.id;if(!last||last===cursor)return send({error:"Backliste konnte nicht vollständig geladen werden"},503);cursor=last;
+  }
+  return send({ok:true,inquiries,customers:[...customers.values()]});
+ }
  if(req.method==="DELETE"&&new URL(req.url).searchParams.get("view")==="customer"){
   let body:any;try{body=await req.json()}catch{return send({error:"Ungültige Anfrage"},400)}
   const id=body?.customer_id;if(typeof id!=="string"||!/^[0-9a-f-]{36}$/i.test(id))return send({error:"Ungültiger Kunde"},400);
