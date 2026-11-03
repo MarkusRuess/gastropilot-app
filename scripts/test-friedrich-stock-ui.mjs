@@ -8,7 +8,7 @@ await page.evaluate(async()=>{
  const {mountStock,renderStockPlanning}=await import('/friedrich-stock.js');
  const F='6a5484d1-daf6-4263-897d-24cdf536aa29';window.biz=F;window.calls=[];
  const items=[{item_id:'4c1c36d5-f7c2-4298-87ca-24ceecbe80ce',name:'Villacher Fassbier',unit:'l',quantity:45,baseline:50,received:0,consumed:5,loss:0,net_unit_price:3,value_net:135,counted_at:'2026-10-31T22:00Z',count_kind:'gezählt',pack_size:50,pack_label:'Fass à 50 l',reserve_percent:10},{item_id:'e4e19947-6ee2-4671-a8ca-b2fa52cac6d5',name:'Illy Kaffee 1,5 kg Dose',unit:'g',quantity:null,baseline:null,net_unit_price:.04,value_net:null,pack_size:1500,pack_label:'Dose à 1,5 kg',reserve_percent:0},{item_id:'decaf',name:'Entkoffeinierter Kaffee',unit:'g',quantity:null,baseline:null,pack_size:null,reserve_percent:0}];
- const data={gp_f_stock_rules:[{article_number:'2000',item_id:items[0].item_id,per_sale:.33,note:'Betreiber'},{article_number:'1400',item_id:items[1].item_id,per_sale:8,note:'Betreiber'}],gp_f_stock_sales:[{business_id:F,article_number:'2000',article_name:'Villacher',closing_date:'2026-10-30',quantity:100,gross_amount:440}],bonit_daily_closings:[{closing_date:'2026-10-30',gross_amount:440}],gp_f_stock_closings:[],gp_inventory_snapshots:[],gp_f_stock_lines:[{id:'line',name:'Lieferung Bier',source_kind:'delivery',supplier:'Lieferant',raw_data:{quantity:1,unit:'Fass'},delivery_date:'2026-11-01',state:'review'}]};
+ const data={gp_f_stock_counts:[{item_id:items[1].item_id,quantity:7500,counted_at:'2026-11-03T10:00Z',created_at:'2026-11-03T10:00Z'}],gp_f_stock_rules:[{article_number:'2000',item_id:items[0].item_id,per_sale:.33,note:'Betreiber'},{article_number:'1400',item_id:items[1].item_id,per_sale:8,note:'Betreiber'}],gp_f_stock_sales:[{business_id:F,article_number:'2000',article_name:'Villacher',closing_date:'2026-10-30',quantity:100,gross_amount:440}],bonit_daily_closings:[{closing_date:'2026-10-30',gross_amount:440}],gp_f_stock_closings:[],gp_inventory_snapshots:[],gp_f_stock_lines:[{id:'line',name:'Lieferung Bier',source_kind:'delivery',supplier:'Lieferant',raw_data:{quantity:1,unit:'Fass'},delivery_date:'2026-11-01',state:'review'}]};
  const db={rpc:async(name,args)=>{window.calls.push({name,args});if(name==='gp_f_stock_state')return {data:structuredClone(items)};if(name==='gp_f_stock_close'){data.gp_f_stock_closings.push({inventory_month:args.p_month,revision:1,payload:{items},created_at:new Date().toISOString()});return {data:{revision:1}};}return {data:null};},from(table){const q={filters:[],select(){return q},eq(k,v){q.filters.push([k,v]);return q},in(){return q},order(){return q},gte(){return q},lt(){return q},limit(){return q},range(){return q},insert(value){window.calls.push({table,value});if(table==='gp_f_stock_counts'){items[0].quantity=value.quantity;items[0].baseline=value.quantity;}q.write=true;return q},update(value){window.calls.push({table,value});q.write=true;return q},upsert(value){window.calls.push({table,value});q.write=true;return q},then(resolve){resolve({data:q.write?null:structuredClone(data[table]||[])});}};return q;}};
  window.db=db;window.addEventListener('gp:stock-open',()=>document.getElementById('friedrichStock')?.classList.remove('gp-area-hidden'));
  await mountStock(db,()=>window.biz);window.mount=mountStock;window.plan=()=>renderStockPlanning(db,F,document.getElementById('purchaseCards'));
@@ -22,6 +22,31 @@ assert.equal(await page.locator('#friedrichStockTile').getAttribute('data-gp-are
 assert.equal(await page.locator('#friedrichStockTile').getAttribute('aria-current'),'true');
 assert.equal(await page.evaluate(()=>document.body.classList.contains('gp-friedrich-article-view')),false);await page.getByText('Gemeinsamer Supabase-Bestand',{exact:false}).waitFor();
 const f=page.locator('#friedrichStock form').first();assert.equal(await f.locator('input[type=number]').inputValue(),'');await f.locator('input[type=number]').fill('0');await f.locator('input[type=datetime-local]').fill('2026-11-01T23:00');await f.locator('input[type=checkbox]').check();await f.getByText('Zählung speichern',{exact:true}).click();await page.waitForFunction(()=>window.calls.some(x=>x.table==='gp_f_stock_counts'));assert.equal(await page.evaluate(()=>window.calls.find(x=>x.table==='gp_f_stock_counts').value.quantity),0);
+
+await page.getByRole('button',{name:'⚡ Schnellzählung',exact:true}).click();
+await page.locator('#friedrichQuickCount').waitFor();
+assert.equal(await page.locator('[data-quick-item]').first().getAttribute('data-quick-item'),'e4e19947-6ee2-4671-a8ca-b2fa52cac6d5','Recently counted coffee first');
+await page.getByLabel('Artikel suchen',{exact:true}).fill('illy');
+await page.getByLabel('Illy Kaffee 1,5 kg Dose · Menge in g',{exact:true}).fill('7500');
+assert.equal(await page.locator('[data-quick-item="4c1c36d5-f7c2-4298-87ca-24ceecbe80ce"]').isVisible(),false);
+await page.getByLabel('Artikel suchen',{exact:true}).fill('Villacher');
+await page.getByLabel('Villacher Fassbier · Menge in l',{exact:true}).fill('0');
+await page.getByRole('button',{name:'💾 Zählungen speichern',exact:true}).scrollIntoViewIfNeeded();
+const scrollBefore=await page.evaluate(()=>window.scrollY);
+await page.getByRole('button',{name:'💾 Zählungen speichern',exact:true}).click();
+await page.getByText('2 Zählungen gespeichert.',{exact:false}).waitFor();
+const firstBatch=await page.evaluate(()=>window.calls.filter(x=>x.table==='gp_f_stock_counts'&&Array.isArray(x.value)).at(-1).value);
+assert.equal(firstBatch.length,2,'Only filled quantities saved in one batch');
+assert.ok(firstBatch.some(x=>x.quantity===0),'Explicit zero preserved');
+assert.ok(firstBatch.every(x=>x.business_id==='6a5484d1-daf6-4263-897d-24cdf536aa29'));
+assert.equal(await page.getByLabel('Artikel suchen',{exact:true}).inputValue(),'Villacher','Search preserved');
+assert.ok(Math.abs((await page.evaluate(()=>window.scrollY))-scrollBefore)<5,'Scroll position preserved');
+await page.getByLabel('Villacher Fassbier · Menge in l',{exact:true}).fill('50');
+await page.getByRole('button',{name:'💾 Zählungen speichern',exact:true}).click();
+await page.getByText('1 Zählungen gespeichert.',{exact:false}).waitFor();
+const repeatBatch=await page.evaluate(()=>window.calls.filter(x=>x.table==='gp_f_stock_counts'&&Array.isArray(x.value)).at(-1).value);
+assert.notEqual(repeatBatch[0].request_id,firstBatch.find(x=>x.item_id===repeatBatch[0].item_id).request_id,'New counting round creates a new history event');
+
 await page.getByRole('button',{name:'Alle Artikel',exact:true}).click();await page.getByText('Entkoffeinierter Kaffee',{exact:true}).first().waitFor();await page.getByText('Gebinde / Reserve bearbeiten oder Artikel ergänzen',{exact:true}).click();assert.equal(await page.getByLabel('Einkaufsgebinde in Bestandseinheiten').getAttribute('readonly'),'');
 await page.evaluate(()=>window.plan());await page.getByText('Bestellmenge offen: Bestand oder Einkaufsgebinde unbekannt',{exact:true}).first().waitFor({state:'visible'});
 assert.match(await page.locator('#purchaseCards').innerText(),/Reserve/);
