@@ -31,6 +31,7 @@ await page.getByLabel('Illy Kaffee 1,5 kg Dose · Menge in g',{exact:true}).fill
 assert.equal(await page.locator('[data-quick-item="4c1c36d5-f7c2-4298-87ca-24ceecbe80ce"]').isVisible(),false);
 await page.getByLabel('Artikel suchen',{exact:true}).fill('Villacher');
 await page.getByLabel('Villacher Fassbier · Menge in l',{exact:true}).fill('0');
+await page.getByRole('button',{name:'💾 Zählungen speichern',exact:true}).scrollIntoViewIfNeeded();
 const scrollBefore=await page.evaluate(()=>window.scrollY);
 await page.getByRole('button',{name:'💾 Zählungen speichern',exact:true}).click();
 await page.getByText('2 Zählungen gespeichert.',{exact:false}).waitFor();
