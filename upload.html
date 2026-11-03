@@ -1636,7 +1636,7 @@ async function gpAutoIntake(file){
   if(error)throw error;
   if(!data?.documents?.length)throw Error(data?.error||'Kein Dokument erkannt');
   if(businessId===GP_FRIEDRICH&&data.documents.every(d=>Array.isArray(d.inventory_counts)&&d.inventory_counts.length)){
-   const {stageInventoryRecognition}=await import('./friedrich-stock.js?v=20261102-lager');
+   const {stageInventoryRecognition}=await import('./friedrich-stock.js?v=20261103-auto');
    await stageInventoryRecognition(db,businessId,user.id,data.documents);
    status.textContent='Zählliste erkannt. Unter Lager & Inventur → Zuordnungen & Belege einzelne Mengen und Zählzeitpunkte bestätigen. Keine Fotos gespeichert.';return;
   }
@@ -1945,7 +1945,7 @@ function gpCollectInvoiceItems(host){
   const qty=line.querySelector('.gp-item-qty').value,net=line.querySelector('.gp-item-net').value;
   const quantity=qty===''?null:Number(qty),amount=net===''?null:Number(net);
   if((quantity!==null&&(!Number.isFinite(quantity)||(businessId!==GP_FRIEDRICH&&quantity<0)))||(amount!==null&&(!Number.isFinite(amount)||(businessId!==GP_FRIEDRICH&&amount<0))))throw Error('Ungültige Artikelmenge oder Nettobetrag');
-  if(businessId===GP_FRIEDRICH){const original=line.gpOriginalItem||{};out.push({...original,name,quantity,net:amount,line_net:amount,category:line.querySelector('.gp-item-category').value,...(quantity!==original.quantity?{total_base_quantity:null,quantity_basis:'review_required'}:{})});}
+  if(businessId===GP_FRIEDRICH){const original=line.gpOriginalItem||{};out.push({...original,name,quantity,net:amount,line_net:amount,category:line.querySelector('.gp-item-category').value,...((quantity!==original.quantity||name!==original.name)?{total_base_quantity:null,quantity_basis:'review_required',review_required:true}:{})});}
   else out.push({name,quantity,net:amount,category:line.querySelector('.gp-item-category').value});
  }
  return out;

@@ -29,6 +29,9 @@ await page.getByRole('button',{name:'Inventur',exact:true}).click();await page.g
 const download=page.waitForEvent('download');await page.getByRole('button',{name:'PDF herunterladen',exact:true}).click();assert.match((await download).suggestedFilename(),/Friedrich_Inventur/);
 await page.getByRole('button',{name:'Zuordnungen & Belege',exact:true}).click();await page.getByText('Lieferung Bier · Lieferant',{exact:false}).click();const review=page.locator('#friedrichStock details').first();await review.getByLabel('Gelieferte Gesamtmenge (Retouren negativ)').fill('50');await review.getByRole('button',{name:'Zuordnung bestätigen'}).click();await page.waitForFunction(()=>window.calls.some(x=>x.name==='gp_f_stock_confirm'));
 assert.equal(await page.evaluate(()=>window.calls.find(x=>x.name==='gp_f_stock_confirm').args.p_quantity),50);
+await page.getByRole('button',{name:'Wareneinsatz',exact:true}).click();await page.getByText('Tatsächlicher Wareneinsatz netto: unbekannt €',{exact:true}).waitFor();assert.match(await page.locator('#friedrichStock').innerText(),/Vollständigkeit der Einkaufsbelege nicht bestätigt/);
+await page.getByRole('button',{name:'Wareneingänge',exact:true}).click();await page.getByText('Wareneingänge (keine erneuten Ausgaben)',{exact:true}).waitFor();
+await page.getByRole('button',{name:'Lagerbewegungen',exact:true}).click();await page.getByText(/seit letzter Zählung:/).first().waitFor();
 await page.screenshot({path:'/tmp/friedrich-stock-ui-'+width+'.png',fullPage:true});assert.deepEqual(errors,[]);
 await page.evaluate(async()=>{window.biz='87889eaf-f865-4e3a-8f9a-cd01db483e0e';await window.mount(window.db,()=>window.biz);});assert.equal(await page.locator('#friedrichStockTile').isVisible(),false);assert.equal(await page.locator('#friedrichStock').innerText(),'');await page.goto(base+'/cockpit-test');
 await page.evaluate(async()=>{

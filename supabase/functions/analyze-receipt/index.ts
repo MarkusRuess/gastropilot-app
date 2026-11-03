@@ -145,7 +145,7 @@ function normalizePurchaseItems(value: unknown, friedrich = false) {
     .filter((item: any) => item && typeof item.name === "string" && item.name.trim())
     .map((item: any) => ({
       name: item.name.trim(),
-      ...(friedrich ? {package_count: signed(item.package_count),units_per_pack: signed(item.units_per_pack),pack_size: signed(item.pack_size),pack_unit: textOrNull(item.pack_unit),total_base_quantity: signed(item.total_base_quantity),base_unit: textOrNull(item.base_unit),quantity_basis: textOrNull(item.quantity_basis),delivery_date: textOrNull(item.delivery_date),line_kind: textOrNull(item.line_kind)} : {}),
+      ...(friedrich ? {category: textOrNull(item.category), review_required: item.review_required === true, package_count: signed(item.package_count),units_per_pack: signed(item.units_per_pack),pack_size: signed(item.pack_size),pack_unit: textOrNull(item.pack_unit),total_base_quantity: signed(item.total_base_quantity),base_unit: textOrNull(item.base_unit),quantity_basis: textOrNull(item.quantity_basis),delivery_date: textOrNull(item.delivery_date),line_kind: textOrNull(item.line_kind)} : {}),
       article_number: textOrNull(item.article_number),
       quantity: friedrich ? signed(item.quantity) : quantity(item.quantity),
       unit: textOrNull(item.unit),
@@ -878,7 +878,7 @@ Gib ausschließlich gültiges JSON zurück.
     const content: any[] = [{
       type: "input_text",
       text: instructions + (businessId === "6a5484d1-daf6-4263-897d-24cdf536aa29" ? `
-FRIEDRICH LAGER: Jede Rechnungsposition zusätzlich mit package_count, units_per_pack, pack_size, pack_unit, total_base_quantity, base_unit, quantity_basis, delivery_date, line_kind (goods/deposit/transport) erfassen. quantity und unit bleiben unverändert aus der gedruckten Mengenspalte. total_base_quantity ist die tatsächlich gelieferte Gesamtmenge in l, g oder Stück. Wenn quantity bereits Gesamtstücke ist, Kartoninhalt NICHT nochmals multiplizieren. quantity_basis erläutert dies. Unklare Gebinde null statt Annahmen. Retouren mit negativem Vorzeichen; Pfand und Transportgebinde getrennt. Mengen und Netto-Einzelpreise getrennt von Positionssummen. Lieferdatum aus Beleg; fehlt es, null. Handschriftliche Zähllisten als document_type unknown mit inventory_counts:[{name,quantity,unit,counted_at}] erkennen, keine Rechnung daraus machen. Nur lesbare Angaben übernehmen, Zählzeit niemals erfinden.
+FRIEDRICH LAGER: category je Position ausschließlich food, beverage, coffee, merchandise, cleaning, consumables, packaging, equipment oder unknown. Unlesbare/mehrdeutige Produktidentität: review_required=true. Keine Flaschengröße aus Produktwissen ergänzen. Jede Rechnungsposition zusätzlich mit package_count, units_per_pack, pack_size, pack_unit, total_base_quantity, base_unit, quantity_basis, delivery_date, line_kind (goods/deposit/transport) erfassen. quantity und unit bleiben unverändert aus der gedruckten Mengenspalte. total_base_quantity ist die tatsächlich gelieferte Gesamtmenge in l, g oder Stück. Wenn quantity bereits Gesamtstücke ist, Kartoninhalt NICHT nochmals multiplizieren. quantity_basis erläutert dies. Unklare Gebinde null statt Annahmen. Retouren mit negativem Vorzeichen; Pfand und Transportgebinde getrennt. Mengen und Netto-Einzelpreise getrennt von Positionssummen. Lieferdatum aus Beleg; fehlt es, null. Handschriftliche Zähllisten als document_type unknown mit inventory_counts:[{name,quantity,unit,counted_at}] erkennen, keine Rechnung daraus machen. Nur lesbare Angaben übernehmen, Zählzeit niemals erfinden.
 ` : ""),
     }];
 

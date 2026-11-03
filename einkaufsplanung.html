@@ -6,7 +6,7 @@
 <div class="panel"><label for="month">Auswertungsmonat</label><input id="month" type="month" value="2026-10"><p class="muted" id="status">Lade BONit-Daten …</p></div>
 <div class="panel"><h2>Einkauf · nächste Woche</h2><div id="items"></div><p class="muted">Bestände, Gebinde und Reserve werden dauerhaft in Supabase geführt. <a href="./index.html?betrieb=friedrich&amp;lager=1">📦 Lager &amp; Inventur</a></p></div></main><script type="module">
 import {createClient} from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
-import {mountStock,renderStockPlanning} from './friedrich-stock.js?v=20261102-lager';
+import {mountStock,renderStockPlanning} from './friedrich-stock.js?v=20261103-auto';
 const db=createClient('https://sjnwfwcpgwsavygewwzb.supabase.co','sb_publishable__tucXG-IQGUhibMqMSUzCw_5RnH_sbQ');
 const BID='6a5484d1-daf6-4263-897d-24cdf536aa29';
 const status=document.getElementById('status');status.id='purchasePeriod';
