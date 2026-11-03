@@ -183,6 +183,7 @@ async function quickCount(parent,items,status){
   const rows=selected.map(f=>({business_id:FRIEDRICH,item_id:f.x.item_id,quantity:Number(f.qty.value),counted_at:at.toISOString(),day_complete:complete.checked,note:'Mobile Schnellzählung',request_id:f.request}));
   const signature=JSON.stringify(rows);
   if(retry&&retry!==signature){status.textContent='Vorheriger Speicherversuch unklar. Bitte unveränderte Eingaben zuerst erneut speichern.';return;}
+  const position={top:window.scrollY,left:window.scrollX};parent.style.minHeight=parent.getBoundingClientRect().height+'px';
   retry=signature;save.disabled=true;selected.forEach(f=>f.qty.disabled=true);
   try{
    await check(db.from('gp_f_stock_counts').upsert(rows,{onConflict:'request_id',ignoreDuplicates:true}));
@@ -190,6 +191,6 @@ async function quickCount(parent,items,status){
    for(const f of selected){f.showLast({quantity:Number(f.qty.value),counted_at:at.toISOString()});f.qty.value='';f.request=crypto.randomUUID();}
    retry=null;when.value=localNow();status.textContent=selected.length+' Zählungen gespeichert. Position und Suche bleiben erhalten.';
   }catch(e){if(active())status.textContent='Speichern nicht bestätigt: '+e.message+' Erneut speichern ist duplikatsicher.';}
-  finally{save.disabled=false;selected.forEach(f=>f.qty.disabled=false);}
+  finally{save.disabled=false;selected.forEach(f=>f.qty.disabled=false);if(active()&&form.isConnected)requestAnimationFrame(()=>window.scrollTo({...position,behavior:'instant'}));}
  };
 }
