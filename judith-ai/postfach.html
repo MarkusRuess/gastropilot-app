@@ -105,9 +105,9 @@ async function jbLoad(){const request=++jbRequest;jbPrint.disabled=true;jbResult
 document.getElementById('orders-section').addEventListener('toggle',e=>{if(e.target.open)document.getElementById('load-orders').click()});
 jbWeek.addEventListener('change',()=>void jbLoad());document.getElementById('jb-refresh').onclick=()=>void jbLoad();
 jbPrint.onclick=()=>{document.getElementById('jb-print-sheet')?.remove();const sheet=document.createElement('section');sheet.id='jb-print-sheet';sheet.append(jbResult.cloneNode(true));sheet.append(document.createTextNode(jbStatus.textContent));document.body.append(sheet);document.body.classList.add('jb-printing');window.print();};window.addEventListener('afterprint',()=>{document.body.classList.remove('jb-printing');document.getElementById('jb-print-sheet')?.remove()});
-document.addEventListener('judith-orders-changed',()=>{if(document.getElementById('backlist-section').open)void jbLoad()});
-function jbPolling(){clearInterval(jbTimer);if(document.visibilityState==='visible'&&document.getElementById('backlist-section').open){void jbLoad();jbTimer=setInterval(()=>void jbLoad(),60000)}}
-document.addEventListener('visibilitychange',jbPolling);document.getElementById('backlist-section').addEventListener('toggle',jbPolling);
+document.addEventListener('judith-orders-changed',()=>{if(document.getElementById('backlist-section').open&&document.getElementById('judith-orders').classList.contains('jd-active-panel'))void jbLoad()});
+function jbPolling(){clearInterval(jbTimer);if(document.visibilityState==='visible'&&document.getElementById('backlist-section').open&&document.getElementById('judith-orders').classList.contains('jd-active-panel')){void jbLoad();jbTimer=setInterval(()=>void jbLoad(),60000)}}
+document.addEventListener('visibilitychange',jbPolling);document.getElementById('backlist-section').addEventListener('toggle',jbPolling);new MutationObserver(jbPolling).observe(document.getElementById('judith-orders'),{attributes:true,attributeFilter:['class']});
 
 document.getElementById('load-orders').addEventListener('click',async()=>{
  const btn=document.getElementById('load-orders'),out=document.getElementById('orders-status'),list=document.getElementById('orders-list');
