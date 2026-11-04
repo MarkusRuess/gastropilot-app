@@ -1,3 +1,4 @@
+import {FRIEDRICH,validatePages,pagePrompt} from './friedrich-pages.mjs';
 
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
@@ -417,6 +418,32 @@ Deno.serve(async (req) => {
     }
 
 
+    if(savedDocument && businessId===FRIEDRICH && body.mode==='article_sales'){
+      const old=savedDocument.extracted_data;
+      const cached=old.article_sales_verification;
+      const fingerprint=await Promise.all(images.map(async im=>Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(im.mime_type+':'+im.image_base64)))).map(x=>x.toString(16).padStart(2,'0')).join('')));
+      if(cached?.version===2 && cached.verified && JSON.stringify(cached.source_fingerprint)===JSON.stringify(fingerprint) && Array.isArray(old.sales_items))return json({documents:[old],updated:false,reused:true});
+      const apiKey=Deno.env.get('OPENAI_API_KEY');if(!apiKey)return json({error:'KI-Schlüssel fehlt'},500);
+      const expected={...old,date:savedDocument.document_date};
+      const result=await fetch('https://api.openai.com/v1/responses',{method:'POST',headers:{Authorization:'Bearer '+apiKey,'Content-Type':'application/json'},body:JSON.stringify({model:'gpt-4.1-mini',max_output_tokens:24000,store:false,text:{format:{type:'json_object'}},input:[{role:'user',content:[{type:'input_text',text:pagePrompt(expected,images.length)},...images.flatMap((im,i)=>[{type:'input_text',text:'Foto '+(i+1)+' von '+images.length},{type:'input_image',image_url:'data:'+im.mime_type+';base64,'+im.image_base64,detail:'high'}])]}]})});
+      if(!result.ok)return json({error:'Originalauswertung fehlgeschlagen; vorhandene Daten erhalten.'},502);
+      const model=await result.json();if(model.status==='incomplete')return json({error:'Originalauswertung unvollständig; keine Artikelübernahme.'},422);
+      const read=JSON.parse(cleanJson(getOutputText(model))),validation=validatePages(read,expected,images.length);
+      if(validation.errors.length){
+        await supabase.from('documents').update({extracted_data:{...old,article_sales_review:{errors:validation.errors,pages:read.pages,checked_at:new Date().toISOString()}}}).eq('id',savedDocument.id).eq('business_id',FRIEDRICH);
+        return json({error:validation.errors.join(' '),requires_review:true},422);
+      }
+      const imported=await supabase.rpc('gp_f_import_bonit_articles',{p_document:savedDocument.id,p_z:String(read.z_number),p_sales:read.sales_items});
+      if(imported.error)return json({error:imported.error.message},409);
+      const patch={z_number:String(read.z_number),sales_items:read.sales_items,paid_receipt_count:read.cash_count+read.card_count,free_receipt_count:read.free_count,printed_payment_lines:read.printed_payment_lines,tax_breakdown:read.tax_breakdown,returns:read.returns,needs_review:validation.warnings.length>0,article_sales_verification:{version:2,verified:true,method:'all_original_pages',source_fingerprint:fingerprint,pages_total:images.length,pages:read.pages,warnings:validation.warnings,checked_at:new Date().toISOString()}};
+      const updated=await supabase.from('documents').update({extracted_data:{...old,...patch}}).eq('id',savedDocument.id).eq('business_id',FRIEDRICH);
+      if(updated.error)return json({error:'Artikel gespeichert, Prüfstatus noch nicht gespeichert; Wiederholung erzeugt keine doppelte Buchung.'},500);
+      const closings=await supabase.from('bonit_daily_closings').select('id,raw_data').eq('business_id',FRIEDRICH).eq('closing_date',savedDocument.document_date).eq('z_number',String(read.z_number));
+      if(closings.error)return json({error:'Abschluss-Prüfstatus konnte nicht geladen werden.'},500);
+      for(const c of closings.data||[]){const u=await supabase.from('bonit_daily_closings').update({raw_data:{...c.raw_data,...patch}}).eq('id',c.id).eq('business_id',FRIEDRICH);if(u.error)return json({error:'Abschluss-Prüfstatus noch offen.'},500);}
+      return json({documents:[{...old,...patch}],updated:true,requires_review:validation.warnings.length>0,warnings:validation.warnings});
+    }
+
     const apiKey = Deno.env.get("OPENAI_API_KEY");
 
     if (!apiKey) {
@@ -441,7 +468,7 @@ Deno.serve(async (req) => {
       if(body.mode==="article_sales"){
         if(businessId!=="6a5484d1-daf6-4263-897d-24cdf536aa29")return json({error:"Einzelartikel-Sofortimport ist nur für Das Friedrich freigegeben"},403);
         const z=String(read.z_number||"").trim();
-        if(!/^\\d{3,8}$/.test(z))return json({error:"Z-Nummer nicht eindeutig erkannt"},422);
+        if(!/^\d{3,8}$/.test(z))return json({error:"Z-Nummer nicht eindeutig erkannt"},422);
         const existing=await supabase.from("bonit_article_sales").select("id,gross_amount").eq("business_id",businessId).eq("closing_date",savedDocument.document_date).eq("z_number",z);
         if(existing.error)return json({error:"Artikel-Dublettenprüfung fehlgeschlagen"},500);
         if(existing.data?.length){
@@ -1128,6 +1155,8 @@ FRIEDRICH LAGER: category je Position ausschließlich food, beverage, coffee, me
       }
       documents[0]=merged;
     }
+
+    if(businessId===FRIEDRICH&&!savedDocument)for(const d of documents)if(d.document_type==='cash_report'){d.article_candidates=d.sales_items;d.sales_items=[];}
 
     const response: Record<string, unknown> = {
       success: true,

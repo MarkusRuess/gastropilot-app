@@ -2349,6 +2349,7 @@ async function saveResult(
     if(kind==='cash_report'&&businessId==='6a5484d1-daf6-4263-897d-24cdf536aa29'){
       const articleResult=await db.functions.invoke('analyze-receipt',{body:{business_id:businessId,mode:'article_sales',document_id:insertedDocument.data.id}});
       if(articleResult.error||articleResult.data?.error)articleWarning='Einzelartikel noch nicht vollständig übernommen: '+(articleResult.data?.error||articleResult.error?.message||'Erkennung fehlgeschlagen');
+      else if(articleResult.data?.warnings?.length)articleWarning='Artikel vollständig übernommen; Prüfung: '+articleResult.data.warnings.join(' ');
     }
     if(kind==='invoice'){
       const mapped={food:'food',beverage:'drinks',drinks:'drinks',cleaning:'nonfood',consumables:'nonfood',packaging:'nonfood',equipment:'nonfood',nonfood:'nonfood',other:'other',unknown:'other'};
