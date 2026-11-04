@@ -1,10 +1,10 @@
 name: Friedrich stock checks
 on:
   pull_request:
-    paths: ['friedrich-stock*', 'sql/friedrich-stock*', 'sql/friedrich-purchase*', 'scripts/*friedrich*', 'index.html', 'upload.html', 'einkaufsplanung.html', 'friedrich-inventur.html', 'supabase/functions/analyze-receipt/index.ts', '.github/workflows/qa-friedrich-stock.yml']
+    paths: ['friedrich-stock*', 'sql/friedrich-stock*', 'sql/friedrich-purchase*', 'sql/friedrich-bonit*', 'supabase/functions/analyze-receipt/friedrich-pages.mjs', 'scripts/*friedrich*', 'index.html', 'upload.html', 'einkaufsplanung.html', 'friedrich-inventur.html', 'supabase/functions/analyze-receipt/index.ts', '.github/workflows/qa-friedrich-stock.yml']
   push:
     branches: [main]
-    paths: ['friedrich-stock*', 'sql/friedrich-stock*', 'sql/friedrich-purchase*', 'scripts/*friedrich*', 'index.html', 'upload.html', 'einkaufsplanung.html', 'friedrich-inventur.html', 'supabase/functions/analyze-receipt/index.ts', '.github/workflows/qa-friedrich-stock.yml']
+    paths: ['friedrich-stock*', 'sql/friedrich-stock*', 'sql/friedrich-purchase*', 'sql/friedrich-bonit*', 'supabase/functions/analyze-receipt/friedrich-pages.mjs', 'scripts/*friedrich*', 'index.html', 'upload.html', 'einkaufsplanung.html', 'friedrich-inventur.html', 'supabase/functions/analyze-receipt/index.ts', '.github/workflows/qa-friedrich-stock.yml']
 permissions:
   contents: read
 jobs:
@@ -16,7 +16,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
-      - run: node --test scripts/test-friedrich-stock.mjs scripts/test-friedrich-purchase.mjs
+      - run: node --test scripts/test-friedrich-stock.mjs scripts/test-friedrich-purchase.mjs scripts/test-friedrich-bonit-pages.mjs
       - run: node scripts/check-friedrich-inline.mjs
       - run: npm install --no-save --package-lock=false playwright@1.62.1
       - run: npx playwright install --with-deps chromium
