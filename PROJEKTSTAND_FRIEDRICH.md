@@ -95,3 +95,9 @@ Die verbindliche projektübergreifende Übersicht aller vier ChatGPT-Projekte, i
 
 ## 2026-11-03 – Umsatzquellen
 Code auf QA-Branch: Bonit-, Rechnungs- und Gesamtumsatz-Kacheln; Rechnungsdetails im Kalender; Rechnungspositionen in Top-30. Datenbank unverändert. Tests und Live-Veröffentlichung noch offen.
+
+
+## 2026-11-05 – Personaloberfläche beider Betriebe (QA)
+- `index.html` QA-Commit `eee8662`: Personal-Navigation lädt beim ersten Klick eine Monatsauswahl (Pfeile und Monat/Jahr) und Mitarbeiterhistorie. Ausschließlich `personnel_costs` und `employee_profiles` des gewählten Betriebs; alle gespeicherten Monate, neuester zuerst. Brutto, vorhandene Nettobezüge, Dienstgeberkosten und Summe werden ohne Vormonatsersatz angezeigt. Fehlende Werte bleiben offen; gleiche Namen sind ohne Mitarbeiter-ID nicht sicher unterscheidbar.
+- Begonnene Judith-Uploadkorrektur `193e3284` im QA-Branch vorhanden. Drei Oktober-Originale im privaten Bucket nachgewiesen, aber PDF-Inhalte und vollständige Lohnabstimmung weiterhin nicht geprüft. **Kein belastbarer Oktober-Personalaufwand und keine Personalquote**. Umsatz/Quote in der neuen Ansicht noch nicht angebunden; Import und Duplikatsicherung nicht vollständig fertiggestellt.
+- Nur GitHub-QA-Branch geändert; keine Datenbankmigration, kein Deployment, keine bestätigten automatischen Browser-/End-to-End-Tests oder Liveprüfung. Friedrich/Judith-Mandantentrennung im Code, negative RLS-Tests offen. **Nicht produktionsreif.**
