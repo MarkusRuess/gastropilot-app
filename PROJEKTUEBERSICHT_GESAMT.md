@@ -89,3 +89,9 @@ Judith: Bank-PDF / Beleg
 - [Qualitätssicherung](QUALITAETSSICHERUNG.md)
 
 **2026-11-02:** Gemeinsame Übersicht ausschließlich im Entwicklungsbranch erstellt. GitHub-Repositoriesuche, Supabase-Projektliste, aktive Edge-Function-Liste und vier Projektstanddateien lesend geprüft. Keine Änderungen an Anwendung, produktiven Daten oder Berechtigungen.
+
+
+## 2026-11-05 – Personaloberfläche beider Betriebe (QA)
+- `index.html` QA-Commit `eee8662`: Personal-Navigation lädt beim ersten Klick eine Monatsauswahl (Pfeile und Monat/Jahr) und Mitarbeiterhistorie. Ausschließlich `personnel_costs` und `employee_profiles` des gewählten Betriebs; alle gespeicherten Monate, neuester zuerst. Brutto, vorhandene Nettobezüge, Dienstgeberkosten und Summe werden ohne Vormonatsersatz angezeigt. Fehlende Werte bleiben offen; gleiche Namen sind ohne Mitarbeiter-ID nicht sicher unterscheidbar.
+- Begonnene Judith-Uploadkorrektur `193e3284` im QA-Branch vorhanden. Drei Oktober-Originale im privaten Bucket nachgewiesen, aber PDF-Inhalte und vollständige Lohnabstimmung weiterhin nicht geprüft. **Kein belastbarer Oktober-Personalaufwand und keine Personalquote**. Umsatz/Quote in der neuen Ansicht noch nicht angebunden; Import und Duplikatsicherung nicht vollständig fertiggestellt.
+- Nur GitHub-QA-Branch geändert; keine Datenbankmigration, kein Deployment, keine bestätigten automatischen Browser-/End-to-End-Tests oder Liveprüfung. Friedrich/Judith-Mandantentrennung im Code, negative RLS-Tests offen. **Nicht produktionsreif.**
