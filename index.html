@@ -2451,7 +2451,7 @@ async function loadRecentUploads(){
    };
    left.append(retry);
   }
-  if(business==='87889eaf-f865-4e3a-8f9a-cd01db483e0e'&&row.document_type==='other'&&row.storage_path&&JUDITH_PERSONNEL_FILE.test(meta.original_name||'')){
+  if(business==='87889eaf-f865-4e3a-8f9a-cd01db483e0e'&&row.document_type==='other'&&row.storage_path&&JUDITH_PERSONNEL_FILE.test(String(meta.original_name||'').normalize('NFC'))){
    const retry=document.createElement('button');retry.type='button';retry.textContent='▶ Personalbeleg zuordnen';retry.disabled=busy;
    retry.onclick=async()=>{
     if(busy)return;
@@ -2482,7 +2482,7 @@ function judithPersonnelMonth(name){
 async function archiveJudithPersonnelOriginal(intake){
  if(BID!=='87889eaf-f865-4e3a-8f9a-cd01db483e0e')throw Error('Personalbelege dürfen nur Judith zugeordnet werden.');
  const name=intake.extracted_data?.original_name||'';
- if(!JUDITH_PERSONNEL_FILE.test(name))throw Error('Kein eindeutig erkannter Personalbeleg.');
+ if(!JUDITH_PERSONNEL_FILE.test(String(name).normalize('NFC')))throw Error('Kein eindeutig erkannter Personalbeleg.');
  const month=judithPersonnelMonth(name);
  if(!month)throw Error('Abrechnungsmonat nicht eindeutig; keine automatische Zuordnung.');
  const old=intake.extracted_data||{};
@@ -2591,7 +2591,7 @@ async function process(){
    const setProgress=step=>{E('uploadStatus').textContent=(fileIndex+1)+'/'+files.length+' · '+file.name+' · '+step;};
    try{
     if(intake.alreadyRecognized){if(intake.document_type==='invoice')await autoBookInvoiceExpense({...intake.extracted_data,date:intake.document_date,supplier:intake.extracted_data?.supplier||intake.supplier,invoice_number:intake.extracted_data?.invoice_number||intake.invoice_number},intake.id);duplicate++;queue=queue.filter(f=>f!==file);if(isSpreadsheet(file))E('uploadStatus').textContent='Excel-Datei bereits im Archiv · '+file.name;else showArchivedDuplicate(file);continue;}
-    if(BID==='87889eaf-f865-4e3a-8f9a-cd01db483e0e'&&JUDITH_PERSONNEL_FILE.test(file.name)){
+    if(BID==='87889eaf-f865-4e3a-8f9a-cd01db483e0e'&&JUDITH_PERSONNEL_FILE.test(String(file.name).normalize('NFC'))){
      setProgress('Personaloriginal wird dem Abrechnungsmonat zugeordnet …');
      const month=await archiveJudithPersonnelOriginal(intake);
      saved++;queue=queue.filter(f=>f!==file);
