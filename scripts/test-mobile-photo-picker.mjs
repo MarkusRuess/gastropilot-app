@@ -8,6 +8,7 @@ const {chromium,webkit}=createRequire(import.meta.url)('playwright');
 const html=fs.readFileSync(new URL('../index.html',import.meta.url),'utf8');
 const intake=html.match(/<section class="card" id="intake">[\s\S]*?<\/section>/)[0];
 const handlers=html.slice(html.indexOf("for(const [labelId,inputId]"),html.indexOf('async function startDesktopPdf'));
+const drawFunction=html.match(/function drawQueue\(\)\{[^\n]+/)[0];
 const queueFunction=html.match(/function queueFiles\(files\)\{[^\n]+/)[0];
 let passed=0;
 for(const engine of (process.env.SKIP_BROWSER==='1'?[]:[chromium,webkit])){
@@ -15,14 +16,14 @@ for(const engine of (process.env.SKIP_BROWSER==='1'?[]:[chromium,webkit])){
  try{for(const business of ['Judith','Friedrich']){
   const page=await browser.newPage({viewport:{width:390,height:844},isMobile:true,hasTouch:true});
   await page.setContent('<meta name="viewport" content="width=device-width,initial-scale=1"><style>.hidden{display:none}.gp-file-picker-button{display:block;padding:16px}</style>'+intake);
-  await page.addScriptTag({content:`const E=id=>document.getElementById(id);let busy=false,queue=[];const isSpreadsheet=()=>false;function drawQueue(){E('fileQueue').textContent=queue.length;E('confirmUpload').disabled=!queue.length;}function process(){};${queueFunction}\n${handlers}`});
+  await page.addScriptTag({content:`const E=id=>document.getElementById(id);let busy=false,queue=[];const isSpreadsheet=()=>false;function process(){};${drawFunction}\n${queueFunction}\n${handlers}`});
   for(const [label,input,multiple] of [['camera','cameraInput',false],['fileButton','fileInput',true]]){
    const choice=page.waitForEvent('filechooser');await page.locator('#'+label).tap();
    const chooser=await choice;assert.equal(await chooser.element().getAttribute('id'),input);assert.equal(chooser.isMultiple(),multiple);
    await chooser.setFiles({name:'test.png',mimeType:'image/png',buffer:Buffer.from('synthetic image fixture')});
-   assert.equal(await page.locator('#fileQueue').textContent(),'1');assert.equal(await page.locator('#'+input).inputValue(),'');
+   assert.match(await page.locator('#fileQueue').textContent(),/^1 von 12/);assert.equal(await page.locator('#'+input).inputValue(),'');
    assert.equal(await page.locator('#confirmUpload').isEnabled(),true);
-   await page.locator('#clearUpload').click();assert.equal(await page.locator('#fileQueue').textContent(),'0');passed++;
+   await page.locator('#clearUpload').click();assert.match(await page.locator('#fileQueue').textContent(),/^0 von 12/);passed++;
   }
   assert.equal(await page.locator('#cameraInput').getAttribute('capture'),'environment');
   for(const key of ['Enter','Space']){await page.locator('#camera').focus();const choice=page.waitForEvent('filechooser');await page.keyboard.press(key);const chooser=await choice;await chooser.setFiles([]);passed++;}

@@ -131,3 +131,7 @@ Preisberater-QA 2026-11-02: Rechenfehler bei numerischen Dezimalwerten sowie Hoc
 
 ## 2026-11-02 – Friedrich Lager & Inventur
 Ausdrücklich beauftragte Friedrich-only Entwicklung: eigener Lagerbereich, gemeinsame Supabase-Bestandsberechnung für Einkauf und Inventur, belegbezogene Lieferungen, Einzelzählungen, Bonit-Rezeptverbrauch, getrennte Verluste und versionierte Monatsstände mit PDF/CSV. Neue Objekte ausschließlich `gp_f_stock_*` und `gp_stock_private`; Details, Tests und Abnahmegrenzen in [PROJEKTSTAND_FRIEDRICH.md](PROJEKTSTAND_FRIEDRICH.md). Der zentrale Upload erhält ausschließlich im Friedrich-Zweig zusätzliche Mengen-/Gebindefelder; Judith AI und Judiths Schnittstellen bleiben unverändert. QA-Branch lesend verglichen, nicht pauschal übernommen. Dieser konkrete Auftrag erlaubt getestete Migration und Veröffentlichung.
+
+
+## 2026-11-05 – Gemeinsame mobile Fotoauswahl, PR #79
+Vorhandene native Kamera-/Dateiauswahlkorrektur für Judith und Friedrich; bestehende Erkennung, Datentrennung und Berechtigungen unverändert. Zusatztests für Touch-/Tastaturaktivierung in Chromium/WebKit und betriebsgebundene Wiederholungsimporte ergänzt. Details und Live-Abnahmegrenzen in den Projektständen Zentrale, Judith und Friedrich. Judith AI unverändert.
