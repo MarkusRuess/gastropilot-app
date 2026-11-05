@@ -1,0 +1,21 @@
+name: Mobile photo picker checks
+on:
+  pull_request:
+    paths: ['index.html', 'scripts/test-mobile-photo-picker.mjs', '.github/workflows/qa-mobile-photo-picker.yml']
+  push:
+    branches: [fix/mobile-photo-picker-20261105]
+permissions:
+  contents: read
+jobs:
+  mobile-picker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: npm install --no-save --package-lock=false playwright@1.58.2
+      - run: npx playwright install --with-deps chromium webkit
+      - run: node scripts/test-mobile-photo-picker.mjs
+      - run: node scripts/check-friedrich-inline.mjs
+      - run: node scripts/test-friedrich-bonit-pages.mjs
