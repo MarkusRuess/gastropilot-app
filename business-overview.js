@@ -195,3 +195,27 @@ export async function renderBusinessOverview(db,members,month,host,onSelect){
  combined.querySelector('small').textContent=valid?'Das Friedrich '+euro(friedrich.gross)+' + Judith und die Torten '+euro(judith.gross):'Für mindestens einen Betrieb fehlen die Bruttoumsätze dieses Monats.';
  combined.disabled=false;
 }
+
+/**
+ * Daily personnel orientation. Never use gross turnover or another business.
+ * No estimate if day coverage, payroll completeness or net revenue is unknown.
+ */
+export function calculateDailyPersonnelQuote({month,netRevenue,closingDates,referenceBudget,referenceMonth,actualCosts,actualComplete=false,revenueComplete=false,target=35}){
+ const empty={mode:'unavailable',ratio:null,cost:null,target,referenceMonth:referenceMonth||null,reason:'Noch nicht berechenbar'};
+ if(!/^\\d{4}-(0[1-9]|1[0-2])$/.test(month||''))return empty;
+ const dates=[...new Set((closingDates||[]).filter(d=>typeof d==='string'&&d.startsWith(month+'-')&&/^\\d{4}-\\d{2}-\\d{2}$/.test(d)))].sort();
+ const net=number(netRevenue);
+ if(net===null||net<=0||!dates.length)return empty;
+ const days=new Date(Date.UTC(Number(month.slice(0,4)),Number(month.slice(5,7)),0)).getUTCDate();
+ const latest=dates[dates.length-1],lastDay=Number(latest.slice(-2));
+ if(lastDay<1||lastDay>days)return empty;
+ if(actualComplete&&revenueComplete&&number(actualCosts)!==null){
+  const cost=number(actualCosts);
+  return {mode:'actual',ratio:100*cost/net,cost,target,referenceMonth:null,through:latest,reason:'Ist · vollständiger Monatsabschluss'};
+ }
+ // Missing daily closings are not zero-sales days. Do not project beyond verified coverage.
+ if(number(referenceBudget)===null||!referenceMonth||referenceMonth>=month)return empty;
+ if(!revenueComplete)return {...empty,reason:'Umsatzdatenstand unvollständig; fehlende Tagesabschlüsse prüfen'};
+ const cost=number(referenceBudget)/days*lastDay;
+ return {mode:'plan',ratio:100*cost/net,cost,target,referenceMonth,through:latest,reason:'ca. / Plan · Vorläufige Orientierung; tatsächliche Personalkosten folgen mit der Abrechnung.'};
+}
