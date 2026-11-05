@@ -100,3 +100,13 @@ Dezimalverarbeitung numerischer DB-Werte korrigiert; Hochzeitstag/Wiederholungs-
 - 19 PostgreSQL-Assertions mit vollständigem Rollback erfolgreich. Keine tatsächliche Mitarbeiter-Einschätzung erzeugt oder bestehende Kundendaten verändert.
 - Acht geänderte Dateien kontrolliert; kein Friedrich-Code oder gemeinsame GastroPilot-Startseite geändert.
 - **Abnahmestatus: technisch geprüfte Korrektur veröffentlicht, keine vollständige fachliche/angemeldete Live-Freigabe.** Fehlende Browser-Sitzung, fehlende Portionen und unbestätigte betriebliche Zeit-/Kapazitätsansätze bleiben ausdrücklich offen. Die sechs Rechnungspositionen bleiben ohne ungeprüfte Kostenübernahme im bisherigen Prüfstatus.
+
+
+## 2026-11-05 – Judith-Fotoupload
+- Judith nutzt die tatsächlichen nativen Kamera-/Dateiinputs als Tippfläche; rückbaubar beim Betriebswechsel. Rosa Design und bestehende Menüs bleiben erhalten.
+- Fotos mit fehlendem MIME-Typ werden normalisiert; HEIC/weitere Bildformate werden bei vorhandener Browserunterstützung in JPEG umgewandelt, andernfalls klare Fehlermeldung. Keine zusätzliche KI-Auswertung für Vorbereitung.
+- Judith-Fotoauswahl startet den bestehenden zentralen Erkennungs-/Archivweg automatisch. Monatsanzeige folgt dem erkannten Belegdatum; unsichere Werte bleiben zur Prüfung.
+- Betriebswechsel mit noch ausgewählten Dateien nach/von Judith gesperrt. Bestehender Tagesabschluss mit gleichem Betrag wird für Judith als Duplikat behandelt, ohne seine Geschäftsdaten zu überschreiben. Browserübergreifende Tabs werden per Web Locks serialisiert, soweit verfügbar; kein neuer globaler Datenbank-Unique-Index in diesem Auftrag.
+- 14 Node-Tests bestanden (Dateitypen, Fehler, native Eingaben, automatischer Judith-Weg, unveränderte Friedrich-Auswahl, Mandantenwache, bestehende Duplikat-/Datumsfilter). Inline-Syntax geprüft.
+- Vorhandene Judith-Abschlüsse und neue Chat-Belege geprüft; keine Fotos oder Finanzrohdaten ins Repository übernommen. Keine Änderung an Friedrich-Dateien oder Judith AI, keine Löschungen/Berechtigungsänderungen.
+- Live-Abnahme noch offen: letzter erreichbarer Browser zeigte Anmeldung, keine bestehende Sitzung. Echte iPhone-Kamera und angemeldeter Ende-zu-Ende-Upload deshalb nicht bestätigt. Veröffentlichung separat nachweisen.
