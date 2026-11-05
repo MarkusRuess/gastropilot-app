@@ -725,6 +725,7 @@ body:has(.judith-theme) #ledgerComparisonSection .ledger-actions,body:has(.judit
 <section class="card" id="centralArchive"><details id="centralArchiveDisclosure"><summary class="top-articles-launch"><span><strong>Gesamtarchiv · Alle Geschäftsunterlagen</strong><small>BONit · Lieferanten · Bank · Personal · Excel · Kosten</small></span><span class="top-articles-chevron" aria-hidden="true">⌄</span></summary><div class="top-articles-content"><p class="muted">Vorhandene Daten aus BONit, Lieferanten, Bank und Personal. Originalbestände bleiben getrennt; keine doppelte Umsatz- oder Kostenbuchung.</p><details class="purchaseAssign" id="purchaseAssign"><summary>Rechnungen zur Zuteilung · antippen</summary><p class="muted" id="purchaseAssignStatus">Archiv laden, um die offenen Zuordnungen zu sehen.</p><div id="purchaseAssignList"></div></details><div class="grid" id="archiveTotals"></div><div class="row" style="margin:15px 0"><button type="button" id="archiveLoad">Gesamtarchiv aktualisieren</button><select id="archiveFilter" aria-label="Archivbereich"><option value="all">Alle Bereiche</option><option value="bonit">BONit</option><option value="invoice">Rechnungen</option><option value="supplier_stats">Lieferantenstatistik</option><option value="spreadsheet">Excel-Dateien</option><option value="analysis">Judith Gesamtanalyse</option><option value="price_reference">EK-Preisfotos</option><option value="other">Ungeklärte Fotos</option><option value="bank">Bank</option><option value="personnel">Personal</option><option value="expense">Kosten</option></select></div><p class="muted" id="archiveState"></p><div class="scroll"><table><thead><tr><th>Datum</th><th>Bereich</th><th>Beleg / Beschreibung</th><th class="num">Betrag</th><th>Status</th></tr></thead><tbody id="allArchiveRows"></tbody></table></div></div></details></section><section class="card"><h2>Dokumentenarchiv</h2><div id="archive"></div></section></div></main>
 <script src="./business-switch.js"></script><script type="module">
 import {createClient} from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+import {mountJudithPickers,prepareJudithFiles,JUDITH_ID} from './judith-photo-upload.mjs?v=20261103-photo1';
 import {loadBankFixedCosts} from './bank-costs-integration.js';
 import {mountStock,renderStockPlanning} from './friedrich-stock.js?v=20261103-counted';
 import {renderBusinessOverview,loadPersonnelAverage,JUDITH_PERSONNEL_REFERENCE,SALES_TARGETS} from './business-overview.js?v=20261030-ausgangsrechnungen';
@@ -752,7 +753,7 @@ function renderTopBusinessNav(){
  }
 }
 function businessLabel(name){return String(name||'GastroPilot').includes('Judith')?'Judith und die Torten':String(name||'GastroPilot').includes('Friedrich')?'Das Friedrich':String(name||'GastroPilot');}function setSalesTargetForBusiness(name){const goal=SALES_TARGETS[String(name||'').includes('Judith')?'judith':'friedrich'];if(E('salesTargetBreakEven'))E('salesTargetBreakEven').textContent=EUR(goal.breakEven);if(E('salesTargetProfit'))E('salesTargetProfit').textContent=EUR(goal.profit5000);if(E('salesTargetNote'))E('salesTargetNote').textContent=goal.note+' Bruttoumsatz pro Monat; vorläufig, keine Ist-Gewinnberechnung.';}
-function setBusinessHeader(name){setSalesTargetForBusiness(name);const label=businessLabel(name);document.body.dataset.activeBusiness=label==='Judith und die Torten'?'judith':'friedrich';E('activeBusinessTitle').textContent=label+' · Betriebssteuerung';E('intakeBusinessTitle').textContent='📷 Unterlagen für '+label+' hochladen';document.title='GastroPilot · '+label;const calc=E('kalkulationLink');if(calc){const judith=label==='Judith und die Torten';if(judith){calc.removeAttribute('href');calc.setAttribute('aria-disabled','true');calc.querySelector('b').textContent='Kalkulation · Judith';calc.querySelectorAll('small')[1].textContent='ETRON-Artikel · Brutto-VK · Herstellkosten offen';calc.removeAttribute('aria-disabled');calc.setAttribute('role','button');calc.onclick=()=>{E('topArticlesDisclosure').open=true;E('topArticles').classList.remove('mobileHidden');E('topArticles').scrollIntoView({behavior:'smooth'});};}else{calc.href='kalkulation.html';calc.onclick=null;calc.removeAttribute('role');calc.removeAttribute('aria-disabled');calc.querySelector('b').textContent='Kalkulation';calc.querySelectorAll('small')[1].textContent='Gesamtziel: max. 26 % Wareneinsatz · Grün ≤20 % · Gelb ≤26 % · Rot >26 %';}}const personnelTile=E('judithPersonnelTile');if(personnelTile)personnelTile.classList.toggle('hidden',label!=='Judith und die Torten');const cakePricingTile=E('judithCakePricingTile');if(cakePricingTile)cakePricingTile.classList.toggle('hidden',label!=='Judith und die Torten');const rentTile=E('judithRentTile');if(rentTile)rentTile.classList.toggle('hidden',label!=='Judith und die Torten');const recipeTile=E('recipeCostTile');if(recipeTile)recipeTile.classList.toggle('hidden',label!=='Judith und die Torten');const menuTitle=E('menuDashboardTitle');if(menuTitle)menuTitle.textContent=label==='Judith und die Torten'?'Produkte':'Getränke & Speisekarte';E('judithAnalysisLink').classList.toggle('hidden',label!=='Judith und die Torten');}
+function setBusinessHeader(name){mountJudithPickers(document,BID===JUDITH_ID);setSalesTargetForBusiness(name);const label=businessLabel(name);document.body.dataset.activeBusiness=label==='Judith und die Torten'?'judith':'friedrich';E('activeBusinessTitle').textContent=label+' · Betriebssteuerung';E('intakeBusinessTitle').textContent='📷 Unterlagen für '+label+' hochladen';document.title='GastroPilot · '+label;const calc=E('kalkulationLink');if(calc){const judith=label==='Judith und die Torten';if(judith){calc.removeAttribute('href');calc.setAttribute('aria-disabled','true');calc.querySelector('b').textContent='Kalkulation · Judith';calc.querySelectorAll('small')[1].textContent='ETRON-Artikel · Brutto-VK · Herstellkosten offen';calc.removeAttribute('aria-disabled');calc.setAttribute('role','button');calc.onclick=()=>{E('topArticlesDisclosure').open=true;E('topArticles').classList.remove('mobileHidden');E('topArticles').scrollIntoView({behavior:'smooth'});};}else{calc.href='kalkulation.html';calc.onclick=null;calc.removeAttribute('role');calc.removeAttribute('aria-disabled');calc.querySelector('b').textContent='Kalkulation';calc.querySelectorAll('small')[1].textContent='Gesamtziel: max. 26 % Wareneinsatz · Grün ≤20 % · Gelb ≤26 % · Rot >26 %';}}const personnelTile=E('judithPersonnelTile');if(personnelTile)personnelTile.classList.toggle('hidden',label!=='Judith und die Torten');const cakePricingTile=E('judithCakePricingTile');if(cakePricingTile)cakePricingTile.classList.toggle('hidden',label!=='Judith und die Torten');const rentTile=E('judithRentTile');if(rentTile)rentTile.classList.toggle('hidden',label!=='Judith und die Torten');const recipeTile=E('recipeCostTile');if(recipeTile)recipeTile.classList.toggle('hidden',label!=='Judith und die Torten');const menuTitle=E('menuDashboardTitle');if(menuTitle)menuTitle.textContent=label==='Judith und die Torten'?'Produkte':'Getränke & Speisekarte';E('judithAnalysisLink').classList.toggle('hidden',label!=='Judith und die Torten');}
 const menuPriceKey=value=>String(value||'').toLocaleLowerCase('de-AT').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/ß/g,'ss').replace(/[^a-z0-9]+/g,' ').trim();
 function menuServing(name){
  const match=String(name).match(/(?:\d+[,.]\d+\s*l|\d+\s*\/\s*\d+\s*l?|\d+\s*cl|\d+\s*ml|\d+\s*(?:stk\.?|stuck|paar))/i);
@@ -2211,6 +2212,7 @@ async function autoArchive(doc,sourceFile,paymentStatus,intake=null,extraIntakes
     if(N(x.gross_total)===null||Math.abs(N(current.extracted_data.gross_total)-N(x.gross_total))>.03){
      throw Error('Für dieses Datum liegt ein Tagesabschluss mit anderem Betrag vor. Original und Erkennung bleiben zur Prüfung gesichert.');
     }
+    if(BID===JUDITH_ID)return await markDuplicate(current.id);
     existingIncompleteCash=current;
    }else if(N(x.gross_total)===null)return await markDuplicate(current.id);
    existingIncompleteCash=current;
@@ -2523,6 +2525,10 @@ async function importJudithBankPdf(file,intake){
 }
 
 async function process(){
+ if(BID===JUDITH_ID&&navigator.locks){return navigator.locks.request('gastropilot-judith-upload',{ifAvailable:true},lock=>{if(!lock){E('uploadStatus').textContent='Ein Judith-Upload läuft bereits in einem anderen Fenster.';return;}return processUpload();});}
+ return processUpload();
+}
+async function processUpload(){
  if(busy||!queue.length)return;if(!user){E('uploadStatus').textContent='Bitte anmelden.';return;}
  busy=true;drawQueue();E('review').replaceChildren();const files=[...queue];let saved=0,duplicate=0,failed=0,secured=0,spreadsheetSaved=0,xlsxBooked=0,xlsxDuplicates=0,xlsxReview=0,xlsxTotal=0;const errors=[],intakes=new Map();
  try{
@@ -2590,6 +2596,7 @@ async function process(){
      setProgress('Zahlungsstatus '+paymentStatus+' · wird gespeichert …');
     }
     const outcome=await autoArchive(recognizedDoc,file,paymentStatus,intake);
+    if(BID===JUDITH_ID&&recognizedDoc.document_type==='cash_report'&&!recognizedDoc.needs_review){E('month').value=recognizedDoc.date.slice(0,7);E('homeMonth').value=E('month').value;}
     if(outcome==='bereits vorhanden')duplicate++;else saved++;
     queue=queue.filter(f=>f!==file);
     E('review').replaceChildren();
@@ -2616,7 +2623,20 @@ function review(doc,sourceFile){const wrap=document.createElement('div');wrap.cl
 async function save(doc,wrap,button,sourceFile){if(busy)return;busy=true;button.disabled=true;try{const x={...doc};for(const input of wrap.querySelectorAll('[data-key]')){const k=input.dataset.key;x[k]=['gross_total','net_total','vat_total','cash_total','card_total','receipt_count'].includes(k)?N(input.value):input.value.trim();}if(!/^\d{4}-\d{2}-\d{2}$/.test(x.date))throw Error('Datum fehlt.');if(!Number.isFinite(x.gross_total))throw Error('Brutto fehlt.');if(Number.isFinite(x.net_total)&&Number.isFinite(x.vat_total)&&Math.abs(x.net_total+x.vat_total-x.gross_total)>.03)throw Error('Netto + Steuer stimmt nicht mit Brutto überein.');const kind=x.document_type;if(!['cash_report','monthly_report','invoice'].includes(kind))throw Error('Belegart nicht eindeutig erkannt. Bitte neu scannen.');if(kind==='monthly_report'){if(!/^\\d{4}-\\d{2}-\\d{2}$/.test(x.period_start||'')||!/^\\d{4}-\\d{2}-\\d{2}$/.test(x.period_end||''))throw Error('Monatszeitraum fehlt. Bitte Anfang und Ende prüfen.');if(x.period_start>x.period_end)throw Error('Ungültiger Monatszeitraum.');const {data,error}=await db.from('documents').select('id,extracted_data').eq('business_id',BID).eq('document_type','monthly_report').eq('document_date',x.date).limit(20);if(error)throw error;if(data?.some(d=>d.extracted_data?.period_start===x.period_start&&d.extracted_data?.period_end===x.period_end))throw Error('Dieser Monatsabschluss ist bereits im Archiv.');}else if(kind==='cash_report'){const {data,error}=await db.from('documents').select('id').eq('business_id',BID).eq('document_type',kind).eq('document_date',x.date).limit(1);if(error)throw error;if(data?.length)throw Error('Tagesabschluss bereits im Archiv – keine Doppelzählung.');}else{if(!x.supplier||!x.invoice_number)throw Error('Lieferant und Rechnungsnummer prüfen.');if(!['offen','bezahlt'].includes(x.payment_status))throw Error('Bitte Offen oder Bezahlt wählen.');if(x.payment_status==='bezahlt'&&!['bar','bankueberweisung','karte'].includes(x.payment_method))throw Error('Bitte Zahlungsart wählen.');const {data,error}=await db.from('documents').select('id').eq('business_id',BID).eq('document_type','invoice').eq('supplier',x.supplier).eq('invoice_number',x.invoice_number).limit(1);if(error)throw error;if(data?.length)throw Error('Lieferantenrechnung bereits vorhanden.');}
  if(!sourceFile)throw Error('Originaldatei fehlt.');const paths=[];for(const original of [sourceFile]){const ext=original.type==='application/pdf'?'pdf':original.type==='image/png'?'png':original.type==='image/webp'?'webp':'jpg',path=BID+'/'+crypto.randomUUID()+'.'+ext;const upload=await db.storage.from('invoice-originals').upload(path,original,{contentType:original.type,upsert:false});if(upload.error){if(paths.length)await db.storage.from('invoice-originals').remove(paths);throw Error('Originalablage fehlgeschlagen: '+upload.error.message);}paths.push(path);}x.original_files=paths;x.reviewed_at=new Date().toISOString();const {error}=await db.from('documents').insert({business_id:BID,uploaded_by:user.id,document_type:kind,document_date:x.date,supplier:kind==='invoice'?x.supplier:null,invoice_number:kind==='invoice'?x.invoice_number:null,storage_path:paths[0],status:'reviewed',extracted_data:x});if(error){await db.storage.from('invoice-originals').remove(paths);throw error;}wrap.replaceChildren();queue=queue.filter(f=>f!==sourceFile);drawQueue();E('uploadStatus').textContent='Gespeichert: '+D(x.date)+' · '+EUR(x.gross_total);await refresh();
  }catch(e){E('uploadStatus').textContent='Speichern nicht möglich: '+e.message;}finally{busy=false;button.disabled=false;}}
-E('camera').onclick=()=>E('cameraInput').click();E('fileButton').onclick=()=>E('fileInput').click();for(const id of ['cameraInput','fileInput'])E(id).onchange=e=>{queueFiles([...e.target.files]);e.target.value='';};E('confirmUpload').onclick=process;E('clearUpload').onclick=()=>{queue=[];E('review').replaceChildren();E('uploadStatus').textContent='Auswahl geleert.';drawQueue();};drawQueue();
+E('camera').onclick=()=>E('cameraInput').click();E('fileButton').onclick=()=>E('fileInput').click();for(const id of ['cameraInput','fileInput'])E(id).onchange=async e=>{
+ const files=[...(e.target.files||[])];e.target.value='';
+ if(BID!==JUDITH_ID){queueFiles(files);return;}
+ if(!files.length||busy)return;
+ const selectedBusiness=BID;busy=true;drawQueue();
+ E('uploadStatus').textContent='Foto wird vorbereitet …';
+ let prepared;
+ try{prepared=await prepareJudithFiles(files,image,File);}
+ catch(error){E('uploadStatus').textContent='Foto konnte nicht vorbereitet werden: '+error.message;return;}
+ finally{busy=false;drawQueue();}
+ if(BID!==selectedBusiness){E('uploadStatus').textContent='Betrieb wurde gewechselt. Bitte Foto bei Judith erneut auswählen.';return;}
+ queueFiles(prepared);
+ try{await process();}catch(error){E('uploadStatus').textContent='Verarbeitung fehlgeschlagen: '+error.message;}
+};E('confirmUpload').onclick=process;E('clearUpload').onclick=()=>{queue=[];E('review').replaceChildren();E('uploadStatus').textContent='Auswahl geleert.';drawQueue();};drawQueue();
 async function startDesktopPdf(file){
  if(busy){E('uploadStatus').textContent='Eine Verarbeitung läuft bereits. Bitte danach erneut versuchen.';return}
  if(!file||(!/\.pdf$/i.test(file.name)&&file.type!=='application/pdf')){E('uploadStatus').textContent='Bitte eine Rechnung als PDF auswählen.';return}
@@ -2646,6 +2666,7 @@ async function showHome(){
 }
 async function openBusiness(member){
  if(openingBusiness||busy||!authorizedBusinesses.some(x=>x.business_id===member.business_id))return;
+ if((BID===JUDITH_ID||member.business_id===JUDITH_ID)&&queue.length&&member.business_id!==BID){E('businessSwitchStatus').textContent='Bitte Judith-Upload abschließen oder Auswahl leeren, bevor du den Betrieb wechselst.';return;}
  openingBusiness=true;
  try{
   BID=member.business_id;localStorage.setItem(window.GastroPilotBusiness.key,BID);
@@ -3578,6 +3599,3 @@ body:not(.gp-judith-design) #gpMockupDetailBody #weeklyPurchase #gpPurchaseTabPa
 @media(max-width:650px){body:not(.gp-judith-design) #gpMockupDetailBody #weeklyPurchase #gpPurchaseTabPanel>.top-article{grid-template-columns:1fr!important}body:not(.gp-judith-design) #gpMockupDetailBody #weeklyPurchase #gpPurchaseTabPanel>.top-article b{text-align:left}}
 </style><link rel="stylesheet" href="friedrich-weinsortiment.css"><script defer src="friedrich-weinsortiment.js"></script><script type="module" src="./judith-bank-view.js?v=20261101a"></script>
 </body></html>
-
-
-
