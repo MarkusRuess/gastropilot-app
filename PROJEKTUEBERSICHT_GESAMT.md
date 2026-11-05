@@ -135,3 +135,9 @@ Ausdrücklich beauftragte Friedrich-only Entwicklung: eigener Lagerbereich, geme
 
 ## 2026-11-05 – Gemeinsame mobile Fotoauswahl, PR #79
 Vorhandene native Kamera-/Dateiauswahlkorrektur für Judith und Friedrich; bestehende Erkennung, Datentrennung und Berechtigungen unverändert. Zusatztests für Touch-/Tastaturaktivierung in Chromium/WebKit und betriebsgebundene Wiederholungsimporte ergänzt. Details und Live-Abnahmegrenzen in den Projektständen Zentrale, Judith und Friedrich. Judith AI unverändert.
+
+### Automatischer Abnahmenachweis PR #79
+- [Mobile-CI 42065717559](https://github.com/MarkusRuess/gastropilot-app/actions/runs/42065717559) erfolgreich auf `0c5852478cc4d20f4141b057d2e79da1e88de4cc`: 18 Komponenten-/Hashszenarien in Chromium und WebKit, je Judith/Friedrich bei 390px mit Touch; Kamera-/Galerie-Dateidialog, Auswahlübernahme, Leeren, Enter/Leertaste, betriebsgebundener Wiederholungsimport. Zusätzlich Inline-/Edge-Syntax und 19 Belegseitentests erfolgreich.
+- Erste Zusatztestausführung scheiterte am unvollständigen Testaufbau (deaktivierter Leeren-Button); Test verwendet inzwischen unveränderte echte `drawQueue`-Funktion. Kein zusätzlicher App-Fehler und keine Neuentwicklung.
+- Veröffentlichung über vorhandenen Pages-Workflow nach Merge von [PR #79](https://github.com/MarkusRuess/gastropilot-app/pull/79), bestehender Link `https://markusruess.github.io/gastropilot-app/`, Bereich Betrieb → Hochladen. Aktueller Merge-/Deploymentnachweis im PR.
+- Keine vollständige Live-Fertigmeldung: physisches Smartphone, angemeldeter Upload, echte OCR und anschließende Datenpersistenz bleiben offen.
