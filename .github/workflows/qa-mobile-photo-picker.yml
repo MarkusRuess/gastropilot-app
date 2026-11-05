@@ -2,8 +2,6 @@ name: Mobile photo picker checks
 on:
   pull_request:
     paths: ['index.html', 'scripts/test-mobile-photo-picker.mjs', '.github/workflows/qa-mobile-photo-picker.yml']
-  push:
-    branches: [fix/mobile-photo-picker-20261105]
 permissions:
   contents: read
 jobs:

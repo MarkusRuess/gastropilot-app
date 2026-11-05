@@ -26,7 +26,7 @@ for(const engine of (process.env.SKIP_BROWSER==='1'?[]:[chromium,webkit])){
    await page.locator('#clearUpload').click();assert.match(await page.locator('#fileQueue').textContent(),/^0 von 12/);passed++;
   }
   assert.equal(await page.locator('#cameraInput').getAttribute('capture'),'environment');
-  for(const key of ['Enter','Space']){await page.locator('#camera').focus();const choice=page.waitForEvent('filechooser');await page.keyboard.press(key);const chooser=await choice;await chooser.setFiles([]);passed++;}
+  for(const key of ['Enter','Space']){const keyPage=await browser.newPage({viewport:{width:390,height:844},isMobile:true,hasTouch:true});await keyPage.setContent(intake);await keyPage.addScriptTag({content:`const E=id=>document.getElementById(id);let queue=[],busy=false;const isSpreadsheet=()=>false;function process(){};${drawFunction}\n${queueFunction}\n${handlers}`});const choice=keyPage.waitForEvent('filechooser');await keyPage.locator('#camera').press(key);const chooser=await choice;await chooser.setFiles([]);await keyPage.close();passed++;}
   console.log(engine.name()+': '+business+' touch camera/gallery + keyboard passed (390px, isolated component)');
   await page.close();
  }}finally{await browser.close();}
