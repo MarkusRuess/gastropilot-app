@@ -2451,8 +2451,49 @@ async function loadRecentUploads(){
    };
    left.append(retry);
   }
+  if(business==='87889eaf-f865-4e3a-8f9a-cd01db483e0e'&&row.document_type==='other'&&row.storage_path&&JUDITH_PERSONNEL_FILE.test(meta.original_name||'')){
+   const retry=document.createElement('button');retry.type='button';retry.textContent='▶ Personalbeleg zuordnen';retry.disabled=busy;
+   retry.onclick=async()=>{
+    if(busy)return;
+    busy=true;retry.disabled=true;
+    try{
+     const {data:blob,error:downloadError}=await db.storage.from('invoice-originals').download(row.storage_path);
+     if(downloadError)throw Error('Privater Storage-Download: '+downloadError.message+' (HTTP '+(downloadError.statusCode||downloadError.status||'unbekannt')+')');
+     if(!blob||!blob.size)throw Error('Originaldatei ist leer.');
+     const month=await archiveJudithPersonnelOriginal(row);
+     E('uploadStatus').textContent='✓ Original zugänglich · Personalbeleg '+month.slice(0,7)+' zur fachlichen Prüfung zugeordnet; keine ungesicherten Kosten gebucht.';
+    }catch(error){E('uploadStatus').textContent='⚠ Personalbeleg: '+(error.message||String(error));}
+    finally{busy=false;await loadRecentUploads();}
+   };
+   left.append(retry);
+  }
   left.append(name,detail);item.append(left,badge);host.append(item);
  }
+}
+
+
+/* Judith: Personalbelege nicht an die Umsatz-/Rechnungserkennung weiterreichen.
+   Die fachliche Lohnverbuchung erfolgt erst nach vollständigem Abgleich. */
+const JUDITH_PERSONNEL_FILE=/^(?:lohnset|auszahlungsjournal|k[oö]rperschaften[ _-]*(?:u[eü]berweisen)?)/i;
+function judithPersonnelMonth(name){
+ const match=String(name||'').normalize('NFC').match(/(?:20\d{2})[_ .-](?:0[1-9]|1[0-2])(?:[_ .-]|\b)/);
+ return match?match[0].match(/20\d{2}/)[0]+'-'+match[0].match(/(?:0[1-9]|1[0-2])/)[0]+'-01':null;
+}
+async function archiveJudithPersonnelOriginal(intake){
+ if(BID!=='87889eaf-f865-4e3a-8f9a-cd01db483e0e')throw Error('Personalbelege dürfen nur Judith zugeordnet werden.');
+ const name=intake.extracted_data?.original_name||'';
+ if(!JUDITH_PERSONNEL_FILE.test(name))throw Error('Kein eindeutig erkannter Personalbeleg.');
+ const month=judithPersonnelMonth(name);
+ if(!month)throw Error('Abrechnungsmonat nicht eindeutig; keine automatische Zuordnung.');
+ const old=intake.extracted_data||{};
+ const {data,error}=await db.from('documents').update({
+  status:'auto_review',
+  extracted_data:{...old,document_class:'personnel',accounting_month:month,
+   import_warning:'Personaloriginal dem Abrechnungsmonat zugeordnet. Lohnset, Auszahlungsjournal und Abgaben vor jeder Kostenbuchung gemeinsam abgleichen; keine automatische Doppelzählung.'}
+ }).eq('id',intake.id).eq('business_id',BID).eq('document_type','other').select('id').maybeSingle();
+ if(error)throw error;
+ if(!data)throw Error('Personaloriginal konnte nicht sicher zugeordnet werden.');
+ return month;
 }
 
 async function importJudithBankPdf(file,intake){
@@ -2550,6 +2591,13 @@ async function process(){
    const setProgress=step=>{E('uploadStatus').textContent=(fileIndex+1)+'/'+files.length+' · '+file.name+' · '+step;};
    try{
     if(intake.alreadyRecognized){if(intake.document_type==='invoice')await autoBookInvoiceExpense({...intake.extracted_data,date:intake.document_date,supplier:intake.extracted_data?.supplier||intake.supplier,invoice_number:intake.extracted_data?.invoice_number||intake.invoice_number},intake.id);duplicate++;queue=queue.filter(f=>f!==file);if(isSpreadsheet(file))E('uploadStatus').textContent='Excel-Datei bereits im Archiv · '+file.name;else showArchivedDuplicate(file);continue;}
+    if(BID==='87889eaf-f865-4e3a-8f9a-cd01db483e0e'&&JUDITH_PERSONNEL_FILE.test(file.name)){
+     setProgress('Personaloriginal wird dem Abrechnungsmonat zugeordnet …');
+     const month=await archiveJudithPersonnelOriginal(intake);
+     saved++;queue=queue.filter(f=>f!==file);
+     E('uploadStatus').textContent='Personaloriginal '+month.slice(0,7)+' gesichert · Lohnkosten bis zum vollständigen Abgleich nicht gebucht.';
+     continue;
+    }
     if(BID==='87889eaf-f865-4e3a-8f9a-cd01db483e0e'&&(file.type==='application/pdf'||/\.pdf$/i.test(file.name))&&/(ums(?:a|ä)tze[-_ ]girokonto|kontoauszug|bankauszug|bankbeleg|umsatzliste|girokonto)/i.test(file.name)){
      setProgress('Bankauszug wird eingelesen …');
      const result=await importJudithBankPdf(file,intake);
