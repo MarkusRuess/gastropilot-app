@@ -131,3 +131,20 @@ Preisberater-QA 2026-11-02: Rechenfehler bei numerischen Dezimalwerten sowie Hoc
 
 ## 2026-11-02 – Friedrich Lager & Inventur
 Ausdrücklich beauftragte Friedrich-only Entwicklung: eigener Lagerbereich, gemeinsame Supabase-Bestandsberechnung für Einkauf und Inventur, belegbezogene Lieferungen, Einzelzählungen, Bonit-Rezeptverbrauch, getrennte Verluste und versionierte Monatsstände mit PDF/CSV. Neue Objekte ausschließlich `gp_f_stock_*` und `gp_stock_private`; Details, Tests und Abnahmegrenzen in [PROJEKTSTAND_FRIEDRICH.md](PROJEKTSTAND_FRIEDRICH.md). Der zentrale Upload erhält ausschließlich im Friedrich-Zweig zusätzliche Mengen-/Gebindefelder; Judith AI und Judiths Schnittstellen bleiben unverändert. QA-Branch lesend verglichen, nicht pauschal übernommen. Dieser konkrete Auftrag erlaubt getestete Migration und Veröffentlichung.
+
+
+## 2026-11-05 – Gemeinsame mobile Fotoauswahl, PR #79
+Vorhandene native Kamera-/Dateiauswahlkorrektur für Judith und Friedrich; bestehende Erkennung, Datentrennung und Berechtigungen unverändert. Zusatztests für Touch-/Tastaturaktivierung in Chromium/WebKit und betriebsgebundene Wiederholungsimporte ergänzt. Details und Live-Abnahmegrenzen in den Projektständen Zentrale, Judith und Friedrich. Judith AI unverändert.
+
+### Automatischer Abnahmenachweis PR #79
+- [Mobile-CI 42065717559](https://github.com/MarkusRuess/gastropilot-app/actions/runs/42065717559) erfolgreich auf `0c5852478cc4d20f4141b057d2e79da1e88de4cc`: 18 Komponenten-/Hashszenarien in Chromium und WebKit, je Judith/Friedrich bei 390px mit Touch; Kamera-/Galerie-Dateidialog, Auswahlübernahme, Leeren, Enter/Leertaste, betriebsgebundener Wiederholungsimport. Zusätzlich Inline-/Edge-Syntax und 19 Belegseitentests erfolgreich.
+- Erste Zusatztestausführung scheiterte am unvollständigen Testaufbau (deaktivierter Leeren-Button); Test verwendet inzwischen unveränderte echte `drawQueue`-Funktion. Kein zusätzlicher App-Fehler und keine Neuentwicklung.
+- Veröffentlichung über vorhandenen Pages-Workflow nach Merge von [PR #79](https://github.com/MarkusRuess/gastropilot-app/pull/79), bestehender Link `https://markusruess.github.io/gastropilot-app/`, Bereich Betrieb → Hochladen. Aktueller Merge-/Deploymentnachweis im PR.
+- Keine vollständige Live-Fertigmeldung: physisches Smartphone, angemeldeter Upload, echte OCR und anschließende Datenpersistenz bleiben offen.
+
+- Paralleler zweiter CI-Lauf zeigte einen intermittierenden Fokus-/Dateidialog-Timeout im Tastatur-Test nach Dialogabbruch. Tastaturtests deshalb in frischen isolierten Seiten ausgeführt; Touch-Tests und App-Code unverändert. Erneute CI vor Merge erforderlich.
+
+
+## 2026-11-05 – Button HOCHLADEN: reproduzierter Fehler
+`gpUploadShortcut` öffnete den äußeren Detailbereich, ließ aber `intake.mobileHidden` aus `showMobilePanel('monthlyReference')` bestehen. Deshalb blieb der Upload am Handy (max. 680px) unsichtbar. Korrektur: `openArea('upload')` entfernt diese Klasse nur am bestehenden Uploadbereich. Keine Änderung an OCR, Uploadverarbeitung, Betriebszuordnung, Datenbank oder Berechtigungen.
+Vorher scheiterten zwei neue Regressionstests (Judith/Friedrich); nachher bestanden 55 Programmtests und Inline-/Edge-Syntax. Bestehender Browsertest prüft zusätzlich echten HOCHLADEN-Klick, sichtbaren Uploadbereich und erneutes Öffnen für beide Betriebe bei 390/1200px. Prüfungen im bestehenden Workflow qa-friedrich-stock.yml gebündelt; experimentellen separaten Picker-Workflow entfernt. Aktueller Prüf-/Veröffentlichungsnachweis in PR #79. Echte angemeldete Kameraaufnahme/OCR/Persistenz bleiben bis tatsächlicher Bedienprüfung offen.
