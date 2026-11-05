@@ -87,3 +87,9 @@ Berechtigte Betriebskennzahlen -> gemeinsame Gesamtumsatzansicht
 
 ## Gemeinsame Projektübersicht
 Die verbindliche projektübergreifende Übersicht aller vier ChatGPT-Projekte, ihrer Zuständigkeiten, Repositories, Supabase-Verbindungen, Schnittstellen und Trennungsregeln steht in [PROJEKTUEBERSICHT_GESAMT.md](PROJEKTUEBERSICHT_GESAMT.md). Bei künftigen Änderungen diesen Projektstand aktualisieren; bei Änderungen an Architektur, Schnittstellen oder Zuständigkeiten zusätzlich die gemeinsame Übersicht und weitere betroffene Projektstanddateien pflegen.
+
+
+## 2026-11-05 – Judith Personalimport (QA, nicht veröffentlicht)
+- Vorhandene Originale in `public.documents` und `invoice-originals` bestätigt: `4c7e63fb-be9a-4518-ae1b-6c2aad4b984b`, `e1a58724-4bbe-4d05-b6c7-38ebaaeaf299`, `98f497bf-91a5-4104-9be9-e038fc7a19a7`; Betrieb J.W. GmbH bestätigt. Zustände pending/error; Personalabrechnung Oktober fehlt in `personnel_costs`.
+- QA-Änderung `index.html`: Personaldateien vor allgemeiner Rechnungserkennung abfangen, Monat aus Dateiname zuordnen, bestehende Originale in Uploadliste zur erneuten Prüfung anbieten. Keine automatische Kostenbuchung, solange Lohnset/Journal/Abgaben nicht abgeglichen sind; keine Änderung an Friedrich oder Judith AI.
+- **Abnahme offen:** Der GitHub-QA-Commit ist kein Deployment. Authentifizierter Storage-Download, vollständige PDF-Extraktion, belastbare Lohnbuchungen, Personalquote, automatische End-to-End-Tests und Live-Bedienung sind nicht bestätigt. Keine produktiven Änderungen durchgeführt.
