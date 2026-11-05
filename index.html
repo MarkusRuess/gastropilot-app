@@ -3613,6 +3613,87 @@ body:not(.gp-judith-design) #gpMockupDetailBody #weeklyPurchase #gpPurchaseTabPa
 body:not(.gp-judith-design) #gpMockupDetailBody #weeklyPurchase #gpPurchaseTabPanel>.gpPurchaseMore{align-self:flex-start;padding:10px 16px}
 @media(max-width:650px){body:not(.gp-judith-design) #gpMockupDetailBody #weeklyPurchase #gpPurchaseTabPanel>.top-article{grid-template-columns:1fr!important}body:not(.gp-judith-design) #gpMockupDetailBody #weeklyPurchase #gpPurchaseTabPanel>.top-article b{text-align:left}}
 </style><link rel="stylesheet" href="friedrich-weinsortiment.css"><script defer src="friedrich-weinsortiment.js"></script><script type="module" src="./judith-bank-view.js?v=20261101a"></script>
+
+<style id="gp-personnel-month-history-v1">
+.gp-staff-month-controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:12px 0}.gp-staff-month-controls input{max-width:175px}.gp-staff-month-controls button{padding:7px 13px}
+.gp-staff-overview{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:8px;margin:12px 0}.gp-staff-overview>div{padding:12px;border:1px solid #dce6e9;border-radius:10px}.gp-staff-overview small{display:block}.gp-staff-history details{padding:12px;border:1px solid #dce6e9;border-radius:10px;margin:8px 0}.gp-staff-history summary{cursor:pointer;font-weight:650}.gp-staff-history table{width:100%;font-size:12px}.gp-staff-history td,.gp-staff-history th{padding:6px;text-align:left}.gp-staff-history .gp-scroll{overflow-x:auto}
+</style>
+<script id="gp-personnel-month-history-v1-script">
+(function(){
+ 'use strict';
+ const J='87889eaf-f865-4e3a-8f9a-cd01db483e0e',F='6a5484d1-daf6-4263-897d-24cdf536aa29';
+ const euro=v=>v===null||v===undefined?'–':new Intl.NumberFormat('de-AT',{style:'currency',currency:'EUR'}).format(Number(v));
+ const num=v=>v===null||v===undefined?'–':String(v);
+ const monthName=v=>new Intl.DateTimeFormat('de-AT',{month:'long',year:'numeric',timeZone:'UTC'}).format(new Date(v+'T00:00:00Z'));
+ const money=v=>v===null||v===undefined?null:Number(v);
+ function sumComplete(rows,key){return rows.length&&rows.every(r=>money(r[key])!==null)?rows.reduce((a,r)=>a+Number(r[key]),0):null;}
+ function monthShift(m,delta){const [y,n]=m.split('-').map(Number);return new Date(Date.UTC(y,n-1+delta,1)).toISOString().slice(0,7);}
+ async function start(){
+  const isJudith=document.body.classList.contains('gp-judith-design'),id=isJudith?J:F;
+  const tile=document.getElementById(isJudith?'judithPersonnelTile':'friedrichPersonnelTile');
+  if(!tile)return;
+  if(isJudith)tile.open=true;
+  let host=tile.querySelector('#gpStaffMonthHistory');
+  if(!host){host=document.createElement('section');host.id='gpStaffMonthHistory';tile.append(host);}
+  host.replaceChildren();
+  const status=document.createElement('p');status.className='muted';status.textContent='Personalabrechnungen werden geladen …';host.append(status);
+  try{
+   // Reuse the existing authenticated Supabase client; never read the other business.
+   const client=typeof db!=='undefined'?db:null;
+   if(!client)throw Error('Bestehende Anmeldung ist noch nicht geladen.');
+   const [costs,profiles]=await Promise.all([
+    client.from('personnel_costs').select('id,accounting_month,employee_name,gross_salary,net_payable,employer_costs,total_costs').eq('business_id',id).order('accounting_month',{ascending:false}).limit(5000),
+    client.from('employee_profiles').select('id,full_name,employment_start,employment_end').eq('business_id',id).limit(5000)
+   ]);
+   if(costs.error)throw costs.error;if(profiles.error)throw profiles.error;
+   const rows=costs.data||[],people=profiles.data||[],months=[...new Set(rows.map(r=>String(r.accounting_month).slice(0,7)))].sort().reverse();
+   let selected=months[0]||new Date().toISOString().slice(0,7);
+   const controls=document.createElement('div');controls.className='gp-staff-month-controls';
+   const back=document.createElement('button'),next=document.createElement('button'),pick=document.createElement('input'),label=document.createElement('strong');
+   back.type=next.type='button';back.textContent='‹';next.textContent='›';pick.type='month';pick.value=selected;
+   controls.append(back,pick,next,label);host.append(controls);
+   const overview=document.createElement('div');overview.className='gp-staff-overview';host.append(overview);
+   const history=document.createElement('div');history.className='gp-staff-history';host.append(history);
+   const make=(tag,txt)=>{const e=document.createElement(tag);e.textContent=txt;return e};
+   const groups=new Map();
+   // Without an employee_id in personnel_costs, equal names cannot be safely merged with profiles.
+   rows.forEach(r=>{const name=String(r.employee_name||'Unbekannt').trim();if(!groups.has(name))groups.set(name,[]);groups.get(name).push(r)});
+   for(const [name,records] of [...groups].sort((a,b)=>a[0].localeCompare(b[0],'de'))){
+    const card=document.createElement('details'),summary=make('summary',name),scroll=document.createElement('div');scroll.className='gp-scroll';
+    const table=document.createElement('table'),thead=document.createElement('thead'),tr=document.createElement('tr');
+    ['Monat/Jahr','Brutto','Netto','Dienstgeberkosten','Gesamt'].forEach(t=>tr.append(make('th',t)));thead.append(tr);table.append(thead);
+    const tbody=document.createElement('tbody');
+    records.forEach(r=>{const line=document.createElement('tr');[monthName(r.accounting_month),euro(r.gross_salary),euro(r.net_payable),euro(r.employer_costs),euro(r.total_costs)].forEach(t=>line.append(make('td',t)));tbody.append(line)});
+    table.append(tbody);scroll.append(table);card.append(summary,scroll);
+    const matching=people.filter(p=>p.full_name===name);
+    if(matching.length===1){const p=matching[0];card.append(make('small','Eintritt: '+(p.employment_start||'nicht hinterlegt')+' · Austritt: '+(p.employment_end||'nicht hinterlegt')))}
+    if(matching.length>1)card.append(make('small','Gleichnamige Profile: Zuordnung ungeklärt'));
+    history.append(card);
+   }
+   async function render(){
+    pick.value=selected;label.textContent=monthName(selected);overview.replaceChildren();
+    const current=rows.filter(r=>String(r.accounting_month).startsWith(selected));
+    const gross=sumComplete(current,'gross_salary'),net=sumComplete(current,'net_payable'),dg=sumComplete(current,'employer_costs');
+    const total=gross!==null&&dg!==null?gross+dg:null;
+    const values=[['Mitarbeiter',current.length?new Set(current.map(r=>r.employee_name)).size:'–'],['Brutto',euro(gross)],['Nettobezüge',euro(net)],['Dienstgeberkosten',euro(dg)],['Personalaufwand',euro(total)]];
+    // Revenue is deliberately not guessed from unrelated periods or gross turnover.
+    values.push(['Nettoumsatz','–'],['Personalquote','–']);
+    for(const [key,value] of values){const cell=document.createElement('div');cell.append(make('small',key),make('strong',String(value)));overview.append(cell)}
+    status.textContent=current.length?'Abrechnungsmonat '+monthName(selected)+' · Nettoumsatz/Quote erst nach bestätigtem Monatsabgleich.':'Für '+monthName(selected)+' keine bestätigten Personalabrechnungen. Keine Istkosten oder Quote aus dem Vormonat übernommen.';
+   }
+   back.onclick=()=>{selected=monthShift(selected,-1);void render()};
+   next.onclick=()=>{selected=monthShift(selected,1);void render()};
+   pick.onchange=()=>{if(/^\\d{4}-\\d{2}$/.test(pick.value)){selected=pick.value;void render()}};
+   await render();
+  }catch(e){status.textContent='Personalübersicht konnte nicht geladen werden: '+(e.message||String(e))}
+ }
+ function init(){
+  const nav=document.getElementById('gpCockpitNav');if(!nav)return;
+  nav.addEventListener('click',e=>{if(e.target.closest('[data-gp-area="staff"]'))setTimeout(()=>void start(),100)});
+ }
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+})();
+</script>
 </body></html>
 
 
