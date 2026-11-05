@@ -2791,6 +2791,7 @@ function openArea(name){
  area=name;document.body.classList.toggle('gp-article-area-active',name==='articles');document.body.classList.toggle('gp-shopping-area-active',name==='planning'&&!document.body.classList.contains('gp-judith-design'));setDailyCalendarVisibility(name==='daily');
  const body=el('gpMockupDetailBody'),detail=el('gpMockupDetail');if(!body||!detail)return;
  const show=new Set(groups[name]||[]);
+ if(name==='upload')el('intake')?.classList.remove('mobileHidden');
  if(name==='stock'&&!document.body.classList.contains('gp-judith-design'))el('friedrichStock')?.classList.remove('mobileHidden');
  if(name==='planning'&&!document.body.classList.contains('gp-judith-design')){['ledgerComparisonSection','financeSection','operating','monthlyCostOverview','judithSimpleResult','judithRentTile','kalkulationLink'].forEach(id=>show.delete(id));}
  if(name==='articles'){

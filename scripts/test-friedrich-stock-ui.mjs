@@ -125,6 +125,21 @@ await page.getByText('Gemeinsamer Supabase-Bestand',{exact:false}).waitFor();
 assert.equal(await page.locator('#friedrichStockPanel h2').count(),1,'Older response must not clear newest render');
 console.log('Out-of-order stock responses preserve panel at '+width+'px');
 console.log('Actual cockpit navigation passed at '+width+'px with mocked read-only stock data');
+// The real HOCHLADEN shortcut must undo the legacy startup mobile filter.
+for(const business of ['Friedrich','Judith']){
+ await page.evaluate(business=>{
+  document.body.classList.toggle('gp-judith-design',business==='Judith');
+  document.getElementById('intake').classList.add('mobileHidden');
+ },business);
+ await page.locator('#gpUploadShortcut').click();
+ assert.equal(await page.locator('#gpMockupDetail').isVisible(),true);
+ assert.equal(await page.locator('#intake').isVisible(),true,'HOCHLADEN must reveal intake for '+business);
+ assert.equal(await page.locator('#intake').evaluate(e=>e.classList.contains('mobileHidden')),false);
+ await page.locator('#gpMockupBack').click();
+ await page.locator('#gpUploadShortcut').click();
+ assert.equal(await page.locator('#intake').isVisible(),true,'HOCHLADEN reopens for '+business);
+ console.log('HOCHLADEN opens and reopens actual intake: '+business+' '+width+'px');
+}
 await page.close();console.log('Fixture browser interactions passed at '+width+'px; no production UI session.');}
 }finally{await browser.close();await new Promise(resolve=>server.close(resolve));}
 
