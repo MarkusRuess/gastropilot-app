@@ -1,5 +1,7 @@
 # GastroPilot – gemeinsame Projektübersicht
 
+**2026-11-06 Zwischenstand:** Friedrich-Handyabschluss Z 1857: PR #84 enthält gezielte Nachprüfung von Original-Zahlarten, Cent-Rundung und automatische Folgeprüfung. Programmtests bestanden; mobile End-to-End- und Live-Buchung offen. Keine Produktionsfreigabe.
+
 **Stand:** 2026-11-02 · **Status:** dokumentierte Bestandsaufnahme im Entwicklungsbranch; keine Produktionsfreigabe.  
 **Repository (nachgewiesen):** `MarkusRuess/gastropilot-app` (Standardbranch `main`, Dokumentations-/QA-Branch `qa/automated-checks-20261102`).  
 **Supabase (nachgewiesen):** `gastropilot`, Projekt-ID `sjnwfwcpgwsavygewwzb`, Region `eu-west-1`, PostgreSQL 17.11, Status `ACTIVE_HEALTHY`.
