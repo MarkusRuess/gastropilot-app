@@ -1,0 +1,58 @@
+name: GastroPilot Mutter - CI Fehleraufgaben
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/gastropilot-mutter-failure-issues.yml'
+  schedule:
+    - cron: '15 6 * * *'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Only validate workflow; do not create issues"
+        required: true
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+  actions: read
+  issues: write
+
+concurrency:
+  group: mutter-failure-issues
+  cancel-in-progress: false
+
+jobs:
+  detect:
+    if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Validate event and create deduplicated issue
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          EVENT_NAME: ${{ github.event_name }}
+        run: |
+          set -euo pipefail
+          if [[ "$EVENT_NAME" == "workflow_dispatch" || "$EVENT_NAME" == "pull_request" ]]; then
+            echo "Manual validation passed; no issue created."
+            exit 0
+          fi
+          # Read only completed failures; never modify code, deployments or databases.
+          gh api "repos/$GH_REPO/actions/runs?per_page=30" --jq '.workflow_runs[] | select(.status == "completed" and (.conclusion == "failure" or .conclusion == "timed_out")) | select(.name != "GastroPilot Mutter - CI Fehleraufgaben") | [.id, .html_url, .conclusion, .name] | @tsv' |
+            while IFS=$'\t' read -r run_id run_url conclusion workflow_name; do
+              [[ "$run_id" =~ ^[0-9]+$ ]] || continue
+              marker="mutter-ci-run:$run_id"
+              existing=$(gh issue list --repo "$GH_REPO" --state all --search "$marker in:body" --json number --jq 'length')
+              if [[ "$existing" -gt 0 ]]; then
+                echo "Already tracked run $run_id"
+                continue
+              fi
+              printf -v body 'Automatisch erkannter CI-Fehler.\\n\\nWorkflow: %s\\nLauf: %s\\nErgebnis: %s\\n\\n%s\\n\\nDiagnose: Workflow-Logs prüfen, Ursache feststellen, minimalen Fix-PR mit Tests erstellen. Änderungen an Zahlungen, Personal, RLS, Secrets oder Datenbankschema benötigen separate Freigabe. Keine automatischen Merges oder Deployments.\\n' "$workflow_name" "$run_url" "$conclusion" "$marker"
+              gh issue create --repo "$GH_REPO" --title "CI-Fehler: $workflow_name (Run $run_id)" --body "$body"
+              echo "Created issue for run $run_id"
+            done
+          echo "CI failure scan completed."
