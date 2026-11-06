@@ -1,0 +1,63 @@
+name: GastroPilot Mutter - CI Fehleraufgaben
+
+on:
+  workflow_run:
+    workflows:
+      - "GastroPilot Mutter - Projektstatus"
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Only validate workflow; do not create issues"
+        required: true
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+  actions: read
+  issues: write
+
+concurrency:
+  group: mutter-failure-issues
+  cancel-in-progress: false
+
+jobs:
+  detect:
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'failure' || github.event.workflow_run.conclusion == 'timed_out'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Validate event and create deduplicated issue
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          EVENT_NAME: ${{ github.event_name }}
+          RUN_ID: ${{ github.event.workflow_run.id }}
+          RUN_URL: ${{ github.event.workflow_run.html_url }}
+          CONCLUSION: ${{ github.event.workflow_run.conclusion }}
+          DRY_RUN: ${{ inputs.dry_run }}
+        run: |
+          set -euo pipefail
+          if [[ "$EVENT_NAME" == "workflow_dispatch" ]]; then
+            echo "Manual validation passed; no issue created."
+            exit 0
+          fi
+          if [[ "$CONCLUSION" != "failure" && "$CONCLUSION" != "timed_out" ]]; then
+            echo "No failure; no issue created."
+            exit 0
+          fi
+          if [[ ! "$RUN_ID" =~ ^[0-9]+$ ]]; then
+            echo "::error::Invalid workflow run ID"
+            exit 1
+          fi
+          marker="<!-- mutter-ci-run:$RUN_ID -->"
+          existing=$(gh issue list --repo "$GH_REPO" --state all --search "in:body $marker" --json number --jq 'length')
+          if [[ "$existing" -gt 0 ]]; then
+            echo "Issue for run $RUN_ID already exists."
+            exit 0
+          fi
+          printf -v body 'Automatisch erkannter fehlgeschlagener GitHub-Actions-Lauf.\n\nLauf: %s\nErgebnis: %s\n\n%s\n\nBitte Ursache prüfen, Korrektur als PR vorbereiten und Tests durchführen. Kein automatischer Merge oder Deployment.\n' "$RUN_URL" "$CONCLUSION" "$marker"
+          gh issue create --repo "$GH_REPO" --title "CI-Fehler: GastroPilot Mutter (Run $RUN_ID)" --body "$body"
+          echo "Issue created for run $RUN_ID"
