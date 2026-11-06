@@ -2246,6 +2246,8 @@ async function autoArchive(doc,sourceFile,paymentStatus,intake=null,extraIntakes
    if(N(prior.gross_total)!==null)x.gross_total=prior.gross_total;
    const {data,error}=await db.from('documents').update({extracted_data:{...prior,...x},status:x.needs_review?'auto_review':'auto_imported'}).eq('id',existingIncompleteCash.id).eq('business_id',BID).select('id').maybeSingle();
    if(error||!data)throw error||Error('Tagesabschluss konnte nicht ergänzt werden.');
+   x.archive_document_id=existingIncompleteCash.id;
+   doc.archive_document_id=existingIncompleteCash.id;
    if(allIntakes.length)await markDuplicate(existingIncompleteCash.id);
   }else{
    const record={document_type:kind,document_date:x.date,supplier:kind==='invoice'?x.supplier:null,invoice_number:kind==='invoice'?x.invoice_number:null,status:x.needs_review?'auto_review':'auto_imported',extracted_data:x};
@@ -2359,7 +2361,7 @@ async function recognizePhotoGroup(files,intakes){
     if(!paymentStatus)throw Error('Zahlungsstatus offen; Originale bleiben im Archiv.');
    }
    const outcome=await autoArchive(doc,entries.map(entry=>entry.file),paymentStatus,primary.intake,entries.filter(entry=>entry!==primary).map(entry=>entry.intake));
-   if(doc.document_type==='cash_report'&&outcome!=='bereits vorhanden')await finishFriedrichCashReport(primary.intake?.id);
+   if(doc.document_type==='cash_report'&&outcome!=='bereits vorhanden')await finishFriedrichCashReport(doc.archive_document_id||primary.intake?.id);
    if(outcome==='bereits vorhanden')duplicate++;else saved++;
    queue=queue.filter(file=>!entries.some(entry=>entry.file===file));
    E('review').replaceChildren();
@@ -2605,7 +2607,7 @@ async function process(){
      setProgress('Zahlungsstatus '+paymentStatus+' · wird gespeichert …');
     }
     const outcome=await autoArchive(recognizedDoc,file,paymentStatus,intake);
-    if(recognizedDoc.document_type==='cash_report'&&outcome!=='bereits vorhanden')await finishFriedrichCashReport(intake.id);
+    if(recognizedDoc.document_type==='cash_report'&&outcome!=='bereits vorhanden')await finishFriedrichCashReport(recognizedDoc.archive_document_id||intake.id);
     if(outcome==='bereits vorhanden')duplicate++;else saved++;
     queue=queue.filter(f=>f!==file);
     E('review').replaceChildren();
