@@ -2,7 +2,7 @@
 
 ## 2026-11-06 · Gemeinsamer Handy-Tagesabschluss (in Entwicklung)
 
-Der bestehende gemeinsame Upload bleibt auf Judiths `business_id` begrenzt. PR #84 ergänzt nach dem Speichern der Originalseiten eine gezielte Steuer- und Zahlungsprüfung auch für Judith; unlesbare Steuergruppen oder Zahlungsarten bleiben im Prüfstatus statt als Umsatz geschätzt zu werden. Die Judith-Tagesberichte haben ein anderes Kassenformat als BONit (u. a. "Umsatz berichtigt", "Kreditk. / Bankomatkarten"); hierfür ist ein eigener Erkennungstext vorgesehen. Bestehende Judith-Daten und Judith AI wurden nicht verändert. Automatische Liveverarbeitung, tatsächliche Mobilaufnahme und Dashboard-Abnahme sind noch offen.
+Der bestehende gemeinsame Upload bleibt auf Judiths `business_id` begrenzt. PR #84 ergänzt nach dem Speichern der Originalseiten eine gezielte Steuer- und Zahlungsprüfung auch für Judith; unlesbare Steuergruppen oder Zahlungsarten bleiben im Prüfstatus statt als Umsatz geschätzt zu werden. Die Judith-Tagesberichte haben ein anderes Kassenformat als BONit (u. a. "Umsatz berichtigt", "Kreditk. / Bankomatkarten"); hierfür ist ein eigener Erkennungstext vorgesehen. Bestehende Judith-Daten und Judith AI wurden nicht verändert. Chromium-/WebKit-Komponententests für den Picker bestanden in CI #57; automatische Liveverarbeitung, tatsächliche Mobilaufnahme und Dashboard-Abnahme sind noch offen.
 
 Stand: 2026-11-02. Quelle: lesender GitHub- und Supabase-Zugriff. **Keine Änderungen an Programmfunktionen oder Betriebsdaten.**
 
