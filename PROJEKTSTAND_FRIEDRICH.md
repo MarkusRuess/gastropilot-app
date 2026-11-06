@@ -2,7 +2,7 @@
 
 ## 2026-11-06 · Handyabschluss Z 1857 – laufende Korrektur (PR #84)
 
-**Duplikatschutz:** Ein eindeutiger Index auf Betrieb, Datum und numerische Z-Nummer ist in Supabase angelegt; das entsprechende SQL liegt im PR. Alte ARCHIVE-Identitäten bleiben erhalten. Die vollständige Umstellung des Buchungstriggers auf gedruckte Z-Nummern ist noch offen.
+**Duplikatschutz:** Ein eindeutiger Index auf Betrieb, Datum und numerische Z-Nummer ist in Supabase angelegt; das entsprechende SQL liegt im PR. Alte ARCHIVE-Identitäten bleiben erhalten. Der bestehende Buchungstrigger verwendet bei klar gedruckter Z-Nummer nun diese Identität und blockiert widersprüchliche Z-Nummern am selben oder an einem anderen Datum; alte ARCHIVE-Kennungen bleiben erhalten. Migration in Supabase angewendet und in GitHub dokumentiert. Ein neuer authentifizierter Automatiklauf ist noch nicht nachgewiesen.
 
 **Nachtrag 06.11.:** Die drei Originalseiten wurden Zeile für Zeile geprüft. 62 Artikelzeilen einschließlich drei Nullpreiszeilen, 11 Artikelgruppen und beide Steuergruppen ergeben jeweils 1.383,80 € brutto. Die 87 Rechnungen bestehen aus 70 Bar, 16 Kreditkarte und einer kostenlosen Personal/Einladung. Der bestehende Archivbeleg wurde unter Erhalt seiner Originalreferenzen berichtigt und mit einer transaktionalen Konfliktprüfung genau einmal als Friedrich-Tagesabschluss Z 1857 (05.11.) gespeichert. Datenbankkontrolle: ein Abschluss, 62 Artikelzeilen, Artikelsumme 1.383,80 €, Bar 1.087,80 €, Karte 296,00 €. Das ist eine anhand der Originale verifizierte einmalige Nachbuchung, **kein Nachweis des neuen automatischen Handyablaufs**. Lagerverbrauch und tatsächliche Live-Dashboard-Anzeige sind noch nicht abgenommen.
 
