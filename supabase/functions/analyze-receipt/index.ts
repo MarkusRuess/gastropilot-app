@@ -205,11 +205,45 @@ function taxErrors(doc) {
  if (!near(doc.net_total+doc.vat_total,doc.gross_total)) errors.push("Netto + Steuer passt nicht zu Brutto");
  return [...new Set(errors)];
 }
+// Judith's daily report prints turnover and discounts by VAT rate, but often
+// prints no net/VAT columns. Derive the tax split only from fully reconciled
+// printed product groups; keep the calculated provenance explicit.
+function reconcileJudithReport(read, gross) {
+ const errors = [];
+ const categories = normalizeCategorySales(read.category_sales).filter(row=>row.gross!==null);
+ const groups = new Map<number,number>();
+ for(const row of categories) {
+  const match = String(row.name).match(/(?:^|\s)(10|12|20)\s*%/);
+  if(!match){errors.push("Steuersatz der Warengruppe fehlt");continue;}
+  const rate=Number(match[1]);groups.set(rate,Math.round(((groups.get(rate)||0)+row.gross)*100)/100);
+ }
+ if(!categories.length||!near(categories.reduce((s,r)=>s+r.gross,0),gross,0.001))errors.push("Warengruppen passen nicht zum berichtigten Umsatz");
+ const lines=Array.isArray(read.printed_payment_lines)?read.printed_payment_lines:[];
+ const find=(pattern)=>lines.filter(line=>pattern.test(String(line.label||"")));
+ const cash=find(/bank\s*einlage\s*bar|barzahlung/i),card=find(/kreditk\.?\s*\/\s*bankomat|kartenzahlung/i);
+ const credit=find(/kund\.?\s*forderungen/i).length?find(/kund\.?\s*forderungen/i):find(/^kredit$/i);
+ if(cash.length!==1||card.length!==1||credit.length!==1)errors.push("Bar, Karte oder Kundenforderungen nicht eindeutig gedruckt");
+ const positive=line=>typeof line?.amount==="number"&&Number.isFinite(line.amount)?Math.round(Math.abs(line.amount)*100)/100:null;
+ const payments=[positive(cash[0]),positive(card[0]),positive(credit[0])];
+ if(payments.some(v=>v===null)||!near(payments.reduce((s,v)=>s+(v||0),0),gross,0.001))errors.push("Zahlungsarten passen nicht zum berichtigten Umsatz");
+ if(errors.length)return {errors};
+ const tax_breakdown=[...groups].sort((a,b)=>a[0]-b[0]).map(([rate,groupGross])=>{
+  const net=Math.round(groupGross/(1+rate/100)*100)/100;
+  return {rate,gross:groupGross,net,vat:Math.round((groupGross-net)*100)/100};
+ });
+ const net_total=Math.round(tax_breakdown.reduce((s,r)=>s+r.net,0)*100)/100;
+ const vat_total=Math.round(tax_breakdown.reduce((s,r)=>s+r.vat,0)*100)/100;
+ return {errors:taxErrors({gross_total:gross,net_total,vat_total,tax_breakdown}),
+  gross_total:gross,net_total,vat_total,tax_breakdown,
+  cash_total:payments[0],card_total:payments[1],other_payments_total:payments[2],
+  payment_methods:{cash:{label:cash[0].label,amount:payments[0]},card:{label:card[0].label,amount:payments[1]},customer_credit:{label:credit[0].label,amount:payments[2]}},
+  tax_calculation:"aus gedruckten Warengruppen-Bruttobeträgen und Steuersätzen centweise berechnet"};
+}
 async function verifyPrintedTaxes(doc, images, apiKey, friedrich = false) {
  let prompt = `Du siehst genau EINE Originalseite eines BONit-Tagesabschlusses vom ${doc.date}. Der Tagesgesamtumsatz ist ${doc.gross_total} Euro. Eine einzelne Speisen- oder Artikelgruppen-Zwischensumme (beispielsweise 399,37 Euro) ist NICHT der Gesamtumsatz. Falls diese Seite den Summenblock unter "Gesamtumsatz brutto" nicht enthält, gib für gross_total, net_total, vat_total und tax_breakdown null beziehungsweise [] zurück. Falls diese Seite die Artikelgruppenstatistik enthält, lies deren einzelne Gruppen; falls nicht, gib category_sales: [] zurück. Erfinde keine Werte von anderen Seiten.
 
 Für jede gedruckte Steuergruppe (zum Beispiel 10,00 und 20,00) übernimm aus der rechten Betragsspalte getrennt die Zeilen "brutto", "netto" und "Steuer". Die Zahl links (10,00 oder 20,00) ist der Steuersatz, kein Geldbetrag. Der erste Betrag einer Gruppe ist brutto, nicht netto. Lies außerdem die Gesamtzeilen für Brutto, Netto, "Gesamtumsatz brutto bar" und "Gesamtumsatz brutto unbar". Unter "Zahlarten" lies BAR Rechnung und Kreditkarte mit jeweiliger Anzahl und Betrag einzeln. Bar niemals aus unbar ableiten. Rundungsunterschiede zwischen gedrucktem Gesamtnetto und Summe der Steuergruppen centgenau belegen. Übernimm die gedruckten Zahlen; unlesbare Werte sind null. Gib für JEDE Steuerzeile in printed_tax_lines Seitenzahl, gedrucktes Label, kind (gross/net/vat), rate und Betrag an. Lies nur die Artikelgruppenstatistik, keine Einzelartikel, in category_sales. Trenne Zwischensummen von Artikelgruppen. Bei Unsicherheit needs_review=true und Grund in notes. Antworte nur als JSON: {"date":"YYYY-MM-DD","gross_total":null,"net_total":null,"vat_total":null,"cash_total":null,"card_total":null,"other_payments_total":null,"receipt_count":null,"printed_payment_lines":[{"label":"BAR Rechnung","count":null,"amount":null},{"label":"Kreditkarte","count":null,"amount":null}],"tax_breakdown":[{"rate":10,"gross":null,"net":null,"vat":null}],"printed_tax_lines":[{"page":1,"rate":10,"kind":"gross","label":"10,00 brutto","amount":null}],"category_sales":[{"name":"gedruckte Artikelgruppe","gross":null}],"needs_review":false,"notes":null}.`;
- if(!friedrich)prompt=`Du liest genau EINE Originalseite eines Tagesberichts von Judith und die Torten für ${doc.date}. Der bereits erkannte Tagesbruttowert ist ${doc.gross_total} Euro. Lies nur Werte, die auf dieser Seite tatsächlich gedruckt sind. "Umsatz berichtigt (inkl. MwSt.)" ist der Tagesumsatz nach Retouren und Rabatten; Warengruppen und "Umsatz" vor Rabatten sind keine zusätzlichen Tagesumsätze. Erfasse Barzahlung, "Kreditk. / Bankomatkarten", Beleganzahl und gedruckte Steuergruppen getrennt. "Kredit" und "Kund. Forderungen" sind keine Kartenzahlungen. Falls keine gedruckte Steuergruppe oder kein Zahlungsbetrag lesbar ist, setze null beziehungsweise [] und needs_review=true. Erfinde keine Werte und berechne keine Beträge aus einer anderen Seite. Gib JSON zurück: {"date":"YYYY-MM-DD","gross_total":null,"net_total":null,"vat_total":null,"cash_total":null,"card_total":null,"other_payments_total":null,"receipt_count":null,"tax_breakdown":[{"rate":10,"gross":null,"net":null,"vat":null}],"printed_tax_lines":[{"page":1,"rate":10,"kind":"gross","label":"10 % brutto","amount":null}],"category_sales":[{"name":"gedruckte Warengruppe","gross":null}],"needs_review":false,"notes":null}.`;
+ if(!friedrich)prompt=`Du liest genau EINE Originalseite eines Tagesberichts von Judith und die Torten für ${doc.date}. Lies ausschließlich gedruckte Werte. "Umsatz berichtigt (inkl.MWSt.)" ist der Umsatz nach Rabatten, "Umsatz gesamt" vor Rabatten ist keine zweite Tagesbuchung. Lies JEDE Zeile unter WARENGRUPPENUMSÄTZE mit Betrag und MWST-Satz im Namen, z.B. "SHOP 10%" und "TORTEN 10%". Rabatte vor dem berichtigten Umsatz niemals ein zweites Mal abziehen. "Kredit", "Kund.Forderungen", "Bank Einlage Bar" und "Kreditk./Bankomatkarten" sind drei verschiedene Zahlungsarten; die letzten drei Beträge können als negative Gegenbuchung gedruckt sein. Übernimm das gedruckte Vorzeichen und die Originalbeschriftung in printed_payment_lines. Kredit niemals zu Karte oder Bar zählen. Wenn Netto/Steuer nicht gedruckt ist, gib null zurück. Lies Beleganzahl. Bei unlesbaren Zeilen needs_review=true, keine Zahlen erfinden. Gib JSON zurück: {"date":"YYYY-MM-DD","gross_total":null,"net_total":null,"vat_total":null,"cash_total":null,"card_total":null,"other_payments_total":null,"receipt_count":null,"printed_payment_lines":[{"label":"Kund.Forderungen","amount":null},{"label":"Bank Einlage Bar","amount":null},{"label":"Kreditk./Bankomatkarten","amount":null}],"tax_breakdown":[],"printed_tax_lines":[],"category_sales":[{"name":"gedruckte Warengruppe mit MWST-Satz","gross":null}],"needs_review":false,"notes":null}.`;
  const results=await Promise.allSettled(images.map(async (image,index)=>{
   const content=[{type:"input_text",text:prompt+"\nDies ist Originalseite "+(index+1)+"."},{type:"input_image",image_url:"data:"+image.mime_type+";base64,"+image.image_base64,detail:"high"}];
   const res=await fetch("https://api.openai.com/v1/responses",{method:"POST",headers:{Authorization:"Bearer "+apiKey,"Content-Type":"application/json"},body:JSON.stringify({model:"gpt-4.1-mini",max_output_tokens:5000,store:false,text:{format:{type:"json_object"}},input:[{role:"user",content}]})});
@@ -234,13 +268,20 @@ Für jede gedruckte Steuergruppe (zum Beispiel 10,00 und 20,00) übernimm aus de
   read.summary_errors=paymentErrors;
  }
  const candidate={...doc,gross_total:amount(read.gross_total),net_total:amount(read.net_total),vat_total:amount(read.vat_total),tax_breakdown:normalizeTaxBreakdown(read.tax_breakdown)};
- const errors=taxErrors(candidate);
+ let judithSummary;
+ if(!friedrich){
+  judithSummary=reconcileJudithReport(read,doc.gross_total);
+  if(!judithSummary.errors.length)Object.assign(candidate,judithSummary);
+ }
+ const errors=friedrich?taxErrors(candidate):[...judithSummary.errors];
  if(friedrich)errors.push(...(read.summary_errors||[]));
  if(read.date&&read.date!==doc.date)errors.push("Datum der Steuerseite weicht ab");
  if(!near(candidate.gross_total,doc.gross_total))errors.push("Bruttoumsatz weicht vom gespeicherten Abschluss ab");
  if(read.needs_review)errors.push(textOrNull(read.notes)||"Gedruckte Steuerzeilen nicht eindeutig");
- if(!Array.isArray(read.printed_tax_lines)||read.printed_tax_lines.length<candidate.tax_breakdown.length*3)errors.push("Gedruckte Steuerzeilen nicht vollständig belegt");
- for(const row of candidate.tax_breakdown){for(const kind of ["gross","net","vat"]){const line=(read.printed_tax_lines||[]).find(l=>l.rate===row.rate&&l.kind===kind);if(!line||!near(amount(line.amount),row[kind],0.001))errors.push("Gedruckte Steuerzeile stimmt nicht mit übernommener Zahl überein");}}
+ if(friedrich){
+  if(!Array.isArray(read.printed_tax_lines)||read.printed_tax_lines.length<candidate.tax_breakdown.length*3)errors.push("Gedruckte Steuerzeilen nicht vollständig belegt");
+  for(const row of candidate.tax_breakdown){for(const kind of ["gross","net","vat"]){const line=(read.printed_tax_lines||[]).find(l=>l.rate===row.rate&&l.kind===kind);if(!line||!near(amount(line.amount),row[kind],0.001))errors.push("Gedruckte Steuerzeile stimmt nicht mit übernommener Zahl überein");}}
+ }
  candidate.tax_verification={version:TAX_PIPELINE_VERSION,method:"printed_summary_per_page",model:"gpt-4.1-mini",verified:errors.length===0,errors,printed_tax_lines:read.printed_tax_lines||[],read_candidate:{source_page:read.source_page,gross_total:read.gross_total,net_total:read.net_total,vat_total:read.vat_total,tax_breakdown:read.tax_breakdown,category_sales:distinctCategories,notes:read.notes},pages_read:reads.length,pages_total:images.length,checked_at:new Date().toISOString()};
  if(errors.length){
   // A conflicting second OCR read must not replace arithmetically consistent
@@ -254,7 +295,7 @@ Für jede gedruckte Steuergruppe (zum Beispiel 10,00 und 20,00) übernimm aus de
   ].join("; ");
   return doc;
 }
- for(const key of ["cash_total","card_total","other_payments_total","receipt_count"]){if(typeof read[key]==="number")candidate[key]=key==="receipt_count"?count(read[key]):amount(read[key]);}
+ for(const key of friedrich?["cash_total","card_total","other_payments_total","receipt_count"]:["receipt_count"]){if(typeof read[key]==="number")candidate[key]=key==="receipt_count"?count(read[key]):amount(read[key]);}
  if(friedrich&&read.printed_payment_lines)candidate.printed_payment_lines=read.printed_payment_lines;
  if(!near((candidate.cash_total||0)+(candidate.card_total||0)+(candidate.other_payments_total||0),candidate.gross_total))errors.push("Zahlungsarten passen nicht zum Umsatz");
  const categories=normalizeCategorySales(distinctCategories);
