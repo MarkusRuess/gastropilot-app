@@ -1,5 +1,7 @@
 # GastroPilot – gemeinsame Projektübersicht
 
+**2026-11-06 Judith-Tagesbericht:** Vorhandener Archivbeleg mit Originalfoto abgeglichen und einmalig freigegeben. Die gemeinsame Erkennung erhält im Judith-Zweig eine Prüfung von Warengruppen, Steuersätzen und negativen Kassen-Gegenbuchungen; Kundenforderungen bleiben eine eigene Zahlungsart. Friedrich bleibt unverändert. Details und Abnahmegrenzen im Judith-Projektstand.
+
 **2026-11-06 Veröffentlichung:** PR #84 nach CI #62 zusammengeführt (`c925366`), Edge Function Version 49 aktiv, neue Oberfläche am bestehenden Pages-Link ausgeliefert. Friedrich Z 1857 separat originalgeprüft und einmalig gebucht. Die authentifizierte Live-Handy-Verarbeitung beider Betriebe bleibt offen; kein vollständiger End-to-End-Nachweis.
 
 
