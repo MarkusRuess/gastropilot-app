@@ -1,4 +1,4 @@
-import {FRIEDRICH,validatePages,pagePrompt} from './friedrich-pages.mjs';
+import {FRIEDRICH,validatePages,pagePrompt,reconcileFriedrichSummary} from './friedrich-pages.mjs';
 
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
@@ -205,10 +205,11 @@ function taxErrors(doc) {
  if (!near(doc.net_total+doc.vat_total,doc.gross_total)) errors.push("Netto + Steuer passt nicht zu Brutto");
  return [...new Set(errors)];
 }
-async function verifyPrintedTaxes(doc, images, apiKey) {
- const prompt = `Du siehst genau EINE Originalseite eines BONit-Tagesabschlusses vom ${doc.date}. Der Tagesgesamtumsatz ist ${doc.gross_total} Euro. Eine einzelne Speisen- oder Artikelgruppen-Zwischensumme (beispielsweise 399,37 Euro) ist NICHT der Gesamtumsatz. Falls diese Seite den Summenblock unter "Gesamtumsatz brutto" nicht enthält, gib für gross_total, net_total, vat_total und tax_breakdown null beziehungsweise [] zurück. Falls diese Seite die Artikelgruppenstatistik enthält, lies deren einzelne Gruppen; falls nicht, gib category_sales: [] zurück. Erfinde keine Werte von anderen Seiten.
+async function verifyPrintedTaxes(doc, images, apiKey, friedrich = false) {
+ let prompt = `Du siehst genau EINE Originalseite eines BONit-Tagesabschlusses vom ${doc.date}. Der Tagesgesamtumsatz ist ${doc.gross_total} Euro. Eine einzelne Speisen- oder Artikelgruppen-Zwischensumme (beispielsweise 399,37 Euro) ist NICHT der Gesamtumsatz. Falls diese Seite den Summenblock unter "Gesamtumsatz brutto" nicht enthält, gib für gross_total, net_total, vat_total und tax_breakdown null beziehungsweise [] zurück. Falls diese Seite die Artikelgruppenstatistik enthält, lies deren einzelne Gruppen; falls nicht, gib category_sales: [] zurück. Erfinde keine Werte von anderen Seiten.
 
-Für jede gedruckte Steuergruppe (zum Beispiel 10,00 und 20,00) übernimm aus der rechten Betragsspalte getrennt die Zeilen "brutto", "netto" und "Steuer". Die Zahl links (10,00 oder 20,00) ist der Steuersatz, kein Geldbetrag. Der erste Betrag einer Gruppe ist brutto, nicht netto. Lies außerdem die Gesamtzeilen für Brutto, Netto, Bar und Unbar. Übernimm ausdrücklich die gedruckten Zahlen; leite die Steuer nicht aus Artikeln, Warengruppen oder einem pauschalen Steuersatz ab. Unlesbare Werte sind null. Gib für JEDE Steuerzeile in printed_tax_lines Seitenzahl, gedrucktes Label, kind (gross/net/vat), rate und Betrag an. Lies zusätzlich jede Zeile der Artikelgruppenstatistik mit Originalbezeichnung und gedrucktem Umsatzbetrag in category_sales. Trenne Zwischensummen von Artikelgruppen. Bei Unsicherheit needs_review=true und Grund in notes. Antworte nur als JSON: {"date":"YYYY-MM-DD","gross_total":null,"net_total":null,"vat_total":null,"cash_total":null,"card_total":null,"other_payments_total":null,"receipt_count":null,"tax_breakdown":[{"rate":10,"gross":null,"net":null,"vat":null}],"printed_tax_lines":[{"page":1,"rate":10,"kind":"gross","label":"10,00 brutto","amount":null}],"category_sales":[{"name":"gedruckte Artikelgruppe","gross":null}],"needs_review":false,"notes":null}.`;
+Für jede gedruckte Steuergruppe (zum Beispiel 10,00 und 20,00) übernimm aus der rechten Betragsspalte getrennt die Zeilen "brutto", "netto" und "Steuer". Die Zahl links (10,00 oder 20,00) ist der Steuersatz, kein Geldbetrag. Der erste Betrag einer Gruppe ist brutto, nicht netto. Lies außerdem die Gesamtzeilen für Brutto, Netto, "Gesamtumsatz brutto bar" und "Gesamtumsatz brutto unbar". Unter "Zahlarten" lies BAR Rechnung und Kreditkarte mit jeweiliger Anzahl und Betrag einzeln. Bar niemals aus unbar ableiten. Rundungsunterschiede zwischen gedrucktem Gesamtnetto und Summe der Steuergruppen centgenau belegen. Übernimm die gedruckten Zahlen; unlesbare Werte sind null. Gib für JEDE Steuerzeile in printed_tax_lines Seitenzahl, gedrucktes Label, kind (gross/net/vat), rate und Betrag an. Lies nur die Artikelgruppenstatistik, keine Einzelartikel, in category_sales. Trenne Zwischensummen von Artikelgruppen. Bei Unsicherheit needs_review=true und Grund in notes. Antworte nur als JSON: {"date":"YYYY-MM-DD","gross_total":null,"net_total":null,"vat_total":null,"cash_total":null,"card_total":null,"other_payments_total":null,"receipt_count":null,"printed_payment_lines":[{"label":"BAR Rechnung","count":null,"amount":null},{"label":"Kreditkarte","count":null,"amount":null}],"tax_breakdown":[{"rate":10,"gross":null,"net":null,"vat":null}],"printed_tax_lines":[{"page":1,"rate":10,"kind":"gross","label":"10,00 brutto","amount":null}],"category_sales":[{"name":"gedruckte Artikelgruppe","gross":null}],"needs_review":false,"notes":null}.`;
+ if(!friedrich)prompt=`Du liest genau EINE Originalseite eines Tagesberichts von Judith und die Torten für ${doc.date}. Der bereits erkannte Tagesbruttowert ist ${doc.gross_total} Euro. Lies nur Werte, die auf dieser Seite tatsächlich gedruckt sind. "Umsatz berichtigt (inkl. MwSt.)" ist der Tagesumsatz nach Retouren und Rabatten; Warengruppen und "Umsatz" vor Rabatten sind keine zusätzlichen Tagesumsätze. Erfasse Barzahlung, "Kreditk. / Bankomatkarten", Beleganzahl und gedruckte Steuergruppen getrennt. "Kredit" und "Kund. Forderungen" sind keine Kartenzahlungen. Falls keine gedruckte Steuergruppe oder kein Zahlungsbetrag lesbar ist, setze null beziehungsweise [] und needs_review=true. Erfinde keine Werte und berechne keine Beträge aus einer anderen Seite. Gib JSON zurück: {"date":"YYYY-MM-DD","gross_total":null,"net_total":null,"vat_total":null,"cash_total":null,"card_total":null,"other_payments_total":null,"receipt_count":null,"tax_breakdown":[{"rate":10,"gross":null,"net":null,"vat":null}],"printed_tax_lines":[{"page":1,"rate":10,"kind":"gross","label":"10 % brutto","amount":null}],"category_sales":[{"name":"gedruckte Warengruppe","gross":null}],"needs_review":false,"notes":null}.`;
  const results=await Promise.allSettled(images.map(async (image,index)=>{
   const content=[{type:"input_text",text:prompt+"\nDies ist Originalseite "+(index+1)+"."},{type:"input_image",image_url:"data:"+image.mime_type+";base64,"+image.image_base64,detail:"high"}];
   const res=await fetch("https://api.openai.com/v1/responses",{method:"POST",headers:{Authorization:"Bearer "+apiKey,"Content-Type":"application/json"},body:JSON.stringify({model:"gpt-4.1-mini",max_output_tokens:5000,store:false,text:{format:{type:"json_object"}},input:[{role:"user",content}]})});
@@ -223,18 +224,38 @@ Für jede gedruckte Steuergruppe (zum Beispiel 10,00 und 20,00) übernimm aus de
   ||reads.find(row=>Array.isArray(row.tax_breakdown)&&row.tax_breakdown.length)
   ||reads[0];
  read.printed_tax_lines=(Array.isArray(read.printed_tax_lines)?read.printed_tax_lines:[]).map(line=>({...line,page:read.source_page}));
- const allCategories=reads.flatMap(row=>Array.isArray(row.category_sales)?row.category_sales:[]);
- const distinctCategories=allCategories.filter((row,index)=>allCategories.findIndex(other=>other.name===row.name&&other.gross===row.gross)===index);
+ const categoryPages=reads.map(row=>normalizeCategorySales(row.category_sales));
+ const distinctCategories=categoryPages.find(rows=>rows.length>0&&rows.every(r=>r.gross!==null)&&near(rows.reduce((sum,r)=>sum+r.gross,0),doc.gross_total))||[];
+ if(friedrich){
+  const paymentPage=reads.find(row=>Array.isArray(row.printed_payment_lines)&&row.printed_payment_lines.length);
+  if(paymentPage)Object.assign(read,{printed_payment_lines:paymentPage.printed_payment_lines});
+  const paymentErrors=reconcileFriedrichSummary(read,{gross_total:doc.gross_total});
+  if(paymentErrors.length)read.needs_review=true;
+  read.summary_errors=paymentErrors;
+ }
  const candidate={...doc,gross_total:amount(read.gross_total),net_total:amount(read.net_total),vat_total:amount(read.vat_total),tax_breakdown:normalizeTaxBreakdown(read.tax_breakdown)};
  const errors=taxErrors(candidate);
+ if(friedrich)errors.push(...(read.summary_errors||[]));
  if(read.date&&read.date!==doc.date)errors.push("Datum der Steuerseite weicht ab");
  if(!near(candidate.gross_total,doc.gross_total))errors.push("Bruttoumsatz weicht vom gespeicherten Abschluss ab");
  if(read.needs_review)errors.push(textOrNull(read.notes)||"Gedruckte Steuerzeilen nicht eindeutig");
  if(!Array.isArray(read.printed_tax_lines)||read.printed_tax_lines.length<candidate.tax_breakdown.length*3)errors.push("Gedruckte Steuerzeilen nicht vollständig belegt");
  for(const row of candidate.tax_breakdown){for(const kind of ["gross","net","vat"]){const line=(read.printed_tax_lines||[]).find(l=>l.rate===row.rate&&l.kind===kind);if(!line||!near(amount(line.amount),row[kind],0.001))errors.push("Gedruckte Steuerzeile stimmt nicht mit übernommener Zahl überein");}}
  candidate.tax_verification={version:TAX_PIPELINE_VERSION,method:"printed_summary_per_page",model:"gpt-4.1-mini",verified:errors.length===0,errors,printed_tax_lines:read.printed_tax_lines||[],read_candidate:{source_page:read.source_page,gross_total:read.gross_total,net_total:read.net_total,vat_total:read.vat_total,tax_breakdown:read.tax_breakdown,category_sales:distinctCategories,notes:read.notes},pages_read:reads.length,pages_total:images.length,checked_at:new Date().toISOString()};
- if(errors.length){doc.tax_verification=candidate.tax_verification;doc.needs_review=true;doc.notes=errors.join("; ");return doc;}
+ if(errors.length){
+  // A conflicting second OCR read must not replace arithmetically consistent
+  // original figures or report its errors as defects of the stored figures.
+  const storedErrors=taxErrors(doc);
+  doc.tax_verification=candidate.tax_verification;
+  doc.needs_review=true;
+  doc.notes=[
+    ...(storedErrors.length ? storedErrors.map(e=>"Gespeicherte Werte: "+e) : []),
+    ...errors.map(e=>"Erneute Originalerkennung: "+e)
+  ].join("; ");
+  return doc;
+}
  for(const key of ["cash_total","card_total","other_payments_total","receipt_count"]){if(typeof read[key]==="number")candidate[key]=key==="receipt_count"?count(read[key]):amount(read[key]);}
+ if(friedrich&&read.printed_payment_lines)candidate.printed_payment_lines=read.printed_payment_lines;
  if(!near((candidate.cash_total||0)+(candidate.card_total||0)+(candidate.other_payments_total||0),candidate.gross_total))errors.push("Zahlungsarten passen nicht zum Umsatz");
  const categories=normalizeCategorySales(distinctCategories);
  const groupsComplete=results.every(result=>result.status==="fulfilled")&&categories.length>0&&categories.every(r=>r.gross!==null)&&near(categories.reduce((a,r)=>a+r.gross,0),candidate.gross_total);
@@ -424,18 +445,23 @@ Deno.serve(async (req) => {
       const fingerprint=await Promise.all(images.map(async im=>Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(im.mime_type+':'+im.image_base64)))).map(x=>x.toString(16).padStart(2,'0')).join('')));
       if(cached?.version===2 && cached.verified && JSON.stringify(cached.source_fingerprint)===JSON.stringify(fingerprint) && Array.isArray(old.sales_items))return json({documents:[old],updated:false,reused:true});
       const apiKey=Deno.env.get('OPENAI_API_KEY');if(!apiKey)return json({error:'KI-Schlüssel fehlt'},500);
-      const expected={...old,date:savedDocument.document_date};
+      const expected={...old,date:savedDocument.document_date,
+        cash_total:old.tax_verification?.verified?old.cash_total:null,
+        card_total:old.tax_verification?.verified?old.card_total:null};
       const result=await fetch('https://api.openai.com/v1/responses',{method:'POST',headers:{Authorization:'Bearer '+apiKey,'Content-Type':'application/json'},body:JSON.stringify({model:'gpt-4.1-mini',max_output_tokens:24000,store:false,text:{format:{type:'json_object'}},input:[{role:'user',content:[{type:'input_text',text:pagePrompt(expected,images.length)},...images.flatMap((im,i)=>[{type:'input_text',text:'Foto '+(i+1)+' von '+images.length},{type:'input_image',image_url:'data:'+im.mime_type+';base64,'+im.image_base64,detail:'high'}])]}]})});
       if(!result.ok)return json({error:'Originalauswertung fehlgeschlagen; vorhandene Daten erhalten.'},502);
       const model=await result.json();if(model.status==='incomplete')return json({error:'Originalauswertung unvollständig; keine Artikelübernahme.'},422);
-      const read=JSON.parse(cleanJson(getOutputText(model))),validation=validatePages(read,expected,images.length);
+      const read=JSON.parse(cleanJson(getOutputText(model)));
+      const summaryErrors=reconcileFriedrichSummary(read,expected);
+      const validation=validatePages(read,expected,images.length);
+      validation.errors.push(...summaryErrors);
       if(validation.errors.length){
         await supabase.from('documents').update({extracted_data:{...old,article_sales_review:{errors:validation.errors,pages:read.pages,checked_at:new Date().toISOString()}}}).eq('id',savedDocument.id).eq('business_id',FRIEDRICH);
         return json({error:validation.errors.join(' '),requires_review:true},422);
       }
       const imported=await supabase.rpc('gp_f_import_bonit_articles',{p_document:savedDocument.id,p_z:String(read.z_number),p_sales:read.sales_items});
       if(imported.error)return json({error:imported.error.message},409);
-      const patch={z_number:String(read.z_number),sales_items:read.sales_items,paid_receipt_count:read.cash_count+read.card_count,free_receipt_count:read.free_count,payment_methods:{cash:{count:read.cash_count,amount:read.cash_total},card:{count:read.card_count,amount:read.card_total}},receipt_count_verification:{version:2,verified:true,method:'all_original_pages',printed_payment_lines:read.printed_payment_lines,checked_at:new Date().toISOString()},printed_payment_lines:read.printed_payment_lines,tax_breakdown:read.tax_breakdown,returns:read.returns,needs_review:validation.warnings.length>0,article_sales_verification:{version:2,verified:true,method:'all_original_pages',source_fingerprint:fingerprint,pages_total:images.length,pages:read.pages,warnings:validation.warnings,checked_at:new Date().toISOString()}};
+      const patch={z_number:String(read.z_number),sales_items:read.sales_items,cash_total:read.cash_total,card_total:read.card_total,paid_receipt_count:read.cash_count+read.card_count,free_receipt_count:read.free_count,payment_methods:{cash:{count:read.cash_count,amount:read.cash_total},card:{count:read.card_count,amount:read.card_total}},receipt_count_verification:{version:2,verified:true,method:'all_original_pages',printed_payment_lines:read.printed_payment_lines,checked_at:new Date().toISOString()},printed_payment_lines:read.printed_payment_lines,tax_breakdown:read.tax_breakdown,returns:read.returns,needs_review:validation.warnings.length>0,article_sales_verification:{version:2,verified:true,method:'all_original_pages',source_fingerprint:fingerprint,pages_total:images.length,pages:read.pages,warnings:validation.warnings,checked_at:new Date().toISOString()}};
       const updated=await supabase.from('documents').update({extracted_data:{...old,...patch}}).eq('id',savedDocument.id).eq('business_id',FRIEDRICH);
       if(updated.error)return json({error:'Artikel gespeichert, Prüfstatus noch nicht gespeichert; Wiederholung erzeugt keine doppelte Buchung.'},500);
       const closings=await supabase.from('bonit_daily_closings').select('id,raw_data').eq('business_id',FRIEDRICH).eq('closing_date',savedDocument.document_date).eq('z_number',String(read.z_number));
@@ -523,6 +549,8 @@ BONit-MONATSABSCHLÜSSE (monthly_report)
 Erkenne ausdrücklich BONit Monatsabschluss, Monatsauswertung, Monatsbericht, Zeitraum von/bis, Monatsstatistik und Z-Auswertungen über einen ganzen Monat. document_type = monthly_report, niemals cash_report. date = letzter Tag des ausgewiesenen Berichtszeitraums; period_start und period_end als YYYY-MM-DD. gross_total = Monatsbrutto, net_total = Monatsnetto; Steuergruppen, Bar/Karte, bezahlte Bons getrennt von kostenlosen Bons; sämtliche Artikelgruppen und Artikelpositionen mit Originalbezeichnungen, Artikelnummer, Menge, Umsatz und Varianten, Stundenumsätze, Tischumsätze, Mitarbeiterstatistik, Stornos, Rabatte, Gutscheine. Unbekannte Werte null, keine erfundenen Angaben. Monatswerte nicht als Tageswerte ausgeben. Zusätzliche Felder article_details, hourly_sales, table_sales, paid_receipt_count, free_receipt_count, period_start, period_end ausgeben soweit vorhanden.
 
 TAGESABRECHNUNGEN (cash_report)
+
+z_number ist ausschließlich die ausdrücklich gedruckte Z-Nummer eines Tagesabschlusses; fehlt sie (zum Beispiel in einem anderen Kassenformat), gib null zurück. Eine Berichtsnummer ist keine Z-Nummer.
 
 Prüfe die Bildnummern, Seitenüberschriften, Belegnummern und Datumsangaben.
 Mehrere Seiten derselben Tagesabrechnung gehören zu EINEM Dokument;
@@ -853,6 +881,7 @@ AUSGABEFORMAT
       "hourly_sales": [],
       "table_sales": [],
       "date": "YYYY-MM-DD",
+      "z_number": null,
       "supplier": null,
       "invoice_number": null,
       "gross_total": null,
@@ -1021,6 +1050,7 @@ FRIEDRICH LAGER: category je Position ausschließlich food, beverage, coffee, me
             : "unknown",
 
         date: textOrNull(document.date),
+        z_number: textOrNull(document.z_number),
         ...(businessId === "6a5484d1-daf6-4263-897d-24cdf536aa29" ? {delivery_date:textOrNull(document.delivery_date), inventory_counts:Array.isArray(document.inventory_counts)?document.inventory_counts.map((x:any)=>({name:textOrNull(x.name),quantity:quantity(x.quantity),unit:textOrNull(x.unit),counted_at:textOrNull(x.counted_at)})).filter((x:any)=>x.name):[]} : {}),
         period_start: textOrNull(document.period_start),
         period_end: textOrNull(document.period_end),
@@ -1131,7 +1161,7 @@ FRIEDRICH LAGER: category je Position ausschließlich food, beverage, coffee, me
         continue;
       }
       const selected=document.image_indices.length?document.image_indices.map(index=>images[index-1]).filter(Boolean):images;
-      try{documents[i]=await verifyPrintedTaxes(document,selected,apiKey);}
+      try{documents[i]=await verifyPrintedTaxes(document,selected,apiKey,businessId===FRIEDRICH);}
       catch(error){document.needs_review=true;document.tax_verification={version:TAX_PIPELINE_VERSION,verified:false,errors:[String(error.message||error)],checked_at:new Date().toISOString()};}
     }
     if(savedDocument){
@@ -1142,7 +1172,11 @@ FRIEDRICH LAGER: category je Position ausschließlich food, beverage, coffee, me
         // Retain the old business figures when a second read remains uncertain.
         for(const key of ["gross_total","net_total","vat_total","cash_total","card_total","receipt_count","tax_breakdown","vat_breakdown","category_sales"])merged[key]=original[key];
       }
-      const updated=await supabase.from("documents").update({extracted_data:merged,status:corrected.tax_verification?.verified?(corrected.needs_review?"reviewed":"auto_imported"):savedDocument.status}).eq("id",savedDocument.id).eq("business_id",businessId).select("id").maybeSingle();
+      if(businessId===FRIEDRICH&&(!merged.article_sales_verification?.verified||merged.article_sales_verification.warnings?.length)){
+        merged.needs_review=true;
+        merged.notes=[merged.notes,'Artikelpositionen nicht vollständig bestätigt'].filter(Boolean).join('; ');
+      }
+      const updated=await supabase.from("documents").update({extracted_data:merged,status:corrected.tax_verification?.verified?(merged.needs_review?"auto_review":"auto_imported"):savedDocument.status}).eq("id",savedDocument.id).eq("business_id",businessId).select("id").maybeSingle();
       if(updated.error||!updated.data)return json({error:"Automatische Nachprüfung konnte nicht gespeichert werden"},500);
       if(corrected.tax_verification?.verified){
         const synced=await supabase.from("bonit_daily_closings").select("id,raw_data,gross_amount").eq("business_id",businessId).eq("closing_date",savedDocument.document_date);

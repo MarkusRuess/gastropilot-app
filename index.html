@@ -2187,6 +2187,7 @@ async function autoArchive(doc,sourceFile,paymentStatus,intake=null,extraIntakes
   for(const item of items.filter(item=>item.document_type==='other')){
    const {error}=await db.from('documents').update({status:'reviewed',extracted_data:{...(item.extracted_data||{}),duplicate_of:existingId,import_warning:warning}}).eq('id',item.id).eq('business_id',BID);
    if(error)throw error;
+   item.extracted_data={...(item.extracted_data||{}),duplicate_of:existingId};
   }
   return 'bereits vorhanden';
  }
@@ -2203,10 +2204,12 @@ async function autoArchive(doc,sourceFile,paymentStatus,intake=null,extraIntakes
   if(error)throw error;
   if(x.period_start&&x.period_end){const match=data?.find(d=>d.extracted_data?.period_start===x.period_start&&d.extracted_data?.period_end===x.period_end);if(match)return await markDuplicate(match.id);}
  }else if(kind==='cash_report'){
-  const {data,error}=await db.from('documents').select('id,extracted_data,storage_path').eq('business_id',BID).eq('document_type','cash_report').eq('document_date',x.date).order('created_at',{ascending:true}).limit(100);
+  const {data,error}=await db.from('documents').select('id,status,extracted_data,storage_path').eq('business_id',BID).eq('document_type','cash_report').eq('document_date',x.date).order('created_at',{ascending:true}).limit(100);
   if(error)throw error;
   if(data?.length){
+   if(BID==='6a5484d1-daf6-4263-897d-24cdf536aa29'&&x.z_number&&data.some(item=>item.extracted_data?.z_number&&String(item.extracted_data.z_number)!==String(x.z_number)))throw Error('Für dieses Datum ist eine andere Z-Nummer gespeichert. Keine automatische Zusammenführung.');
    const current=data.find(item=>N(item.extracted_data?.gross_total)!==null&&N(x.gross_total)!==null&&Math.abs(N(item.extracted_data.gross_total)-N(x.gross_total))<=.03)||data.find(item=>N(item.extracted_data?.gross_total)===null)||data[0];
+   if(['reviewed','auto_imported'].includes(current.status)&&current.extracted_data?.needs_review===false&&N(current.extracted_data?.gross_total)!==null&&N(x.gross_total)!==null&&Math.abs(N(current.extracted_data.gross_total)-N(x.gross_total))<=.01&&(!x.z_number||!current.extracted_data?.z_number||String(x.z_number)===String(current.extracted_data.z_number)))return await markDuplicate(current.id);
    if(N(current.extracted_data?.gross_total)!==null){
     if(N(x.gross_total)===null||Math.abs(N(current.extracted_data.gross_total)-N(x.gross_total))>.03){
      throw Error('Für dieses Datum liegt ein Tagesabschluss mit anderem Betrag vor. Original und Erkennung bleiben zur Prüfung gesichert.');
@@ -2246,6 +2249,8 @@ async function autoArchive(doc,sourceFile,paymentStatus,intake=null,extraIntakes
    if(N(prior.gross_total)!==null)x.gross_total=prior.gross_total;
    const {data,error}=await db.from('documents').update({extracted_data:{...prior,...x},status:x.needs_review?'auto_review':'auto_imported'}).eq('id',existingIncompleteCash.id).eq('business_id',BID).select('id').maybeSingle();
    if(error||!data)throw error||Error('Tagesabschluss konnte nicht ergänzt werden.');
+   x.archive_document_id=existingIncompleteCash.id;
+   doc.archive_document_id=existingIncompleteCash.id;
    if(allIntakes.length)await markDuplicate(existingIncompleteCash.id);
   }else{
    const record={document_type:kind,document_date:x.date,supplier:kind==='invoice'?x.supplier:null,invoice_number:kind==='invoice'?x.invoice_number:null,status:x.needs_review?'auto_review':'auto_imported',extracted_data:x};
@@ -2255,6 +2260,23 @@ async function autoArchive(doc,sourceFile,paymentStatus,intake=null,extraIntakes
   if(kind==='invoice'&&intake)await autoBookInvoiceExpense(x,intake.id);
  }catch(e){if(!intake&&paths.length)await db.storage.from('invoice-originals').remove(paths);throw e;}
  return 'gespeichert';
+}
+async function finishCashReport(documentId){
+ if(!documentId)return;
+ const friedrich=BID==='6a5484d1-daf6-4263-897d-24cdf536aa29';
+ for(const mode of friedrich?['article_sales','cash_report']:['cash_report']){
+  E('uploadStatus').textContent=mode==='article_sales'?'BONit-Artikel und Zahlarten werden geprüft …':'Steuergruppen und Buchung werden geprüft …';
+  const {data,error}=await withTimeout(db.functions.invoke('analyze-receipt',{body:{business_id:BID,document_id:documentId,mode}}),120000,'Originalprüfung dauerte zu lange; Abschluss bleibt im Archiv zur Prüfung.');
+  if(error||data?.error)throw Error(data?.error||error?.message||'Originalprüfung fehlgeschlagen.');
+ }
+ const {data,error}=await db.from('documents').select('status,extracted_data').eq('id',documentId).eq('business_id',BID).single();
+ if(error||!data)throw Error('Buchungsstatus nicht lesbar.');
+ if(data.status!=='auto_imported'||data.extracted_data?.needs_review)throw Error(data.extracted_data?.notes||'Originalwerte nicht vollständig bestätigt; keine automatische Buchung.');
+ if(friedrich){
+  const x=data.extracted_data;
+  const closing=await db.from('bonit_daily_closings').select('id,gross_amount,z_number').eq('business_id',BID).eq('closing_date',x.date).limit(20);
+  if(closing.error||!closing.data?.some(row=>Math.abs(Number(row.gross_amount)-Number(x.gross_total))<.01&&(row.z_number===String(x.z_number)||row.z_number==='ARCHIVE-'+documentId)))throw Error('Abschluss gespeichert, aber Tagesbuchung nicht bestätigt.');
+ }
 }
 async function invoiceAlreadyArchived(doc){if(doc.document_type!=='invoice'||!doc.supplier||!doc.invoice_number)return false;const {data,error}=await db.from('documents').select('id').eq('business_id',BID).eq('document_type','invoice').eq('supplier',doc.supplier).eq('invoice_number',doc.invoice_number).limit(1);if(error)throw error;return !!data?.length;}
 function showArchivedDuplicate(file){E('review').replaceChildren();const notice=document.createElement('div');notice.className='status';notice.setAttribute('role','alert');notice.style.cssText='padding:18px;border:2px solid #c48b32;border-radius:12px;background:#fff7e6;color:#5b3a08;font-weight:750';notice.textContent='⚠ Rechnung bereits im Archiv – keine erneute Buchung. '+(file?.name||'');E('review').append(notice);E('uploadStatus').textContent='Bereits im Archiv · keine Doppelbuchung.';}
@@ -2345,12 +2367,13 @@ async function recognizePhotoGroup(files,intakes){
     if(!paymentStatus)throw Error('Zahlungsstatus offen; Originale bleiben im Archiv.');
    }
    const outcome=await autoArchive(doc,entries.map(entry=>entry.file),paymentStatus,primary.intake,entries.filter(entry=>entry!==primary).map(entry=>entry.intake));
+   if(doc.document_type==='cash_report'&&outcome!=='bereits vorhanden')await finishCashReport(doc.archive_document_id||primary.intake?.id);
    if(outcome==='bereits vorhanden')duplicate++;else saved++;
    queue=queue.filter(file=>!entries.some(entry=>entry.file===file));
    E('review').replaceChildren();
   }catch(error){
    failed++;const message=error.message||String(error);errors.push(entries.map(entry=>entry.file.name).join(', ')+': '+message);
-   for(const entry of entries.filter(entry=>entry.intake?.document_type==='other')){
+   for(const entry of entries.filter(entry=>entry.intake?.document_type==='other'&&!entry.intake?.extracted_data?.duplicate_of)){
     const old=entry.intake.extracted_data||{};
     await db.from('documents').update({status:'error',extracted_data:{...old,recognition_candidate:doc,import_warning:message}}).eq('id',entry.intake.id).eq('business_id',BID).eq('document_type','other');
    }
@@ -2590,6 +2613,7 @@ async function process(){
      setProgress('Zahlungsstatus '+paymentStatus+' · wird gespeichert …');
     }
     const outcome=await autoArchive(recognizedDoc,file,paymentStatus,intake);
+    if(recognizedDoc.document_type==='cash_report'&&outcome!=='bereits vorhanden')await finishCashReport(recognizedDoc.archive_document_id||intake.id);
     if(outcome==='bereits vorhanden')duplicate++;else saved++;
     queue=queue.filter(f=>f!==file);
     E('review').replaceChildren();
