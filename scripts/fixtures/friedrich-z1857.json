@@ -1,0 +1,75 @@
+{
+  "date": "2026-11-05",
+  "z_number": "1857",
+  "gross_total": 1383.8,
+  "net_total": 1190.73,
+  "vat_total": 193.07,
+  "cash_total": 1087.8,
+  "card_total": 296,
+  "receipt_count": 87,
+  "cash_count": 70,
+  "card_count": 16,
+  "free_count": 1,
+  "tax_breakdown": [
+    {"rate":10,"gross":495.9,"net":450.82,"vat":45.08},
+    {"rate":20,"gross":887.9,"net":739.92,"vat":147.98}
+  ],
+  "printed_payment_lines": [
+    {"label":"BAR Rechnung","count":70,"amount":1087.8},
+    {"label":"Kreditkarte","count":16,"amount":296},
+    {"label":"Personal / Einladung mit 0","count":1,"amount":0}
+  ],
+  "category_sales": [
+    {"name":"Alkoholfreie Getränke","gross":112.6},
+    {"name":"Bier","gross":33.6},
+    {"name":"Wein","gross":195.9},
+    {"name":"Spirituosen","gross":26.9},
+    {"name":"Kaffee Tee","gross":143.6},
+    {"name":"Sonstige Erlöse 20%","gross":4.5},
+    {"name":"Judith und die Torten","gross":157.8},
+    {"name":"Brötchen","gross":156.8},
+    {"name":"Schaumweine","gross":370.8},
+    {"name":"Baquette","gross":109.2},
+    {"name":"Speisen","gross":72.1}
+  ],
+  "pages": [
+    {"image_index":1,"printed_page":1,"processed":true,"continues":true,"unreadable_rows":0,"article_row_count":26},
+    {"image_index":2,"printed_page":2,"processed":true,"continues":true,"unreadable_rows":0,"article_row_count":36},
+    {"image_index":3,"printed_page":3,"processed":true,"continues":false,"unreadable_rows":0,"article_row_count":0}
+  ],
+  "rows_page_1": [
+    [109,"Punschkrapferl",4,5.2,20.8,10],[113,"Esterhazy Schnitte",1,5.8,5.8,10],
+    [114,"Kardinalschnitte",3,5.8,17.4,10],[115,"Cremeschnitte",2,5.8,11.6,10],
+    [117,"Cheese Cake San Sebastian",3,4.8,14.4,10],[129,"Preiselbeerschnitte 1 Stück",2,4.5,9,10],
+    [130,"Maroniherz 1 Stück",8,4.8,38.4,10],[130,"Maroniherz 1 Stück",1,0,0,10],
+    [133,"Prinzess Torte 1 Stück",1,6.5,6.5,10],[204,"Ei Aufstrich Brötchen",6,3.2,19.2,10],
+    [207,"Räucherforelle Brötchen",3,3.2,9.6,10],[212,"Thunfisch Brötchen",5,3.2,16,10],
+    [215,"Schinken Baguette 1 Stück",12,5.2,62.4,10],[216,"Sacherwürstel 1 Paar",2,6.9,13.8,10],
+    [277,"Prosciutto Teller",1,16.5,16.5,10],[287,"Käse Brötchen 1 Stück",4,3.2,12.8,10],
+    [292,"Lachs Baguette 1 Stück",19,5.2,98.8,10],[294,"Mozarella Baguette",2,5.2,10.4,10],
+    [307,"Leberkäse Semmerl 1 Stück",2,4.9,9.8,10],[309,"Toast Schinken Käse",3,6.5,19.5,10],
+    [310,"Bauerntoast Schwarzbrot XXL",1,12.5,12.5,10],[313,"Leber Pastete Brötchen",8,3.2,25.6,10],
+    [315,"Humus Tomate Pikant",4,2.8,11.2,10],[323,"Guglhupf 1 Stück",1,0,0,10],
+    [323,"Guglhupf 1 Stück",1,2,2,10],[1400,"Espresso klein",11,3.1,34.1,20]
+  ],
+  "rows_page_2": [
+    [1401,"Espresso groß",1,4.2,4.2,20],[1402,"Espresso Macchiato",3,3.1,9.3,20],
+    [1403,"Verlängerter",3,0,0,20],[1403,"Verlängerter",4,3.9,15.6,20],
+    [1404,"Melange",17,3.9,66.3,20],[1410,"Cappucino",1,3.9,3.9,20],
+    [1413,"Cafe Latte",2,5.1,10.2,20],[1500,"Coca Cola 0,33l",2,4.2,8.4,20],
+    [1501,"Coca Cola Zero 0,33l",6,4.2,25.2,20],[1502,"Vöslauer Prickelnd 0,33l",6,3.8,22.8,20],
+    [1512,"Sodawasser 0,25l",4,2.1,8.4,20],[1519,"Crodino",3,6.9,20.7,20],
+    [1521,"Orangensaft 0,25l",1,4.5,4.5,20],[1527,"Hollunder Limo 0,25l",1,4.5,4.5,20],
+    [1529,"Apfelsaft gespritzt 0,25l",1,4.2,4.2,20],[1532,"Verjus Gespritzt 0,25l",3,4.8,14.4,20],
+    [1534,"Tonic Water 0,2l",1,4,4,20],[1607,"Hendricks Gin Tonic 4cl",1,12.5,12.5,20],
+    [1617,"Campari Orange 6cl",2,7.2,14.4,20],[2000,"Villacher 0,3l Bier",7,4.8,33.6,20],
+    [2001,"Campari Spritz",2,6.9,13.8,20],[3011,"1/8 Weingut Christian Steiner Rose",1,5.8,5.8,20],
+    [3012,"1/8 IBY Blaufränkisch BIO Wein",7,6,42,20],[3015,"1/8 Gross Gelber Muskateller",1,7.5,7.5,20],
+    [3016,"1/8 Mayer Wien Gemischter Satz",6,5.9,35.4,20],[3018,"Weisser Spritzer Grüner Veltliner 0,25l",8,4.5,36,20],
+    [3020,"1 Glas Prosecco Valdobbiadene 0,1l",40,5.5,220,20],[3022,"1 Glas Sparkling Rose Freixenet 0,1l",26,5.8,150.8,20],
+    [3039,"Torten und diverse Artikel",1,3.5,3.5,10],[3039,"Torten und diverse Artikel",2,5.5,11,10],
+    [3044,"Tschermonegg 1/8 Sauvignon blanc",1,5.9,5.9,20],[3050,"1/8 Pfaffl Grüner Veltliner",2,5.9,11.8,20],
+    [3056,"Hauswein Grüner Veltliner 1/8",4,4.5,18,20],[4016,"1/8 Alphart Neuburger Hausberg 2023",1,5.9,5.9,20],
+    [4024,"Sarti Spritzer",2,6.9,13.8,20],[5008,"Tarte Citron",3,5.8,17.4,10]
+  ]
+}
