@@ -1,6 +1,9 @@
 name: GastroPilot Mutter - Projektstatus
 
 on:
+  pull_request:
+    paths:
+      - '.github/workflows/gastropilot-mutter-status.yml'
   workflow_dispatch:
   schedule:
     - cron: '0 6 * * *'
