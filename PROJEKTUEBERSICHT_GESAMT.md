@@ -1,5 +1,8 @@
 # GastroPilot – gemeinsame Projektübersicht
 
+**2026-11-06 Veröffentlichung:** PR #84 nach CI #62 zusammengeführt (`c925366`), Edge Function Version 49 aktiv, neue Oberfläche am bestehenden Pages-Link ausgeliefert. Friedrich Z 1857 separat originalgeprüft und einmalig gebucht. Die authentifizierte Live-Handy-Verarbeitung beider Betriebe bleibt offen; kein vollständiger End-to-End-Nachweis.
+
+
 **2026-11-06 Zwischenstand:** Friedrich-Handyabschluss Z 1857: PR #84 enthält gezielte Nachprüfung von Original-Zahlarten, Cent-Rundung und automatische Folgeprüfung. Programmtests und simulierte Chromium-/WebKit-Pickertests (CI #57) bestanden; mobile End-to-End-Automatik und Live-Bedienung offen. Keine Produktionsfreigabe.
 
 **Nachtrag:** Z 1857 wurde aus drei Originalfotos separat geprüft und einmalig in Friedrichs Tages- und Artikeldaten nachgebucht (ein Abschluss, 62 Artikelzeilen, 1.383,80 €). Der gemeinsame Neuaufbau für zukünftige Friedrich- und Judith-Uploads bleibt PR #84; keine Produktionsfreigabe oder Live-Handy-Abnahme aus der Nachbuchung ableiten.
