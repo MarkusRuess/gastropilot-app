@@ -2,6 +2,8 @@
 
 ## 2026-11-06 · Handyabschluss Z 1857 – laufende Korrektur (PR #84)
 
+**Duplikatschutz:** Ein eindeutiger Index auf Betrieb, Datum und numerische Z-Nummer ist in Supabase angelegt; das entsprechende SQL liegt im PR. Alte ARCHIVE-Identitäten bleiben erhalten. Die vollständige Umstellung des Buchungstriggers auf gedruckte Z-Nummern ist noch offen.
+
 **Nachtrag 06.11.:** Die drei Originalseiten wurden Zeile für Zeile geprüft. 62 Artikelzeilen einschließlich drei Nullpreiszeilen, 11 Artikelgruppen und beide Steuergruppen ergeben jeweils 1.383,80 € brutto. Die 87 Rechnungen bestehen aus 70 Bar, 16 Kreditkarte und einer kostenlosen Personal/Einladung. Der bestehende Archivbeleg wurde unter Erhalt seiner Originalreferenzen berichtigt und mit einer transaktionalen Konfliktprüfung genau einmal als Friedrich-Tagesabschluss Z 1857 (05.11.) gespeichert. Datenbankkontrolle: ein Abschluss, 62 Artikelzeilen, Artikelsumme 1.383,80 €, Bar 1.087,80 €, Karte 296,00 €. Das ist eine anhand der Originale verifizierte einmalige Nachbuchung, **kein Nachweis des neuen automatischen Handyablaufs**. Lagerverbrauch und tatsächliche Live-Dashboard-Anzeige sind noch nicht abgenommen.
 
 Die drei Originalfotos vom 05.11.2026 belegen Z 1857, 87 Rechnungen, 1.383,80 € brutto, 1.190,73 € netto, 1.087,80 € BAR Rechnung und 296,00 € Kreditkarte. Die gedruckten Steuergruppen 10 % (495,90/450,82/45,08 €) und 20 % (887,90/739,92/147,98 €) summieren sich beim Netto und bei der Steuer mit je einem Cent Rundungsabweichung zu den Tagesgesamtwerten. Die alte OCR vertauschte bar/unbar und las die Gesamtsteuer um zehn Cent falsch.
