@@ -40,8 +40,8 @@ jobs:
           echo '### Letzte abgeschlossene CI-Läufe' >> "$GITHUB_STEP_SUMMARY"
           echo '| Workflow | Ergebnis |' >> "$GITHUB_STEP_SUMMARY"
           echo '|---|---|' >> "$GITHUB_STEP_SUMMARY"
-          gh api "repos/$GH_REPO/actions/runs?per_page=30" --jq '.workflow_runs[] | select(.status == "completed") | [.name, (.conclusion // "unbekannt")] | @tsv' |
-            head -n 10 | while IFS=$'\t' read -r name result; do
+          gh api "repos/$GH_REPO/actions/runs?per_page=30" --jq '[.workflow_runs[] | select(.status == "completed")][:10][] | [.name, (.conclusion // "unbekannt")] | @tsv' |
+            while IFS=$'\t' read -r name result; do
               name=${name//|/ }
               result=${result//|/ }
               echo "| $name | $result |" >> "$GITHUB_STEP_SUMMARY"
