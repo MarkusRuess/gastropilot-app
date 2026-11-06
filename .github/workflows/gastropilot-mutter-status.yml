@@ -1,0 +1,50 @@
+name: GastroPilot Mutter - Projektstatus
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 6 * * *'
+
+permissions:
+  contents: read
+  actions: read
+  pull-requests: read
+  issues: read
+
+concurrency:
+  group: gastropilot-mutter-status
+  cancel-in-progress: false
+
+jobs:
+  status:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Read-only GitHub project overview
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo '## GastroPilot Mutter – GitHub Status' >> "$GITHUB_STEP_SUMMARY"
+          echo "Stand (UTC): $(date -u '+%Y-%m-%d %H:%M')" >> "$GITHUB_STEP_SUMMARY"
+          echo '' >> "$GITHUB_STEP_SUMMARY"
+          echo '| Bereich | Ergebnis |' >> "$GITHUB_STEP_SUMMARY"
+          echo '|---|---|' >> "$GITHUB_STEP_SUMMARY"
+          prs=$(gh api "repos/$GH_REPO/pulls?state=open&per_page=100" --jq 'length')
+          issues=$(gh api "repos/$GH_REPO/issues?state=open&per_page=100" --jq '[.[] | select(.pull_request == null)] | length')
+          echo "| Offene Pull Requests (erste 100) | $prs |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Offene Issues (erste 100) | $issues |" >> "$GITHUB_STEP_SUMMARY"
+          echo '' >> "$GITHUB_STEP_SUMMARY"
+          echo '### Letzte abgeschlossene CI-Läufe' >> "$GITHUB_STEP_SUMMARY"
+          echo '| Workflow | Ergebnis |' >> "$GITHUB_STEP_SUMMARY"
+          echo '|---|---|' >> "$GITHUB_STEP_SUMMARY"
+          gh api "repos/$GH_REPO/actions/runs?per_page=30" --jq '[.workflow_runs[] | select(.status == "completed")][:10][] | [.name, (.conclusion // "unbekannt")] | @tsv' |
+            while IFS=$'\t' read -r name result; do
+              name=${name//|/ }
+              result=${result//|/ }
+              echo "| $name | $result |" >> "$GITHUB_STEP_SUMMARY"
+            done
+          echo '' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Nur GitHub-Metadaten. Keine Datenbankzugriffe, keine Codeänderungen, keine automatischen Merges oder Deployments.' >> "$GITHUB_STEP_SUMMARY"
