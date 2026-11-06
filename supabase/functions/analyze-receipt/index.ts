@@ -233,7 +233,18 @@ Für jede gedruckte Steuergruppe (zum Beispiel 10,00 und 20,00) übernimm aus de
  if(!Array.isArray(read.printed_tax_lines)||read.printed_tax_lines.length<candidate.tax_breakdown.length*3)errors.push("Gedruckte Steuerzeilen nicht vollständig belegt");
  for(const row of candidate.tax_breakdown){for(const kind of ["gross","net","vat"]){const line=(read.printed_tax_lines||[]).find(l=>l.rate===row.rate&&l.kind===kind);if(!line||!near(amount(line.amount),row[kind],0.001))errors.push("Gedruckte Steuerzeile stimmt nicht mit übernommener Zahl überein");}}
  candidate.tax_verification={version:TAX_PIPELINE_VERSION,method:"printed_summary_per_page",model:"gpt-4.1-mini",verified:errors.length===0,errors,printed_tax_lines:read.printed_tax_lines||[],read_candidate:{source_page:read.source_page,gross_total:read.gross_total,net_total:read.net_total,vat_total:read.vat_total,tax_breakdown:read.tax_breakdown,category_sales:distinctCategories,notes:read.notes},pages_read:reads.length,pages_total:images.length,checked_at:new Date().toISOString()};
- if(errors.length){doc.tax_verification=candidate.tax_verification;doc.needs_review=true;doc.notes=errors.join("; ");return doc;}
+ if(errors.length){
+  // A conflicting second OCR read must not replace arithmetically consistent
+  // original figures or report its errors as defects of the stored figures.
+  const storedErrors=taxErrors(doc);
+  doc.tax_verification=candidate.tax_verification;
+  doc.needs_review=true;
+  doc.notes=[
+    ...(storedErrors.length ? storedErrors.map(e=>"Gespeicherte Werte: "+e) : []),
+    ...errors.map(e=>"Erneute Originalerkennung: "+e)
+  ].join("; ");
+  return doc;
+}
  for(const key of ["cash_total","card_total","other_payments_total","receipt_count"]){if(typeof read[key]==="number")candidate[key]=key==="receipt_count"?count(read[key]):amount(read[key]);}
  if(!near((candidate.cash_total||0)+(candidate.card_total||0)+(candidate.other_payments_total||0),candidate.gross_total))errors.push("Zahlungsarten passen nicht zum Umsatz");
  const categories=normalizeCategorySales(distinctCategories);
