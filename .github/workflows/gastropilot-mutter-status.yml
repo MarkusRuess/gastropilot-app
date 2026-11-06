@@ -47,4 +47,11 @@ jobs:
               echo "| $name | $result |" >> "$GITHUB_STEP_SUMMARY"
             done
           echo '' >> "$GITHUB_STEP_SUMMARY"
+          echo '### Fehlgeschlagene CI-Läufe (letzte 30)' >> "$GITHUB_STEP_SUMMARY"
+          failed=$(gh api "repos/$GH_REPO/actions/runs?per_page=30" --jq '[.workflow_runs[] | select(.status == "completed" and (.conclusion == "failure" or .conclusion == "timed_out")) | select(.name != "GastroPilot Mutter - Projektstatus")] | length')
+          echo "Anzahl: $failed" >> "$GITHUB_STEP_SUMMARY"
+          if [ "$failed" -gt 0 ]; then
+            echo "::warning::In den letzten 30 Workflow-Läufen gibt es $failed fehlgeschlagene oder abgelaufene Läufe. Bitte GitHub Actions prüfen."
+          fi
+          echo '' >> "$GITHUB_STEP_SUMMARY"
           echo 'Nur GitHub-Metadaten. Keine Datenbankzugriffe, keine Codeänderungen, keine automatischen Merges oder Deployments.' >> "$GITHUB_STEP_SUMMARY"
