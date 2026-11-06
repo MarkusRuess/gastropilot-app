@@ -206,9 +206,10 @@ function taxErrors(doc) {
  return [...new Set(errors)];
 }
 async function verifyPrintedTaxes(doc, images, apiKey, friedrich = false) {
- const prompt = `Du siehst genau EINE Originalseite eines BONit-Tagesabschlusses vom ${doc.date}. Der Tagesgesamtumsatz ist ${doc.gross_total} Euro. Eine einzelne Speisen- oder Artikelgruppen-Zwischensumme (beispielsweise 399,37 Euro) ist NICHT der Gesamtumsatz. Falls diese Seite den Summenblock unter "Gesamtumsatz brutto" nicht enthält, gib für gross_total, net_total, vat_total und tax_breakdown null beziehungsweise [] zurück. Falls diese Seite die Artikelgruppenstatistik enthält, lies deren einzelne Gruppen; falls nicht, gib category_sales: [] zurück. Erfinde keine Werte von anderen Seiten.
+ let prompt = `Du siehst genau EINE Originalseite eines BONit-Tagesabschlusses vom ${doc.date}. Der Tagesgesamtumsatz ist ${doc.gross_total} Euro. Eine einzelne Speisen- oder Artikelgruppen-Zwischensumme (beispielsweise 399,37 Euro) ist NICHT der Gesamtumsatz. Falls diese Seite den Summenblock unter "Gesamtumsatz brutto" nicht enthält, gib für gross_total, net_total, vat_total und tax_breakdown null beziehungsweise [] zurück. Falls diese Seite die Artikelgruppenstatistik enthält, lies deren einzelne Gruppen; falls nicht, gib category_sales: [] zurück. Erfinde keine Werte von anderen Seiten.
 
 Für jede gedruckte Steuergruppe (zum Beispiel 10,00 und 20,00) übernimm aus der rechten Betragsspalte getrennt die Zeilen "brutto", "netto" und "Steuer". Die Zahl links (10,00 oder 20,00) ist der Steuersatz, kein Geldbetrag. Der erste Betrag einer Gruppe ist brutto, nicht netto. Lies außerdem die Gesamtzeilen für Brutto, Netto, "Gesamtumsatz brutto bar" und "Gesamtumsatz brutto unbar". Unter "Zahlarten" lies BAR Rechnung und Kreditkarte mit jeweiliger Anzahl und Betrag einzeln. Bar niemals aus unbar ableiten. Rundungsunterschiede zwischen gedrucktem Gesamtnetto und Summe der Steuergruppen centgenau belegen. Übernimm die gedruckten Zahlen; unlesbare Werte sind null. Gib für JEDE Steuerzeile in printed_tax_lines Seitenzahl, gedrucktes Label, kind (gross/net/vat), rate und Betrag an. Lies nur die Artikelgruppenstatistik, keine Einzelartikel, in category_sales. Trenne Zwischensummen von Artikelgruppen. Bei Unsicherheit needs_review=true und Grund in notes. Antworte nur als JSON: {"date":"YYYY-MM-DD","gross_total":null,"net_total":null,"vat_total":null,"cash_total":null,"card_total":null,"other_payments_total":null,"receipt_count":null,"printed_payment_lines":[{"label":"BAR Rechnung","count":null,"amount":null},{"label":"Kreditkarte","count":null,"amount":null}],"tax_breakdown":[{"rate":10,"gross":null,"net":null,"vat":null}],"printed_tax_lines":[{"page":1,"rate":10,"kind":"gross","label":"10,00 brutto","amount":null}],"category_sales":[{"name":"gedruckte Artikelgruppe","gross":null}],"needs_review":false,"notes":null}.`;
+ if(!friedrich)prompt=`Du liest genau EINE Originalseite eines Tagesberichts von Judith und die Torten für ${doc.date}. Der bereits erkannte Tagesbruttowert ist ${doc.gross_total} Euro. Lies nur Werte, die auf dieser Seite tatsächlich gedruckt sind. "Umsatz berichtigt (inkl. MwSt.)" ist der Tagesumsatz nach Retouren und Rabatten; Warengruppen und "Umsatz" vor Rabatten sind keine zusätzlichen Tagesumsätze. Erfasse Barzahlung, "Kreditk. / Bankomatkarten", Beleganzahl und gedruckte Steuergruppen getrennt. "Kredit" und "Kund. Forderungen" sind keine Kartenzahlungen. Falls keine gedruckte Steuergruppe oder kein Zahlungsbetrag lesbar ist, setze null beziehungsweise [] und needs_review=true. Erfinde keine Werte und berechne keine Beträge aus einer anderen Seite. Gib JSON zurück: {"date":"YYYY-MM-DD","gross_total":null,"net_total":null,"vat_total":null,"cash_total":null,"card_total":null,"other_payments_total":null,"receipt_count":null,"tax_breakdown":[{"rate":10,"gross":null,"net":null,"vat":null}],"printed_tax_lines":[{"page":1,"rate":10,"kind":"gross","label":"10 % brutto","amount":null}],"category_sales":[{"name":"gedruckte Warengruppe","gross":null}],"needs_review":false,"notes":null}.`;
  const results=await Promise.allSettled(images.map(async (image,index)=>{
   const content=[{type:"input_text",text:prompt+"\nDies ist Originalseite "+(index+1)+"."},{type:"input_image",image_url:"data:"+image.mime_type+";base64,"+image.image_base64,detail:"high"}];
   const res=await fetch("https://api.openai.com/v1/responses",{method:"POST",headers:{Authorization:"Bearer "+apiKey,"Content-Type":"application/json"},body:JSON.stringify({model:"gpt-4.1-mini",max_output_tokens:5000,store:false,text:{format:{type:"json_object"}},input:[{role:"user",content}]})});
@@ -549,6 +550,8 @@ Erkenne ausdrücklich BONit Monatsabschluss, Monatsauswertung, Monatsbericht, Ze
 
 TAGESABRECHNUNGEN (cash_report)
 
+z_number ist ausschließlich die ausdrücklich gedruckte Z-Nummer eines Tagesabschlusses; fehlt sie (zum Beispiel in einem anderen Kassenformat), gib null zurück. Eine Berichtsnummer ist keine Z-Nummer.
+
 Prüfe die Bildnummern, Seitenüberschriften, Belegnummern und Datumsangaben.
 Mehrere Seiten derselben Tagesabrechnung gehören zu EINEM Dokument;
 setze image_indices auf alle zugehörigen Bilder in Eingabereihenfolge.
@@ -878,6 +881,7 @@ AUSGABEFORMAT
       "hourly_sales": [],
       "table_sales": [],
       "date": "YYYY-MM-DD",
+      "z_number": null,
       "supplier": null,
       "invoice_number": null,
       "gross_total": null,
@@ -1046,6 +1050,7 @@ FRIEDRICH LAGER: category je Position ausschließlich food, beverage, coffee, me
             : "unknown",
 
         date: textOrNull(document.date),
+        z_number: textOrNull(document.z_number),
         ...(businessId === "6a5484d1-daf6-4263-897d-24cdf536aa29" ? {delivery_date:textOrNull(document.delivery_date), inventory_counts:Array.isArray(document.inventory_counts)?document.inventory_counts.map((x:any)=>({name:textOrNull(x.name),quantity:quantity(x.quantity),unit:textOrNull(x.unit),counted_at:textOrNull(x.counted_at)})).filter((x:any)=>x.name):[]} : {}),
         period_start: textOrNull(document.period_start),
         period_end: textOrNull(document.period_end),
