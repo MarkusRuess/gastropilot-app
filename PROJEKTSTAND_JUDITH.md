@@ -1,5 +1,9 @@
 # PROJEKTSTAND – GASTROPILOT JUDITH
 
+## 2026-11-06 · Judith-Bericht und Produktivstand
+
+PR [#85](https://github.com/MarkusRuess/gastropilot-app/pull/85) wurde nach erfolgreichen Judith- und Friedrich-CI-Läufen (42255639332, 42255638613) zusammengeführt; Merge-Commit `47c13e3079501e3f25e967c9e72435df660129f9`. Die Supabase-Funktion `analyze-receipt` Version 50 ist ACTIVE und bytegleich mit den getesteten Quelldateien. Der vorhandene Judith-Abschluss 06.11.2026 steht genau einmal mit geprüftem Brutto, Zahlungsarten und aus Warengruppen berechneten Steuerwerten auf `auto_imported`; erneute Datenbankabfrage bestätigt den Zustand. Die öffentliche Live-Seite wurde unter dem bisherigen Link geöffnet, zeigte jedoch die Anmeldung. Eine authentifizierte Dashboard- und Smartphone-Bedienprüfung ist daher weiterhin nicht belegt.
+
 ## 2026-11-06 · Veröffentlichung und verbleibende Abnahme
 
 PR #84 wurde nach CI #62 veröffentlicht; die gemeinsame Upload-Oberfläche und die Supabase-Erkennung Version 49 sind aktiv. Die formatspezifische Judith-Nachprüfung bleibt bei nicht eindeutig gedruckten Beträgen im Prüfstatus. Eine echte Judith-Fotoverarbeitung mit angemeldeter Mobilsitzung und anschließender Dashboardkontrolle wurde nicht nachgewiesen; keine Fertigmeldung für Judith.
