@@ -1,5 +1,18 @@
 export const FRIEDRICH='6a5484d1-daf6-4263-897d-24cdf536aa29';
 export const near=(a,b,t=.03)=>typeof a==='number'&&Number.isFinite(a)&&typeof b==='number'&&Number.isFinite(b)&&Math.abs(a-b)<=t;
+export function reconcileFriedrichSummary(read, expected){
+ const errors=[];
+ const gross=read.gross_total, net=read.net_total, rows=read.tax_breakdown;
+ const lines=read.printed_payment_lines||[];
+ const cash=lines.find(x=>/^BAR Rechnung$/i.test(String(x.label||'').trim()));
+ const card=lines.find(x=>/^Kreditkarte$/i.test(String(x.label||'').trim()));
+ const printedVat=Number.isFinite(gross)&&Number.isFinite(net)?Math.round((gross-net)*100)/100:null;
+ if(!near(gross,expected.gross_total,.01)||!Number.isFinite(printedVat))errors.push('Gesamtumsatz und Nettosumme nicht belegt.');
+ if(!cash||!card||!near(cash.amount+card.amount,gross,.01)||!Number.isInteger(cash.count)||!Number.isInteger(card.count))errors.push('Bar und Kreditkarte nicht eindeutig gedruckt.');
+ if(!Array.isArray(rows)||!rows.length||!near(rows.reduce((n,r)=>n+r.gross,0),gross,.01)||!near(rows.reduce((n,r)=>n+r.net,0),net,.02)||!near(rows.reduce((n,r)=>n+r.vat,0),printedVat,.02)||rows.some(r=>!near(r.net+r.vat,r.gross,.01)))errors.push('Steuergruppen und Rundung nicht abgeglichen.');
+ if(!errors.length){read.vat_total=printedVat;read.cash_total=cash.amount;read.card_total=card.amount;read.cash_count=cash.count;read.card_count=card.count;}
+ return errors;
+}
 export function validatePages(read,expected,imageCount){
  const errors=[],warnings=[],pages=read.pages,rows=read.sales_items;
  if(read.date!==expected.date||!/^\d{3,8}$/.test(String(read.z_number||''))||(expected.z_number&&String(expected.z_number)!==String(read.z_number)))errors.push('Datum/Z-Nummer stimmt nicht eindeutig mit dem Original überein.');
@@ -18,7 +31,7 @@ export function validatePages(read,expected,imageCount){
  for(const p of pages||[])if(rows.filter(r=>r.source_page===p.image_index).length!==p.article_row_count)errors.push('Artikel fehlen auf Foto '+p.image_index+'.');
  if(!near(rows.reduce((s,r)=>s+r.gross_amount,0),expected.gross_total))errors.push('Artikelsumme stimmt nicht mit Tagesbrutto überein.');
  }
- for(const k of ['gross_total','net_total','cash_total','card_total','receipt_count'])if(!near(read[k],expected[k],k==='receipt_count'?0:.02))errors.push('Originalwert weicht ab: '+k);
+ for(const k of ['gross_total','net_total','cash_total','card_total','receipt_count'])if(expected[k]!==null&&expected[k]!==undefined&&!near(read[k],expected[k],k==='receipt_count'?0:.02))errors.push('Originalwert weicht ab: '+k);
  if(!near(read.cash_total+read.card_total,read.gross_total)||!near(read.net_total+read.vat_total,read.gross_total))errors.push('Zahlungsarten oder Nettosumme unvollständig.');
  if(![read.cash_count,read.card_count,read.free_count,read.receipt_count].every(x=>Number.isInteger(x)&&x>=0)||read.cash_count+read.card_count+read.free_count!==read.receipt_count)errors.push('Bonanzahlen nicht abgeglichen.');
  const lines=read.printed_payment_lines||[];
