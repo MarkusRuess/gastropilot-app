@@ -1,0 +1,47 @@
+name: GastroPilot Mutter - Fehlerdiagnose
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/gastropilot-mutter-diagnostics.yml'
+  issues:
+    types: [opened]
+
+permissions:
+  contents: read
+  actions: read
+  issues: write
+
+jobs:
+  diagnose:
+    if: github.event_name == 'pull_request' || (github.event_name == 'issues' && startsWith(github.event.issue.title, 'CI-Fehler:'))
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Validate or add safe diagnostic checklist
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          EVENT_NAME: ${{ github.event_name }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          ISSUE_BODY: ${{ github.event.issue.body }}
+        run: |
+          set -euo pipefail
+          if [[ "$EVENT_NAME" == "pull_request" ]]; then
+            echo "PR smoke test successful; no issue changes."
+            exit 0
+          fi
+          [[ "$ISSUE_NUMBER" =~ ^[0-9]+$ ]] || exit 1
+          marker='<!-- mutter-diagnostic-v1 -->'
+          if gh api "repos/$GH_REPO/issues/$ISSUE_NUMBER/comments?per_page=100" --jq '.[].body' | grep -Fq "$marker"; then
+            echo "Diagnostic checklist already present."
+            exit 0
+          fi
+          run_id=$(printf '%s' "$ISSUE_BODY" | grep -oE 'mutter-ci-run:[0-9]+' | head -1 | cut -d: -f2 || true)
+          [[ "$run_id" =~ ^[0-9]+$ ]] || { echo "No valid run ID"; exit 0; }
+          # Only metadata, never retrieve raw logs, secrets or business data.
+          jobs=$(gh api "repos/$GH_REPO/actions/runs/$run_id/jobs?per_page=100" --jq '[.jobs[] | select(.conclusion == "failure" or .conclusion == "timed_out") | .name] | join(", ")')
+          [[ -n "$jobs" ]] || jobs='Kein fehlgeschlagener Job in den ersten 100 Jobs identifiziert'
+          body=$(printf '%s\n\n%s\n\n%s\n%s\n%s\n%s\n%s\n' "$marker" "Automatische Erstdiagnose (nur CI-Metadaten)" "Betroffene Jobs: $jobs" "- [ ] Fehlerursache anhand des GitHub-Actions-Laufs prüfen" "- [ ] Kleinste sichere Korrektur in separatem Pull Request erstellen" "- [ ] Regressionstests und Mandantentrennung prüfen" "- [ ] Sensible Änderungen separat freigeben; niemals ungeprüft mergen oder deployen")
+          gh issue comment "$ISSUE_NUMBER" --repo "$GH_REPO" --body "$body"
