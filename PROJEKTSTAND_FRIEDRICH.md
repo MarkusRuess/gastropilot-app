@@ -1,5 +1,10 @@
 # PROJEKTSTAND – GastroPilot Friedrich
 
+## 2026-11-06 · Veröffentlichung und verbleibende Live-Abnahme
+
+PR #84 wurde nach CI #62 (Programm-, Syntax-, Chromium- und WebKit-Komponententests) in main zusammengeführt (`c925366`). Supabase `analyze-receipt` Version 49 ist aktiv; der neue Foto-Folgeprüfpfad ist unter dem bisherigen GitHub-Pages-Link im ausgelieferten DOM nachgewiesen. Z 1857: genau ein Tagesabschluss, 62 Artikel mit Z 1857 und 1.383,80 € Artikelsumme; die Lager-Verbrauchsquelle enthält die 62 Zeilen. Der verfügbare Live-Browser zeigte nur die Anmeldung. Authentifizierter iPhone-/Android-Upload, Judith-End-to-End, Dashboard-Anzeige und eine automatisch gebuchte neue Tagesabrechnung sind **nicht live nachgewiesen**. Daher keine Fertigmeldung für die Dauerfunktion.
+
+
 ## 2026-11-06 · Handyabschluss Z 1857 – laufende Korrektur (PR #84)
 
 **Duplikatschutz:** Ein eindeutiger Index auf Betrieb, Datum und numerische Z-Nummer ist in Supabase angelegt; das entsprechende SQL liegt im PR. Alte ARCHIVE-Identitäten bleiben erhalten. Der bestehende Buchungstrigger verwendet bei klar gedruckter Z-Nummer nun diese Identität und blockiert widersprüchliche Z-Nummern am selben oder an einem anderen Datum; alte ARCHIVE-Kennungen bleiben erhalten. Migration in Supabase angewendet und in GitHub dokumentiert. Ein neuer authentifizierter Automatiklauf ist noch nicht nachgewiesen.
