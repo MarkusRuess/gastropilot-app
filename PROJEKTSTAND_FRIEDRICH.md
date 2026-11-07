@@ -1,5 +1,10 @@
 # PROJEKTSTAND – GastroPilot Friedrich
 
+## 2026-11-07 – Z 1858: Gutschein als eigene Zahlart (Korrektur in Prüfung)
+
+Originalseiten 1–3: 06.11.2026, Z 1858, brutto 1.905,90 €, netto 1.635,53 €, 10 % brutto 624,10 € (netto 567,36 €, USt 56,74 €), 20 % brutto 1.281,80 € (netto 1.068,17 €, USt 213,63 €). Zahlarten: BAR 1.278,40 € (68), Karte 615,90 € (22), Gutschein 11,60 € (1), kostenlos 1 (0 €); 92 Rechnungen. Der bisherige Abgleich verlangte fälschlich BAR + Karte = Tagesbrutto, obwohl ein Gutschein separat gedruckt ist. Gezielte Änderung: Gutschein als dritte Zahlart samt Anzahl und Betragsabgleich; keine Umdeutung in Bar/Karte. Regressionstest `tests/friedrich-voucher-z1858.test.mjs`. **Noch keine Live-Abnahme, kein automatischer Nachimport und keine Datenbankkorrektur**. Die seitenübergreifende Original-Steuerprüfung ist separat zu verifizieren. Judith und Judith AI unverändert.
+
+
 ## 2026-11-06 · Veröffentlichung und verbleibende Live-Abnahme
 
 PR #84 wurde nach CI #62 (Programm-, Syntax-, Chromium- und WebKit-Komponententests) in main zusammengeführt (`c925366`). Supabase `analyze-receipt` Version 49 ist aktiv; der neue Foto-Folgeprüfpfad ist unter dem bisherigen GitHub-Pages-Link im ausgelieferten DOM nachgewiesen. Z 1857: genau ein Tagesabschluss, 62 Artikel mit Z 1857 und 1.383,80 € Artikelsumme; die Lager-Verbrauchsquelle enthält die 62 Zeilen. Der verfügbare Live-Browser zeigte nur die Anmeldung. Authentifizierter iPhone-/Android-Upload, Judith-End-to-End, Dashboard-Anzeige und eine automatisch gebuchte neue Tagesabrechnung sind **nicht live nachgewiesen**. Daher keine Fertigmeldung für die Dauerfunktion.
