@@ -1,0 +1,10 @@
+import assert from 'node:assert/strict';
+import {reconcileFriedrichSummary} from '../supabase/functions/analyze-receipt/friedrich-pages.mjs';
+const read={gross_total:1905.90,net_total:1635.53,tax_breakdown:[{rate:10,gross:624.10,net:567.36,vat:56.74},{rate:20,gross:1281.80,net:1068.17,vat:213.63}],printed_payment_lines:[{label:'Kreditkarte',count:22,amount:615.90},{label:'BAR Rechnung',count:68,amount:1278.40},{label:'Gutschein',count:1,amount:11.60}]};
+assert.deepEqual(reconcileFriedrichSummary(read,{gross_total:1905.90}),[]);
+assert.equal(read.other_payments_total,11.60);
+assert.equal(read.voucher_count,1);
+assert.equal(read.cash_total,1278.40);
+const invalid=structuredClone(read);invalid.printed_payment_lines[2].amount=10;
+assert.ok(reconcileFriedrichSummary(invalid,{gross_total:1905.90}).length>0);
+console.log('BONit voucher reconciliation OK');
