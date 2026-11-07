@@ -469,7 +469,26 @@ Deno.serve(async (req) => {
         }, 413);
       }
 
-      totalLength += image.image_base64.length;
+      // Reject truncated/empty uploads before any OCR request or database write.
+      // Checking the decoded signature also catches base64 text mislabeled as an image.
+      const compact = image.image_base64.replace(/\\s/g, "");
+      if (compact.length < 136 || compact.length % 4 !== 0 ||
+          !/^[A-Za-z0-9+/]+={0,2}$/.test(compact)) {
+        return json({error: "Foto leer oder beschädigt. Bitte erneut aufnehmen."}, 422);
+      }
+      let header: string;
+      try { header = atob(compact.slice(0, 32)); }
+      catch { return json({error: "Foto enthält ungültige Bilddaten."}, 422); }
+      const bytes = Array.from(header, c => c.charCodeAt(0));
+      const jpeg = bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff;
+      const png = bytes.slice(0, 8).join(",") === "137,80,78,71,13,10,26,10";
+      const webp = header.slice(0, 4) === "RIFF" && header.slice(8, 12) === "WEBP";
+      if (!((image.mime_type === "image/jpeg" && jpeg) ||
+            (image.mime_type === "image/png" && png) ||
+            (image.mime_type === "image/webp" && webp))) {
+        return json({error: "Fotoformat stimmt nicht mit den Bilddaten überein."}, 422);
+      }
+      totalLength += compact.length;
     }
 
     if (totalLength > MAX_TOTAL_BASE64_LENGTH) {
