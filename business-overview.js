@@ -122,7 +122,9 @@ export async function loadPersonnelAverage(db,businessId,month){
  for(const row of inputs){const net=number(row.net_revenue);if(net>0)revenues.set(String(row.month).slice(0,7),net);}
  const months=[...payroll].filter(([key])=>revenues.has(key)&&!incomplete.has(key)).map(([key,cost])=>({month:key,cost,net:revenues.get(key)})).sort((a,b)=>a.month.localeCompare(b.month));
  const weighted=rows=>rows.length&&rows.reduce((s,r)=>s+r.net,0)>0?100*rows.reduce((s,r)=>s+r.cost,0)/rows.reduce((s,r)=>s+r.net,0):null;
- const lastThree=months.slice(-3);
+ // The 3-month KPI covers the last three calendar months, not any three historical months.
+ const threeStart=new Date(Date.UTC(Number(completedEnd.slice(0,4)),Number(completedEnd.slice(5,7))-3,1)).toISOString().slice(0,7);
+ const lastThree=months.filter(row=>row.month>=threeStart&&row.month<=completedEnd);
  return {average:weighted(months),threeMonth:weighted(lastThree),count:months.length,threeCount:lastThree.length,exact:months.find(row=>row.month===month)?100*months.find(row=>row.month===month).cost/months.find(row=>row.month===month).net:null};
 }
 
