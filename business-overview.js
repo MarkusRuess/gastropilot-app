@@ -39,6 +39,25 @@ const paidCount=raw=>{
 const monthEnd=month=>new Date(Date.UTC(Number(month.slice(0,4)),Number(month.slice(5,7)),1)).toISOString().slice(0,10);
 const result=(value,context)=>{if(value.error)throw new Error(context+': '+value.error.message);return value.data||[];};
 
+// Net revenue from an explicitly recorded, complete VAT breakdown only.
+// Do not assume a flat tax rate or persist reconstructed financial values.
+function verifiedNetFromVat(raw){
+ const gross=number(raw?.gross_total);
+ if(gross===null||gross<0)return null;
+ const byVat=raw?.gross_sales_by_vat;
+ if(!byVat||typeof byVat!=='object'||Array.isArray(byVat))return null;
+ const entries=Object.entries(byVat);
+ if(!entries.length)return null;
+ let sumGross=0,sumNet=0;
+ for(const [rate,amount] of entries){
+  const vat=Number(rate),value=number(amount);
+  if(!Number.isFinite(vat)||vat<0||vat>30||value===null||value<0)return null;
+  sumGross+=value;
+  sumNet+=value/(1+vat/100);
+ }
+ if(Math.abs(sumGross-gross)>0.02)return null;
+ return Math.round((sumNet+Number.EPSILON)*100)/100;
+}
 export async function loadBusinessMetrics(db,businessId,month,isJudith=false){
  if(!/^\d{4}-(0[1-9]|1[0-2])$/.test(month))throw new Error('Ungültiger Monat.');
  const start=month+'-01',end=monthEnd(month);
@@ -63,9 +82,9 @@ export async function loadBusinessMetrics(db,businessId,month,isJudith=false){
   const previous=days.get(row.document_date);
   if(previous&&previous.created_at>=row.created_at)continue;
   const raw=row.extracted_data||{};
-  days.set(row.document_date,{gross:number(raw.gross_total),net:number(raw.net_total),receipts:number(raw.receipt_count),paid:isJudith?number(raw.receipt_count):paidCount(raw),created_at:row.created_at});
+  days.set(row.document_date,{gross:number(raw.gross_total),net:number(raw.net_total)??verifiedNetFromVat(raw),receipts:number(raw.receipt_count),paid:isJudith?number(raw.receipt_count):paidCount(raw),created_at:row.created_at});
  }
- for(const row of sales)days.set(row.closing_date,{gross:number(row.gross_amount),net:number(row.net_amount),receipts:number(row.receipt_count),paid:isJudith?number(row.receipt_count):paidCount(row.raw_data)??days.get(row.closing_date)?.paid??null});
+ for(const row of sales){const existing=days.get(row.closing_date);days.set(row.closing_date,{gross:number(row.gross_amount)??existing?.gross??null,net:number(row.net_amount)??verifiedNetFromVat(row.raw_data)??existing?.net??null,receipts:number(row.receipt_count)??existing?.receipts??null,paid:isJudith?number(row.receipt_count)??existing?.paid??null:paidCount(row.raw_data)??existing?.paid??null});}
  const daily=[...days.values()],summary=summaryResult.data?.summary;
  const invoiceGross=total(invoices,'gross_total')??0,invoiceNet=total(invoices,'net_total')??0;
  const posGross=number(summary?.gross)??total(daily,'gross'),posNet=number(summary?.net)??total(daily,'net');
