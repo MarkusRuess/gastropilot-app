@@ -23,7 +23,7 @@ export function validatePages(read,expected,imageCount){
  else {
  const indices=pages.map(p=>p.image_index),numbers=pages.map(p=>p.printed_page).filter(n=>n!==null);
  if(new Set(indices).size!==imageCount||indices.some(n=>!Number.isInteger(n)||n<1||n>imageCount))errors.push('Fotozuordnung fehlt oder ist doppelt.');
- if(new Set(numbers).size!==numbers.length||numbers.some(n=>!Number.isInteger(n)||n<1||n>imageCount))errors.push('Gedruckte Seitenfolge ist unvollständig oder doppelt.');
+ if(numbers.length!==imageCount||new Set(numbers).size!==imageCount||numbers.some(n=>!Number.isInteger(n)||n<1||n>imageCount)||!Array.from({length:imageCount},(_,i)=>i+1).every(n=>numbers.includes(n)))errors.push('Gedruckte Seitenfolge ist unvollständig oder doppelt.');
  if(pages.some(p=>p.processed!==true||p.unreadable_rows!==0||!Number.isInteger(p.article_row_count)||p.article_row_count<0))errors.push('Unlesbare oder ungeprüfte Positionen vorhanden.');
  if(pages.some(p=>p.continues===true&&p.image_index===imageCount))errors.push('Fortsetzungsseite fehlt.');
  }
