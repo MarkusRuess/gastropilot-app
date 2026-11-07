@@ -1941,7 +1941,7 @@ async function refresh(){void loadLedgerComparison();if(E('recipeCostTile')&&!E(
    for(const [label,value] of [['Bruttolohn / Bruttogehalt',person.gross_salary],['Dienstgeberkosten inklusive Abgaben',person.employer_costs],['Gesamter Personalaufwand',person.total_costs]]){
     const line=document.createElement('div');line.style.cssText='display:flex;justify-content:space-between;gap:10px';const caption=document.createElement('span');caption.textContent=label;const amount=document.createElement('b');amount.textContent=EUR(N(value));line.append(caption,amount);info.append(line);
    }
-   const past=history.filter(r=>String(r.employee_name||'').normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').toLowerCase()===String(person.employee_name||'').normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').toLowerCase());
+   const past=history.filter(r=>String(r.employee_name||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase()===String(person.employee_name||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase());
    for(const monthRow of past){const line=document.createElement('div');line.className='gp-personnel-history-row';const month=document.createElement('b');month.textContent=monthRow.accounting_month.slice(0,7);const values=document.createElement('span');values.textContent='Brutto '+EUR(N(monthRow.gross_salary))+' · Netto '+(monthRow.net_payable==null?'–':EUR(N(monthRow.net_payable)))+' · Gesamt '+EUR(N(monthRow.total_costs));line.append(month,values);info.append(line);}
    if(!past.length){const hint=document.createElement('small');hint.textContent='Weitere Monate noch nicht vorhanden.';info.append(hint);}
    card.append(info);host.append(card);
