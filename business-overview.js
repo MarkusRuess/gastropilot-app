@@ -86,24 +86,25 @@ export async function loadBusinessMetrics(db,businessId,month,isJudith=false){
 
 // Jahresdurchschnitt nur aus abgeschlossenen Monaten mit Nettoumsatz und Personalkosten.
 export async function loadPersonnelAverage(db,businessId,month){
- const todayMonth=new Date().toLocaleDateString('sv-SE',{timeZone:'Europe/Vienna'}).slice(0,7);
- const through=month<todayMonth?month:new Date(Date.UTC(Number(todayMonth.slice(0,4)),Number(todayMonth.slice(5,7))-1,1)).toISOString().slice(0,7);
- const start=month.slice(0,4)+'-01-01',end=monthEnd(through);
- if(through<month.slice(0,4)+'-01')return {average:null,count:0,exact:null};
+ const today=new Intl.DateTimeFormat('sv-SE',{timeZone:'Europe/Vienna',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
+ const todayMonth=today.slice(0,7),currentYear=month.slice(0,4);
+ const completedEnd=month<todayMonth?month:new Date(Date.UTC(Number(todayMonth.slice(0,4)),Number(todayMonth.slice(5,7))-2,1)).toISOString().slice(0,7);
+ const start=currentYear+'-01-01',end=monthEnd(completedEnd);
+ if(completedEnd<currentYear+'-01')return {average:null,threeMonth:null,count:0,threeCount:0,exact:null};
  const [staffResult,ratioResult,summaryResult]=await Promise.all([
   db.from('personnel_costs').select('accounting_month,total_costs').eq('business_id',businessId).gte('accounting_month',start).lt('accounting_month',end),
   db.from('monthly_cost_ratio_inputs').select('month,net_revenue').eq('business_id',businessId).gte('month',start).lt('month',end),
   db.from('monthly_bonit_summaries').select('month_start,summary').eq('business_id',businessId).gte('month_start',start).lt('month_start',end)
  ]);
- const staff=result(staffResult,'Personalkosten im Jahresverlauf');
- const inputs=result(ratioResult,'Nettoumsatz im Jahresverlauf');
- const summaries=result(summaryResult,'Monatsabschlüsse im Jahresverlauf');
+ const staff=result(staffResult,'Personalkosten im Jahresverlauf'),inputs=result(ratioResult,'Nettoumsatz im Jahresverlauf'),summaries=result(summaryResult,'Monatsabschlüsse im Jahresverlauf');
  const payroll=new Map(),revenues=new Map(),incomplete=new Set();
- for(const row of staff){const key=String(row.accounting_month).slice(0,7),cost=number(row.total_costs);if(cost===null)incomplete.add(key);else payroll.set(key,(payroll.get(key)||0)+cost)}
- for(const row of summaries){const net=number(row.summary?.net);if(net>0)revenues.set(String(row.month_start).slice(0,7),net)}
- for(const row of inputs){const net=number(row.net_revenue);if(net>0)revenues.set(String(row.month).slice(0,7),net)}
- const ratios=[...payroll].filter(([key])=>revenues.has(key)&&!incomplete.has(key)).map(([key,cost])=>({month:key,ratio:100*cost/revenues.get(key)}));
- return {average:ratios.length?ratios.reduce((sum,row)=>sum+row.ratio,0)/ratios.length:null,count:ratios.length,exact:ratios.find(row=>row.month===month)?.ratio??null};
+ for(const row of staff){const key=String(row.accounting_month).slice(0,7),cost=number(row.total_costs);if(cost===null)incomplete.add(key);else payroll.set(key,(payroll.get(key)||0)+cost);}
+ for(const row of summaries){const net=number(row.summary?.net);if(net>0)revenues.set(String(row.month_start).slice(0,7),net);}
+ for(const row of inputs){const net=number(row.net_revenue);if(net>0)revenues.set(String(row.month).slice(0,7),net);}
+ const months=[...payroll].filter(([key])=>revenues.has(key)&&!incomplete.has(key)).map(([key,cost])=>({month:key,cost,net:revenues.get(key)})).sort((a,b)=>a.month.localeCompare(b.month));
+ const weighted=rows=>rows.length&&rows.reduce((s,r)=>s+r.net,0)>0?100*rows.reduce((s,r)=>s+r.cost,0)/rows.reduce((s,r)=>s+r.net,0):null;
+ const lastThree=months.slice(-3);
+ return {average:weighted(months),threeMonth:weighted(lastThree),count:months.length,threeCount:lastThree.length,exact:months.find(row=>row.month===month)?100*months.find(row=>row.month===month).cost/months.find(row=>row.month===month).net:null};
 }
 
 export async function renderBusinessOverview(db,members,month,host,onSelect){
@@ -129,7 +130,7 @@ export async function renderBusinessOverview(db,members,month,host,onSelect){
   const hint=document.createElement('span');hint.className='homeHint';hint.textContent='Monatsdaten werden geladen …';
   const metrics=document.createElement('div');metrics.className='homeMetrics';
   const isJudith=name==='Judith und die Torten';
-  const labels=['Umsatz brutto','Ø Bon','Personalquote · vorläufig','Wareneinkäufe · laufender Monat','Ø Personalquote im Jahr / Plan','Nettoumsatz','Belege','Personal · Vormonat (Plan)','Monatsziel · brutto','Zielerreichung · verbleibende Tage'];
+  const labels=['Umsatz brutto','Ø Bon','Personalquote · aktueller Monat','Wareneinkäufe · laufender Monat','Ø Personalquote · 3 Monate','Ø Personalquote · Jahr','Nettoumsatz','Belege','Personal · Vormonat (Plan)','Monatsziel · brutto','Zielerreichung · verbleibende Tage'];
   for(const label of labels){
    const box=document.createElement('div');box.className='homeMetric';const small=document.createElement('small');small.textContent=label;const strong=document.createElement('strong');strong.textContent='–';box.append(small,strong);
    if(label==='Ø Bon'){const target=document.createElement('span');target.className='homeTicketTarget';target.textContent='Soll '+euro(TICKET_TARGETS[isJudith?'judith':'friedrich']);box.append(target);}
@@ -151,9 +152,15 @@ export async function renderBusinessOverview(db,members,month,host,onSelect){
    const ticketBox=values[1].parentElement;
    ticketBox.querySelector('.homeTicketTarget').textContent='Soll '+euro(ticketTarget)+(ticketProgress===null?'':' · '+percent(ticketProgress));
    setProgress(ticketBox.querySelector('.homeProgress'),ticketProgress);
-   const planRatio=history.exact===null&&data.personnelPlan!==null&&data.net>0?100*data.personnelPlan/data.net:null;
-   const historicalReference=isJudith&&history.exact===null&&planRatio===null&&history.average===null;
-   values[2].textContent=percent(history.exact??planRatio??history.average??(historicalReference?JUDITH_PERSONNEL_REFERENCE.ratio:null));
+   const todayVienna=new Intl.DateTimeFormat('sv-SE',{timeZone:'Europe/Vienna',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
+   const isRunning=month===todayVienna.slice(0,7);
+   const daysInSelectedMonth=new Date(Date.UTC(Number(month.slice(0,4)),Number(month.slice(5,7)),0)).getUTCDate();
+   const elapsed=isRunning?Number(todayVienna.slice(8)):month<todayVienna.slice(0,7)?daysInSelectedMonth:0;
+   const plannedCost=isRunning&&data.personnelPlan!==null?data.personnelPlan*elapsed/daysInSelectedMonth:null;
+   const currentRatio=data.net>0?(isRunning&&plannedCost!==null?100*plannedCost/data.net:data.personnel):null;
+   values[2].textContent=percent(currentRatio);
+   values[2].previousElementSibling.textContent='Personalquote · '+(isRunning?'laufender Monat / Plan':'Monat / Ist')+' · Ziel 35 %';
+   values[2].title=isRunning?'Zeitanteiliger Personalplan ('+elapsed+'/'+daysInSelectedMonth+' Kalendertage) aus dem Vormonat geteilt durch bisher erfassten Nettoumsatz. Vorläufig, Ziel 35 %.':'Abgerechnete Personalkosten geteilt durch Nettoumsatz des Monats. Ziel 35 %.';
    const relevantPurchases=(purchaseRows.data||[]).filter(x=>String(x.accounting_month||x.expense_date||'').slice(0,7)===month);
    const purchaseNet=relevantPurchases.length&&relevantPurchases.every(x=>number(x.net_amount)!==null)?total(relevantPurchases,'net_amount'):null;
    const purchaseRatio=data.net>0&&purchaseNet!==null?100*purchaseNet/data.net:null;
@@ -175,15 +182,13 @@ export async function renderBusinessOverview(db,members,month,host,onSelect){
    setProgress(values[values.length-1].parentElement.querySelector('.homeProgress'),progress);
    values[values.length-1].title=missing===null?'Umsatzdaten fehlen.':actual>=monthlyTarget?'Monatsziel erreicht.':euro(missing)+' fehlen zum Monatsziel; '+(remainingDays?euro(missing/remainingDays)+' pro verbleibendem Kalendertag.':'Monat abgelaufen.');
    values[values.length-2].title=missing===null?'Noch keine Umsätze erfasst.':euro(missing)+' fehlen zum Monatsziel.';
-   values[4].textContent=percent(planRatio??history.average);
-   values[5].textContent=euro(data.net);values[6].textContent=data.receipts===null?'–':new Intl.NumberFormat('de-AT').format(data.receipts);values[7].textContent=euro(data.personnelPlan);values[7].title='Personalkosten des Vormonats als Planwert; Ist-Kosten des ausgewählten Monats folgen mit der Abrechnung.';
+   values[4].textContent=percent(history.threeMonth);values[5].textContent=percent(history.average);
+   values[6].textContent=euro(data.net);values[7].textContent=data.receipts===null?'–':new Intl.NumberFormat('de-AT').format(data.receipts);values[8].textContent=euro(data.personnelPlan);values[8].title='Personalkosten des Vormonats als Planwert; Ist-Kosten des ausgewählten Monats folgen mit der Abrechnung.';
    hint.textContent=data.gross===null?'Noch keine Umsätze erfasst':data.hasSummary?'Geprüfter Monatsabschluss':data.days+' Tag(e) erfasst · bisheriger Stand';
    values[1].previousElementSibling.textContent='Ø Bon';
    values[1].title=data.average===null?(isJudith?'Beleganzahl oder Umsatz fehlen.':'Bezahlte Bons und zugehöriger Umsatz fehlen.'):(isJudith?'Umsatz / Belege aus ':'Umsatz / bezahlte Bons aus ')+data.paidDays+' Tag(en).';
-   values[2].previousElementSibling.textContent='Personalquote · vorläufig';
-   values[2].title=planRatio!==null?'Personalkosten des Vormonats / bisher erfasster Nettoumsatz dieses Monats. Vorläufige Planquote, keine Ist-Lohnabrechnung dieses Monats.':historicalReference?'Vorläufige Referenz '+JUDITH_PERSONNEL_REFERENCE.period+': 149.196 € Personal / 298.214 € Nettoumsatz. Früherer Analysewert, nicht erneut gegen Original-BWA geprüft. Die exakte Monatsquote folgt nach dem Monatsabschluss.':history.exact===null?'Vorläufiger Durchschnitt aus '+history.count+' abgeschlossenen Monaten mit Nettoumsatz und Personalkosten. Die exakte Monatsquote folgt mit dem Monatsabschluss.':'Personalkosten dieses Monats / Nettoumsatz.';
-   values[4].title=planRatio!==null?'Aktuelle Planquote: Personalkosten des Vormonats / bisher erfasster Nettoumsatz. Kein Jahresdurchschnitt.':'Arithmetischer Durchschnitt aus '+history.count+' abgeschlossenen Monaten mit Nettoumsatz und Personalkosten.';
-   values[4].previousElementSibling.textContent='Ø Personalquote im Jahr / Plan';
+   values[4].title='Gewichteter Durchschnitt: Summe Personalaufwand / Summe Nettoumsatz der letzten '+history.threeCount+' vollständigen Monate mit beiden Werten. Ziel 35 %.';
+   values[5].title='Gewichteter Durchschnitt: Summe Personalaufwand / Summe Nettoumsatz aus '+history.count+' vollständigen Monaten dieses Jahres mit beiden Werten. Ziel 35 %.';
    return {name:member.businesses.name,gross:data.gross};
   }catch(error){hint.textContent='Kennzahlen konnten nicht geladen werden';values[0].title=error.message;return null;}
  }));
