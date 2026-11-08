@@ -1,5 +1,10 @@
 # PROJEKTSTAND – GastroPilot Friedrich
 
+## 2026-11-08 – Z 1859 vom 07.11.2026, Originalseiten 1–3
+
+Original: brutto 3.322,20 €, netto 2.880,90 €, Steuer 441,30 €; 10 % brutto 1.483,70 € / netto 1.348,82 € / Steuer 134,88 €; 20 % brutto 1.838,50 € / netto 1.532,08 € / Steuer 306,42 €. Zahlarten: Bar 2.038,80 € (89), Kreditkarte 1.243,30 € (43), Gutschein 40,10 € (1), Personal/Einladung 0,00 € (1); 134 Rechnungen. Die Summe der drei Zahlarten ist 3.322,20 €. PR #94 (Mobil-UI und BONit-Prüfung) nach CI #78 gemergt; PR #95 ergänzt getrennte Gutschein-Persistenz in der Artikelprüfung. **Kein erneuter Upload, keine produktive Nachbuchung ohne Prüfung aller Artikelzeilen, keine bestätigte authentifizierte Live-Handy-Abnahme.**
+
+
 ## 2026-11-08 – Mobil-Upload vom 07.11. (laufende Reparatur)
 
 Supabase-Log 08:15–08:17 UTC: drei iPhone-Fotos erfolgreich gespeichert; ein `cash_report` für 07.11. mit `auto_review`, zwei Begleitseiten als `other`/`reviewed`. Erkennung enthält nicht übereinstimmende Zahlungs- und Steuersummen, keine automatische Freigabe. Edge Function `analyze-receipt` Version 54 aktiv. Im UI wurde die gemeinsame Bildvorbereitung bisher ohne Render-Pause ausgeführt und Archiv-/Dashboard-Aktualisierung nach Gruppenerkennung ohne Zeitlimit abgewartet. Korrekturbranch ergänzt sichtbaren Fortschritt, Browser-Render-Pausen und begrenzte Wartezeiten bei Archiv-/Dashboard-Aktualisierung. Keine produktiven Belege verändert. Ursachenprüfung der falsch erkannten Zahlungsarten und authentifizierte iPhone-Liveprüfung bleiben offen; keine automatische Freigabe der ungeprüften 3.322,20 €.
