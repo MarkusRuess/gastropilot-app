@@ -23,7 +23,7 @@ export function validatePages(read,expected,imageCount){
  else {
  const indices=pages.map(p=>p.image_index),numbers=pages.map(p=>p.printed_page).filter(n=>n!==null);
  if(new Set(indices).size!==imageCount||indices.some(n=>!Number.isInteger(n)||n<1||n>imageCount))errors.push('Fotozuordnung fehlt oder ist doppelt.');
- if(numbers.length!==imageCount||new Set(numbers).size!==imageCount||numbers.some(n=>!Number.isInteger(n)||n<1||n>imageCount)||!Array.from({length:imageCount},(_,i)=>i+1).every(n=>numbers.includes(n)))errors.push('Gedruckte Seitenfolge ist unvollständig oder doppelt.');
+ if(new Set(numbers).size!==numbers.length||numbers.some(n=>!Number.isInteger(n)||n<1||n>imageCount)||!Array.from({length:numbers.length},(_,i)=>i+1).every(n=>numbers.includes(n)))errors.push('Gedruckte Seitenfolge ist unvollständig oder doppelt.');
  if(pages.some(p=>p.processed!==true||p.unreadable_rows!==0||!Number.isInteger(p.article_row_count)||p.article_row_count<0))errors.push('Unlesbare oder ungeprüfte Positionen vorhanden.');
  if(pages.some(p=>p.continues===true&&p.image_index===imageCount))errors.push('Fortsetzungsseite fehlt.');
  }
@@ -42,7 +42,7 @@ export function validatePages(read,expected,imageCount){
  if(!cash||!card||!free||cash.count!==read.cash_count||card.count!==read.card_count||free.count!==read.free_count||!near(cash.amount,read.cash_total)||!near(card.amount,read.card_total)||!near(free.amount,0)||(read.other_payments_total>0&&(!voucher||!near(voucher.amount,read.other_payments_total)||voucher.count!==read.voucher_count)))errors.push('Gedruckte Zahlartenzeilen fehlen oder weichen ab.');
  const tax=read.tax_breakdown;
  if(!Array.isArray(tax)||!tax.length||tax.some(t=>![0,10,13,20].includes(t.rate)||!near(t.net+t.vat,t.gross)||!near(t.net*t.rate/100,t.vat))||!near(tax.reduce((s,t)=>s+t.gross,0),read.gross_total)||!near(tax.reduce((s,t)=>s+t.net,0),read.net_total)||!near(tax.reduce((s,t)=>s+t.vat,0),read.vat_total))errors.push('Gedruckte Steuergruppen nicht vollständig abgeglichen.');
- if(Array.isArray(rows)&&Array.isArray(tax))for(const t of tax){const total=rows.filter(r=>r.tax_rate===t.rate).reduce((s,r)=>s+r.gross_amount,0);if(!near(total,t.gross))errors.push('Artikel-Steuergruppe '+t.rate+' % weicht von gedruckter Steuersumme ab.');}
+ if(Array.isArray(rows)&&Array.isArray(tax))for(const t of tax){const total=rows.filter(r=>r.tax_rate===t.rate).reduce((s,r)=>s+r.gross_amount,0);if(!near(total,t.gross))warnings.push('Artikel-Steuergruppe '+t.rate+' % weicht von gedruckter Steuersumme ab; gedruckte Steuerwerte bleiben maßgeblich.');}
  if(rows?.some(r=>typeof r.tax_rate!=='number'))errors.push('Einzelne Artikel-Steuersätze unlesbar.');
  return {errors:[...new Set(errors)],warnings:[...new Set(warnings)]};
 }
