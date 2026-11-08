@@ -2358,7 +2358,7 @@ async function recognizePhotoGroup(files,intakes){
  if(files.length<2||!files.every(file=>file.type.startsWith('image/'))||files.every(file=>intakes.get(file)?.alreadyRecognized))return null;
  E('uploadStatus').textContent=files.length+' gesicherte Fotos werden als zusammengehörende Belegseiten gelesen …';
  const images=[];
- for(const file of files){const [blob]=await pages(file);images.push({image_base64:await b64(blob),mime_type:'image/jpeg'});}
+ for(const [imageIndex,file] of files.entries()){E('uploadStatus').textContent='Fotos vorbereiten '+(imageIndex+1)+'/'+files.length+' · '+file.name;await new Promise(resolve=>setTimeout(resolve,0));const [blob]=await withTimeout(pages(file),90000,'Foto konnte nicht vorbereitet werden; Original bleibt gesichert.');images.push({image_base64:await b64(blob),mime_type:'image/jpeg'});await new Promise(resolve=>setTimeout(resolve,0));}
  const {data,error}=await withTimeout(db.functions.invoke('analyze-receipt',{body:{business_id:BID,mode:'auto',defer_tax_verification:true,images}}),120000,'Gemeinsame Erkennung antwortet nach 2 Minuten nicht. Originale bleiben im Archiv.');
  if(error)throw error;if(data?.error)throw Error(data.error);
  const docs=data?.documents||[],used=new Set();
@@ -2642,14 +2642,14 @@ async function process(){
     if(!intake.alreadyRecognized)secured++;
    }catch(e){failed++;errors.push(file.name+': '+(e.message||String(e)));}
   }
-  await loadRecentUploads();
+  try{await withTimeout(loadRecentUploads(),15000,'Archivliste lädt zu lange.')}catch(error){E('uploadStatus').textContent='Originale gesichert; Archivliste wird später aktualisiert.';}
   if(intakes.size===files.length&&files.length>1&&!files.some(f=>payrollFileKind(f.name))){
    try{
     const grouped=await recognizePhotoGroup(files,intakes);
     if(grouped){saved+=grouped.saved;duplicate+=grouped.duplicate;failed+=grouped.failed;errors.push(...grouped.errors);
      E('uploadStatus').textContent=saved+' Dokument(e) aus '+files.length+' Seiten erkannt · '+failed+' zur Prüfung.';
      for(const msg of errors){const p=document.createElement('p');p.className='warning';p.textContent=msg;E('review').append(p);}
-     await refresh();await loadWholeArchive();return;
+     try{await withTimeout(refresh(),30000,'Dashboard-Aktualisierung dauert zu lange.')}catch(error){E('uploadStatus').textContent+=' · Dashboard später aktualisieren.';}try{await withTimeout(loadWholeArchive(),15000,'Archivansicht dauert zu lange.')}catch(error){}return;
     }
    }catch(error){
     const message=await uploadFailureMessage(error);
@@ -2659,7 +2659,7 @@ async function process(){
     }
     E('uploadStatus').textContent='⚠ '+files.length+' Originale gesichert · Erkennung fehlgeschlagen. '+message;
     const p=document.createElement('p');p.className='warning';p.textContent='Gesicherte Fotos können später über „Gesicherte Fotos gemeinsam erkennen“ erneut gelesen werden.';E('review').append(p);
-    await refresh();await loadWholeArchive();return;
+    try{await withTimeout(refresh(),30000,'Dashboard-Aktualisierung dauert zu lange.')}catch(error){}try{await withTimeout(loadWholeArchive(),15000,'Archivansicht dauert zu lange.')}catch(error){}return;
    }
   }
   for(const [fileIndex,file] of files.entries()){
