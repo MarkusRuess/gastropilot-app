@@ -1,3 +1,7 @@
+## 2026-11-08 – iPhone-Kamera direkt aus Dashboard
+
+Der Dashboard-Button „📷 Abrechnung Foto“ öffnet nun unmittelbar den vorhandenen Kamera-Input mit `capture="environment"` anstatt die allgemeine Dateiauswahl. Nach der Aufnahme bleibt die Seite im Uploadbereich; weitere Seiten werden über „Foto aufnehmen“ in derselben Warteschlange gesammelt. „Automatisch erkennen & speichern“ nutzt unverändert die bestehende gemeinsame Mehrseitenverarbeitung und die betriebsspezifischen Prüfungen. Keine Datenbankänderung. iPhone-Safari-Hardwaretest weiterhin offen.
+
 ## 2026-11-08 – Dashboard-Schnelleinstieg Tagesabschluss
 
 PR #97 ergänzt auf beiden betriebsspezifischen Dashboards den Button „📷 Abrechnung Foto“. Er öffnet die bestehende Mehrseiten-Dateiauswahl im Uploadbereich des aktuell autorisierten Betriebs. Keine neue Buchungslogik, keine neuen Supabase-Tabellen und keine Vermischung von Judith/Friedrich. Bestehende Erkennung, steuerliche Prüfungen, Originalarchiv und Doppelbuchungsschutz bleiben zuständig. Die neue Schaltfläche allein beseitigt die bestehenden Erkennungs-/Wiederaufnahmefehler nicht. Automatisierte Tests, Merge, produktive Auslieferung und authentifizierte Handy-Liveprüfung sind getrennt nachzuweisen.
