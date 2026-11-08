@@ -1,3 +1,7 @@
+## 2026-11-08 – Dashboard-Schnelleinstieg Tagesabschluss
+
+PR #97 ergänzt auf beiden betriebsspezifischen Dashboards den Button „📷 Abrechnung Foto“. Er öffnet die bestehende Mehrseiten-Dateiauswahl im Uploadbereich des aktuell autorisierten Betriebs. Keine neue Buchungslogik, keine neuen Supabase-Tabellen und keine Vermischung von Judith/Friedrich. Bestehende Erkennung, steuerliche Prüfungen, Originalarchiv und Doppelbuchungsschutz bleiben zuständig. Die neue Schaltfläche allein beseitigt die bestehenden Erkennungs-/Wiederaufnahmefehler nicht. Automatisierte Tests, Merge, produktive Auslieferung und authentifizierte Handy-Liveprüfung sind getrennt nachzuweisen.
+
 # PROJEKTSTAND – GASTROPILOT ZENTRALE
 
 **Stand:** 2026-11-02  
