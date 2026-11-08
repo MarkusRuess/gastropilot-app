@@ -2370,7 +2370,7 @@ async function recognizePhotoGroup(files,intakes){
  let saved=0,duplicate=0,failed=0;const errors=[];
  for(const doc of docs){
   const entries=doc.image_indices.map(number=>({file:files[number-1],intake:intakes.get(files[number-1])}));
-  const primary=entries.find(entry=>entry.intake?.document_type==='other')||entries[0];
+  const primary=entries.find(entry=>entry.intake?.document_type===doc.document_type)||entries.find(entry=>entry.intake?.document_type==='other')||entries[0];
   try{
    if(doc.document_type==='monthly_report'&&/^\d{4}-\d{2}-\d{2}$/.test(doc.period_end||''))doc.date=doc.period_end;
    if(!validCalendarDate(doc.date)&&!archiveInvoiceWithUnclearDate(doc)){
@@ -2405,9 +2405,9 @@ async function retrySavedPhotoGroup(){
  try{
   E('uploadStatus').textContent='Gesicherte Fotos werden gesucht …';
   const since=new Date(Date.now()-48*60*60*1000).toISOString();
-  const {data,error}=await db.from('documents').select('id,storage_path,status,document_type,extracted_data,created_at').eq('business_id',BID).eq('document_type','other').gte('created_at',since).order('created_at',{ascending:false}).limit(24);
+  const {data,error}=await db.from('documents').select('id,storage_path,status,document_type,extracted_data,created_at').eq('business_id',BID).in('document_type',['other','cash_report']).gte('created_at',since).order('created_at',{ascending:false}).limit(24);
   if(error)throw error;
-  const pending=(data||[]).filter(row=>row.storage_path&&!row.extracted_data?.duplicate_of&&['pending','error','reviewed'].includes(row.status));
+  const pending=(data||[]).filter(row=>row.storage_path&&!row.extracted_data?.duplicate_of&&(row.document_type==='cash_report'?row.status==='auto_review':['pending','error','reviewed'].includes(row.status)));
   if(!pending.length)throw Error('Keine gesicherten, ungeklärten Fotos der letzten 48 Stunden gefunden.');
   const newest=Date.parse(pending[0].created_at);
   const group=pending.filter(row=>newest-Date.parse(row.created_at)<=120000).reverse();
