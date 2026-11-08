@@ -1,5 +1,10 @@
 # PROJEKTSTAND – GastroPilot Friedrich
 
+## 2026-11-08 – Mobil-Upload vom 07.11. (laufende Reparatur)
+
+Supabase-Log 08:15–08:17 UTC: drei iPhone-Fotos erfolgreich gespeichert; ein `cash_report` für 07.11. mit `auto_review`, zwei Begleitseiten als `other`/`reviewed`. Erkennung enthält nicht übereinstimmende Zahlungs- und Steuersummen, keine automatische Freigabe. Edge Function `analyze-receipt` Version 54 aktiv. Im UI wurde die gemeinsame Bildvorbereitung bisher ohne Render-Pause ausgeführt und Archiv-/Dashboard-Aktualisierung nach Gruppenerkennung ohne Zeitlimit abgewartet. Korrekturbranch ergänzt sichtbaren Fortschritt, Browser-Render-Pausen und begrenzte Wartezeiten bei Archiv-/Dashboard-Aktualisierung. Keine produktiven Belege verändert. Ursachenprüfung der falsch erkannten Zahlungsarten und authentifizierte iPhone-Liveprüfung bleiben offen; keine automatische Freigabe der ungeprüften 3.322,20 €.
+
+
 ## 2026-11-07 – Z 1858: Gutschein als eigene Zahlart (Korrektur in Prüfung)
 
 Originalseiten 1–3: 06.11.2026, Z 1858, brutto 1.905,90 €, netto 1.635,53 €, 10 % brutto 624,10 € (netto 567,36 €, USt 56,74 €), 20 % brutto 1.281,80 € (netto 1.068,17 €, USt 213,63 €). Zahlarten: BAR 1.278,40 € (68), Karte 615,90 € (22), Gutschein 11,60 € (1), kostenlos 1 (0 €); 92 Rechnungen. Der bisherige Abgleich verlangte fälschlich BAR + Karte = Tagesbrutto, obwohl ein Gutschein separat gedruckt ist. Gezielte Änderung: Gutschein als dritte Zahlart samt Anzahl und Betragsabgleich; keine Umdeutung in Bar/Karte. Regressionstest `tests/friedrich-voucher-z1858.test.mjs`. **Noch keine Live-Abnahme, kein automatischer Nachimport und keine Datenbankkorrektur**. Die seitenübergreifende Original-Steuerprüfung ist separat zu verifizieren. Judith und Judith AI unverändert.
