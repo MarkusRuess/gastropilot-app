@@ -474,7 +474,7 @@ document.addEventListener('visibilitychange',()=>{if(document.visibilityState===
 })();
 </script>
 <script type="module">
-import {mountJudithPaymentInflows} from '../integrations/judith-payment-inflows.js?build=20261102-diagnose2';
+import {mountJudithPaymentInflows} from '../integrations/judith-payment-inflows.js?build=20261110-review-fallback';
 let widget;
 const tile=document.querySelector('a[href="#judith-payment-inflows"]');
 tile?.addEventListener('click',()=>{
@@ -493,9 +493,9 @@ tile?.addEventListener('click',()=>{
     method:'POST',headers:{...authHeaders,'Content-Type':'application/json'},
     body:JSON.stringify({ids:items.map(item=>item.id)})
    });
-   if(!result.ok)throw Error('Kontrollstatus nicht verfügbar');
+   if(!result.ok) return items.map(item=>({...item,reviewAvailable:false}));
    const reviews=new Map((await result.json()).reviews.map(r=>[r.transaction_id,r.reviewed]));
-   return items.map(item=>({...item,reviewed:reviews.get(item.id)===true}));
+   return items.map(item=>({...item,reviewed:reviews.get(item.id)===true,reviewAvailable:true}));
   },
   async saveReview({id,reviewed}){
    const authHeaders=await window.jdHeaders();
