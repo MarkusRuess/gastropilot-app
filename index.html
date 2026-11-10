@@ -2558,23 +2558,23 @@ async function importJudithBankPdf(file,intake){
  }
  finish();
  if(!entries.length)throw Error('Keine sicheren Bankbuchungen erkannt. Original bleibt archiviert.');
- const bankRows=entries.filter(e=>e.date.startsWith('2026-')&&e.amount>0&&!/PAYONE|Mollie|AMAZON|PayLife|Klarna|SB Beheb|SB Ein/i.test(e.payee)&&/125[0-9 ]{6,12}/.test(e.description));
- if(!bankRows.length)throw Error('Keine Rechnungszahlungen erkannt; bitte Bankauszug prüfen.');
- const digest=String(intake.extracted_data?.source_sha256||'');
+ const excluded=/PAYONE|Mollie|AMAZON|PayLife|Klarna|SB Beheb|SB Ein|Grazer Wechselseitige|Versicherung|Finanzamt|Rückkauf|Rueckkauf/i;
+ const bankRows=entries.filter(e=>e.date.startsWith('2026-')&&e.amount>0&&!excluded.test(e.payee+' '+e.description));
+ if(!bankRows.length)throw Error('Keine Kundenzahlungen erkannt; bitte Bankauszug prüfen.');
+ // Stable transaction fingerprint: overlapping monthly PDF exports must not duplicate payments.
  const {data:existing,error:existingError}=await db.from('bank_transactions').select('booking_date,payee,amount,description').eq('business_id',BID).gte('booking_date',entries[entries.length-1].date<entries[0].date?entries[entries.length-1].date:entries[0].date).limit(2000);
  if(existingError)throw existingError;
  const norm=v=>String(v||'').toLowerCase().replace(/\s+/g,' ').trim();
  let added=0,duplicates=0,skipped=0;
  for(let i=0;i<bankRows.length;i++){
-  const e=bankRows[i],numbers=[...new Set((e.description.match(/125[0-9 ]{6,12}/g)||[]).map(v=>v.replace(/ /g,'')))];
-  if(numbers.length!==1){skipped++;continue;}
+  const e=bankRows[i]; // A payment with multiple invoice references stays ONE bank transaction.
   if((existing||[]).some(x=>x.booking_date===e.date&&Number(x.amount)===e.amount&&norm(x.payee)===norm(e.payee))){duplicates++;continue;}
-  const source_hash='judith-bankpdf-'+digest+'-'+i;
+  const source_hash='judith-bankpdf-v2-'+[e.date,norm(e.payee),e.amount.toFixed(2),norm(e.description)].join('|');
   const {error}=await db.from('bank_transactions').insert({business_id:BID,account_name:'J.W. GmbH Girokonto',booking_date:e.date,payee:e.payee,description:e.description,amount:e.amount,source_hash});
   if(error){if(error.code==='23505'){duplicates++;continue;}throw error;}
   if(existing)existing.push({booking_date:e.date,payee:e.payee,amount:e.amount});added++;
  }
- await db.from('documents').update({status:'reviewed',extracted_data:{...intake.extracted_data,document_class:'bank_statement',bank_import:{added,duplicates,skipped,parsed:entries.length},import_warning:skipped?'Mehrfachreferenzen zur Prüfung.':null}}).eq('id',intake.id).eq('business_id',BID);
+ await db.from('documents').update({status:'reviewed',extracted_data:{...intake.extracted_data,document_class:'bank_statement',bank_import:{added,duplicates,skipped,parsed:entries.length},import_warning:null}}).eq('id',intake.id).eq('business_id',BID);
  return {added,duplicates,skipped,parsed:entries.length};
 }
 
@@ -2687,7 +2687,6 @@ async function process(){
      setProgress('✓ Lohnunterlage geprüft · '+result.employees+' Mitarbeiter · '+result.kind);
      continue;
     }
-    if(intake.alreadyRecognized){if(intake.document_type==='invoice')await autoBookInvoiceExpense({...intake.extracted_data,date:intake.document_date,supplier:intake.extracted_data?.supplier||intake.supplier,invoice_number:intake.extracted_data?.invoice_number||intake.invoice_number},intake.id);duplicate++;queue=queue.filter(f=>f!==file);if(isSpreadsheet(file))E('uploadStatus').textContent='Excel-Datei bereits im Archiv · '+file.name;else showArchivedDuplicate(file);continue;}
     if(BID==='87889eaf-f865-4e3a-8f9a-cd01db483e0e'&&(file.type==='application/pdf'||/\.pdf$/i.test(file.name))&&/(ums(?:a|ä)tze[-_ ]girokonto|kontoauszug|bankauszug|bankbeleg|umsatzliste|girokonto)/i.test(file.name)){
      setProgress('Bankauszug wird eingelesen …');
      const result=await importJudithBankPdf(file,intake);
@@ -2695,6 +2694,7 @@ async function process(){
      E('uploadStatus').textContent='Bankauszug: '+result.added+' Rechnungszahlungen übernommen · '+result.duplicates+' bereits vorhanden · '+result.skipped+' zur Prüfung.';
      continue;
     }
+    if(intake.alreadyRecognized){if(intake.document_type==='invoice')await autoBookInvoiceExpense({...intake.extracted_data,date:intake.document_date,supplier:intake.extracted_data?.supplier||intake.supplier,invoice_number:intake.extracted_data?.invoice_number||intake.invoice_number},intake.id);duplicate++;queue=queue.filter(f=>f!==file);if(isSpreadsheet(file))E('uploadStatus').textContent='Excel-Datei bereits im Archiv · '+file.name;else showArchivedDuplicate(file);continue;}
     if(intake.periodArchived){saved++;queue=queue.filter(f=>f!==file);setProgress('Monatszeitraum '+intake.extracted_data.period_start+' bis '+intake.extracted_data.period_end+' automatisch archiviert.');continue;}
     if(isSpreadsheet(file)){const imported=await archiveSpreadsheet(file,intake);saved++;spreadsheetSaved++;xlsxBooked+=imported.booked;xlsxDuplicates+=imported.duplicates;xlsxTotal+=imported.total;if(imported.needsReview)xlsxReview++;queue=queue.filter(f=>f!==file);continue;}
     setProgress('Original gesichert · Erkennung läuft …');
