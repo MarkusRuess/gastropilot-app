@@ -55,7 +55,7 @@ export function mountJudithPaymentInflows(container, {loadPayments, saveReview})
       if(!Array.isArray(rows))throw Error('Ungültige Antwort');
       const safe=rows.filter(r=>r && /^\d{4}-\d{2}-\d{2}$/.test(r.date) &&
         r.date.startsWith(month.value) && Number.isFinite(r.amount) && r.amount>0);
-      status.textContent=safe.length+' Zahlungseingänge';displayMonth();
+      status.textContent=safe.length+' Zahlungseingänge'+(safe.some(r=>r.reviewAvailable===false)?' · Kontrollstatus derzeit nicht verfügbar':'');displayMonth();
       const table=document.createElement('table');table.className='judith-pay-table';
       const head=document.createElement('thead');const header=document.createElement('tr');
       for(const label of ['Datum · Rechnungsnummer','Kunde','Kontrolliert','Eingang']){const th=document.createElement('th');th.textContent=label;header.append(th)}
@@ -71,6 +71,7 @@ export function mountJudithPaymentInflows(container, {loadPayments, saveReview})
         const checkedCell=document.createElement('td');checkedCell.className='judith-pay-check';
         const checkbox=document.createElement('input');checkbox.type='checkbox';
         checkbox.checked=row.reviewed===true;
+        checkbox.disabled=row.reviewAvailable===false;
         tr.classList.toggle('judith-pay-checked',checkbox.checked);
         checkbox.setAttribute('aria-label','Rechnung kontrolliert: '+(row.invoiceNumber||row.name||row.date));
         checkbox.addEventListener('change',async()=>{
@@ -82,7 +83,7 @@ export function mountJudithPaymentInflows(container, {loadPayments, saveReview})
           } catch(_) {
             checkbox.checked=!desired;
             status.textContent='Kontrollstatus konnte nicht gespeichert werden.';
-          } finally {checkbox.disabled=false}
+          } finally {checkbox.disabled=row.reviewAvailable===false}
         });
         checkedCell.append(checkbox);
         const amount=document.createElement('td');amount.textContent=money.format(row.amount);
