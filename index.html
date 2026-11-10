@@ -1134,12 +1134,19 @@ async function repairStoredTaxes(documents) {
    taxRepairAttempted.add(d.id);
    E('uploadStatus').textContent='Gespeicherte Abrechnung '+D(d.document_date)+' wird automatisch anhand der Originalfotos nachgeprüft …';
    try{
-    const needsTaxRead=d.extracted_data?.tax_verification?.verified!==true;
-    const {data,error}=await db.functions.invoke('analyze-receipt',{body:{business_id:BID,document_id:d.id,mode:needsTaxRead?'tax_summary':'article_sales'}});
-    if(error)throw error;if(data?.error)throw Error(data.error);
-    updated++;
-    const verified=data?.documents?.[0]?.tax_verification?.verified;
-    E('uploadStatus').textContent=verified?'Steuerwerte vom '+D(d.document_date)+' automatisch übernommen.':'Original vom '+D(d.document_date)+' erneut gelesen; nicht eindeutige Werte bleiben zur Prüfung markiert.';
+    // Jede gespeicherte Abrechnung braucht beide Prüfungen; der alte Ablauf führte nur eine aus.
+    const modes=[];
+    if(d.extracted_data?.tax_verification?.verified!==true||d.extracted_data?.receipt_count_verification?.version!==1)modes.push('tax_summary');
+    if(d.extracted_data?.article_sales_verification?.verified!==true)modes.push('article_sales');
+    let passed=0;
+    for(const mode of modes){
+     E('uploadStatus').textContent='Gespeicherte Abrechnung '+D(d.document_date)+' · '+(mode==='tax_summary'?'Steuer-/Zahlungsprüfung':'Einzelprodukte und Preise')+' werden geprüft …';
+     const {data,error}=await withTimeout(db.functions.invoke('analyze-receipt',{body:{business_id:BID,document_id:d.id,mode}}),120000,'Originalprüfung dauerte zu lange. Gespeicherte Fotos bleiben erhalten.');
+     if(error)throw error;if(data?.error)throw Error(data.error);
+     passed++;
+    }
+    if(passed)updated++;
+    E('uploadStatus').textContent='Original vom '+D(d.document_date)+' erneut geprüft: '+passed+' Prüfschritte. Fehlende oder widersprüchliche Werte bleiben markiert.';
    }catch(error){E('uploadStatus').textContent='Automatische Nachprüfung vom '+D(d.document_date)+' noch offen: '+(error.message||String(error));}
   }
  }finally{
