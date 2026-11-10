@@ -745,6 +745,7 @@ function renderTopBusinessNav(){
  for(const member of authorizedBusinesses){
   make(businessLabel(member.businesses?.name),!onHome&&member.business_id===BID,()=>{
    if(!onHome&&member.business_id===BID)return;
+   if(openingBusiness){E('businessSwitchStatus').textContent='Betriebswechsel wird geladen …';return;}
    if(busy){E('businessSwitchStatus').textContent='Bitte den laufenden Upload abschließen.';return;}
    if(!E('app').classList.contains('hidden'))E('homeMonth').value=E('month').value;
    void openBusiness(member);
@@ -898,7 +899,7 @@ document.getElementById('dailyPhotoOpen').addEventListener('click',()=>{
 function showMobilePanel(id){
  const monthView=id==='monthlyReference'||id==='salesSection';
  for(const b of document.querySelectorAll('#quickNav button'))b.classList.toggle('active',b.dataset.target===id||(monthView&&b.dataset.target==='monthlyReference'));
- for(const el of document.querySelectorAll('#app section.card'))el.classList.toggle('mobileHidden',monthView?!['monthlyReference','salesSection'].includes(el.id):el.id!==id);
+ for(const el of document.querySelectorAll('#app section.card'))el.classList.toggle('mobileHidden',el.id==='dailyPhotoShortcut'||el.id==='businessSwitchCard'?false:monthView?!['monthlyReference','salesSection'].includes(el.id):el.id!==id);
  const target=E(monthView?'salesSection':id);const disclosure=E(id+'Disclosure');if(disclosure)disclosure.open=true;
  if(target)target.scrollIntoView({behavior:'smooth',block:'start'});
 }
@@ -2767,13 +2768,16 @@ async function showHome(){
  finally{void updateCombinedManagementHome();}
 }
 async function openBusiness(member){
- if(openingBusiness||busy||!authorizedBusinesses.some(x=>x.business_id===member.business_id))return;
+ if(openingBusiness){E('businessSwitchStatus').textContent='Betriebswechsel wird noch geladen …';return;}
+ if(busy){E('businessSwitchStatus').textContent='Bitte zuerst den laufenden Upload abschließen.';return;}
+ if(!authorizedBusinesses.some(x=>x.business_id===member.business_id))return;
  openingBusiness=true;
  try{
   BID=member.business_id;localStorage.setItem(window.GastroPilotBusiness.key,BID);
   E('month').value=E('homeMonth').value;window.GastroPilotBusiness.render(authorizedBusinesses,BID);
   setBusinessHeader(member.businesses?.name);E('businessHome').classList.add('hidden');E('app').classList.remove('hidden');renderTopBusinessNav();
-  await refresh();await loadWholeArchive();await loadRecentUploads();showMobilePanel('monthlyReference');window.scrollTo(0,0);
+  showMobilePanel('monthlyReference');window.scrollTo(0,0);
+  await refresh();await loadWholeArchive();await loadRecentUploads();
  }catch(error){E('businessSwitchStatus').textContent='Betrieb konnte nicht geladen werden: '+error.message;}
  finally{openingBusiness=false;}
 }
