@@ -1,3 +1,7 @@
+## 2026-11-10 – Friedrich 09.11. Umsatz erfasst
+
+Drei iPhone-Fotos am 10.11. 09:21 UTC im Dokument `0d57143d-9970-4c23-af3a-7c28c5dd80a7` gespeichert. Tagesumsatz einmalig in `bonit_daily_closings` (`580aa557-b0b8-4ec5-9303-9a7aacd42f31`) verbucht: 1.387,80 € brutto, 1.187,21 € netto, 941,20 € bar, 446,60 € Karte, 80 Rechnungen. Steuergruppen sind rechnerisch inkonsistent; `tax_verification_status=pending_original_tax_group_check`, Artikel und Lager offen. Kein automatischer Statuswechsel des Originaldokuments auf `auto_imported`. PR #101 Betriebswechsel-Mobilkorrektur nach erfolgreichem CI #89 gemergt. Authentifizierte Live-Bedienprüfung offen.
+
 # GastroPilot – gemeinsame Projektübersicht
 
 **2026-11-06 Nachweis:** PR #85 nach CI übernommen, `analyze-receipt` Version 50 produktiv aktiv. Der Judith-Archivabschluss 06.11.2026 ist nach Originalabgleich einmalig `auto_imported`. Öffentliche Live-Seite erreichbar; authentifizierte Dashboard-/Handyprüfung mangels Sitzung offen. Siehe Judith-Projektstand.
