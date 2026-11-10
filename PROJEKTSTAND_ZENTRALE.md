@@ -1,3 +1,7 @@
+## 2026-11-10 – iPhone Betriebswechsel und Tagesabschluss
+
+Mobilansicht: Betriebswechsel und Dashboard-Fotobutton bleiben bei allen Panels sichtbar; der Zielbetrieb wird vor langem Datenladen angezeigt; bei blockiertem Wechsel gibt es eine Statusmeldung. Friedrich-Upload 10.11.2026, Abschlussdatum 09.11., drei Originalfotos, 1.387,80 € brutto: `cash_report/auto_review` wegen offener Steuer- und Artikelprüfung. Keine Buchung oder manuelle Statusfreigabe ohne geprüfte Originalwerte. Live-iPhone-Abnahme offen.
+
 ## 2026-11-08 – Dashboard-Schnelleinstieg Tagesabschluss
 
 PR #97 ergänzt auf beiden betriebsspezifischen Dashboards den Button „📷 Abrechnung Foto“. Er öffnet die bestehende Mehrseiten-Dateiauswahl im Uploadbereich des aktuell autorisierten Betriebs. Keine neue Buchungslogik, keine neuen Supabase-Tabellen und keine Vermischung von Judith/Friedrich. Bestehende Erkennung, steuerliche Prüfungen, Originalarchiv und Doppelbuchungsschutz bleiben zuständig. Die neue Schaltfläche allein beseitigt die bestehenden Erkennungs-/Wiederaufnahmefehler nicht. Automatisierte Tests, Merge, produktive Auslieferung und authentifizierte Handy-Liveprüfung sind getrennt nachzuweisen.
