@@ -1,3 +1,7 @@
+## 2026-11-11 – iPhone-Foto-Upload hängt nach Original-Sicherung
+
+Produktive Datenbankprüfung: drei Fotos vom 11.11.2026 um 12:04:24/34/41 UTC wurden als `other/pending` mit Storage-Pfad gespeichert; keine automatische Erkennung und keine Tagesbuchung. Ursache im Hauptbranch: `cameraInput.onchange` ruft ausschließlich `queueFiles`, nicht `process` auf. PR #104 mit Auto-Start hatte fehlgeschlagene CI #93 und wurde nicht gemergt. Neuer gezielter Fix startet `process()` nach der dritten Kameraufnahme und lässt die bestehende Wiederaufnahme nur echte pending/error Originale berücksichtigen (72 Stunden). Kein Löschen, keine neue Umsatzbuchung, keine Änderung Judith. Reale iPhone-Liveprüfung weiterhin offen.
+
 ## 2026-11-10 – BONit Z1860 vollständig aus drei Originalfotos
 
 09.11.2026: 73 Artikelzeilen (inkl. Gratispositionen und identischer Artikel mit unterschiedlichen Preisen) mit 263 Stück, 405,40 € 10 % und 982,40 € 20 % = 1.387,80 € vollständig und idempotent in `bonit_article_sales` erfasst. `bonit_daily_closings` enthält bereits einmalig 1.387,80 € brutto, 1.187,21 € netto, 941,20 € bar, 446,60 € Karte, 80 Rechnungen. Z-Nummer laut Original 1860. Lager noch nicht abgebucht. Fehlerursache in `repairStoredTaxes`: es wurde entweder nur `tax_summary` oder nur `article_sales` ausgeführt. Korrektur führt beide Prüfungen nacheinander aus; verbleibende offene Punkte werden nicht als fertig ausgegeben. iPhone-Liveprüfung separat erforderlich.
