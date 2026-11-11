@@ -11,7 +11,7 @@ const handlers=html.slice(html.indexOf("for(const [labelId,inputId]"),html.index
 const drawFunction=html.match(/function drawQueue\(\)\{[^\n]+/)[0];
 const queueFunction=html.match(/function queueFiles\(files\)\{[^\n]+/)[0];
 let passed=0;
-for(const engine of (process.env.SKIP_BROWSER==='1'?[]:[chromium,webkit])){
+for(const engine of (process.env.SKIP_BROWSER==='1'?[]:process.env.MOBILE_BROWSER==='chromium'?[chromium]:[chromium,webkit])){
  const browser=await engine.launch({headless:true});
  try{for(const business of ['Judith','Friedrich']){
   const page=await browser.newPage({viewport:{width:390,height:844},isMobile:true,hasTouch:true});

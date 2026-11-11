@@ -9,7 +9,7 @@ permissions:
   contents: read
 jobs:
   stock:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
@@ -21,6 +21,6 @@ jobs:
       - run: node scripts/test-judith-daily-summary-20261106.mjs
       - run: node scripts/check-friedrich-inline.mjs
       - run: npm install --no-save --package-lock=false playwright@1.62.1
-      - run: npx playwright install --with-deps chromium webkit
+      - run: npx playwright install chromium
       - run: node scripts/test-friedrich-stock-ui.mjs
-      - run: node scripts/test-mobile-photo-picker.mjs
+      - run: MOBILE_BROWSER=chromium node scripts/test-mobile-photo-picker.mjs

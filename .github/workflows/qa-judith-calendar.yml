@@ -7,7 +7,7 @@ on:
     paths: ['judith-ai/**', 'scripts/*judith*', 'supabase/functions/judith-ai-inbox/**', '.github/workflows/qa-judith-calendar.yml']
 jobs:
   calendar:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -15,6 +15,6 @@ jobs:
           node-version: '24'
       - run: node scripts/check-judith-inline.mjs
       - run: node --test scripts/test-judith-calendar.mjs scripts/test-judith-calendar-server.mjs scripts/test-price-advisor*.mjs
-      - run: npm install --no-save --package-lock=false playwright@1.51.1
-      - run: npx playwright install --with-deps chromium
+      - run: npm install --no-save --package-lock=false playwright@1.62.1
+      - run: npx playwright install chromium
       - run: node scripts/test-judith-calendar-ui.mjs
