@@ -39,4 +39,27 @@ assert.ok(check({...report,category_sales:report.category_sales.slice(1)},3424.2
 assert.ok(check({...report,printed_payment_lines:report.printed_payment_lines.slice(1)},3424.21).errors.length);
 assert.ok(check({...report,printed_payment_lines:report.printed_payment_lines.map(row=>({...row,amount:row.amount+10}))},3424.21).errors.length);
 assert.ok(check({...report,category_sales:[...report.category_sales,{name:'ohne Satz',gross:0}]},3424.21).errors.length);
+const day10={
+ category_sales:[{name:'SHOP 10%',gross:0},{name:'SHOP 20%',gross:0},{name:'TORTEN 10%',gross:1197.80}],
+ printed_payment_lines:[{label:'Kund.Forderungen',amount:-390},{label:'Bank Einlage Bar',amount:-128.90},{label:'Kreditk./Bankomatkarten',amount:-678.90},{label:'Kredit Bezahlt',amount:0},{label:'Aus/Einzahlungen',amount:0}]
+};
+const sales10=check(day10,1197.80);
+assert.deepEqual([...sales10.errors],[]);
+assert.equal(sales10.cash_total,128.90);
+assert.equal(sales10.card_total,678.90);
+assert.equal(sales10.other_payments_total,390);
+const day11={
+ category_sales:[{name:'SHOP 10%',gross:63},{name:'SHOP 20%',gross:141.75},{name:'TORTEN 10%',gross:1291.40}],
+ printed_payment_lines:[{label:'Kund.Forderungen',amount:50},{label:'Kredit Bezahlt',amount:50},{label:'Aus/Einzahlungen',amount:0},{label:'Bank Einlage Bar',amount:-718},{label:'Kreditk./Bankomatkarten',amount:-828.15}]
+};
+const sales11=check(day11,1496.15);
+assert.deepEqual([...sales11.errors],[]);
+assert.equal(sales11.cash_total,668);
+assert.equal(sales11.card_total,828.15);
+assert.equal(sales11.other_payments_total,0);
+assert.equal(sales11.prior_receivable_payment,50);
+assert.equal(sales11.net_total,1349.40);
+assert.equal(sales11.vat_total,146.75);
+assert.ok(check({...day11,printed_payment_lines:day11.printed_payment_lines.filter(row=>row.label!=='Kredit Bezahlt')},1496.15).errors.length);
+assert.ok(check({...day11,printed_payment_lines:day11.printed_payment_lines.map(row=>row.label==='Aus/Einzahlungen'?{...row,amount:10}:row)},1496.15).errors.length);
 console.log('PASS Judith daily report: printed groups, discounts, signed counter entries and guarded review');

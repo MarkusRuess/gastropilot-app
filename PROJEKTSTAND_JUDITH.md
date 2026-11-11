@@ -1,5 +1,11 @@
 # PROJEKTSTAND – GASTROPILOT JUDITH
 
+## 2026-11-11 · Drei Handy-Tagesberichte
+
+- Drei im Betrieb Judith gespeicherte Originalfotos vom 09., 10. und 11.11. geprüft. Die ersten beiden Berichte wurden durch die laufende App bereits automatisch erfasst. Der dritte lag noch als gesichertes `other/pending`-Original vor und wurde anhand des vom Betreiber beigefügten Fotos im **selben** Archivdatensatz nach Originalabgleich freigegeben. Vorherige Tagesbuchungen und Originalpfade blieben erhalten; keine neuen Konten oder Belege angelegt.
+- Besonderheit: `Kredit Bezahlt` und eine positive `Kund.Forderungen`-Zeile bezeichnen den Eingang einer alten Forderung. Er ist in der Bareinlage enthalten, gehört aber nicht zu den heutigen Barumsätzen. Die serverseitige Judith-Nachprüfung zieht diesen Eingang nur bei ausdrücklich gedruckter, übereinstimmender Forderungszahlung und Null für weitere Aus-/Einzahlungen ab. Bei fehlenden oder widersprüchlichen Zeilen bleibt der Beleg zur Prüfung. Friedrich-Logik unverändert.
+- Regressionstest erweitert: drei Tagesbericht-Formate und negative Fälle für fehlende Forderungszahlung und zusätzliche Bargeldbewegung. GitHub-CI und Deploymentnachweis nach Veröffentlichung ergänzen. Der dritte Datensatz wurde anhand des Chat-Fotos manuell abgeglichen; dies ist kein nachgewiesener automatischer Handy-End-to-End-Lauf.
+
 **Live-Rückmeldung 06.11.2026:** Betreiber bestätigt „Passt, ist live“ für den korrigierten Judith-Abschluss. Dies belegt die Anzeige im eigenen produktiven Zugang; ein unabhängiger physischer iPhone-/Android-Neuupload wurde dabei nicht gesondert dokumentiert.
 
 ## 2026-11-06 · Judith-Bericht und Produktivstand
