@@ -1,6 +1,6 @@
 # GastroPilot – gemeinsame Projektübersicht
 
-**2026-11-11 Judith-Handyberichte:** Drei vorhandene Archivoriginale geprüft; ein zuvor unbearbeitetes Original im gleichen Judith-Datensatz nach Fotoabgleich freigegeben. Die gemeinsame Erkennung erhält im Judith-Zweig eine getrennte Behandlung bezahlter alter Kundenforderungen und heutiger Barumsätze. Friedrich und Judith AI unverändert. Detailstand in `PROJEKTSTAND_JUDITH.md`.
+**2026-11-11 Judith-Handyberichte:** Drei vorhandene Archivoriginale geprüft; ein zuvor unbearbeitetes Original im gleichen Judith-Datensatz nach Fotoabgleich freigegeben. Die gemeinsame Erkennung behandelt im Judith-Zweig bezahlte alte Kundenforderungen getrennt vom heutigen Barumsatz; PR #114 nach zwei erfolgreichen CI-Läufen übernommen, Edge Function Version 56 aktiv. Angemeldete Smartphone-Liveprüfung weiterhin offen. Friedrich und Judith AI unverändert. Detailstand in `PROJEKTSTAND_JUDITH.md`.
 
 **2026-11-06 Nachweis:** PR #85 nach CI übernommen, `analyze-receipt` Version 50 produktiv aktiv. Der Judith-Archivabschluss 06.11.2026 ist nach Originalabgleich einmalig `auto_imported`. Öffentliche Live-Seite erreichbar; authentifizierte Dashboard-/Handyprüfung mangels Sitzung offen. Siehe Judith-Projektstand.
 
