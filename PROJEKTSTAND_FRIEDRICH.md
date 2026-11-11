@@ -351,3 +351,9 @@ Vorher scheiterten zwei neue Regressionstests (Judith/Friedrich); nachher bestan
 - [Pages-Deployment](https://github.com/MarkusRuess/gastropilot-app/actions/runs/42070535439) erfolgreich; zusätzlicher Pages-Lauf 42070535186 ebenfalls erfolgreich. Bestehender Link unverändert: `https://markusruess.github.io/gastropilot-app/`.
 - Tatsächlich ausgeliefertes Live-HTML per HTTPS geladen und bytegenau mit dem getesteten index.html verglichen: identisch; SHA-256 `f10e536bd311ccc7db6e04651a7598f02c6c618df51adb75c2eedff63a83913c`. HOCHLADEN-Korrektur und native Fotoauswahl enthalten.
 - Technische Veröffentlichung bestätigt; vollständige angemeldete Smartphone-Kameraaufnahme/OCR/Persistenz weiterhin nicht behauptet. Keine Betriebsdaten-/Berechtigungsänderung; Judith AI unverändert.
+
+
+## Bonit-Originale Z 1860 und Z 1861 – 2026-11-11
+- Z 1860, Geschäftstag 09.11.2026: bereits vorhanden; 73 Artikelzeilen = 1.387,80 € brutto. Zahlungsarten 941,20 € bar + 446,60 € Karte; Steuergruppen 405,40 € (10 %) + 982,40 € (20 %). Keine erneute Buchung.
+- Z 1861, Geschäftstag 10.11.2026 laut Original (Buchung 10:23–21:46, Druck 21:50): fehlender Abschluss und 52 Einzelartikelzeilen einmalig ergänzt. Brutto 1.092,60 €, netto 954,05 €, bar 732,10 €, Karte 360,50 €, 58 Rechnungen. Artikelgruppen 574,90 € (10 %) + 517,70 € (20 %); Artikelzeilen summieren sich exakt auf 1.092,60 €. Gratis-/Nullzeilen erhalten.
+- Verifikation: erneute lesende Supabase-Abfrage bestätigt für beide Z-Nummern Artikelanzahl, Artikelsumme, Steuergruppen und Zahlungsarten. Kein Code- oder Schemaeingriff; keine Änderung an Judith oder Judith AI. Angemeldete Live-App-Anzeige nicht geprüft.
