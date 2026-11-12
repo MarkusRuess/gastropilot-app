@@ -2799,7 +2799,7 @@ async function openBusiness(member){
   showMobilePanel('monthlyReference');window.scrollTo(0,0);
   await refresh();await loadWholeArchive();await loadRecentUploads();
  }catch(error){E('businessSwitchStatus').textContent='Betrieb konnte nicht geladen werden: '+error.message;}
- finally{openingBusiness=false;if(BID==='6a5484d1-daf6-4263-897d-24cdf536aa29')void maybeResumeFriedrichSavedPhotos();}
+ finally{openingBusiness=false;if(BID==='6a5484d1-daf6-4263-897d-24cdf536aa29')void maybeResumeFriedrichSavedPhotos().catch(error=>{E('uploadStatus').textContent='Wiederaufnahme aus dem Archiv fehlgeschlagen: '+(error.message||String(error));});}
 }
 async function enter(){
  const {data,error}=await db.auth.getSession();if(error)throw error;const u=data?.session?.user;if(!u)return false;
