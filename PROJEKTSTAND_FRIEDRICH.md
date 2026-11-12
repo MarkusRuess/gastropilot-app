@@ -1,3 +1,7 @@
+## 2026-11-12 – Uploadstatus nach Zeitüberschreitung
+
+[PR #116](https://github.com/MarkusRuess/gastropilot-app/pull/116) nach [CI 43205157557](https://github.com/MarkusRuess/gastropilot-app/actions/runs/43205157557) in main zusammengeführt (`df87be181f47cff981de456c24846f2eed029baa`). Der clientseitige Timeoutpfad überschreibt nur noch `other/pending`, sodass eine parallel abgeschlossene Erkennung nicht nachträglich zu `error` wird. Ein Fehler beim Archiv-Wiederanlauf wird sichtbar im Upload-Prüfbereich angezeigt. Das ausgelieferte HTML am bisherigen Pages-Link enthält beide Änderungen. Der konkrete HTTP-422-Grund der Erkennung ist damit nicht beseitigt; authentifizierte neue Handyverarbeitung weiterhin nicht live bestätigt.
+
 ## 2026-11-12 – Z 1862 vom 11.11. originalgeprüft und einmalig verbucht
 
 Drei vom Betreiber nachgereichte Originalseiten: BONit Z 1862, Buchungszeitraum 11.11.2026 10:04–23:57, Ausdruck 23:58. Gedruckt: 1.423,10 € brutto, 1.209,45 € netto, 213,65 € Steuer; 10 % 310,70 € brutto / 282,45 € netto / 28,25 € Steuer, 20 % 1.112,40 € brutto / 927,00 € netto / 185,40 € Steuer. Bar 960,70 € (67), Karte 462,40 € (10), Personal/Einladung 0,00 € (1), 78 Rechnungen. Alle 62 gedruckten Artikelzeilen einschließlich Nullpreiszeilen ergeben centgenau 1.423,10 € und dieselben Steuersummen. Rücknahmen sind auf der dritten Seite als Information gedruckt und nicht nochmals vom abgeschlossenen Artikel-/Umsatzgesamtbetrag abgezogen.
