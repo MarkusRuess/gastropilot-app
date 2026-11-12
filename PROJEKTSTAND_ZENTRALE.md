@@ -1,3 +1,7 @@
+## 2026-11-12 – Startdashboard kompakte Kennzahlen
+
+Auftrag: Die Kennzahlen der beiden Betriebsübersichten auf Desktop und iPhone platzsparend darstellen. Isolierte CSS-Regeln `gp-compact-business-home-metrics-20261112` erzwingen je Betrieb zwei Kacheln pro Zeile (auch für die ersten zwei Kennzahlen), reduzieren Höhe/Innenabstand und verkleinern die Ziel-Fortschrittsanzeige. Kennzahlen, Daten, Berechnungen, Farben und Mandantentrennung unverändert. Nach Merge CI und echte Liveprüfung separat nachweisen.
+
 ## 2026-11-10 – iPhone Betriebswechsel und Tagesabschluss
 
 Mobilansicht: Betriebswechsel und Dashboard-Fotobutton bleiben bei allen Panels sichtbar; der Zielbetrieb wird vor langem Datenladen angezeigt; bei blockiertem Wechsel gibt es eine Statusmeldung. Friedrich-Upload 10.11.2026, Abschlussdatum 09.11., drei Originalfotos, 1.387,80 € brutto: `cash_report/auto_review` wegen offener Steuer- und Artikelprüfung. Keine Buchung oder manuelle Statusfreigabe ohne geprüfte Originalwerte. Live-iPhone-Abnahme offen.
