@@ -2438,7 +2438,7 @@ async function retrySavedPhotoGroup(){
   E('uploadStatus').textContent=result.saved+' Dokument(e) erkannt · '+result.duplicate+' bereits vorhanden · '+result.failed+' zur Prüfung.';
   for(const message of result.errors){const p=document.createElement('p');p.className='warning';p.textContent=message;E('review').append(p);}
   await refresh();await loadWholeArchive();
- }catch(error){E('uploadStatus').textContent='Wiederaufnahme: '+await uploadFailureMessage(error);}
+ }catch(error){E('uploadStatus').textContent='Wiederaufnahme: '+await uploadFailureMessage(error); const p=document.createElement('p');p.className='warning';p.textContent=E('uploadStatus').textContent;E('review').append(p);}
  finally{busy=false;drawQueue();await loadRecentUploads();}
 }
 async function maybeResumeFriedrichSavedPhotos(){
@@ -2682,7 +2682,7 @@ async function process(){
     const message=await uploadFailureMessage(error);
     for(const intake of intakes.values()){
      if(intake.document_type!=='other'||intake.alreadyRecognized)continue;
-     await db.from('documents').update({status:'error',extracted_data:{...(intake.extracted_data||{}),import_warning:message}}).eq('id',intake.id).eq('business_id',BID).eq('document_type','other');
+     await db.from('documents').update({status:'error',extracted_data:{...(intake.extracted_data||{}),import_warning:message}}).eq('id',intake.id).eq('business_id',BID).eq('document_type','other').eq('status','pending');
     }
     E('uploadStatus').textContent='⚠ '+files.length+' Originale gesichert · Erkennung fehlgeschlagen. '+message;
     const p=document.createElement('p');p.className='warning';p.textContent='Gesicherte Fotos können später über „Gesicherte Fotos gemeinsam erkennen“ erneut gelesen werden.';E('review').append(p);
