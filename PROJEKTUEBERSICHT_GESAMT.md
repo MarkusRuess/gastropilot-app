@@ -1,5 +1,8 @@
 # GastroPilot – gemeinsame Projektübersicht
 
+**2026-11-12 Friedrich Z 1862:** Drei Originalseiten vom 11.11. abgeglichen und genau einmal verbucht: 1.423,10 € brutto, 62 Artikelzeilen, getrennte 10-/20-%-Steuer und Bar/Karte. Archivoriginale erhalten; Lagerverkaufsquelle enthält 62 Zeilen. Nachbuchung fachlich geprüft, automatische künftige Handy-Erkennung und angemeldete Liveansicht bleiben offen. Siehe `PROJEKTSTAND_FRIEDRICH.md`.
+
+
 **2026-11-12 Friedrich:** Drei Handyfotos wurden gespeichert, aber nach Erkennungsfehler/Timeout nicht verbucht. PR #115 ergänzt einen einmaligen Wiederanlauf aus dem Archiv beim Öffnen von Friedrich; CI erfolgreich, Code am bisherigen Pages-Link ausgeliefert. Erneute OCR, Buchung und angemeldete Dashboard-Anzeige noch nicht live bestätigt. Details in `PROJEKTSTAND_FRIEDRICH.md`.
 
 
