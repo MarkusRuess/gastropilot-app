@@ -1,4 +1,4 @@
-import {FRIEDRICH,validatePages,pagePrompt,reconcileFriedrichSummary} from './friedrich-pages.mjs';
+import {FRIEDRICH,validatePages,pageRowsPrompt,pageSummaryPrompt,combinePageReads,reconcileFriedrichSummary} from './friedrich-pages.mjs';
 
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
@@ -517,10 +517,24 @@ Deno.serve(async (req) => {
       const expected={...old,date:savedDocument.document_date,
         cash_total:old.tax_verification?.verified?old.cash_total:null,
         card_total:old.tax_verification?.verified?old.card_total:null};
-      const result=await fetch('https://api.openai.com/v1/responses',{method:'POST',headers:{Authorization:'Bearer '+apiKey,'Content-Type':'application/json'},body:JSON.stringify({model:'gpt-4.1-mini',max_output_tokens:24000,store:false,text:{format:{type:'json_object'}},input:[{role:'user',content:[{type:'input_text',text:pagePrompt(expected,images.length)},...images.flatMap((im,i)=>[{type:'input_text',text:'Foto '+(i+1)+' von '+images.length},{type:'input_image',image_url:'data:'+im.mime_type+';base64,'+im.image_base64,detail:'high'}])]}]})});
-      if(!result.ok)return json({error:'Originalauswertung fehlgeschlagen; vorhandene Daten erhalten.'},502);
-      const model=await result.json();if(model.status==='incomplete')return json({error:'Originalauswertung unvollständig; keine Artikelübernahme.'},422);
-      const read=JSON.parse(cleanJson(getOutputText(model)));
+      const extract=async(prompt:string,selected:any[],limit:number)=>{
+        const result=await fetch('https://api.openai.com/v1/responses',{method:'POST',headers:{Authorization:'Bearer '+apiKey,'Content-Type':'application/json'},body:JSON.stringify({model:'gpt-4.1-mini',max_output_tokens:limit,store:false,text:{format:{type:'json_object'}},input:[{role:'user',content:[{type:'input_text',text:prompt},...selected.map(im=>({type:'input_image',image_url:'data:'+im.mime_type+';base64,'+im.image_base64,detail:'high'}))]}]})});
+        if(!result.ok)throw Error('Originalauswertung fehlgeschlagen ('+result.status+').');
+        const model=await result.json();
+        if(model.status==='incomplete')throw Error('Eine Originalseite wurde nicht vollständig gelesen.');
+        return JSON.parse(cleanJson(getOutputText(model)));
+      };
+      let read:any;
+      try{
+        // Separate, parallel reads keep long article tables out of the payment/tax answer.
+        const [summary,...pages]=await Promise.all([
+          extract(pageSummaryPrompt(expected,images.length),images,4000),
+          ...images.map((image,i)=>extract(pageRowsPrompt(expected,i+1,images.length),[image],9000))
+        ]);
+        read=combinePageReads(summary,pages);
+      }catch(error){
+        return json({error:'Originalseiten konnten nicht vollständig ausgewertet werden: '+String((error as Error).message||error)},422);
+      }
       const summaryErrors=reconcileFriedrichSummary(read,expected);
       const validation=validatePages(read,expected,images.length);
       validation.errors.push(...summaryErrors);
