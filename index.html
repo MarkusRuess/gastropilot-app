@@ -2404,14 +2404,20 @@ async function recognizePhotoGroup(files,intakes){
  E('uploadStatus').textContent=files.length+' gesicherte Fotos werden als zusammengehörende Belegseiten gelesen …';
  const images=[];
  for(const [imageIndex,file] of files.entries()){E('uploadStatus').textContent='Fotos vorbereiten '+(imageIndex+1)+'/'+files.length+' · '+file.name;await new Promise(resolve=>setTimeout(resolve,0));const [blob]=await withTimeout(pages(file),90000,'Foto konnte nicht vorbereitet werden; Original bleibt gesichert.');images.push({image_base64:await b64(blob),mime_type:'image/jpeg'});await new Promise(resolve=>setTimeout(resolve,0));}
- const {data,error}=await withTimeout(db.functions.invoke('analyze-receipt',{body:{business_id:BID,mode:'auto',defer_tax_verification:true,images}}),120000,'Gemeinsame Erkennung antwortet nach 2 Minuten nicht. Originale bleiben im Archiv.');
- if(error)throw error;if(data?.error)throw Error(data.error);
- const docs=data?.documents||[],used=new Set();
- if(!docs.length||!docs.every(doc=>{
+ const validGroup=docs=>{const used=new Set();return !!docs.length&&docs.every(doc=>{
   if(!['cash_report','monthly_report','invoice'].includes(doc.document_type)||!Array.isArray(doc.image_indices)||!doc.image_indices.length)return false;
   for(const number of doc.image_indices){if(!Number.isInteger(number)||number<1||number>files.length||used.has(number))return false;used.add(number);}
   return true;
- })||used.size!==files.length)throw Error('Seiten nicht eindeutig zugeordnet; Einzelprüfung startet.');
+ })&&used.size===files.length;};
+ const {data,error}=await withTimeout(db.functions.invoke('analyze-receipt',{body:{business_id:BID,mode:'auto',defer_tax_verification:true,images}}),120000,'Gemeinsame Erkennung antwortet nach 2 Minuten nicht. Originale bleiben im Archiv.');
+ let docs=data?.documents||[];
+ if((error||data?.error||!validGroup(docs))&&BID==='6a5484d1-daf6-4263-897d-24cdf536aa29'&&files.length<=4){
+  E('uploadStatus').textContent='BONit-Seiten und gedruckten Geschäftstag gezielt prüfen …';
+  const fallback=await withTimeout(db.functions.invoke('analyze-receipt',{body:{business_id:BID,mode:'friedrich_preflight',images}}),120000,'BONit-Seitenprüfung dauerte zu lange; Originale bleiben gesichert.');
+  if(fallback.error||fallback.data?.error)throw Error(fallback.data?.error||fallback.error?.message||'BONit-Seitenprüfung fehlgeschlagen.');
+  docs=fallback.data?.documents||[];
+ }
+ if(!validGroup(docs))throw Error(data?.error||error?.message||'Seiten nicht eindeutig zugeordnet; Originale bleiben zur Prüfung gesichert.');
  let saved=0,duplicate=0,failed=0;const errors=[];
  for(const doc of docs){
   const entries=doc.image_indices.map(number=>({file:files[number-1],intake:intakes.get(files[number-1])}));

@@ -26,6 +26,12 @@ Drei Originalseiten erneut zeilenweise abgeglichen: 94 Artikelzeilen inkl. Nullp
 
 # PROJEKTSTAND – GastroPilot Friedrich
 
+## 2026-11-13 – Original Z 1863 und gezielte Seitenzuordnung
+
+Die drei im Friedrich-Archiv am 13.11. gesicherten Originalbilder wurden in der angemeldeten App visuell geöffnet. Sie zeigen einen einzigen BONit-Tagesabschluss Z 1863 mit **Buchung von/bis 12.11.2026** (09:15–22:12), gedruckt am 12.11. um 22:14. Gedrucktes Brutto 1.350,90 €, Netto 1.159,40 €, 10 % 444,20 € brutto/403,82 € netto/40,38 € Steuer und 20 % 906,70 €/755,58 €/151,12 €. Bar 1.093,30 € (83), Karte 257,60 € (14), kostenlose Personal-/Einladung 4, zusammen 101 Rechnungen. Die dritte Seite bestätigt 1.350,90 € als Summe AG und nennt zwei Rücknahmen (5,20 € und 4,20 €), die nicht nochmals vom Umsatz abgezogen werden dürfen. Der 13.11. ist ausschließlich Upload- und bisheriges technisches Archivdatum dieser Fotos.
+
+Der Live-Wiederanlauf zeigte den tatsächlichen Abbruch: Die generische gemeinsame Erkennung lieferte keine vollständige `image_indices`-Zuordnung und der Text „Einzelprüfung startet“ startete keinen weiteren Schritt. PR #119 ergänzt für Friedrich einen gezielten Fallback mit Originalprüfung von Seitenfolge, Z-Nummer, Buchungsdatum, Umsatz, Bar/Karte, Steuergruppen und Schlussseiten-Summe. Unklare Zuordnung bleibt gesperrt; Artikel- und Steuerprüfung müssen weiterhin vor der Tagesbuchung erfolgreich sein. Lokaler Vorprüfungstest und 21 Seitenprüfungen bestanden; Edge Function Version 59 aktiv. GitHub-Pages-Veröffentlichung und erneuter authentifizierter Durchlauf werden gesondert nachgetragen.
+
 ## 2026-11-13 – Drei neue Handyfotos, erneute Erkennungsstörung
 
 Um 09:44–09:45 Uhr MEZ wurden drei neue Friedrich-Originalfotos in Supabase Storage und `documents` gesichert. Lesende Kontrolle: alle drei stehen zunächst auf `other/pending` mit technischem Uploaddatum 13.11.; daraus darf **kein Geschäftstag** abgeleitet werden. Für diese Gruppe existiert bislang weder ein neuer Tagesabschluss noch eine Artikelbuchung; Z-Nummer und Originalsumme sind nicht belegt. Die gemeinsame Bilderkennung antwortete HTTP 200, aber der Browser übernahm das Resultat nicht ins Archiv. Eine zeitgleiche, andere Originalprüfung scheiterte nach 60 Sekunden mit HTTP 422: „Artikel fehlen auf Foto 1/2“, „Artikelsumme“, „Bonanzahlen“ und „Zahlartenzeilen“ nicht abgeglichen. Die gestrige Timeout-Statuskorrektur hat die unvollständige OCR nicht behoben.

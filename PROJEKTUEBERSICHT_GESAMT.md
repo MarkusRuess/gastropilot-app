@@ -1,5 +1,7 @@
 # GastroPilot – gemeinsame Projektübersicht
 
+**2026-11-13 Friedrich Z 1863:** Drei im Archiv gesicherte Originalseiten zeigen Geschäftstag 12.11.2026, 1.350,90 € brutto; der Upload erfolgte erst 13.11. Der authentifizierte Wiederanlauf stoppte bei unvollständiger Seitenzuordnung. Friedrich-spezifischer Original-Fallback in PR #119, Edge Function v59 aktiv; automatische Artikel- und Umsatzbuchung sowie Liveanzeige werden nach Pages-Veröffentlichung geprüft. Andere Betriebe unverändert. Details in `PROJEKTSTAND_FRIEDRICH.md`.
+
 **2026-11-13 Friedrich-Upload:** Drei neue Originalfotos gesichert, weiterhin `other/pending`, ohne neue Tages- oder Artikelbuchung. Der Friedrich-Erkennungszweig liest Artikelseiten und Schlusswerte getrennt; Wiederanlauf berücksichtigt `pending`. PR #118 nach lokaler und GitHub-CI zusammengeführt, Edge Function Version 58 aktiv und öffentliche App-Version geprüft. Neuer Originaldurchlauf und angemeldete Liveprüfung bleiben offen. Siehe `PROJEKTSTAND_FRIEDRICH.md`.
 
 **2026-11-12 Friedrich Z 1862:** Drei Originalseiten vom 11.11. abgeglichen und genau einmal verbucht: 1.423,10 € brutto, 62 Artikelzeilen, getrennte 10-/20-%-Steuer und Bar/Karte. Archivoriginale erhalten; Lagerverkaufsquelle enthält 62 Zeilen. Nachbuchung fachlich geprüft, automatische künftige Handy-Erkennung und angemeldete Liveansicht bleiben offen. Siehe `PROJEKTSTAND_FRIEDRICH.md`.

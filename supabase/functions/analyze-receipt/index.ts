@@ -1,4 +1,5 @@
 import {FRIEDRICH,validatePages,pageRowsPrompt,pageSummaryPrompt,combinePageReads,reconcileFriedrichSummary} from './friedrich-pages.mjs';
+import {preflightPrompt,validatePreflight} from './friedrich-preflight.mjs';
 
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
@@ -505,6 +506,18 @@ Deno.serve(async (req) => {
         error:
           "Die Fotos sind insgesamt zu groß. Bitte weniger Fotos gleichzeitig hochladen.",
       }, 413);
+    }
+
+    if(body.mode==='friedrich_preflight'){
+      if(businessId!==FRIEDRICH||savedDocument||images.length<2||images.length>4)return json({error:'Nur Friedrich-Originalseiten gemeinsam prüfen.'},400);
+      const key=Deno.env.get('OPENAI_API_KEY');if(!key)return json({error:'KI-Schlüssel fehlt'},500);
+      const response=await fetch('https://api.openai.com/v1/responses',{method:'POST',headers:{Authorization:'Bearer '+key,'Content-Type':'application/json'},body:JSON.stringify({model:'gpt-4.1-mini',max_output_tokens:2500,store:false,text:{format:{type:'json_object'}},input:[{role:'user',content:[{type:'input_text',text:preflightPrompt(images.length)},...images.map(im=>({type:'input_image',image_url:'data:'+im.mime_type+';base64,'+im.image_base64,detail:'high'}))]}]})});
+      if(!response.ok)return json({error:'BONit-Seitenprüfung fehlgeschlagen ('+response.status+').'},502);
+      const model=await response.json();if(model.status==='incomplete')return json({error:'BONit-Seitenprüfung unvollständig; Originale bleiben gesichert.'},422);
+      let read;try{read=JSON.parse(cleanJson(getOutputText(model)));}catch{return json({error:'BONit-Seitenprüfung nicht lesbar.'},422);}
+      const candidate=validatePreflight(read,images.length);
+      if(!candidate)return json({error:'Seiten, Geschäftstag oder Summen nicht eindeutig aus demselben Original belegt.',requires_review:true},422);
+      return json({success:true,documents:[candidate],document_count:1,image_count:images.length});
     }
 
 
