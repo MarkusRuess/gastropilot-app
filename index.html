@@ -2476,7 +2476,11 @@ async function retrySavedPhotoGroup(){
   for(const message of result.errors){const p=document.createElement('p');p.className='warning';p.textContent=message;E('review').append(p);}
   await refresh();await loadWholeArchive();
  }catch(error){E('uploadStatus').textContent='Wiederaufnahme: '+await uploadFailureMessage(error); const p=document.createElement('p');p.className='warning';p.textContent=E('uploadStatus').textContent;E('review').append(p);}
- finally{busy=false;drawQueue();await loadRecentUploads();}
+ finally{
+  busy=false;
+  drawQueue();
+  Promise.resolve().then(()=>withTimeout(loadRecentUploads(),15000,'Archivliste lädt zu lange.')).catch(error=>console.warn('Archive refresh deferred',error));
+}
 }
 async function maybeResumeFriedrichSavedPhotos(){
  if(!user||busy||BID!=='6a5484d1-daf6-4263-897d-24cdf536aa29')return;
@@ -2789,7 +2793,14 @@ async function process(){
   if(failed===0&&saved>0&&duplicate===0){E('review').replaceChildren();E('intake').scrollIntoView({behavior:'smooth',block:'start'});}
   for(const msg of errors){const p=document.createElement('p');p.className='warning';p.textContent=msg;E('review').append(p);}
   if(secured||saved||duplicate){await refresh();await loadWholeArchive();}
- }finally{busy=false;drawQueue();await loadRecentUploads();}
+ }finally{
+  // Always release the UI first. Archive refresh must never keep the entire app locked.
+  busy=false;
+  drawQueue();
+  Promise.resolve().then(()=>withTimeout(loadRecentUploads(),15000,'Archivliste lädt zu lange.')).catch(error=>{
+    console.warn('Upload finished; archive refresh deferred',error);
+  });
+}
 }
 function review(doc,sourceFile){const wrap=document.createElement('div');wrap.className='review';wrap.dataset.sourceFile=sourceFile.name;const h=document.createElement('h3');h.textContent=doc.document_type==='cash_report'?'BONit / Tagesabschluss':doc.document_type==='monthly_report'?'BONit / Monatsabschluss':doc.document_type==='invoice'?'Lieferantenrechnung':'Dokumenttyp prüfen';wrap.append(h);const source=document.createElement('p');source.className='muted';source.textContent='Original: '+sourceFile.name;wrap.append(source);const grid=document.createElement('div');grid.className='field';wrap.append(grid);field(grid,doc.document_type==='monthly_report'?'Monatsende':'Datum','date',doc.date,'date');if(doc.document_type==='monthly_report'){field(grid,'Zeitraum von','period_start',doc.period_start,'date');field(grid,'Zeitraum bis','period_end',doc.period_end,'date');}field(grid,'Brutto','gross_total',doc.gross_total,'number');field(grid,'Netto','net_total',doc.net_total,'number');field(grid,'Umsatzsteuer','vat_total',doc.vat_total,'number');if(['cash_report','monthly_report'].includes(doc.document_type)){field(grid,'Bar','cash_total',doc.cash_total,'number');field(grid,'Karte','card_total',doc.card_total,'number');field(grid,'Bonanzahl','receipt_count',doc.receipt_count,'number');}else{field(grid,'Lieferant','supplier',doc.supplier);field(grid,'Rechnungsnummer','invoice_number',doc.invoice_number);const label=document.createElement('label');label.textContent='Zahlungsstatus';const select=document.createElement('select');select.dataset.key='payment_status';for(const v of ['','offen','bezahlt']){const opt=document.createElement('option');opt.value=v;opt.textContent=v||'Bitte auswählen';select.append(opt);}label.append(select);grid.append(label);const pay=document.createElement('label');pay.textContent='Zahlungsart (bei bezahlt)';const method=document.createElement('select');method.dataset.key='payment_method';for(const v of ['','bar','bankueberweisung','karte']){const opt=document.createElement('option');opt.value=v;opt.textContent=v||'Bitte auswählen';method.append(opt);}pay.append(method);grid.append(pay);}
  const p=document.createElement('p');p.className='muted';p.textContent='Originaldaten werden zusammen mit den geprüften Feldern gespeichert. Kein automatisches Überschreiben vorhandener Belege.';wrap.append(p);const button=document.createElement('button');button.textContent='Manuell speichern (nur bei Korrektur)';button.onclick=()=>save(doc,wrap,button,sourceFile);wrap.append(button);E('review').append(wrap);}
