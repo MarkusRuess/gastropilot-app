@@ -26,6 +26,12 @@ Drei Originalseiten erneut zeilenweise abgeglichen: 94 Artikelzeilen inkl. Nullp
 
 # PROJEKTSTAND – GastroPilot Friedrich
 
+## 2026-11-13 – Drei neue Handyfotos, erneute Erkennungsstörung
+
+Um 09:44–09:45 Uhr MEZ wurden drei neue Friedrich-Originalfotos in Supabase Storage und `documents` gesichert. Lesende Kontrolle: alle drei stehen zunächst auf `other/pending` mit technischem Uploaddatum 13.11.; daraus darf **kein Geschäftstag** abgeleitet werden. Für diese Gruppe existiert bislang weder ein neuer Tagesabschluss noch eine Artikelbuchung; Z-Nummer und Originalsumme sind nicht belegt. Die gemeinsame Bilderkennung antwortete HTTP 200, aber der Browser übernahm das Resultat nicht ins Archiv. Eine zeitgleiche, andere Originalprüfung scheiterte nach 60 Sekunden mit HTTP 422: „Artikel fehlen auf Foto 1/2“, „Artikelsumme“, „Bonanzahlen“ und „Zahlartenzeilen“ nicht abgeglichen. Die gestrige Timeout-Statuskorrektur hat die unvollständige OCR nicht behoben.
+
+Der Friedrich-Zweig liest Artikel nun pro Originalfoto in getrennten KI-Aufrufen und den Summenblock separat; die seitenweise Zuordnung, Artikelzeilenzahl, Z-Nummer, Geschäftstag, Zahlarten, Steuern und Gesamtsumme bleiben zwingende Buchungssperren. Der Start-Wiederanlauf berücksichtigt auch drei `pending`-Originale der letzten 48 Stunden, nicht nur `error`. Alle 57 einschlägigen lokalen Programmtests, Inline-/Edge-Syntax bestanden. **Die heutigen drei Originale sind noch nicht neu verarbeitet oder live gebucht; eine authentifizierte Handy-End-to-End-Prüfung steht aus.** Keine Betriebsdaten oder andere Betriebe geändert.
+
 ## 2026-11-08 – Z 1859 vom 07.11.2026, Originalseiten 1–3
 
 Original: brutto 3.322,20 €, netto 2.880,90 €, Steuer 441,30 €; 10 % brutto 1.483,70 € / netto 1.348,82 € / Steuer 134,88 €; 20 % brutto 1.838,50 € / netto 1.532,08 € / Steuer 306,42 €. Zahlarten: Bar 2.038,80 € (89), Kreditkarte 1.243,30 € (43), Gutschein 40,10 € (1), Personal/Einladung 0,00 € (1); 134 Rechnungen. Die Summe der drei Zahlarten ist 3.322,20 €. PR #94 (Mobil-UI und BONit-Prüfung) nach CI #78 gemergt; PR #95 ergänzt getrennte Gutschein-Persistenz in der Artikelprüfung. **Kein erneuter Upload, keine produktive Nachbuchung ohne Prüfung aller Artikelzeilen, keine bestätigte authentifizierte Live-Handy-Abnahme.**

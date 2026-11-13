@@ -2476,7 +2476,7 @@ async function maybeResumeFriedrichSavedPhotos(){
  if(!user||busy||BID!=='6a5484d1-daf6-4263-897d-24cdf536aa29')return;
  const business=BID;
  const since=new Date(Date.now()-48*60*60*1000).toISOString();
- const {data,error}=await db.from('documents').select('id,created_at,status,document_type,storage_path,extracted_data').eq('business_id',business).eq('document_type','other').eq('status','error').gte('created_at',since).order('created_at',{ascending:false}).limit(6);
+ const {data,error}=await db.from('documents').select('id,created_at,status,document_type,storage_path,extracted_data').eq('business_id',business).eq('document_type','other').in('status',['pending','error']).gte('created_at',since).order('created_at',{ascending:false}).limit(3);
  if(error||business!==BID||busy)return;
  const rows=(data||[]).filter(row=>row.storage_path&&row.extracted_data?.import_method==='automatic'&&!row.extracted_data?.duplicate_of);
  if(rows.length!==3||Date.parse(rows[0].created_at)-Date.parse(rows[2].created_at)>120000)return;

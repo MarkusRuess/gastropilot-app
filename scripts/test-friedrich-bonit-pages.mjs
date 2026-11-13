@@ -1,4 +1,4 @@
-import {test} from 'node:test';import assert from 'node:assert/strict';import {validatePages} from '../supabase/functions/analyze-receipt/friedrich-pages.mjs';
+import {test} from 'node:test';import assert from 'node:assert/strict';import {validatePages,combinePageReads,pageRowsPrompt,pageSummaryPrompt} from '../supabase/functions/analyze-receipt/friedrich-pages.mjs';
 const expected={date:'2026-11-03',z_number:'1855',gross_total:12,net_total:10,cash_total:5,card_total:7,receipt_count:3};
 const good={...expected,printed_payment_lines:[{label:'BAR Rechnung',count:1,amount:5},{label:'Kreditkarte',count:1,amount:7},{label:'Personal / Einladung mit 0',count:1,amount:0}],vat_total:2,cash_count:1,card_count:1,free_count:1,pages:[{image_index:1,printed_page:1,processed:true,continues:true,unreadable_rows:0,article_row_count:2},{image_index:2,printed_page:2,processed:true,continues:false,unreadable_rows:0,article_row_count:0}],sales_items:[{source_page:1,row_index:1,article_number:'1400',name:'Kaffee',quantity:3,unit_price:4,gross_amount:12,tax_rate:20},{source_page:1,row_index:2,article_number:'1400',name:'Kaffee',quantity:1,unit_price:0,gross_amount:0,tax_rate:20}],tax_breakdown:[{rate:20,gross:12,net:10,vat:2}]};
 const validate=x=>validatePages(x,expected,2);
@@ -8,3 +8,19 @@ for(const [name,mutate] of [
 ])test(name,()=>{const x=structuredClone(good);mutate(x);assert.ok(validate(x).errors.length);});
 test('unnumbered last photo is included without inventing a printed number',()=>{const x=structuredClone(good);x.pages[1].printed_page=null;assert.equal(validate(x).errors.length,0);});
 test('row tax discrepancy is a warning, never replaces printed taxes',()=>{const x=structuredClone(good);x.sales_items[0].tax_rate=10;assert.equal(validate(x).errors.length,0);assert.ok(validate(x).warnings.length);});
+test('separate page reads retain all article rows and their sources',()=>{
+ const summary=structuredClone(good);delete summary.pages;delete summary.sales_items;
+ const first={...good.pages[0],sales_items:good.sales_items.map(({source_page,...row})=>row)};
+ const last={...good.pages[1],sales_items:[]};
+ const combined=combinePageReads(summary,[first,last]);
+ assert.deepEqual(combined.sales_items,good.sales_items);
+ assert.deepEqual(validate(combined),{errors:[],warnings:[]});
+ assert.match(pageRowsPrompt(expected,1,2),/ausschließlich Foto 1/);
+ assert.match(pageSummaryPrompt(expected,2),/Upload-Datum nicht verwenden/);
+});
+test('separate page reads with a lost row remain blocked',()=>{
+ const summary=structuredClone(good);delete summary.pages;delete summary.sales_items;
+ const first={...good.pages[0],sales_items:[good.sales_items[0]]};
+ const combined=combinePageReads(summary,[first,{...good.pages[1],sales_items:[]}]);
+ assert.ok(validate(combined).errors.some(x=>x.includes('Artikel fehlen')));
+});

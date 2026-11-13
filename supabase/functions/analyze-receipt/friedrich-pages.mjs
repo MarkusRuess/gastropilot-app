@@ -1,5 +1,20 @@
 export const FRIEDRICH='6a5484d1-daf6-4263-897d-24cdf536aa29';
 export const near=(a,b,t=.03)=>typeof a==='number'&&Number.isFinite(a)&&typeof b==='number'&&Number.isFinite(b)&&Math.abs(a-b)<=t;
+export function pageRowsPrompt(expected,index,total){
+ return `Lies ausschließlich Foto ${index} von ${total} eines BONit-Tagesabschlusses für ${expected.date}. Erfasse JEDE sichtbare Artikelzeile in gedruckter Reihenfolge, auch Nullpreis und gleiche Artikelnummer mit anderem Preis. Durchscheinende Rückseiten und Rücknahmenstatistik nicht als Artikel lesen. Die Spalten heißen Artikelnummer, Artikelbezeichnung, Menge, Einzel, Gesamt, MWST. Nichts ergänzen oder aus dem Tagesumsatz errechnen. Bei unlesbarer Zeile unreadable_rows erhöhen, keine Schätzung. Antworte nur JSON: {"image_index":${index},"printed_page":null,"processed":true,"continues":false,"unreadable_rows":0,"article_row_count":0,"sales_items":[{"row_index":1,"article_number":"1400","name":"Bezeichnung","quantity":1,"unit_price":3.1,"gross_amount":3.1,"tax_rate":20}]}. printed_page aus "Seite N" ablesen; continues nur bei "Fortsetzung nächste Seite". article_row_count zählt die sichtbaren Artikelzeilen, unabhängig von der Summe.`;
+}
+export function pageSummaryPrompt(expected,total){
+ return `Lies den Summenblock dieses EINEN BONit-Tagesabschlusses aus allen ${total} Fotos. Geschäftstag und Z-Nummer ausschließlich aus der Überschrift "Buchung von/bis" und "Z-Nummer" ablesen. Upload-Datum nicht verwenden. Erwartete Archivwerte als Kontrollhilfe: Datum ${expected.date}, Brutto ${expected.gross_total}; bei Widerspruch Original melden, nicht anpassen. Erfasse gedrucktes Gesamtbrutto, Gesamtnetto, 10-/20-%-Steuergruppen, BAR Rechnung, Kreditkarte, Gutschein falls vorhanden, Personal/Einladung mit 0 und Anzahl Rechnungen. "Teilbetrag bar" ist keine zusätzliche Rechnung. Gib nur JSON: {"date":null,"z_number":null,"gross_total":null,"net_total":null,"vat_total":null,"cash_total":null,"card_total":null,"receipt_count":null,"cash_count":null,"card_count":null,"voucher_count":0,"free_count":0,"other_payments_total":0,"tax_breakdown":[{"rate":10,"gross":0,"net":0,"vat":0}],"printed_payment_lines":[{"label":"BAR Rechnung","count":0,"amount":0}],"returns":[]}. Unlesbare Felder null, niemals aus anderen Tagen übernehmen.`;
+}
+export function combinePageReads(summary,reads){
+ const pages=reads.map((read,i)=>({
+  image_index:i+1,printed_page:read.printed_page??null,processed:read.processed===true,
+  continues:read.continues===true,unreadable_rows:read.unreadable_rows,
+  article_row_count:read.article_row_count
+ }));
+ const sales_items=reads.flatMap((read,i)=>Array.isArray(read.sales_items)?read.sales_items.map(row=>({...row,source_page:i+1})):[]);
+ return {...summary,pages,sales_items};
+}
 export function reconcileFriedrichSummary(read, expected){
  const errors=[];
  const gross=read.gross_total, net=read.net_total, rows=read.tax_breakdown;
