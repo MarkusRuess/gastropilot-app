@@ -1,3 +1,5 @@
+**2026-11-14 Friedrich-Erkennung:** Branch `fix/friedrich-preflight-first-20261114` priorisiert die spezielle BONit-Seitenprüfung vor der generischen Erkennung; Rückfall und Validierung bleiben bestehen. Noch kein Beleg für erfolgreiche Originalverarbeitung oder Live-Buchung.
+
 **2026-11-14 Friedrich:** Drei neue Originalfotos `pending`; der automatische Archiv-Wiederanlauf war nach einem Fehlversuch für die gesamte Sitzung blockiert. Branch `fix/friedrich-resume-pending-20261114` erlaubt erneuten Versuch nach fünf Minuten. Originalerkennung, Buchung und iPhone-Liveprüfung noch offen; Judith unverändert. Siehe `PROJEKTSTAND_FRIEDRICH.md`.
 
 # GastroPilot – gemeinsame Projektübersicht
