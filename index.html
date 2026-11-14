@@ -2491,8 +2491,11 @@ async function maybeResumeFriedrichSavedPhotos(){
  const rows=(data||[]).filter(row=>row.storage_path&&row.extracted_data?.import_method==='automatic'&&!row.extracted_data?.duplicate_of);
  if(rows.length!==3||Date.parse(rows[0].created_at)-Date.parse(rows[2].created_at)>120000)return;
  const key='gp-resume-'+business+'-'+rows.map(row=>row.id).sort().join(',');
- if(sessionStorage.getItem(key))return;
- sessionStorage.setItem(key,'attempted');
+ const lastAttempt=Number(sessionStorage.getItem(key)||0);
+ // A failed recognition must not permanently suppress retry for this photo group.
+ // Limit retries to once per five minutes per browser session.
+ if(lastAttempt&&Date.now()-lastAttempt<5*60*1000)return;
+ sessionStorage.setItem(key,String(Date.now()));
  await retrySavedPhotoGroup();
 }
 async function archiveSpreadsheet(file,intake){
