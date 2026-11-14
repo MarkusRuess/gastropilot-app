@@ -1,3 +1,7 @@
+## 2026-11-14 – Archiv-Wiederanlauf nicht mehr dauerhaft blockiert
+
+Drei Friedrich-Fotos vom 14.11.2026 (09:51 Uhr) sind `other/pending`, ohne erkannte Umsatz- oder Artikelwerte. Ursache im Client-Wiederanlauf: `sessionStorage` markierte einen Versuch dauerhaft als `attempted`, auch wenn die Erkennung scheiterte; weitere Öffnungen konnten den Archivsatz nicht erneut anstoßen. Änderung in `index.html`: erneuter Versuch nach fünf Minuten möglich, ohne erneuten Foto-Upload. Keine Buchung, keine Änderung an Judith. Automatische CI und authentifizierte iPhone-Liveprüfung separat erforderlich. Der serverseitige Erkennungsfehler ist dadurch nicht nachweislich behoben.
+
 ## 2026-11-12 – Uploadstatus nach Zeitüberschreitung
 
 [PR #116](https://github.com/MarkusRuess/gastropilot-app/pull/116) nach [CI 43205157557](https://github.com/MarkusRuess/gastropilot-app/actions/runs/43205157557) in main zusammengeführt (`df87be181f47cff981de456c24846f2eed029baa`). Der clientseitige Timeoutpfad überschreibt nur noch `other/pending`, sodass eine parallel abgeschlossene Erkennung nicht nachträglich zu `error` wird. Ein Fehler beim Archiv-Wiederanlauf wird sichtbar im Upload-Prüfbereich angezeigt. Das ausgelieferte HTML am bisherigen Pages-Link enthält beide Änderungen. Der konkrete HTTP-422-Grund der Erkennung ist damit nicht beseitigt; authentifizierte neue Handyverarbeitung weiterhin nicht live bestätigt.

@@ -1,3 +1,5 @@
+**2026-11-14 Friedrich:** Drei neue Originalfotos `pending`; der automatische Archiv-Wiederanlauf war nach einem Fehlversuch für die gesamte Sitzung blockiert. Branch `fix/friedrich-resume-pending-20261114` erlaubt erneuten Versuch nach fünf Minuten. Originalerkennung, Buchung und iPhone-Liveprüfung noch offen; Judith unverändert. Siehe `PROJEKTSTAND_FRIEDRICH.md`.
+
 # GastroPilot – gemeinsame Projektübersicht
 
 **2026-11-13 Friedrich Z 1863:** Drei im Archiv gesicherte Originalseiten zeigen Geschäftstag 12.11.2026, 1.350,90 € brutto; der Upload erfolgte erst 13.11. Der authentifizierte Wiederanlauf stoppte bei unvollständiger Seitenzuordnung. Friedrich-spezifischer Original-Fallback in PR #119, Edge Function v59 aktiv; automatische Artikel- und Umsatzbuchung sowie Liveanzeige werden nach Pages-Veröffentlichung geprüft. Andere Betriebe unverändert. Details in `PROJEKTSTAND_FRIEDRICH.md`.
