@@ -2460,8 +2460,8 @@ async function retrySavedPhotoGroup(){
   if(error)throw error;
   const pending=(data||[]).filter(row=>row.storage_path&&!row.extracted_data?.duplicate_of&&(row.document_type==='cash_report'?row.status==='auto_review':['pending','error','reviewed'].includes(row.status)));
   if(!pending.length)throw Error('Keine gesicherten, ungeklärten Fotos der letzten 48 Stunden gefunden.');
-  const newest=Date.parse(pending[0].created_at);
-  const group=pending.filter(row=>newest-Date.parse(row.created_at)<=120000).reverse();
+  const principal=pending[0],newest=Date.parse(principal.created_at);
+  const group=(data||[]).filter(row=>row.storage_path&&Math.abs(newest-Date.parse(row.created_at))<=120000&&(pending.includes(row)||row.extracted_data?.duplicate_of===principal.id)).reverse();
   if(group.length<2)throw Error('Keine zusammengehörenden Fotos gefunden. Die Originale bleiben im Archiv.');
   const files=[],intakes=new Map();
   for(const row of group){
