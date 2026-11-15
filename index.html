@@ -2114,7 +2114,7 @@ async function refresh(){void loadLedgerComparison();if(E('recipeCostTile')&&!E(
  void repairStoredTaxes(docs);
  }catch(e){E('summary').textContent='Datenabruf fehlgeschlagen: '+e.message;}
 }
-async function image(file){return await new Promise((resolve,reject)=>{const url=URL.createObjectURL(file),img=new Image();img.onload=()=>{const scale=Math.min(1,2400/Math.max(img.width,img.height)),canvas=document.createElement('canvas');canvas.width=Math.round(img.width*scale);canvas.height=Math.round(img.height*scale);canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);canvas.toBlob(b=>{URL.revokeObjectURL(url);b?resolve(b):reject(Error('Bildfehler'));},'image/jpeg',.85);};img.onerror=()=>{URL.revokeObjectURL(url);reject(Error('Foto nicht lesbar'));};img.src=url;});}
+async function image(file,rotateLandscape=false){return await new Promise((resolve,reject)=>{const url=URL.createObjectURL(file),img=new Image();img.onload=()=>{const scale=Math.min(1,2400/Math.max(img.width,img.height)),canvas=document.createElement('canvas'),rotate=rotateLandscape&&img.width>img.height*1.08;canvas.width=Math.round((rotate?img.height:img.width)*scale);canvas.height=Math.round((rotate?img.width:img.height)*scale);const ctx=canvas.getContext('2d');if(rotate){ctx.translate(canvas.width,0);ctx.rotate(Math.PI/2);}ctx.drawImage(img,0,0,Math.round(img.width*scale),Math.round(img.height*scale));canvas.toBlob(b=>{URL.revokeObjectURL(url);b?resolve(b):reject(Error('Bildfehler'));},'image/jpeg',.85);};img.onerror=()=>{URL.revokeObjectURL(url);reject(Error('Foto nicht lesbar'));};img.src=url;});}
 function withTimeout(promise,ms,message){let timer;return Promise.race([promise,new Promise((_,reject)=>{timer=setTimeout(()=>reject(Error(message)),ms);})]).finally(()=>clearTimeout(timer));}
 async function pages(file,onProgress=()=>{}){if(file.type!=='application/pdf'){onProgress('Foto wird vorbereitet …');return [await image(file)];}onProgress('PDF wird geöffnet …');const pdfjs=await import('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.min.mjs');pdfjs.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.worker.min.mjs';const pdf=await pdfjs.getDocument({data:new Uint8Array(await file.arrayBuffer())}).promise;if(pdf.numPages>12)throw Error('Maximal 12 PDF-Seiten');const out=[];for(let i=1;i<=pdf.numPages;i++){onProgress('PDF-Seite '+i+'/'+pdf.numPages+' wird umgewandelt …');const page=await pdf.getPage(i),base=page.getViewport({scale:1}),v=page.getViewport({scale:Math.min(2,2200/Math.max(base.width,base.height))}),canvas=document.createElement('canvas');canvas.width=Math.round(v.width);canvas.height=Math.round(v.height);await page.render({canvasContext:canvas.getContext('2d'),viewport:v}).promise;out.push(await new Promise((resolve,reject)=>canvas.toBlob(b=>b?resolve(b):reject(Error('PDF-Seite '+i+' konnte nicht umgewandelt werden')),'image/jpeg',.85)));}return out;}
 async function b64(blob){return await new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(String(r.result).split(',')[1]);r.onerror=()=>reject(Error('Datei nicht lesbar'));r.readAsDataURL(blob);});}
@@ -2325,12 +2325,12 @@ async function autoArchive(doc,sourceFile,paymentStatus,intake=null,extraIntakes
  }catch(e){if(!intake&&paths.length)await db.storage.from('invoice-originals').remove(paths);throw e;}
  return 'gespeichert';
 }
-async function finishCashReport(documentId){
+async function finishCashReport(documentId,ocrImages){
  if(!documentId)return;
  const friedrich=BID==='6a5484d1-daf6-4263-897d-24cdf536aa29';
  for(const mode of friedrich?['article_sales','cash_report']:['cash_report']){
   E('uploadStatus').textContent=mode==='article_sales'?'BONit-Artikel und Zahlarten werden geprüft …':'Steuergruppen und Buchung werden geprüft …';
-  const {data,error}=await withTimeout(db.functions.invoke('analyze-receipt',{body:{business_id:BID,document_id:documentId,mode}}),120000,'Originalprüfung dauerte zu lange; Abschluss bleibt im Archiv zur Prüfung.');
+  const {data,error}=await withTimeout(db.functions.invoke('analyze-receipt',{body:{business_id:BID,document_id:documentId,mode,...(friedrich&&ocrImages?{ocr_images:ocrImages}:{})}}),120000,'Originalprüfung dauerte zu lange; Abschluss bleibt im Archiv zur Prüfung.');
   if(error||data?.error)throw Error(data?.error||error?.message||'Originalprüfung fehlgeschlagen.');
  }
  const {data,error}=await db.from('documents').select('status,extracted_data').eq('id',documentId).eq('business_id',BID).single();
@@ -2403,7 +2403,7 @@ async function recognizePhotoGroup(files,intakes){
  if(files.length<2||!files.every(file=>file.type.startsWith('image/'))||files.every(file=>intakes.get(file)?.alreadyRecognized))return null;
  E('uploadStatus').textContent=files.length+' gesicherte Fotos werden als zusammengehörende Belegseiten gelesen …';
  const images=[];
- for(const [imageIndex,file] of files.entries()){E('uploadStatus').textContent='Fotos vorbereiten '+(imageIndex+1)+'/'+files.length+' · '+file.name;await new Promise(resolve=>setTimeout(resolve,0));const [blob]=await withTimeout(pages(file),90000,'Foto konnte nicht vorbereitet werden; Original bleibt gesichert.');images.push({image_base64:await b64(blob),mime_type:'image/jpeg'});await new Promise(resolve=>setTimeout(resolve,0));}
+ for(const [imageIndex,file] of files.entries()){E('uploadStatus').textContent='Fotos vorbereiten '+(imageIndex+1)+'/'+files.length+' · '+file.name;await new Promise(resolve=>setTimeout(resolve,0));const blob=await withTimeout(BID==='6a5484d1-daf6-4263-897d-24cdf536aa29'?image(file,true):pages(file).then(parts=>parts[0]),90000,'Foto konnte nicht vorbereitet werden; Original bleibt gesichert.');images.push({image_base64:await b64(blob),mime_type:'image/jpeg'});await new Promise(resolve=>setTimeout(resolve,0));}
  const validGroup=docs=>{const used=new Set();return !!docs.length&&docs.every(doc=>{
   if(!['cash_report','monthly_report','invoice'].includes(doc.document_type)||!Array.isArray(doc.image_indices)||!doc.image_indices.length)return false;
   for(const number of doc.image_indices){if(!Number.isInteger(number)||number<1||number>files.length||used.has(number))return false;used.add(number);}
@@ -2437,7 +2437,7 @@ async function recognizePhotoGroup(files,intakes){
     if(!paymentStatus)throw Error('Zahlungsstatus offen; Originale bleiben im Archiv.');
    }
    const outcome=await autoArchive(doc,entries.map(entry=>entry.file),paymentStatus,primary.intake,entries.filter(entry=>entry!==primary).map(entry=>entry.intake));
-   if(doc.document_type==='cash_report'&&outcome!=='bereits vorhanden')await finishCashReport(doc.archive_document_id||primary.intake?.id);
+   if(doc.document_type==='cash_report'&&outcome!=='bereits vorhanden')await finishCashReport(doc.archive_document_id||primary.intake?.id,images);
    if(outcome==='bereits vorhanden')duplicate++;else saved++;
    queue=queue.filter(file=>!entries.some(entry=>entry.file===file));
    E('review').replaceChildren();
@@ -2460,8 +2460,8 @@ async function retrySavedPhotoGroup(){
   if(error)throw error;
   const pending=(data||[]).filter(row=>row.storage_path&&!row.extracted_data?.duplicate_of&&(row.document_type==='cash_report'?row.status==='auto_review':['pending','error','reviewed'].includes(row.status)));
   if(!pending.length)throw Error('Keine gesicherten, ungeklärten Fotos der letzten 48 Stunden gefunden.');
-  const newest=Date.parse(pending[0].created_at);
-  const group=pending.filter(row=>newest-Date.parse(row.created_at)<=120000).reverse();
+  const principal=pending[0],newest=Date.parse(principal.created_at);
+  const group=(data||[]).filter(row=>row.storage_path&&Math.abs(newest-Date.parse(row.created_at))<=120000&&(pending.includes(row)||row.extracted_data?.duplicate_of===principal.id)).reverse();
   if(group.length<2)throw Error('Keine zusammengehörenden Fotos gefunden. Die Originale bleiben im Archiv.');
   const files=[],intakes=new Map();
   for(const row of group){

@@ -436,6 +436,8 @@ Deno.serve(async (req) => {
       savedDocument=existing.data;
       const paths=[...new Set([...(savedDocument.extracted_data?.original_files||[]),savedDocument.storage_path].filter(Boolean))];
       if(!paths.length||paths.length>MAX_IMAGES)return json({error:"Originalfotos fehlen"},422);
+      const prepared=businessId===FRIEDRICH && ['article_sales','cash_report'].includes(body.mode) && Array.isArray(body.ocr_images) ? normalizeImages({images:body.ocr_images}) : null;
+      if(prepared && prepared.length!==paths.length)return json({error:'Vorbereitete Fotos und gesicherte Originale stimmen nicht überein.'},422);
       images=[];
       for(const path of paths){
         if(typeof path!=="string"||!path.startsWith(businessId+"/"))return json({error:"Ungültiger Originalpfad"},403);
@@ -445,6 +447,9 @@ Deno.serve(async (req) => {
         let binary="";for(let i=0;i<bytes.length;i+=32768)binary+=String.fromCharCode(...bytes.subarray(i,i+32768));
         images.push({image_base64:btoa(binary),mime_type:original.data.type||"image/jpeg"});
       }
+      // The stored originals remain authoritative and unchanged. For Friedrich,
+      // use portrait-oriented copies only as OCR input for this same page group.
+      if(prepared)images=prepared;
     }
 
     if (
@@ -525,13 +530,14 @@ Deno.serve(async (req) => {
       const old=savedDocument.extracted_data;
       const cached=old.article_sales_verification;
       const fingerprint=await Promise.all(images.map(async im=>Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(im.mime_type+':'+im.image_base64)))).map(x=>x.toString(16).padStart(2,'0')).join('')));
-      if(cached?.version===2 && cached.verified && JSON.stringify(cached.source_fingerprint)===JSON.stringify(fingerprint) && Array.isArray(old.sales_items))return json({documents:[old],updated:false,reused:true});
+      const originalPaths=[...new Set([...(old.original_files||[]),savedDocument.storage_path].filter(Boolean))];
+      if(cached?.version===2 && cached.verified && Array.isArray(old.sales_items) && (JSON.stringify(cached.source_fingerprint)===JSON.stringify(fingerprint) || JSON.stringify(cached.source_original_files)===JSON.stringify(originalPaths)))return json({documents:[old],updated:false,reused:true});
       const apiKey=Deno.env.get('OPENAI_API_KEY');if(!apiKey)return json({error:'KI-Schlüssel fehlt'},500);
       const expected={...old,date:savedDocument.document_date,
         cash_total:old.tax_verification?.verified?old.cash_total:null,
         card_total:old.tax_verification?.verified?old.card_total:null};
       const extract=async(prompt:string,selected:any[],limit:number)=>{
-        const result=await fetch('https://api.openai.com/v1/responses',{method:'POST',headers:{Authorization:'Bearer '+apiKey,'Content-Type':'application/json'},body:JSON.stringify({model:'gpt-4.1-mini',max_output_tokens:limit,store:false,text:{format:{type:'json_object'}},input:[{role:'user',content:[{type:'input_text',text:prompt},...selected.map(im=>({type:'input_image',image_url:'data:'+im.mime_type+';base64,'+im.image_base64,detail:'high'}))]}]})});
+        const result=await fetch('https://api.openai.com/v1/responses',{method:'POST',headers:{Authorization:'Bearer '+apiKey,'Content-Type':'application/json'},body:JSON.stringify({model:'gpt-4.1',max_output_tokens:limit,store:false,text:{format:{type:'json_object'}},input:[{role:'user',content:[{type:'input_text',text:prompt},...selected.map(im=>({type:'input_image',image_url:'data:'+im.mime_type+';base64,'+im.image_base64,detail:'high'}))]}]})});
         if(!result.ok)throw Error('Originalauswertung fehlgeschlagen ('+result.status+').');
         const model=await result.json();
         if(model.status==='incomplete')throw Error('Eine Originalseite wurde nicht vollständig gelesen.');
@@ -557,7 +563,7 @@ Deno.serve(async (req) => {
       }
       const imported=await supabase.rpc('gp_f_import_bonit_articles',{p_document:savedDocument.id,p_z:String(read.z_number),p_sales:read.sales_items});
       if(imported.error)return json({error:imported.error.message},409);
-      const patch={z_number:String(read.z_number),sales_items:read.sales_items,cash_total:read.cash_total,card_total:read.card_total,paid_receipt_count:read.cash_count+read.card_count+(read.voucher_count||0),free_receipt_count:read.free_count,other_payments_total:read.other_payments_total||0,voucher_count:read.voucher_count||0,payment_methods:{cash:{count:read.cash_count,amount:read.cash_total},card:{count:read.card_count,amount:read.card_total},voucher:{count:read.voucher_count||0,amount:read.other_payments_total||0}},receipt_count_verification:{version:2,verified:true,method:'all_original_pages',printed_payment_lines:read.printed_payment_lines,checked_at:new Date().toISOString()},printed_payment_lines:read.printed_payment_lines,tax_breakdown:read.tax_breakdown,returns:read.returns,needs_review:validation.warnings.length>0,article_sales_verification:{version:2,verified:true,method:'all_original_pages',source_fingerprint:fingerprint,pages_total:images.length,pages:read.pages,warnings:validation.warnings,checked_at:new Date().toISOString()}};
+      const patch={z_number:String(read.z_number),sales_items:read.sales_items,cash_total:read.cash_total,card_total:read.card_total,paid_receipt_count:read.cash_count+read.card_count+(read.voucher_count||0),free_receipt_count:read.free_count,other_payments_total:read.other_payments_total||0,voucher_count:read.voucher_count||0,payment_methods:{cash:{count:read.cash_count,amount:read.cash_total},card:{count:read.card_count,amount:read.card_total},voucher:{count:read.voucher_count||0,amount:read.other_payments_total||0}},receipt_count_verification:{version:2,verified:true,method:'all_original_pages',printed_payment_lines:read.printed_payment_lines,checked_at:new Date().toISOString()},printed_payment_lines:read.printed_payment_lines,tax_breakdown:read.tax_breakdown,returns:read.returns,needs_review:validation.warnings.length>0,article_sales_verification:{version:2,verified:true,method:'all_original_pages',source_fingerprint:fingerprint,source_original_files:originalPaths,pages_total:images.length,pages:read.pages,warnings:validation.warnings,checked_at:new Date().toISOString()}};
       const updated=await supabase.from('documents').update({extracted_data:{...old,...patch}}).eq('id',savedDocument.id).eq('business_id',FRIEDRICH);
       if(updated.error)return json({error:'Artikel gespeichert, Prüfstatus noch nicht gespeichert; Wiederholung erzeugt keine doppelte Buchung.'},500);
       const closings=await supabase.from('bonit_daily_closings').select('id,raw_data').eq('business_id',FRIEDRICH).eq('closing_date',savedDocument.document_date).eq('z_number',String(read.z_number));
