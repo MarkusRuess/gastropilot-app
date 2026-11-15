@@ -30,6 +30,12 @@ Drei Originalseiten erneut zeilenweise abgeglichen: 94 Artikelzeilen inkl. Nullp
 
 # PROJEKTSTAND – GastroPilot Friedrich
 
+## 2026-11-15 – Original Z 1865 und Fotoausrichtung
+
+Der am 15.11. hochgeladene dreiseitige BONit-Originalabschluss ist Z 1865 für den **Geschäftstag 14.11.2026** (09:51–22:29), nicht für das Uploaddatum. Gedruckt: 3.286,50 € brutto, 2.858,36 € netto, 428,14 € Steuer; 10 % 1.578,90 €/1.435,36 €/143,54 €, 20 % 1.707,60 €/1.423,00 €/284,60 €; Bar 1.845,40 € (109), Kreditkarte 1.441,10 € (31), eine kostenlose Einladung, 141 Rechnungen. Die 26 + 58 gedruckten Artikelzeilen ergeben 1.578,90 € und 1.707,60 € centgenau; die dritte Seite enthält keine Verkaufszeile und Rücknahmen nur zur Information.
+
+Die drei Originale sind einmal im Friedrich-Archiv gesichert. Die Erkennung ordnete das Datum richtig zu, las aber Steuergruppen und Artikel falsch und beließ den Bericht als `auto_review`; live fehlte der 14.11. im Kalender. Der Schreibversuch der bewachten manuellen Korrektur lief wegen abgelaufener Connector-Bestätigung **nicht** durch: 0 Tagesbuchungen, 0 Artikelzeilen am 14.11., Originale unangetastet. Die Änderung im Friedrich-Zweig richtet quer fotografierte mehrseitige Fotos für OCR im Hochladebrowser auf und übergibt diese Kopien an die Originalprüfung; Archivdateien bleiben unverändert. Die anspruchsvolle Artikelerkennung nutzt dort GPT-4.1 und cached erfolgreiche Prüfungen anhand unveränderlicher Originalpfade. 22 lokale Seiten-/Summenprüfungen bestanden; Veröffentlichung und erneuter echter Durchlauf sind getrennt zu verifizieren. Judith und Judith AI unverändert.
+
 ## 2026-11-13 – Original Z 1863 und gezielte Seitenzuordnung
 
 Die drei im Friedrich-Archiv am 13.11. gesicherten Originalbilder wurden in der angemeldeten App visuell geöffnet. Sie zeigen einen einzigen BONit-Tagesabschluss Z 1863 mit **Buchung von/bis 12.11.2026** (09:15–22:12), gedruckt am 12.11. um 22:14. Gedrucktes Brutto 1.350,90 €, Netto 1.159,40 €, 10 % 444,20 € brutto/403,82 € netto/40,38 € Steuer und 20 % 906,70 €/755,58 €/151,12 €. Bar 1.093,30 € (83), Karte 257,60 € (14), kostenlose Personal-/Einladung 4, zusammen 101 Rechnungen. Die dritte Seite bestätigt 1.350,90 € als Summe AG und nennt zwei Rücknahmen (5,20 € und 4,20 €), die nicht nochmals vom Umsatz abgezogen werden dürfen. Der 13.11. ist ausschließlich Upload- und bisheriges technisches Archivdatum dieser Fotos.
