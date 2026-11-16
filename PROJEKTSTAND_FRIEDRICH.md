@@ -409,3 +409,7 @@ Das im Friedrich-Archiv gesicherte Raika-Original blieb auf `pending`, weil die 
 
 ## Friedrich · Versicherungen in der Kostenanalyse – 2026-11-16
 Fünf bestätigte Prämien aus dem Raika-Auszug der bestehenden Fixkostenanalyse zugeordnet. Leben und Unfall als Unternehmerversicherungen gekennzeichnet. Originalbuchungen beibehalten. Gemeinsamer Transaktionsschlüssel verhindert Doppelzählung. Wiederholung mit Rollback getestet, fünf Zuordnungen und Summe produktiv bestätigt. Keine App-Veröffentlichung erforderlich, angemeldete Darstellung offen.
+
+
+## Friedrich · Raika-Buchungskategorien und Belegabgleich – 2026-11-16
+Alle 36 Bewegungen des November-Auszuges im Friedrich-Bankbestand kategorisiert. Kartenauszahlungen, Kundenüberweisungen, Versicherungen, Telefonie und Prüfposten getrennt. Belegabgleich im vorhandenen Archivdatensatz dokumentiert. Übereinstimmungen zu drei Ausgangsrechnungen und einer Lieferantenrechnung ermittelt. Formelle Rechnungsverknüpfung und Zahlungsstatus unverändert. Personalüberweisungen, Beitragszeitraum, weitere Verrechnungen und Abgleich HOBEX mit Bonit offen. Kontrolllauf mit Rollback und anschließende produktive Kategorieprüfung erfolgreich. Keine neuen Buchungen oder Kosten erzeugt. Angemeldete Oberfläche nicht geprüft.
