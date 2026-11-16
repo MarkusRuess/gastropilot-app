@@ -162,3 +162,8 @@ Vorher scheiterten zwei neue Regressionstests (Judith/Friedrich); nachher bestan
 - Der vorhandene Judith-Archivdatensatz wurde mit Datums-, Betriebs-, Status-, Brutto- und Dublettenschutz einmalig auf `auto_imported` gesetzt; kein zusätzlicher Datensatz oder Bonit-Abschluss angelegt. Originalnotizen und Originalpfad bleiben erhalten.
 - Dauerhafte Edge-Function-Korrektur: Judiths gedruckte Warengruppen mit Steuersätzen vollständig gegen den berichtigten Umsatz prüfen, negative Kassen-Gegenbuchungen anhand der Originalbeschriftungen zuordnen und Kredit weder Bar noch Karte zuschlagen. Fehlt eine Gruppe oder Zahlungsart oder stimmt die Summe nicht, bleibt der Abschluss zur Prüfung. Friedrich-Zweig unverändert. Regressionstest `scripts/test-judith-daily-summary-20261106.mjs` im bestehenden CI-Workflow.
 - Authentifizierte Live-Browser-/Handyprüfung und erfolgreiche Veröffentlichung erst nach Deployment gesondert belegen; bis dahin keine vollständige Live-Fertigmeldung.
+
+
+## 2026-11-16 – Judith: Einzelbild direkt verarbeiten
+- Ein einzelnes unterstütztes Foto startet den vorhandenen Upload und die Erkennung direkt. Mehrfachauswahl und Friedrich behalten ihren bisherigen Ablauf.
+- Sechs Tests der Auswahlsteuerung bestanden. Produktive iPhone-Abnahme und automatische Wiederaufnahme bei Abbruch sind offen.
