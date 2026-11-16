@@ -405,3 +405,7 @@ Vorher scheiterten zwei neue Regressionstests (Judith/Friedrich); nachher bestan
 
 ## Raika-Kontoauszug Friedrich – 2026-11-16
 Das im Friedrich-Archiv gesicherte Raika-Original blieb auf `pending`, weil die bestehende PDF-Bankimport-Verzweigung nur Judith erfasst. Archivdatei und bereitgestelltes Original über SHA-256 abgeglichen. Alle vier Seiten ausgewertet, 36 Bewegungen und Endsaldo per 16.11. gegen die Differenz der Originalsalden geprüft. Buchungen und Saldo ausschließlich für Friedrichs vorhandenes Raika-Konto übernommen, bestehende Daten erhalten. Vorab Transaktion mit Rollback geprüft, danach 36 Buchungen und Archivstatus lesend bestätigt. Automatischer Raika-Upload weiterhin offen, keine Änderung an Judith. Angemeldete App-Ansicht nicht geprüft.
+
+
+## Friedrich · Versicherungen in der Kostenanalyse – 2026-11-16
+Fünf bestätigte Prämien aus dem Raika-Auszug der bestehenden Fixkostenanalyse zugeordnet. Leben und Unfall als Unternehmerversicherungen gekennzeichnet. Originalbuchungen beibehalten. Gemeinsamer Transaktionsschlüssel verhindert Doppelzählung. Wiederholung mit Rollback getestet, fünf Zuordnungen und Summe produktiv bestätigt. Keine App-Veröffentlichung erforderlich, angemeldete Darstellung offen.
