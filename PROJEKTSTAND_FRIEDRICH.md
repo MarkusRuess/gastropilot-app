@@ -413,3 +413,7 @@ Fünf bestätigte Prämien aus dem Raika-Auszug der bestehenden Fixkostenanalyse
 
 ## Friedrich · Raika-Buchungskategorien und Belegabgleich – 2026-11-16
 Alle 36 Bewegungen des November-Auszuges im Friedrich-Bankbestand kategorisiert. Kartenauszahlungen, Kundenüberweisungen, Versicherungen, Telefonie und Prüfposten getrennt. Belegabgleich im vorhandenen Archivdatensatz dokumentiert. Übereinstimmungen zu drei Ausgangsrechnungen und einer Lieferantenrechnung ermittelt. Formelle Rechnungsverknüpfung und Zahlungsstatus unverändert. Personalüberweisungen, Beitragszeitraum, weitere Verrechnungen und Abgleich HOBEX mit Bonit offen. Kontrolllauf mit Rollback und anschließende produktive Kategorieprüfung erfolgreich. Keine neuen Buchungen oder Kosten erzeugt. Angemeldete Oberfläche nicht geprüft.
+
+
+## Friedrich · Volksbank-Abgleich vom 16.11.2026
+Das archivierte Original anhand des Datei-Hashes identifiziert. 16 Bewegungen, Zwischensalden und Endsaldo geprüft und in Friedrichs Volksbank-Konto übernommen. Miete, Kühlgerätereparatur und zwei Oktoberlohn-Auszahlungen anhand der Betreiberangaben und SEPA-Detailansicht zugeordnet. Der Sammelauftrag bleibt eine Bankbewegung. Die zwei Detailpositionen und Auszahlungsnachweise erzeugen keinen zusätzlichen Bankabgang. Betriebskostenanteil der Miete und fehlende Mehlspeisenrechnung offen. Wiederholungsimport mit Rollback geprüft, Anzahl, Saldo und Lohnnachweise produktiv bestätigt. Automatisches Auslesen im zentralen Upload und angemeldete Bedienprüfung noch offen.
