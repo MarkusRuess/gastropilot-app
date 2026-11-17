@@ -6,6 +6,35 @@ export function pageRowsPrompt(expected,index,total){
 export function pageSummaryPrompt(expected,total){
  return `Lies den Summenblock dieses EINEN BONit-Tagesabschlusses aus allen ${total} Fotos. Geschäftstag und Z-Nummer ausschließlich aus der Überschrift "Buchung von/bis" und "Z-Nummer" ablesen. Upload-Datum nicht verwenden. Erwartete Archivwerte als Kontrollhilfe: Datum ${expected.date}, Brutto ${expected.gross_total}; bei Widerspruch Original melden, nicht anpassen. Erfasse gedrucktes Gesamtbrutto, Gesamtnetto, 10-/20-%-Steuergruppen, BAR Rechnung, Kreditkarte, Gutschein falls vorhanden, Personal/Einladung mit 0 und Anzahl Rechnungen. "Teilbetrag bar" ist keine zusätzliche Rechnung. Gib nur JSON: {"date":null,"z_number":null,"gross_total":null,"net_total":null,"vat_total":null,"cash_total":null,"card_total":null,"receipt_count":null,"cash_count":null,"card_count":null,"voucher_count":0,"free_count":0,"other_payments_total":0,"tax_breakdown":[{"rate":10,"gross":0,"net":0,"vat":0}],"printed_payment_lines":[{"label":"BAR Rechnung","count":0,"amount":0}],"returns":[]}. Unlesbare Felder null, niemals aus anderen Tagen übernehmen.`;
 }
+export function pageHeaderPrompt(expected){
+ return `Lies nur den Kopf der ERSTEN Originalseite des BONit-Tagesabschlusses. Buchung von/bis ist der Geschäftstag, nicht der Upload- oder Drucktag. Schreibe Z-Nummer und beide Buchungsdaten ab. Erwarteter Geschäftstag ${expected.date} ist nur Kontrollwert; bei Widerspruch das gedruckte Datum zurückgeben. Keine Beträge oder Artikel lesen. JSON: {"date":null,"z_number":null,"booking_from":null,"booking_until":null}. Unlesbares null.`;
+}
+export function pageTotalsPrompt(expected){
+ return `Lies nur den Summenblock mit "Gesamtumsatz brutto" auf dieser BONit-Seite. Erwartete Bruttosumme ${expected.gross_total} ist nur Kontrollwert. Lies rechte BETRAGSSPALTE in gedruckter Zeilenfolge: Gesamtumsatz brutto, Gesamtumsatz netto, Gesamtumsatz brutto bar, Gesamtumsatz brutto unbar; dann für 10,00 und 20,00 jeweils brutto, netto, Steuer. Die 10,00/20,00 links sind Steuersätze und keine Geldbeträge. Keine Werte aus anderen Zeilen ableiten oder vertauschen. Lies Anzahl Rechnungen. JSON: {"gross_total":null,"net_total":null,"cash_total":null,"card_total":null,"receipt_count":null,"tax_breakdown":[{"rate":10,"gross":null,"net":null,"vat":null},{"rate":20,"gross":null,"net":null,"vat":null}]}. Unlesbares null.`;
+}
+export function pagePaymentPrompt(){
+ return `Lies ausschließlich den Block "Zahlarten" dieser BONit-Seite. Schreibe für BAR Rechnung, Kreditkarte, Gutschein (falls gedruckt), Personal / Einladung mit 0 und Teilbetrag bar jede gedruckte Zeile mit ANZAHL Rechnungen und Bruttobetrag ab. Die Summe der beiden bezahlten Arten und eines Gutscheins ist kein zusätzlicher Verkauf. JSON: {"printed_payment_lines":[{"label":"BAR Rechnung","count":null,"amount":null},{"label":"Kreditkarte","count":null,"amount":null},{"label":"Personal / Einladung mit 0","count":null,"amount":null}]}. Keine Beträge schätzen; unlesbare Werte null.`;
+}
+export function choosePaymentRead(reads,gross){
+ return reads.find(read=>{
+  const lines=read?.printed_payment_lines||[];
+  const match=pattern=>lines.find(row=>pattern.test(String(row.label||'')));
+  const cash=match(/^BAR Rechnung$/i),card=match(/^Kreditkarte$/i),free=match(/personal|einladung/i),voucher=match(/^Gutschein$/i);
+  return cash&&card&&free&&[cash,card,free].every(row=>Number.isInteger(row.count)&&Number.isFinite(row.amount))&&Math.abs(cash.amount+card.amount+(voucher?.amount||0)-gross)<.01;
+ })||reads[0];
+}
+export function combineSummaryReads(header,totals,payments){
+ const iso=value=>{const text=String(value||'');const ymd=text.match(/\d{4}-\d{2}-\d{2}/);if(ymd)return ymd[0];const dmy=text.match(/(\d{2})\.(\d{2})\.(\d{4})/);return dmy?`${dmy[3]}-${dmy[2]}-${dmy[1]}`:null;};
+ const dates=[header.booking_from,header.booking_until].map(iso);
+ const date=dates[0]&&dates[1]&&dates[0]===dates[1]&&dates[0]===iso(header.date)?dates[0]:null;
+ const lines=payments.printed_payment_lines||[];
+ const find=label=>lines.find(row=>String(row.label||'').trim().toLowerCase()===label);
+ return {...totals,date,z_number:header.z_number,printed_payment_lines:lines,
+  cash_count:find('bar rechnung')?.count,card_count:find('kreditkarte')?.count,
+  free_count:lines.find(row=>/personal|einladung/i.test(String(row.label||'')))?.count,
+  voucher_count:find('gutschein')?.count||0,other_payments_total:find('gutschein')?.amount||0,
+  vat_total:Number.isFinite(totals.gross_total)&&Number.isFinite(totals.net_total)?Math.round((totals.gross_total-totals.net_total)*100)/100:null};
+}
 export function combinePageReads(summary,reads){
  const pages=reads.map((read,i)=>({
   image_index:i+1,printed_page:read.printed_page??null,processed:read.processed===true,
