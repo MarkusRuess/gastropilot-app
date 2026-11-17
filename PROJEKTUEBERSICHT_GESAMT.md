@@ -2,6 +2,8 @@
 
 # GastroPilot – gemeinsame Projektübersicht
 
+**2026-11-17 Friedrich-Mehrseiten-Code:** PR #133 (`f66afa5`) nach GitHub-CI veröffentlicht; Supabase `analyze-receipt` v61 aktiv. Kopf, Steuersummen und Zahlarten werden getrennt gelesen, Artikel bei Abweichung unabhängig erneut geprüft; eine korrekt gegengeprüfte Steuerlesung wird nicht mehr vom zweiten OCR-Durchlauf überschrieben. Neue angemeldete Drei-Seiten-Verarbeitung noch nicht live nachgewiesen. Siehe `PROJEKTSTAND_FRIEDRICH.md`.
+
 **2026-11-17 Friedrich Z 1866:** Die drei am 17.11. hochgeladenen Originalfotos belegen den Geschäftstag 16.11. (1.581,10 € brutto, 66 Artikelzeilen). Die Automatik erkannte den Geschäftstag, scheiterte aber an Steuer-, Zahlungs- und Artikellesung. Bewachte Originalkorrektur einmalig in Supabase ausgeführt und dort auf 1 Abschluss/66 Artikel/1.581,10 € geprüft; Fotos erhalten. App-Kalender wegen Anmeldegrenze nicht live kontrolliert. Automatische Mehrseitenverarbeitung weiterhin offen. Details in `PROJEKTSTAND_FRIEDRICH.md`.
 
 **2026-11-15 Friedrich Z 1865 – Abschluss:** Die drei Originalseiten vom Geschäftstag 14.11. sind nach manuellem Abgleich einmalig mit 3.286,50 € und 84 Artikelzeilen in Supabase erfasst. Im angemeldeten Novemberkalender waren 14.11.: 3.286,50 €, 12 Umsatztage und 22.332,10 € Monatsbrutto sichtbar. Originale erhalten; automatische OCR für dichte Mehrseitenberichte weiterhin offen. Details in `PROJEKTSTAND_FRIEDRICH.md`.
