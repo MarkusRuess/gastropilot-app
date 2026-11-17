@@ -1,3 +1,7 @@
+## 2026-11-14 – BONit-Spezialerkennung zuerst
+
+Der Client verwendete bei Friedrich zunächst die allgemeine Fotoerkennung (bis 120 Sekunden) und erst bei Fehler oder unvollständiger Seitenzuordnung die BONit-Spezialprüfung (weitere 120 Sekunden). `index.html` versucht für 2–4 Friedrich-Fotos jetzt zuerst die spezielle, streng validierte BONit-Seitenprüfung und verwendet die allgemeine Erkennung als Rückfall. Fehler beider Versuche bleiben sichtbar. Die Prüfung von Seitenzuordnung, Buchung und Doppelbuchungen bleibt erhalten; Judiths Standardpfad unverändert. Keine Beträge geraten, keine Archivdaten geändert. Automatische Tests, Deployment und authentifizierte Liveprüfung noch offen.
+
 ## 2026-11-14 – Archiv-Wiederanlauf nicht mehr dauerhaft blockiert
 
 Drei Friedrich-Fotos vom 14.11.2026 (09:51 Uhr) sind `other/pending`, ohne erkannte Umsatz- oder Artikelwerte. Ursache im Client-Wiederanlauf: `sessionStorage` markierte einen Versuch dauerhaft als `attempted`, auch wenn die Erkennung scheiterte; weitere Öffnungen konnten den Archivsatz nicht erneut anstoßen. Änderung in `index.html`: erneuter Versuch nach fünf Minuten möglich, ohne erneuten Foto-Upload. Keine Buchung, keine Änderung an Judith. Automatische CI und authentifizierte iPhone-Liveprüfung separat erforderlich. Der serverseitige Erkennungsfehler ist dadurch nicht nachweislich behoben.

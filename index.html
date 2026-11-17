@@ -2409,15 +2409,27 @@ async function recognizePhotoGroup(files,intakes){
   for(const number of doc.image_indices){if(!Number.isInteger(number)||number<1||number>files.length||used.has(number))return false;used.add(number);}
   return true;
  })&&used.size===files.length;};
- const {data,error}=await withTimeout(db.functions.invoke('analyze-receipt',{body:{business_id:BID,mode:'auto',defer_tax_verification:true,images}}),120000,'Gemeinsame Erkennung antwortet nach 2 Minuten nicht. Originale bleiben im Archiv.');
- let docs=data?.documents||[];
- if((error||data?.error||!validGroup(docs))&&BID==='6a5484d1-daf6-4263-897d-24cdf536aa29'&&files.length<=4){
-  E('uploadStatus').textContent='BONit-Seiten und gedruckten Geschäftstag gezielt prüfen …';
-  const fallback=await withTimeout(db.functions.invoke('analyze-receipt',{body:{business_id:BID,mode:'friedrich_preflight',images}}),120000,'BONit-Seitenprüfung dauerte zu lange; Originale bleiben gesichert.');
-  if(fallback.error||fallback.data?.error)throw Error(fallback.data?.error||fallback.error?.message||'BONit-Seitenprüfung fehlgeschlagen.');
-  docs=fallback.data?.documents||[];
+ // Friedrich's three-page BONit report uses a dedicated, strictly validated reader first.
+ // Avoid the generic OCR request's long timeout before attempting that reader.
+ const isFriedrich=BID==='6a5484d1-daf6-4263-897d-24cdf536aa29'&&files.length<=4;
+ const firstMode=isFriedrich?'friedrich_preflight':'auto';
+ const firstBody={business_id:BID,mode:firstMode,images,...(isFriedrich?{}:{defer_tax_verification:true})};
+ let firstError=null,docs=[];
+ try{
+  const first=await withTimeout(db.functions.invoke('analyze-receipt',{body:firstBody}),120000,'Erkennung antwortet nach 2 Minuten nicht. Originale bleiben gesichert.');
+  firstError=first.data?.error||first.error?.message||null;
+  docs=first.data?.documents||[];
+ }catch(e){firstError=e.message||String(e);}
+ if(isFriedrich&&!validGroup(docs)){
+  E('uploadStatus').textContent='BONit-Spezialprüfung unvollständig · zweite Erkennung läuft …';
+  try{
+   const second=await withTimeout(db.functions.invoke('analyze-receipt',{body:{business_id:BID,mode:'auto',defer_tax_verification:true,images}}),120000,'Zweite Erkennung antwortet nicht. Originale bleiben gesichert.');
+   docs=second.data?.documents||[];
+   if(!validGroup(docs))firstError=[firstError,second.data?.error||second.error?.message].filter(Boolean).join(' / ');
+  }catch(e){firstError=[firstError,e.message||String(e)].filter(Boolean).join(' / ');}
  }
- if(!validGroup(docs))throw Error(data?.error||error?.message||'Seiten nicht eindeutig zugeordnet; Originale bleiben zur Prüfung gesichert.');
+
+ if(!validGroup(docs))throw Error(firstError||'Seiten nicht eindeutig zugeordnet; Originale bleiben zur Prüfung gesichert.');
  let saved=0,duplicate=0,failed=0;const errors=[];
  for(const doc of docs){
   const entries=doc.image_indices.map(number=>({file:files[number-1],intake:intakes.get(files[number-1])}));
