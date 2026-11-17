@@ -1,4 +1,4 @@
-import {test} from 'node:test';import assert from 'node:assert/strict';import {validatePages,combinePageReads,pageRowsPrompt,pageSummaryPrompt} from '../supabase/functions/analyze-receipt/friedrich-pages.mjs';
+import {test} from 'node:test';import assert from 'node:assert/strict';import {validatePages,combinePageReads,pageRowsPrompt,pageSummaryPrompt,choosePaymentRead,combineSummaryReads,reconcileFriedrichSummary} from '../supabase/functions/analyze-receipt/friedrich-pages.mjs';
 const expected={date:'2026-11-03',z_number:'1855',gross_total:12,net_total:10,cash_total:5,card_total:7,receipt_count:3};
 const good={...expected,printed_payment_lines:[{label:'BAR Rechnung',count:1,amount:5},{label:'Kreditkarte',count:1,amount:7},{label:'Personal / Einladung mit 0',count:1,amount:0}],vat_total:2,cash_count:1,card_count:1,free_count:1,pages:[{image_index:1,printed_page:1,processed:true,continues:true,unreadable_rows:0,article_row_count:2},{image_index:2,printed_page:2,processed:true,continues:false,unreadable_rows:0,article_row_count:0}],sales_items:[{source_page:1,row_index:1,article_number:'1400',name:'Kaffee',quantity:3,unit_price:4,gross_amount:12,tax_rate:20},{source_page:1,row_index:2,article_number:'1400',name:'Kaffee',quantity:1,unit_price:0,gross_amount:0,tax_rate:20}],tax_breakdown:[{rate:20,gross:12,net:10,vat:2}]};
 const validate=x=>validatePages(x,expected,2);
@@ -23,4 +23,16 @@ test('separate page reads with a lost row remain blocked',()=>{
  const first={...good.pages[0],sales_items:[good.sales_items[0]]};
  const combined=combinePageReads(summary,[first,{...good.pages[1],sales_items:[]}]);
  assert.ok(validate(combined).errors.some(x=>x.includes('Artikel fehlen')));
+});
+test('Z 1866: header, totals and payment pages remain distinct',()=>{
+ const header={date:'2026-11-16',booking_from:'16.11.2026 10:31',booking_until:'16.11.2026 21:35',z_number:'1866'};
+ const totals={gross_total:1581.10,net_total:1366.40,cash_total:1125.10,card_total:456,receipt_count:70,tax_breakdown:[{rate:10,gross:644.40,net:585.82,vat:58.58},{rate:20,gross:936.70,net:780.58,vat:156.12}]};
+ const payment={printed_payment_lines:[{label:'BAR Rechnung',count:53,amount:1125.10},{label:'Kreditkarte',count:16,amount:456},{label:'Personal / Einladung mit 0',count:1,amount:0}]};
+ const chosen=choosePaymentRead([{printed_payment_lines:[]},payment],totals.gross_total);
+ const read=combineSummaryReads(header,totals,chosen);
+ assert.equal(read.date,'2026-11-16');assert.equal(read.z_number,'1866');
+ assert.deepEqual(reconcileFriedrichSummary(read,{gross_total:1581.10}),[]);
+ assert.equal(read.cash_count+read.card_count+read.free_count,70);
+ assert.equal(combineSummaryReads({...header,booking_until:'17.11.2026'},totals,payment).date,null);
+ assert.equal(choosePaymentRead([{printed_payment_lines:[{label:'BAR Rechnung',count:53,amount:456}]},payment],1581.10),payment);
 });
