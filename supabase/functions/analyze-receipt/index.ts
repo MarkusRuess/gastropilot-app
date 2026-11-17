@@ -1,4 +1,4 @@
-import {FRIEDRICH,validatePages,pageRowsPrompt,pageSummaryPrompt,combinePageReads,reconcileFriedrichSummary} from './friedrich-pages.mjs';
+import {FRIEDRICH,validatePages,pageRowsPrompt,pageHeaderPrompt,pageTotalsPrompt,pagePaymentPrompt,choosePaymentRead,combineSummaryReads,combinePageReads,reconcileFriedrichSummary} from './friedrich-pages.mjs';
 import {preflightPrompt,validatePreflight} from './friedrich-preflight.mjs';
 
 import { createClient } from "npm:@supabase/supabase-js@2";
@@ -546,11 +546,25 @@ Deno.serve(async (req) => {
       let read:any;
       try{
         // Separate, parallel reads keep long article tables out of the payment/tax answer.
-        const [summary,...pages]=await Promise.all([
-          extract(pageSummaryPrompt(expected,images.length),images,4000),
+        const [header,totals,paymentsLast,paymentsBeforeLast,...pages]=await Promise.all([
+          extract(pageHeaderPrompt(expected),[images[0]],1000),
+          extract(pageTotalsPrompt(expected),[images[Math.max(0,images.length-2)]],1800),
+          extract(pagePaymentPrompt(),[images[images.length-1]],1500),
+          extract(pagePaymentPrompt(),[images[Math.max(0,images.length-2)]],1500),
           ...images.map((image,i)=>extract(pageRowsPrompt(expected,i+1,images.length),[image],9000))
         ]);
+        const summary=combineSummaryReads(header,totals,choosePaymentRead([paymentsLast,paymentsBeforeLast],totals.gross_total));
         read=combinePageReads(summary,pages);
+        const valid=candidate=>!reconcileFriedrichSummary(candidate,expected).length&&!validatePages(candidate,expected,images.length).errors.length;
+        if(!valid(read)){
+          // A second independent read is used only when the first page set
+          // fails the printed totals. Never fill omitted rows by guessing.
+          const retry=await Promise.all(images.map((image,i)=>extract(pageRowsPrompt(expected,i+1,images.length)+' Prüfe besonders die Zeilen am Seitenanfang und Seitenende; lies die gedruckte Tabelle unabhängig erneut.',[image],9000)));
+          for(let mask=1;mask<(1<<images.length);mask++){
+            const candidate=combinePageReads(summary,pages.map((page,i)=>mask&(1<<i)?retry[i]:page));
+            if(valid(candidate)){read=candidate;break;}
+          }
+        }
       }catch(error){
         return json({error:'Originalseiten konnten nicht vollständig ausgewertet werden: '+String((error as Error).message||error)},422);
       }
@@ -563,7 +577,7 @@ Deno.serve(async (req) => {
       }
       const imported=await supabase.rpc('gp_f_import_bonit_articles',{p_document:savedDocument.id,p_z:String(read.z_number),p_sales:read.sales_items});
       if(imported.error)return json({error:imported.error.message},409);
-      const patch={z_number:String(read.z_number),sales_items:read.sales_items,cash_total:read.cash_total,card_total:read.card_total,paid_receipt_count:read.cash_count+read.card_count+(read.voucher_count||0),free_receipt_count:read.free_count,other_payments_total:read.other_payments_total||0,voucher_count:read.voucher_count||0,payment_methods:{cash:{count:read.cash_count,amount:read.cash_total},card:{count:read.card_count,amount:read.card_total},voucher:{count:read.voucher_count||0,amount:read.other_payments_total||0}},receipt_count_verification:{version:2,verified:true,method:'all_original_pages',printed_payment_lines:read.printed_payment_lines,checked_at:new Date().toISOString()},printed_payment_lines:read.printed_payment_lines,tax_breakdown:read.tax_breakdown,returns:read.returns,needs_review:validation.warnings.length>0,article_sales_verification:{version:2,verified:true,method:'all_original_pages',source_fingerprint:fingerprint,source_original_files:originalPaths,pages_total:images.length,pages:read.pages,warnings:validation.warnings,checked_at:new Date().toISOString()}};
+      const patch={z_number:String(read.z_number),sales_items:read.sales_items,net_total:read.net_total,vat_total:read.vat_total,cash_total:read.cash_total,card_total:read.card_total,paid_receipt_count:read.cash_count+read.card_count+(read.voucher_count||0),free_receipt_count:read.free_count,other_payments_total:read.other_payments_total||0,voucher_count:read.voucher_count||0,payment_methods:{cash:{count:read.cash_count,amount:read.cash_total},card:{count:read.card_count,amount:read.card_total},voucher:{count:read.voucher_count||0,amount:read.other_payments_total||0}},receipt_count_verification:{version:2,verified:true,method:'all_original_pages',printed_payment_lines:read.printed_payment_lines,checked_at:new Date().toISOString()},printed_payment_lines:read.printed_payment_lines,tax_breakdown:read.tax_breakdown,tax_verification:{version:TAX_PIPELINE_VERSION,verified:true,method:'original_page_totals_reconciled_with_all_articles',pages_total:images.length,checked_at:new Date().toISOString()},returns:read.returns,needs_review:validation.warnings.length>0,article_sales_verification:{version:2,verified:true,method:'all_original_pages',source_fingerprint:fingerprint,source_original_files:originalPaths,pages_total:images.length,pages:read.pages,warnings:validation.warnings,checked_at:new Date().toISOString()}};
       const updated=await supabase.from('documents').update({extracted_data:{...old,...patch}}).eq('id',savedDocument.id).eq('business_id',FRIEDRICH);
       if(updated.error)return json({error:'Artikel gespeichert, Prüfstatus noch nicht gespeichert; Wiederholung erzeugt keine doppelte Buchung.'},500);
       const closings=await supabase.from('bonit_daily_closings').select('id,raw_data').eq('business_id',FRIEDRICH).eq('closing_date',savedDocument.document_date).eq('z_number',String(read.z_number));
@@ -1257,6 +1271,14 @@ FRIEDRICH LAGER: category je Position ausschließlich food, beverage, coffee, me
     for (let i=0;i<documents.length;i++) {
       const document=documents[i];
       if(document.document_type!=="cash_report")continue;
+      if(businessId===FRIEDRICH&&savedDocument?.extracted_data?.article_sales_verification?.verified&&
+         !savedDocument.extracted_data.article_sales_verification.warnings?.length&&
+         savedDocument.extracted_data?.tax_verification?.method==='original_page_totals_reconciled_with_all_articles'){
+        // The article pass already checked the printed totals against every
+        // article and payment line. A weaker second OCR pass must not undo it.
+        documents[i]={...document,...savedDocument.extracted_data,document_type:'cash_report',needs_review:false};
+        continue;
+      }
       if(body.defer_tax_verification===true && !savedDocument){
         document.needs_review=true;
         document.tax_verification={version:0,verified:false,errors:["Steuerprüfung im Archiv ausstehend"],checked_at:new Date().toISOString()};
