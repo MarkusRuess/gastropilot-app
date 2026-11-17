@@ -2,6 +2,10 @@
 
 # GastroPilot – gemeinsame Projektübersicht
 
+**2026-11-17 Friedrich Z 1866:** Die drei am 17.11. hochgeladenen Originalfotos belegen den Geschäftstag 16.11. (1.581,10 € brutto, 66 Artikelzeilen). Die Automatik erkannte den Geschäftstag, scheiterte aber an Steuer-, Zahlungs- und Artikellesung. Bewachte Originalkorrektur einmalig in Supabase ausgeführt und dort auf 1 Abschluss/66 Artikel/1.581,10 € geprüft; Fotos erhalten. App-Kalender wegen Anmeldegrenze nicht live kontrolliert. Automatische Mehrseitenverarbeitung weiterhin offen. Details in `PROJEKTSTAND_FRIEDRICH.md`.
+
+**2026-11-15 Friedrich Z 1865 – Abschluss:** Die drei Originalseiten vom Geschäftstag 14.11. sind nach manuellem Abgleich einmalig mit 3.286,50 € und 84 Artikelzeilen in Supabase erfasst. Im angemeldeten Novemberkalender waren 14.11.: 3.286,50 €, 12 Umsatztage und 22.332,10 € Monatsbrutto sichtbar. Originale erhalten; automatische OCR für dichte Mehrseitenberichte weiterhin offen. Details in `PROJEKTSTAND_FRIEDRICH.md`.
+
 **2026-11-15 Friedrich Z 1865:** Die drei am 15.11. hochgeladenen Originalseiten gehören zum Geschäftstag 14.11. (3.286,50 €; 84 Artikelzeilen). Die automatische Erkennung blieb wegen falscher Artikel-/Steuerlesung in `auto_review`, ohne Tages- und Artikelbuchung. Friedrich-spezifische Ausrichtung von Querfotos für OCR und Originalseitenprüfung vorbereitet und lokal geprüft; produktiver erneuter Durchlauf separat nachzuweisen. Details in `PROJEKTSTAND_FRIEDRICH.md`.
 
 **2026-11-13 Friedrich Z 1863:** Drei im Archiv gesicherte Originalseiten zeigen Geschäftstag 12.11.2026, 1.350,90 € brutto; der Upload erfolgte erst 13.11. Der authentifizierte Wiederanlauf stoppte bei unvollständiger Seitenzuordnung. Friedrich-spezifischer Original-Fallback in PR #119, Edge Function v59 aktiv; automatische Artikel- und Umsatzbuchung sowie Liveanzeige werden nach Pages-Veröffentlichung geprüft. Andere Betriebe unverändert. Details in `PROJEKTSTAND_FRIEDRICH.md`.
