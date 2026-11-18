@@ -1,3 +1,6 @@
+## 2026-11-18 – Fehlerkorrektur Kachel Rechnungsumsatz
+Ursache: `tile()` erzeugte die Kennzahl `🔵 Rechnungsumsatz` als nicht anklickbares `div`, während die Rechnungsliste im separaten `details#salesInvoices` liegt. In `index.html` ist die Friedrich-Kachel jetzt per Klick, Enter und Leertaste mit der bestehenden Rechnungsliste verknüpft; nach Monats-Neuladen wird der Handler erneut gebunden. Keine Datenbankänderung, keine Änderung an Judith. Commit `e2b7247`. GitHub-Datei zurückgelesen und Verknüpfung statisch kontrolliert; automatisierte Browserprüfung und authentifizierte Live-Abnahme noch offen.
+
 ## 2026-11-18 – Menü Rechnungsumsatz (kleine Verbesserung)
 Im bestehenden `sales-invoices.js` werden Friedrich-Ausgangsrechnungen nun mit neuestem Leistungstag zuerst angezeigt, der offene Bruttobetrag als zusätzliche Monatskennzahl ausgewiesen und ein leerer Monat verständlich gekennzeichnet. Vorhandene Rechnungen, Umsatztrennung, Berechtigungen und Datenbankschema bleiben unverändert. GitHub-Commit `8041e621`. Quellcode nach dem Commit zurückgelesen und drei Änderungen statisch geprüft; automatisierte Browser- und angemeldete Liveprüfung noch offen. Die bisherige Oberfläche liegt unter Umsatz → Ausgangsrechnungen bzw. `index.html#salesInvoices`; PDF-Erzeugung und Bankabgleich sind mit dieser Änderung nicht umgesetzt.
 
