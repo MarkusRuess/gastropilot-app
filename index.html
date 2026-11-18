@@ -1892,7 +1892,8 @@ async function refresh(){void loadLedgerComparison();if(E('recipeCostTile')&&!E(
  }
  const isAug=selectedMonth==='2026-08',isSep=selectedMonth==='2026-09';
  renderAugust(M);
- const previousStartForKpi=new Date(Date.UTC(Number(selectedMonth.slice(0,4)),Number(selectedMonth.slice(5,7))-2,1)).toISOString().slice(0,10);\n const [bonit,docs,articles,invoiceRows,personnel,expenses,accounts,bankFixed,articleCosts,previousBonit,previousInvoices]=await Promise.all([
+ const previousStartForKpi=new Date(Date.UTC(Number(selectedMonth.slice(0,4)),Number(selectedMonth.slice(5,7))-2,1)).toISOString().slice(0,10);
+ const [bonit,docs,articles,invoiceRows,personnel,expenses,accounts,bankFixed,articleCosts,previousBonit,previousInvoices]=await Promise.all([
  query('bonit_daily_closings','closing_date,gross_amount,net_amount,cash_amount,card_amount,receipt_count,raw_data',start,end),
  query('documents','id,document_date,document_type,created_at,status,extracted_data,supplier,invoice_number,storage_path',start,end),
  query('bonit_article_sales','closing_date,article_number,article_name,quantity,gross_amount,raw_data',start,end),
@@ -1900,7 +1901,11 @@ async function refresh(){void loadLedgerComparison();if(E('recipeCostTile')&&!E(
  db.from('personnel_costs').select('accounting_month,total_costs').eq('business_id',BID).eq('accounting_month',start),
  db.from('expenses').select('expense_date,category,net_amount,gross_amount,document_id').eq('business_id',BID).gte('expense_date',start).lt('expense_date',end),
  db.from('cash_accounts').select('account_name,account_type,current_balance,balance_date').eq('business_id',BID),
- loadBankFixedCosts(db,BID,start,end),\n db.from('gp_article_costs').select('article_name,cost_net,cost_basis').eq('business_id',BID),\n db.from('bonit_daily_closings').select('closing_date,gross_amount').eq('business_id',BID).gte('closing_date',previousStartForKpi).lt('closing_date',start),\n db.from('sales_invoices').select('service_date,gross_total').eq('business_id',BID).gte('service_date',previousStartForKpi).lt('service_date',start)\n ]);for(const x of [invoiceRows,personnel,expenses,accounts,bankFixed])if(x.error)throw x.error;for(const x of [articleCosts,previousBonit,previousInvoices])if(x.error)console.warn('Friedrich Zusatzkennzahl nicht verfügbar:',x.error.message);
+ loadBankFixedCosts(db,BID,start,end),
+ db.from('gp_article_costs').select('article_name,cost_net,cost_basis').eq('business_id',BID),
+ db.from('bonit_daily_closings').select('closing_date,gross_amount').eq('business_id',BID).gte('closing_date',previousStartForKpi).lt('closing_date',start),
+ db.from('sales_invoices').select('service_date,gross_total').eq('business_id',BID).gte('service_date',previousStartForKpi).lt('service_date',start)
+ ]);for(const x of [invoiceRows,personnel,expenses,accounts,bankFixed])if(x.error)throw x.error;for(const x of [articleCosts,previousBonit,previousInvoices])if(x.error)console.warn('Friedrich Zusatzkennzahl nicht verfügbar:',x.error.message);
  const monthlyReports=docs.filter(d=>d.document_type==='monthly_report');const archive=new Map();for(const d of docs.filter(d=>d.document_type==='cash_report')){const prev=archive.get(d.document_date);const rank=x=>(['auto_imported','reviewed'].includes(x.status)?2:N(x.extracted_data?.gross_total)!==null?1:0);if(!prev||rank(d)>rank(prev)||(rank(d)===rank(prev)&&prev.created_at<d.created_at))archive.set(d.document_date,d);}
  const isJudith=authorizedBusinesses.some(member=>member.business_id===BID&&businessLabel(member.businesses?.name)==='Judith und die Torten');
   const rows=new Map();for(const r of bonit){const receipts=N(r.receipt_count);rows.set(r.closing_date,{date:r.closing_date,source:'BONit',gross:N(r.gross_amount),net:N(r.net_amount),cash:N(r.cash_amount),card:N(r.card_amount),receipts,paid:isJudith?receipts:paidCount(r.raw_data)??paidCount(archive.get(r.closing_date)?.extracted_data),raw:r.raw_data,bonitGross:N(r.gross_amount)});}
