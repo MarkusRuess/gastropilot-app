@@ -1923,7 +1923,7 @@ async function refresh(){void loadLedgerComparison();if(E('recipeCostTile')&&!E(
 
  window.dispatchEvent(new CustomEvent('gp:monthly-data',{detail:{businessId:BID,isJudith,month:selectedMonth,days:daily.map(d=>({date:d.date,gross:d.gross,cash:d.cash,card:d.card,paid:d.paid})),gross:M?.gross??gross,cash:M?.cash??cash,card:M?.card??card,paid:coveredPaid,paidGross:coveredGross,bonitGross:bonit.reduce((v,d)=>v+(N(d.gross_amount)||0),0),invoiceGross,invoiceNet,netGrossTotal:M?.net!=null?M.net+invoiceNet:net,receipts:M?.receipts??recordedReceipts??recordedReceiptsPartial,receiptCoverage:receiptDays.length,openingDays:daily.filter(d=>d.bonitGross!==undefined||d.source==='Archiv').length,articleSales:articles,articleCosts:articleCosts.data||[],previousBonit:previousBonit.data||[],previousInvoices:previousInvoices.data||[]}}));
  const taxRows=[];for(const d of daily){const stored=archive.get(d.date);const x=['auto_imported','reviewed'].includes(stored?.status)?stored.extracted_data||{}:{};const sourceGross=N(d.raw?.pos_gross)??d.gross,sourceNet=N(d.raw?.pos_net)??d.net;const z=vat(x)||vat({...d.raw,gross_total:sourceGross,net_total:sourceNet});if(z&&Math.abs(z.g10+z.g20-sourceGross)<.03)taxRows.push(z);}
- const taxTotals=M?{g10:M.tax.find(x=>x.rate===10).gross,n10:M.tax.find(x=>x.rate===10).net,g20:M.tax.find(x=>x.rate===20).gross,n20:M.tax.find(x=>x.rate===20).net}:taxRows.length?taxRows.reduce((a,x)=>({g10:a.g10+x.g10,n10:a.n10+x.n10,g20:a.g20+x.g20,n20:a.n20+x.n20}),{g10:0,n10:0,g20:0,n20:0}):null;if(taxTotals){taxTotals.g10+=invoiceGross;taxTotals.n10+=invoiceNet;}
+ const taxTotals=M?{g10:M.tax.find(x=>x.rate===10).gross,n10:M.tax.find(x=>x.rate===10).net,g20:M.tax.find(x=>x.rate===20).gross,n20:M.tax.find(x=>x.rate===20).net}:taxRows.length?taxRows.reduce((a,x)=>({g10:a.g10+x.g10,n10:a.n10+x.n10,g20:a.g20+x.g20,n20:a.n20+x.n20}),{g10:0,n10:0,g20:0,n20:0}):null;/* Ausgangsrechnungen nicht pauschal der 10%-Steuergruppe zuordnen: ihre Steuergruppen werden getrennt ausgewiesen. */
  E('tax').replaceChildren();for(const [label,key] of [['10 % brutto','g10'],['10 % netto','n10'],['20 % brutto','g20'],['20 % netto','n20']])tile(E('tax'),label,taxTotals?EUR(taxTotals[key]):'–');
  E('taxNote').textContent=(M?'BONit Monatsabschluss Z '+M.z_number+' · Steuergruppen aus Original.':taxRows.length+' von '+daily.length+' Tagesabrechnungen mit vollständig abgeglichenen 10/20-%-Werten. Angezeigt ist die Summe der geprüften Tage; fehlende Werte werden nicht ergänzt.')+' Ausgangsrechnungen nach Leistungstag: '+EUR(invoiceGross)+' brutto, '+EUR(invoiceNet)+' netto, '+EUR(invoiceVat)+' MwSt.';
  const personnelRows=personnel.data||[],expenseRows=expenses.data||[],accountRows=accounts.data||[],fixedRows=bankFixed.data||[];
@@ -3592,7 +3592,81 @@ body.gp-invoice-focus:not(.gp-judith-design) #invoice-itemRows .item-entry butto
 body.gp-invoice-focus:not(.gp-judith-design) #invoice-invoices select{min-width:0}
 body.gp-invoice-focus:not(.gp-judith-design) #salesInvoices .invoice-inline-content>.card{padding:12px!important}
 }
-</style><script type="module" src="./sales-invoices.js"></script><style id="gp-article-analysis-clean-view-20261030">
+</style><style id="gp-friedrich-daily-kpi-redesign-20261118">
+body:not(.gp-judith-design) #salesSection{border-radius:18px!important}
+body:not(.gp-judith-design) #salesSection>h2{color:#123f46;font-size:clamp(19px,2.2vw,26px);margin-bottom:16px}
+body:not(.gp-judith-design) #salesSection #sales{display:block!important}
+body:not(.gp-judith-design) #sales .gp-kpi-group{margin:0 0 16px}
+body:not(.gp-judith-design) #sales .gp-kpi-group>h3{font-size:16px;color:#163e46;margin:13px 0 9px}
+body:not(.gp-judith-design) #sales .gp-kpi-grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:10px}
+body:not(.gp-judith-design) #sales .gp-kpi-grid>.tile{grid-column:span 3;min-width:0;margin:0!important;padding:15px!important;border:1px solid #dde6ea;border-radius:13px;background:#f7fafb}
+body:not(.gp-judith-design) #sales .gp-kpi-grid[data-kind="revenue"]>.tile{grid-column:span 4}
+body:not(.gp-judith-design) #sales .gp-kpi-grid[data-kind="totals"]>.tile,body:not(.gp-judith-design) #sales .gp-kpi-grid[data-kind="payments"]>.tile{grid-column:span 6}
+body:not(.gp-judith-design) #sales .gp-kpi-grid .tile small{display:block;font-size:12px;color:#637789;line-height:1.4}
+body:not(.gp-judith-design) #sales .gp-kpi-grid .tile b{font-size:clamp(18px,2.1vw,27px);line-height:1.35;overflow-wrap:anywhere}
+body:not(.gp-judith-design) #sales .gp-kpi-grid[data-kind="revenue"]>.tile:first-child{background:#eaf7f1;border-color:#b8e3d3}
+body:not(.gp-judith-design) #sales .gp-kpi-grid[data-kind="revenue"]>.tile:last-child{background:#fff8ee;border-color:#f2d6a4}
+body:not(.gp-judith-design) #sales .gp-kpi-grid[data-kind="averages"]>.tile:last-child{background:#edf8f1;border-color:#b6dfc7}
+body:not(.gp-judith-design) #sales .gp-kpi-trend{display:block;margin-top:5px;font-size:12px;font-weight:700}
+body:not(.gp-judith-design) #sales .gp-kpi-trend.up{color:#137b48}
+body:not(.gp-judith-design) #sales .gp-kpi-trend.down{color:#b13e32}
+body:not(.gp-judith-design) #sales .gp-kpi-trend.neutral{color:#627789}
+body:not(.gp-judith-design) #sales .gp-payment-track{height:6px;border-radius:10px;background:#dfe8eb;margin-top:10px;overflow:hidden}
+body:not(.gp-judith-design) #sales .gp-payment-fill{height:100%;background:#168366;border-radius:10px}
+body:not(.gp-judith-design) #sales .gp-cost-card{border:1px solid #d7e5db;background:#f5faf6;border-radius:13px;padding:14px 17px;display:grid;grid-template-columns:1.5fr 1fr 1fr;gap:12px;align-items:center}
+body:not(.gp-judith-design) #sales .gp-cost-card strong{display:block;font-size:19px;color:#173e46}
+body:not(.gp-judith-design) #sales .gp-cost-card b{font-size:22px}
+body:not(.gp-judith-design) #sales .gp-cost-card small{display:block;color:#607688;font-size:12px}
+body:not(.gp-judith-design) #sales .gp-cost-note{margin:8px 0 0;color:#607688;font-size:12px}
+body:not(.gp-judith-design) #sales .article-launch-tile{display:none!important}
+body:not(.gp-judith-design) #salesSection>h3{font-size:16px;color:#173e46;margin:18px 0 9px}
+body:not(.gp-judith-design) #tax{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+body:not(.gp-judith-design) #tax .gp-tax-group{border:1px solid #dae5e8;border-radius:13px;overflow:hidden;background:#fff;min-width:0}
+body:not(.gp-judith-design) #tax .gp-tax-title{padding:10px 14px;font-size:15px;font-weight:750;background:#eaf6ef}
+body:not(.gp-judith-design) #tax .gp-tax-group:last-child .gp-tax-title{background:#fff5e8}
+body:not(.gp-judith-design) #tax .gp-tax-title small{display:block;font-size:11px;color:#65788a;font-weight:500}
+body:not(.gp-judith-design) #tax .gp-tax-values{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:10px}
+body:not(.gp-judith-design) #tax .tile{min-width:0;margin:0!important;padding:7px!important;background:transparent!important;border:0!important}
+body:not(.gp-judith-design) #tax .tile b{font-size:clamp(16px,1.8vw,22px)}
+@media(max-width:750px){body:not(.gp-judith-design) #sales .gp-kpi-grid>.tile{grid-column:span 6}body:not(.gp-judith-design) #sales .gp-kpi-grid[data-kind="revenue"]>.tile{grid-column:span 6}body:not(.gp-judith-design) #sales .gp-cost-card{grid-template-columns:1fr 1fr}}
+@media(max-width:520px){body:not(.gp-judith-design) #sales .gp-kpi-grid[data-kind="revenue"]>.tile{grid-column:span 12}body:not(.gp-judith-design) #sales .gp-kpi-grid .tile{padding:11px!important}body:not(.gp-judith-design) #tax{grid-template-columns:1fr}body:not(.gp-judith-design) #sales .gp-cost-card{grid-template-columns:1fr}}
+</style>
+<script id="gp-friedrich-daily-kpi-redesign-script">(function(){
+const eur=n=>new Intl.NumberFormat('de-AT',{style:'currency',currency:'EUR'}).format(n);
+const pct=n=>new Intl.NumberFormat('de-AT',{minimumFractionDigits:1,maximumFractionDigits:1}).format(n)+' %';
+const num=v=>v===null||v===undefined||v===''?null:Number.isFinite(Number(v))?Number(v):null;
+const norm=v=>String(v||'').trim().toLocaleLowerCase('de-AT').replace(/\s+/g,' ');
+const make=(tag,cls,content)=>{const el=document.createElement(tag);if(cls)el.className=cls;if(content!==undefined)el.textContent=content;return el};
+function renderTax(){const tax=document.getElementById('tax');if(!tax||document.body.classList.contains('gp-judith-design')||tax.querySelector('.gp-tax-group'))return;const tiles=[...tax.children].filter(x=>x.classList.contains('tile'));if(tiles.length!==4)return;
+const group=(rate,desc,part)=>{const wrap=make('div','gp-tax-group');const heading=make('div','gp-tax-title',rate+' % MwSt.');heading.append(make('small','',desc));const values=make('div','gp-tax-values');part.forEach(x=>values.append(x));wrap.append(heading,values);return wrap};
+tax.replaceChildren(group(10,'Speisen · Kaffee · Tee',tiles.slice(0,2)),group(20,'Alkohol · Softdrinks · Mineralwasser',tiles.slice(2,4)));
+const heading=tax.previousElementSibling;if(heading&&heading.tagName==='H3')heading.textContent='Steuergruppen · geprüfte Tagesabschlüsse';
+}
+function render(d){if(d.isJudith||document.body.classList.contains('gp-judith-design'))return;const sales=document.getElementById('sales');if(!sales)return;
+const tiles=[...sales.children].filter(x=>x.classList.contains('tile')&&!x.classList.contains('article-launch-tile'));if(tiles.length<8)return;
+const byLabel=new Map(tiles.map(x=>[x.querySelector('small')?.textContent||'',x]));
+const pick=prefix=>[...byLabel].find(([k])=>k.startsWith(prefix))?.[1];
+const section=(name,kind)=>{const wrap=make('section','gp-kpi-group');if(name)wrap.append(make('h3','',name));const grid=make('div','gp-kpi-grid');grid.dataset.kind=kind;wrap.append(grid);sales.append(wrap);return grid};
+const revenue=section('', 'revenue');['🟢 Bonit-Umsatz','🔵 Rechnungsumsatz','💶 Gesamtumsatz'].forEach(k=>{const x=pick(k);if(x)revenue.append(x)});
+const totals=section('Umsatz','totals');['Bruttoumsatz','Nettoumsatz'].forEach(k=>{const x=pick(k);if(x)totals.append(x)});
+const payments=section('Zahlungsarten','payments');const cash=pick('Bar'),card=pick('Karte');const total=(num(d.cash)||0)+(num(d.card)||0);for(const [x,value] of [[cash,d.cash],[card,d.card]]){if(!x)continue;payments.append(x);const share=total>0?100*(num(value)||0)/total:null;const label=x.querySelector('small');if(label&&share!==null)label.textContent+=( ' · '+pct(share));const track=make('div','gp-payment-track'),fill=make('div','gp-payment-fill');fill.style.width=(share??0)+'%';track.append(fill);x.append(track)}
+const avg=section('Bons & Tagesdurchschnitt','averages');const receipts=pick('Erfasste Bons'),days=pick('Tage');if(receipts)avg.append(receipts);if(days){days.querySelector('small').textContent='Öffnungstage';avg.append(days)}
+const bonitReceipts=num(d.receipts),bonitGross=num(d.bonitGross),openDays=num(d.openingDays),gross=bonitGross+(num(d.invoiceGross)||0);
+const bon=make('div','tile');bon.append(make('small','','Ø Bon'),make('b','',bonitReceipts>0&&d.receiptCoverage===openDays?eur(bonitGross/bonitReceipts):'Nicht vollständig'));avg.append(bon);
+const daily=make('div','tile');daily.append(make('small','','Ø Tagesumsatz'),make('b','',openDays>0?eur(gross/openDays):'–'));avg.append(daily);
+const prevDays=new Set((d.previousBonit||[]).map(x=>x.closing_date)).size;const prevGross=(d.previousBonit||[]).reduce((v,x)=>v+(num(x.gross_amount)||0),0)+(d.previousInvoices||[]).reduce((v,x)=>v+(num(x.gross_total)||0),0);
+const prevAverage=prevDays>0?prevGross/prevDays:null;const currentAverage=openDays>0?gross/openDays:null;
+const trend=make('span','gp-kpi-trend neutral');if(prevAverage>0&&currentAverage!==null){const change=100*(currentAverage/prevAverage-1);trend.className='gp-kpi-trend '+(change>0.05?'up':change< -0.05?'down':'neutral');trend.textContent=(change>0.05?'↗ ':change< -0.05?'↘ ':'→ ')+(change>0?'+':'')+pct(change)+' ggü. Vormonat'}else trend.textContent='Vormonatsvergleich nicht verfügbar';daily.append(trend);
+const costSection=make('section','gp-kpi-group');costSection.append(make('h3','','Kalkulierter Wareneinsatz · BONit-Verkäufe'));const costCard=make('div','gp-cost-card');const left=make('div');left.append(make('strong','','Wareneinsatz (verkaufsbasiert)'),make('small','','Ziel: 26 % vom Nettoumsatz'));const middle=make('div'),right=make('div');costCard.append(left,middle,right);costSection.append(costCard);const note=make('p','gp-cost-note');costSection.append(note);sales.append(costSection);
+const costs=new Map((d.articleCosts||[]).filter(x=>num(x.cost_net)!==null&&num(x.cost_net)>=0).map(x=>[norm(x.article_name),num(x.cost_net)]));
+let matched=0,totalQty=0,coveredQty=0,costSum=0,missing=0;for(const a of d.articleSales||[]){const q=num(a.quantity);if(q===null||q<=0)continue;totalQty+=q;const price=costs.get(norm(a.article_name));if(price===undefined){missing++;continue}matched++;coveredQty+=q;costSum+=q*price}
+const coverage=totalQty>0?100*coveredQty/totalQty:0;middle.append(make('small','','Kalkulierter Netto-EK'),make('b','',matched?eur(costSum):'–'));const net=num(d.netGrossTotal);const complete=totalQty>0&&missing===0&&net>0&&d.receiptCoverage===openDays;const ratio=complete?100*costSum/net:null;right.append(make('small','','Wareneinsatzquote'),make('b','',ratio===null?'Nicht belastbar':pct(ratio)));right.append(make('small','',ratio===null?'Bewertung offen':ratio<=26?'✓ Im Ziel':ratio<=29?'! Beobachten':'! Zu hoch'));note.textContent='Kalkulationsabdeckung: '+pct(coverage)+' der verkauften Artikelmengen. '+(missing?'Fehlende Kalkulationen: '+missing+' Artikelzeilen. ':'')+(complete?'Berechnung aus hinterlegten Artikel-EK; Schwund/Inventurdifferenzen nicht enthalten.':'Keine grüne/rote Bewertung bei fehlenden Artikelkosten oder unvollständigen BONit-Daten.');
+const pending=pick('Vorläufig');if(pending&&pending.querySelector('b')?.textContent!=='Keine'){const warnings=section('Zur Prüfung','warnings');warnings.append(pending)}
+}
+window.addEventListener('gp:monthly-data',e=>{try{render(e.detail)}catch(err){console.warn('Friedrich Umsatzkacheln',err)}});
+function init(){const tax=document.getElementById('tax');if(tax){new MutationObserver(renderTax).observe(tax,{childList:true});renderTax()}}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+})();</script><script type="module" src="./sales-invoices.js"></script><style id="gp-article-analysis-clean-view-20261030">
 body.gp-friedrich-article-view #gpReferencePreviews,
 body.gp-friedrich-article-view #gpDailyCalendarPanel,
 body.gp-friedrich-article-view #gpMockupExtra,
