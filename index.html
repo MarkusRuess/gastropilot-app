@@ -1892,7 +1892,7 @@ async function refresh(){void loadLedgerComparison();if(E('recipeCostTile')&&!E(
  }
  const isAug=selectedMonth==='2026-08',isSep=selectedMonth==='2026-09';
  renderAugust(M);
- const [bonit,docs,articles,invoiceRows,personnel,expenses,accounts,bankFixed]=await Promise.all([
+ const previousStartForKpi=new Date(Date.UTC(Number(selectedMonth.slice(0,4)),Number(selectedMonth.slice(5,7))-2,1)).toISOString().slice(0,10);\n const [bonit,docs,articles,invoiceRows,personnel,expenses,accounts,bankFixed,articleCosts,previousBonit,previousInvoices]=await Promise.all([
  query('bonit_daily_closings','closing_date,gross_amount,net_amount,cash_amount,card_amount,receipt_count,raw_data',start,end),
  query('documents','id,document_date,document_type,created_at,status,extracted_data,supplier,invoice_number,storage_path',start,end),
  query('bonit_article_sales','closing_date,article_number,article_name,quantity,gross_amount,raw_data',start,end),
@@ -1900,8 +1900,7 @@ async function refresh(){void loadLedgerComparison();if(E('recipeCostTile')&&!E(
  db.from('personnel_costs').select('accounting_month,total_costs').eq('business_id',BID).eq('accounting_month',start),
  db.from('expenses').select('expense_date,category,net_amount,gross_amount,document_id').eq('business_id',BID).gte('expense_date',start).lt('expense_date',end),
  db.from('cash_accounts').select('account_name,account_type,current_balance,balance_date').eq('business_id',BID),
- loadBankFixedCosts(db,BID,start,end)
- ]);for(const x of [invoiceRows,personnel,expenses,accounts,bankFixed])if(x.error)throw x.error;
+ loadBankFixedCosts(db,BID,start,end),\n db.from('gp_article_costs').select('article_name,cost_net,cost_basis').eq('business_id',BID),\n db.from('bonit_daily_closings').select('closing_date,gross_amount').eq('business_id',BID).gte('closing_date',previousStartForKpi).lt('closing_date',start),\n db.from('sales_invoices').select('service_date,gross_total').eq('business_id',BID).gte('service_date',previousStartForKpi).lt('service_date',start)\n ]);for(const x of [invoiceRows,personnel,expenses,accounts,bankFixed,articleCosts,previousBonit,previousInvoices])if(x.error)throw x.error;
  const monthlyReports=docs.filter(d=>d.document_type==='monthly_report');const archive=new Map();for(const d of docs.filter(d=>d.document_type==='cash_report')){const prev=archive.get(d.document_date);const rank=x=>(['auto_imported','reviewed'].includes(x.status)?2:N(x.extracted_data?.gross_total)!==null?1:0);if(!prev||rank(d)>rank(prev)||(rank(d)===rank(prev)&&prev.created_at<d.created_at))archive.set(d.document_date,d);}
  const isJudith=authorizedBusinesses.some(member=>member.business_id===BID&&businessLabel(member.businesses?.name)==='Judith und die Torten');
   const rows=new Map();for(const r of bonit){const receipts=N(r.receipt_count);rows.set(r.closing_date,{date:r.closing_date,source:'BONit',gross:N(r.gross_amount),net:N(r.net_amount),cash:N(r.cash_amount),card:N(r.card_amount),receipts,paid:isJudith?receipts:paidCount(r.raw_data)??paidCount(archive.get(r.closing_date)?.extracted_data),raw:r.raw_data,bonitGross:N(r.gross_amount)});}
@@ -1922,7 +1921,7 @@ async function refresh(){void loadLedgerComparison();if(E('recipeCostTile')&&!E(
   button.onclick=()=>{const disclosure=E(targetId+'Disclosure');if(disclosure)disclosure.open=true;const target=E(targetId);if(target){target.classList.remove('mobileHidden');target.scrollIntoView({behavior:'smooth',block:'start'});}if(window.matchMedia('(max-width:680px)').matches)showMobilePanel(targetId);};E('sales').append(button);
  }
 
- window.dispatchEvent(new CustomEvent('gp:monthly-data',{detail:{businessId:BID,month:selectedMonth,days:daily.map(d=>({date:d.date,gross:d.gross,cash:d.cash,card:d.card,paid:d.paid})),gross:M?.gross??gross,cash:M?.cash??cash,card:M?.card??card,paid:coveredPaid,paidGross:coveredGross}}));
+ window.dispatchEvent(new CustomEvent('gp:monthly-data',{detail:{businessId:BID,isJudith,month:selectedMonth,days:daily.map(d=>({date:d.date,gross:d.gross,cash:d.cash,card:d.card,paid:d.paid})),gross:M?.gross??gross,cash:M?.cash??cash,card:M?.card??card,paid:coveredPaid,paidGross:coveredGross,bonitGross:bonit.reduce((v,d)=>v+(N(d.gross_amount)||0),0),invoiceGross,invoiceNet,netGrossTotal:M?.net!=null?M.net+invoiceNet:net,receipts:M?.receipts??recordedReceipts??recordedReceiptsPartial,receiptCoverage:receiptDays.length,openingDays:daily.filter(d=>d.bonitGross!==undefined||d.source==='Archiv').length,articleSales:articles,articleCosts:articleCosts.data||[],previousBonit:previousBonit.data||[],previousInvoices:previousInvoices.data||[]}}));
  const taxRows=[];for(const d of daily){const stored=archive.get(d.date);const x=['auto_imported','reviewed'].includes(stored?.status)?stored.extracted_data||{}:{};const sourceGross=N(d.raw?.pos_gross)??d.gross,sourceNet=N(d.raw?.pos_net)??d.net;const z=vat(x)||vat({...d.raw,gross_total:sourceGross,net_total:sourceNet});if(z&&Math.abs(z.g10+z.g20-sourceGross)<.03)taxRows.push(z);}
  const taxTotals=M?{g10:M.tax.find(x=>x.rate===10).gross,n10:M.tax.find(x=>x.rate===10).net,g20:M.tax.find(x=>x.rate===20).gross,n20:M.tax.find(x=>x.rate===20).net}:taxRows.length?taxRows.reduce((a,x)=>({g10:a.g10+x.g10,n10:a.n10+x.n10,g20:a.g20+x.g20,n20:a.n20+x.n20}),{g10:0,n10:0,g20:0,n20:0}):null;if(taxTotals){taxTotals.g10+=invoiceGross;taxTotals.n10+=invoiceNet;}
  E('tax').replaceChildren();for(const [label,key] of [['10 % brutto','g10'],['10 % netto','n10'],['20 % brutto','g20'],['20 % netto','n20']])tile(E('tax'),label,taxTotals?EUR(taxTotals[key]):'–');
