@@ -1,3 +1,6 @@
+## 2026-11-18 – Rechnungsumsatz-Kachel, zweite Korrektur
+Nach Nutzer-Screenshot war die Kachel im Bereich Tagesabschlüsse nicht sichtbar navigierend. `index.html` korrigiert: delegierter Klick- und Tastaturhandler an der Kachel, eigener fokussierter Rechnungsbereich innerhalb der vorhandenen Ansicht, Zurück-Schaltfläche, Direkteinstieg über `#salesInvoices`; Kalender und andere Kennzahlen werden nur während der Rechnungsansicht ausgeblendet. GitHub-Commit `a9b14d3`. Nach Commit Quellcode auf die vier Elemente geprüft. Kein Supabase-Schreibzugriff, keine Änderung an Betriebsdaten oder Judith. Authentifizierter Browser-/Live-Test noch nicht durchgeführt.
+
 ## 2026-11-18 – Fehlerkorrektur Kachel Rechnungsumsatz
 Ursache: `tile()` erzeugte die Kennzahl `🔵 Rechnungsumsatz` als nicht anklickbares `div`, während die Rechnungsliste im separaten `details#salesInvoices` liegt. In `index.html` ist die Friedrich-Kachel jetzt per Klick, Enter und Leertaste mit der bestehenden Rechnungsliste verknüpft; nach Monats-Neuladen wird der Handler erneut gebunden. Keine Datenbankänderung, keine Änderung an Judith. Commit `e2b7247`. GitHub-Datei zurückgelesen und Verknüpfung statisch kontrolliert; automatisierte Browserprüfung und authentifizierte Live-Abnahme noch offen.
 
