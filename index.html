@@ -3658,6 +3658,50 @@ body:not(.gp-judith-design) #tax .gp-tax-title{background:#f0f8f3!important;padd
 body:not(.gp-judith-design) #tax .gp-tax-group:last-child .gp-tax-title{background:#fcf6eb!important}
 @media(max-width:750px){body:not(.gp-judith-design) #sales .gp-cost-card{grid-template-columns:1fr 1fr!important}}
 @media(max-width:520px){body:not(.gp-judith-design) #sales .gp-cost-card{grid-template-columns:1fr!important}body:not(.gp-judith-design) #sales .gp-kpi-grid>.tile{padding:10px!important;min-height:76px!important}}
+
+/* Freigegebene Friedrich-Referenz: dunkler Kopf, große Icons, klare Farbkarten */
+body:not(.gp-judith-design) #salesSection{padding:0 0 20px!important;overflow:hidden!important;background:#fff!important;border-radius:20px!important;box-shadow:0 3px 16px rgba(17,61,67,.08)!important}
+body:not(.gp-judith-design) #salesSection>h2{display:flex!important;align-items:center!important;min-height:78px!important;background:linear-gradient(105deg,#003e43,#005354 58%,#00343e)!important;color:#fff!important;padding:16px 26px 16px 84px!important;margin:0 0 18px!important;font-size:clamp(22px,2.5vw,33px)!important;position:relative!important}
+body:not(.gp-judith-design) #salesSection>h2:before{content:"▦";position:absolute;left:26px;font-size:38px;line-height:1;color:#fff}
+body:not(.gp-judith-design) #salesSection #sales,body:not(.gp-judith-design) #salesSection>h3,body:not(.gp-judith-design) #salesSection #tax,body:not(.gp-judith-design) #salesSection #taxNote{margin-left:20px!important;margin-right:20px!important}
+body:not(.gp-judith-design) #sales .gp-kpi-group>h3{font-size:19px!important;color:#122d3a!important;margin:14px 0 9px!important}
+body:not(.gp-judith-design) #sales .gp-kpi-grid{gap:14px!important}
+body:not(.gp-judith-design) #sales .gp-kpi-grid>.tile{position:relative!important;padding:18px 18px 18px 76px!important;min-height:106px!important;border:1px solid #cad9e5!important;border-radius:15px!important;background:linear-gradient(125deg,#fff,#f8fafc)!important;box-shadow:0 2px 5px rgba(21,55,70,.04)!important}
+body:not(.gp-judith-design) #sales .gp-kpi-grid>.tile:before{content:"▥";position:absolute;top:24px;left:22px;font-size:32px;line-height:1;color:#16814e;font-weight:750}
+body:not(.gp-judith-design) #sales .gp-kpi-grid[data-kind="revenue"]>.tile:first-child{background:linear-gradient(125deg,#f8fff9,#e9f8ef)!important;border-color:#a7dbc3!important}
+body:not(.gp-judith-design) #sales .gp-kpi-grid[data-kind="revenue"]>.tile:nth-child(2){background:linear-gradient(125deg,#fff,#edf4ff)!important;border-color:#b7ceef!important}
+body:not(.gp-judith-design) #sales .gp-kpi-grid[data-kind="revenue"]>.tile:nth-child(2):before{content:"●";color:#126ce3}
+body:not(.gp-judith-design) #sales .gp-kpi-grid[data-kind="revenue"]>.tile:last-child{background:linear-gradient(125deg,#fffdf8,#fff0d9)!important;border-color:#f2c57c!important}
+body:not(.gp-judith-design) #sales .gp-kpi-grid[data-kind="revenue"]>.tile:last-child:before{content:"◉";color:#e6a000}
+body:not(.gp-judith-design) #sales .gp-kpi-grid[data-kind="totals"]>.tile:first-child:before{content:"▂▅▇"}
+body:not(.gp-judith-design) #sales .gp-kpi-grid[data-kind="totals"]>.tile:last-child:before{content:"▤"}
+body:not(.gp-judith-design) #sales .gp-kpi-grid[data-kind="payments"]>.tile:first-child:before{content:"▣"}
+body:not(.gp-judith-design) #sales .gp-kpi-grid[data-kind="payments"]>.tile:last-child:before{content:"▰"}
+body:not(.gp-judith-design) #sales .gp-kpi-grid[data-kind="averages"]>.tile{padding:15px 12px 15px 52px!important;min-height:102px!important}
+body:not(.gp-judith-design) #sales .gp-kpi-grid[data-kind="averages"]>.tile:before{top:21px;left:13px;font-size:27px}
+body:not(.gp-judith-design) #sales .gp-kpi-grid[data-kind="averages"]>.tile:nth-child(1):before{content:"◇"}
+body:not(.gp-judith-design) #sales .gp-kpi-grid[data-kind="averages"]>.tile:nth-child(2):before{content:"▦"}
+body:not(.gp-judith-design) #sales .gp-kpi-grid[data-kind="averages"]>.tile:nth-child(3):before{content:"▤"}
+body:not(.gp-judith-design) #sales .gp-kpi-grid[data-kind="averages"]>.tile:nth-child(4):before{content:"▂▅▇"}
+body:not(.gp-judith-design) #sales .gp-kpi-grid[data-kind="averages"]>.tile:last-child{background:linear-gradient(125deg,#f7fff8,#e6f8eb)!important;border-color:#9cd3ae!important}
+body:not(.gp-judith-design) #sales .gp-kpi-grid .tile small{font-size:clamp(13px,1.3vw,17px)!important;color:#243849!important}
+body:not(.gp-judith-design) #sales .gp-kpi-grid .tile b{font-size:clamp(23px,2.7vw,34px)!important;color:#111f2c!important;line-height:1.35!important}
+body:not(.gp-judith-design) #sales .gp-payment-track{height:11px!important;border-radius:30px!important;background:#dfe6ed!important}
+body:not(.gp-judith-design) #sales .gp-payment-fill{background:linear-gradient(90deg,#06835d,#04764f)!important}
+body:not(.gp-judith-design) #sales .gp-cost-card{grid-template-columns:1.6fr 1fr 1fr!important;align-items:center!important;gap:18px!important;padding:20px 24px 20px 88px!important;min-height:112px!important;position:relative!important;background:linear-gradient(100deg,#f9fff1,#e8f7e8)!important;border:1px solid #8bbf77!important;border-radius:16px!important}
+body:not(.gp-judith-design) #sales .gp-cost-card:before{content:"♧";position:absolute;left:23px;top:21px;color:#0b7c40;font-size:49px;line-height:1}
+body:not(.gp-judith-design) #sales .gp-cost-card>div+div{border-left:1px solid #a5c5a3;padding-left:18px}
+body:not(.gp-judith-design) #sales .gp-cost-card strong{font-size:clamp(17px,1.8vw,24px)!important;color:#173f34!important}
+body:not(.gp-judith-design) #sales .gp-cost-card b{font-size:clamp(24px,2.5vw,32px)!important;color:#13743e!important}
+body:not(.gp-judith-design) #sales .gp-cost-note{padding:10px 14px!important;border-radius:12px!important;background:#f1f6fa!important;color:#415b6c!important}
+body:not(.gp-judith-design) #tax .gp-tax-title{padding:14px 18px 14px 70px!important;position:relative!important;font-size:21px!important}
+body:not(.gp-judith-design) #tax .gp-tax-title:before{content:"♜";position:absolute;left:20px;top:14px;font-size:34px;color:#0b884b}
+body:not(.gp-judith-design) #tax .gp-tax-group:last-child .gp-tax-title:before{content:"◇";color:#d69a00}
+body:not(.gp-judith-design) #tax .gp-tax-title small{font-size:14px!important}
+body:not(.gp-judith-design) #tax .gp-tax-values{padding:14px!important}
+body:not(.gp-judith-design) #tax .tile b{font-size:clamp(21px,2.2vw,28px)!important}
+@media(max-width:850px){body:not(.gp-judith-design) #sales .gp-kpi-grid>.tile{padding:15px 12px 15px 52px!important}body:not(.gp-judith-design) #sales .gp-kpi-grid>.tile:before{left:13px;font-size:26px}body:not(.gp-judith-design) #sales .gp-cost-card{padding-left:66px!important}body:not(.gp-judith-design) #sales .gp-cost-card:before{left:15px;font-size:38px}}
+@media(max-width:600px){body:not(.gp-judith-design) #salesSection>h2{padding:15px 12px 15px 55px!important;min-height:65px!important;font-size:21px!important}body:not(.gp-judith-design) #salesSection>h2:before{left:13px;font-size:30px}body:not(.gp-judith-design) #salesSection #sales,body:not(.gp-judith-design) #salesSection>h3,body:not(.gp-judith-design) #salesSection #tax,body:not(.gp-judith-design) #salesSection #taxNote{margin-left:10px!important;margin-right:10px!important}body:not(.gp-judith-design) #sales .gp-kpi-grid{gap:8px!important}body:not(.gp-judith-design) #sales .gp-kpi-grid>.tile{padding:11px!important;min-height:90px!important}body:not(.gp-judith-design) #sales .gp-kpi-grid>.tile:before{position:static;display:block;font-size:21px;margin-bottom:3px}body:not(.gp-judith-design) #sales .gp-kpi-grid[data-kind="averages"]>.tile{padding:10px!important}body:not(.gp-judith-design) #sales .gp-kpi-grid[data-kind="averages"]>.tile:before{font-size:19px}body:not(.gp-judith-design) #sales .gp-kpi-grid .tile b{font-size:clamp(17px,5vw,24px)!important}body:not(.gp-judith-design) #sales .gp-cost-card{grid-template-columns:1fr 1fr!important;padding:16px!important}body:not(.gp-judith-design) #sales .gp-cost-card:before{display:none}body:not(.gp-judith-design) #sales .gp-cost-card>div:first-child{grid-column:span 2}body:not(.gp-judith-design) #sales .gp-cost-card>div:nth-child(2){border:0;padding:0}}
 </style>
 <script id="gp-friedrich-daily-kpi-redesign-script">(function(){
 const eur=n=>new Intl.NumberFormat('de-AT',{style:'currency',currency:'EUR'}).format(n);
