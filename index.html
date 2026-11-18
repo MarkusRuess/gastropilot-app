@@ -1650,7 +1650,7 @@ async function ledgerSaveVerified(){
  const values=[...E('ledgerReviewFields').querySelectorAll('[data-ledger-metric]')].filter(el=>el.value.trim()!=='');
  if(!values.length){status.textContent='Bitte mindestens einen geprüften Wert eingeben.';return;}
  const month=ledgerActiveDocument?.extracted_data?.accounting_month;
- if(!/^\\d{4}-\\d{2}$/.test(month||'')){status.textContent='Buchhaltungsmonat fehlt – keine Speicherung.';return;}
+ if(!/^\d{4}-\d{2}$/.test(month||'')){status.textContent='Buchhaltungsmonat fehlt – keine Speicherung.';return;}
  if(!confirm('Sind alle eingegebenen Monatswerte anhand der Original-Saldenliste geprüft?'))return;
  save.disabled=true;
  try{
