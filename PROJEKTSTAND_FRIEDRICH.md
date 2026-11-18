@@ -1,3 +1,6 @@
+## 2026-11-18 – Rechnungsumsatz: Designoptimierung
+Nach positivem Nutzer-Screenshot wurde ausschließlich das CSS der fokussierten Friedrich-Rechnungsansicht überarbeitet: kompakte KPI-Karten mit Hervorhebung für Umsatz/offene Rechnungen, besser lesbare Tabellen, einheitliche Abstände und responsive Eingabemaske (Desktop/Tablet/Smartphone). Die CSS-Regeln sind auf `body.gp-invoice-focus:not(.gp-judith-design)` begrenzt. Keine Rechnungs-, Zahlungs-, Datenbank- oder Judith-Änderungen. GitHub-Commit `5633d08`; CSS nach Commit zurückgelesen und Selektoren/Bildschirmbreiten statisch geprüft. Browser- und authentifizierte Liveprüfung offen.
+
 ## 2026-11-18 – Rechnungsumsatz-Kachel, zweite Korrektur
 Nach Nutzer-Screenshot war die Kachel im Bereich Tagesabschlüsse nicht sichtbar navigierend. `index.html` korrigiert: delegierter Klick- und Tastaturhandler an der Kachel, eigener fokussierter Rechnungsbereich innerhalb der vorhandenen Ansicht, Zurück-Schaltfläche, Direkteinstieg über `#salesInvoices`; Kalender und andere Kennzahlen werden nur während der Rechnungsansicht ausgeblendet. GitHub-Commit `a9b14d3`. Nach Commit Quellcode auf die vier Elemente geprüft. Kein Supabase-Schreibzugriff, keine Änderung an Betriebsdaten oder Judith. Authentifizierter Browser-/Live-Test noch nicht durchgeführt.
 
