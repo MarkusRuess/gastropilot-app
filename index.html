@@ -3635,6 +3635,29 @@ body:not(.gp-judith-design) #tax .tile{min-width:0;margin:0!important;padding:7p
 body:not(.gp-judith-design) #tax .tile b{font-size:clamp(16px,1.8vw,22px)}
 @media(max-width:750px){body:not(.gp-judith-design) #sales .gp-kpi-grid>.tile{grid-column:span 6}body:not(.gp-judith-design) #sales .gp-kpi-grid[data-kind="revenue"]>.tile{grid-column:span 6}body:not(.gp-judith-design) #sales .gp-cost-card{grid-template-columns:1fr 1fr}}
 @media(max-width:520px){body:not(.gp-judith-design) #sales .gp-kpi-grid[data-kind="revenue"]>.tile{grid-column:span 12}body:not(.gp-judith-design) #sales .gp-kpi-grid .tile{padding:11px!important}body:not(.gp-judith-design) #tax{grid-template-columns:1fr}body:not(.gp-judith-design) #sales .gp-cost-card{grid-template-columns:1fr}}
+
+/* Friedrich: ruhigere, kompaktere Gestaltung gemäß freigegebener Skizze */
+body:not(.gp-judith-design) #salesSection{background:#fff!important;border:1px solid #e0e8eb!important;padding:clamp(14px,2.4vw,26px)!important}
+body:not(.gp-judith-design) #salesSection>h2{font-size:clamp(20px,2vw,25px)!important;letter-spacing:-.4px;margin:0 0 18px!important}
+body:not(.gp-judith-design) #sales .gp-kpi-group{margin-bottom:18px!important}
+body:not(.gp-judith-design) #sales .gp-kpi-group>h3{font-size:14px!important;font-weight:700!important;margin:0 0 9px!important;color:#294951!important}
+body:not(.gp-judith-design) #sales .gp-kpi-grid{gap:9px!important}
+body:not(.gp-judith-design) #sales .gp-kpi-grid>.tile{background:#fff!important;border:1px solid #e3e9ed!important;border-radius:12px!important;padding:12px 14px!important;min-height:86px!important;box-shadow:0 1px 2px rgba(23,55,65,.025)!important}
+body:not(.gp-judith-design) #sales .gp-kpi-grid .tile small{font-size:12px!important;font-weight:600!important;color:#647789!important}
+body:not(.gp-judith-design) #sales .gp-kpi-grid .tile b{font-size:clamp(19px,2vw,24px)!important;font-weight:750!important;color:#1d343e!important}
+body:not(.gp-judith-design) #sales .gp-kpi-grid[data-kind="revenue"]>.tile:first-child{background:#edf8f2!important;border-color:#cce9d9!important}
+body:not(.gp-judith-design) #sales .gp-kpi-grid[data-kind="revenue"]>.tile:last-child{background:#f8f7f2!important;border-color:#e7e1cf!important}
+body:not(.gp-judith-design) #sales .gp-kpi-grid[data-kind="averages"]>.tile:last-child{background:#edf8f2!important;border-color:#cce9d9!important}
+body:not(.gp-judith-design) #sales .gp-payment-track{height:5px!important;background:#edf1f3!important}
+body:not(.gp-judith-design) #sales .gp-cost-card{background:#fff!important;border:1px solid #dce7e4!important;border-radius:12px!important;grid-template-columns:1.3fr 1fr 1fr!important;padding:14px!important}
+body:not(.gp-judith-design) #sales .gp-cost-card strong{font-size:15px!important}
+body:not(.gp-judith-design) #sales .gp-cost-card b{font-size:22px!important}
+body:not(.gp-judith-design) #sales .gp-cost-note{font-size:12px!important;line-height:1.5!important}
+body:not(.gp-judith-design) #tax .gp-tax-group{border-radius:12px!important}
+body:not(.gp-judith-design) #tax .gp-tax-title{background:#f0f8f3!important;padding:9px 13px!important}
+body:not(.gp-judith-design) #tax .gp-tax-group:last-child .gp-tax-title{background:#fcf6eb!important}
+@media(max-width:750px){body:not(.gp-judith-design) #sales .gp-cost-card{grid-template-columns:1fr 1fr!important}}
+@media(max-width:520px){body:not(.gp-judith-design) #sales .gp-cost-card{grid-template-columns:1fr!important}body:not(.gp-judith-design) #sales .gp-kpi-grid>.tile{padding:10px!important;min-height:76px!important}}
 </style>
 <script id="gp-friedrich-daily-kpi-redesign-script">(function(){
 const eur=n=>new Intl.NumberFormat('de-AT',{style:'currency',currency:'EUR'}).format(n);
@@ -3665,8 +3688,8 @@ const trend=make('span','gp-kpi-trend neutral');if(prevAverage>0&&currentAverage
 const costSection=make('section','gp-kpi-group');costSection.append(make('h3','','Kalkulierter Wareneinsatz · BONit-Verkäufe'));const costCard=make('div','gp-cost-card');const left=make('div');left.append(make('strong','','Wareneinsatz (verkaufsbasiert)'),make('small','','Ziel: 26 % vom Nettoumsatz'));const middle=make('div'),right=make('div');costCard.append(left,middle,right);costSection.append(costCard);const note=make('p','gp-cost-note');costSection.append(note);sales.append(costSection);
 const costs=new Map((d.articleCosts||[]).filter(x=>num(x.cost_net)!==null&&num(x.cost_net)>=0).map(x=>[norm(x.article_name),num(x.cost_net)]));
 let matched=0,totalQty=0,coveredQty=0,costSum=0,missing=0;for(const a of d.articleSales||[]){const q=num(a.quantity);if(q===null||q<=0)continue;totalQty+=q;const price=costs.get(norm(a.article_name));if(price===undefined){missing++;continue}matched++;coveredQty+=q;costSum+=q*price}
-const coverage=totalQty>0?100*coveredQty/totalQty:0;middle.append(make('small','','Kalkulierter Netto-EK'),make('b','',matched?eur(costSum):'–'));const net=num(d.bonitNet);const complete=totalQty>0&&missing===0&&net>0&&d.receiptCoverage===openDays&&(d.articleSales||[]).length<1000;const ratio=complete?100*costSum/net:null;right.append(make('small','','Quote vom BONit-Netto'),make('b','',ratio===null?'Nicht belastbar':pct(ratio)));right.append(make('small','',ratio===null?'Bewertung offen':ratio<=26?'✓ Im Ziel':ratio<=29?'! Beobachten':'! Zu hoch'));note.textContent='Kalkulationsabdeckung: '+pct(coverage)+' der verkauften Artikelmengen. '+(missing?'Fehlende Kalkulationen: '+missing+' Artikelzeilen. ':'')+(complete?'Berechnung aus hinterlegten Artikel-EK; Schwund/Inventurdifferenzen nicht enthalten.':'Keine grüne/rote Bewertung bei fehlenden Artikelkosten, unvollständigen BONit-Daten oder möglichen Abfragegrenzen.');
-const pending=pick('Vorläufig');if(pending&&pending.querySelector('b')?.textContent!=='Keine'){const warnings=section('Zur Prüfung','warnings');warnings.append(pending)}
+const coverage=totalQty>0?100*coveredQty/totalQty:0;middle.append(make('small','','Erfasste Artikelkosten netto'),make('b','',matched?eur(costSum):'–'));const net=num(d.bonitNet);const complete=totalQty>0&&missing===0&&net>0&&d.receiptCoverage===openDays&&(d.articleSales||[]).length<1000;const ratio=matched&&net>0?100*costSum/net:null;right.append(make('small','',complete?'Kalkulierter Wareneinsatz':'Erfasster Wareneinsatz · Teilquote'),make('b','',ratio===null?'–':pct(ratio)));right.append(make('small','',ratio===null?'Noch keine Kalkulation':complete?(ratio<=26?'✓ Im Ziel':ratio<=29?'! Beobachten':'! Zu hoch'):'Ziel 26 % · Bewertung erst bei vollständigen Daten'));note.textContent='Artikelabdeckung: '+pct(coverage)+' der verkauften Mengen. '+(missing?'Für '+missing+' Artikelzeilen fehlen Kosten. ':'')+(complete?'Kalkulierter Wareneinsatz; Schwund und Inventurdifferenzen nicht enthalten.':'Die Teilquote umfasst nur bereits kalkulierte Verkäufe und ist nicht die vollständige Wareneinsatzquote.');
+const pending=pick('Vorläufig');if(pending&&pending.querySelector('b')?.textContent!=='Keine'){const warnings=section('Zur Prüfung','warnings');warnings.append(pending)}else if(pending){pending.remove()}
 }
 window.addEventListener('gp:monthly-data',e=>{try{render(e.detail)}catch(err){console.warn('Friedrich Umsatzkacheln',err)}});
 function init(){const tax=document.getElementById('tax');if(tax){new MutationObserver(renderTax).observe(tax,{childList:true});renderTax()}}
