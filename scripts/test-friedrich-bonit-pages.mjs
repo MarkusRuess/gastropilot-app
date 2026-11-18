@@ -34,5 +34,17 @@ test('Z 1866: header, totals and payment pages remain distinct',()=>{
  assert.deepEqual(reconcileFriedrichSummary(read,{gross_total:1581.10}),[]);
  assert.equal(read.cash_count+read.card_count+read.free_count,70);
  assert.equal(combineSummaryReads({...header,booking_until:'17.11.2026'},totals,payment).date,null);
- assert.equal(choosePaymentRead([{printed_payment_lines:[{label:'BAR Rechnung',count:53,amount:456}]},payment],1581.10),payment);
+ assert.equal(choosePaymentRead([{printed_payment_lines:[{label:'BAR Rechnung',count:53,amount:456}]},payment],1581.10).printed_payment_lines.length,0);
+});
+test('Z 1867: payments split across pages 2 and 3 are combined once',()=>{
+ const totals={gross_total:1513.60,net_total:1304.31,cash_total:1088.70,card_total:424.90,receipt_count:79,tax_breakdown:[{rate:10,gross:567.30,net:515.73,vat:51.57},{rate:20,gross:946.30,net:788.58,vat:157.72}]};
+ const last={printed_payment_lines:[{label:'Personal / Einladung mit 0',count:1,amount:0},{label:'Teilbetrag bar',count:0,amount:0}]};
+ const middle={printed_payment_lines:[{label:'BAR Rechnung',count:63,amount:1088.70},{label:'Kreditkarte',count:15,amount:424.90}]};
+ const header={date:'17.11.2026',booking_from:'17.11.2026 10:23',booking_until:'17.11.2026 22:19',z_number:'1867'};
+ const read=combineSummaryReads(header,totals,choosePaymentRead([last,middle],totals.gross_total));
+ assert.deepEqual(reconcileFriedrichSummary(read,{gross_total:1513.60}),[]);
+ assert.equal(read.cash_count+read.card_count+read.free_count,read.receipt_count);
+ assert.equal(read.printed_payment_lines.length,4);
+ assert.equal(choosePaymentRead([last,{printed_payment_lines:[{label:'BAR Rechnung',count:63,amount:1088.70},{label:'Kreditkarte',count:15,amount:424.80}]}],1513.60).printed_payment_lines.length,0);
+ assert.equal(choosePaymentRead([last,middle,{printed_payment_lines:[{label:'BAR Rechnung',count:63,amount:1088.60}]}],1513.60).printed_payment_lines.length,0);
 });
