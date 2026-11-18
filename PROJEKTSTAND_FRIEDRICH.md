@@ -1,3 +1,6 @@
+## 2026-11-18 – Missverständliche BONit-Bon-Kennzahlen entfernt
+Auf Wunsch des Betreibers wird in Friedrich unter Tagesabschlüsse die Kachel „Bezahlte Bons“ nicht mehr angezeigt: Sie basierte auf einem BONit-Teilzählfeld, obwohl alle Kassenbons bezahlt sind. Die davon abhängige Kachel „Ø Bon“ wird bis zur validierten Berechnung ebenfalls ausgeblendet. „Erfasste Bons“, Umsätze und Zahlungsarten bleiben unverändert; Judith-Anzeige bleibt erhalten. Commit `876d021`. Code zurückgelesen; Live-Browserprüfung noch offen.
+
 ## 2026-11-18 – Rechnungsumsatz ausschließlich über Tagesabschlüsse
 Nutzerwunsch umgesetzt: Der Unterbereich `#salesInvoices` ist standardmäßig ausgeblendet und erscheint ausschließlich nach Klick auf die Kennzahlkachel „Rechnungsumsatz“ im Bereich Tagesabschlüsse. Automatisches Öffnen über URL-Hash entfernt; bei Bereichswechsel wird die fokussierte Rechnungsansicht geschlossen. Keine Datenänderung oder Judith-Anpassung. Commit `15ce76d`; Quellcode nach Commit statisch geprüft, angemeldeter Browser-Livetest offen.
 
