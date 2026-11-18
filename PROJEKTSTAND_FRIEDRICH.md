@@ -1,3 +1,6 @@
+## 2026-11-18 – Ausgangsrechnung 19-2026 Schöggl
+Nach Prüfung der vorhandenen Friedrich-Rechnungsnummern 13–18 wurde 19-2026 ausschließlich für Friedrich in `sales_invoices` erfasst: Kunde Univ.-Doz. Dr. Andreas Schöggl, Lieferdatum 12.11.2026, Rechnungsdatum 18.11.2026, 208,00 € brutto / 189,09 € netto / 18,91 € USt, Status `open`, Versand `ready`. Sieben Einzelpositionen in `sales_invoice_items`; Datenbank-Rückprüfung ergab eine Rechnung, sieben Positionen und 208,00 € Artikelsumme. Kein zusätzlicher BONit-Abschluss und keine Buchung bei Judith/Judith AI. E-Mail-Versand und angemeldete Live-UI nicht bestätigt.
+
 ## 2026-11-18 – METRO-Rechnung vom 03.07.2026
 Aus Chat-Originalfoto: METRO Vösendorf Rechnung 100620028/20260703, 8 Positionen, 127,71 € netto, 23,60 € USt, 151,31 € brutto, Bankomat bezahlt. Nach Dublettenprüfung exakt ein `documents`-Beleg und eine `expenses`-Ausgabe mit Buchungsmonat Juli 2026 erfasst; Rückprüfung 1/1/151,31 €. Artikelpositionen im Beleg hinterlegt; gemischte Kosten vorläufig Kategorie `other`, keine physischen Lagerzugänge. Originalfoto nur im Chat, nicht in Supabase Storage. Keine Änderungen an anderen Betrieben. Angemeldete Live-App nicht geprüft.
 
