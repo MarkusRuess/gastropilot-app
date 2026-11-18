@@ -1,3 +1,6 @@
+## 2026-11-18 – Rechnungsumsatz ausschließlich über Tagesabschlüsse
+Nutzerwunsch umgesetzt: Der Unterbereich `#salesInvoices` ist standardmäßig ausgeblendet und erscheint ausschließlich nach Klick auf die Kennzahlkachel „Rechnungsumsatz“ im Bereich Tagesabschlüsse. Automatisches Öffnen über URL-Hash entfernt; bei Bereichswechsel wird die fokussierte Rechnungsansicht geschlossen. Keine Datenänderung oder Judith-Anpassung. Commit `15ce76d`; Quellcode nach Commit statisch geprüft, angemeldeter Browser-Livetest offen.
+
 ## 2026-11-18 – Rechnungsumsatz: Designoptimierung
 Nach positivem Nutzer-Screenshot wurde ausschließlich das CSS der fokussierten Friedrich-Rechnungsansicht überarbeitet: kompakte KPI-Karten mit Hervorhebung für Umsatz/offene Rechnungen, besser lesbare Tabellen, einheitliche Abstände und responsive Eingabemaske (Desktop/Tablet/Smartphone). Die CSS-Regeln sind auf `body.gp-invoice-focus:not(.gp-judith-design)` begrenzt. Keine Rechnungs-, Zahlungs-, Datenbank- oder Judith-Änderungen. GitHub-Commit `5633d08`; CSS nach Commit zurückgelesen und Selektoren/Bildschirmbreiten statisch geprüft. Browser- und authentifizierte Liveprüfung offen.
 
