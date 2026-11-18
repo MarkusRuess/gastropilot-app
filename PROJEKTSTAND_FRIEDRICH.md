@@ -1,3 +1,6 @@
+## 2026-11-18 – Menü Rechnungsumsatz (kleine Verbesserung)
+Im bestehenden `sales-invoices.js` werden Friedrich-Ausgangsrechnungen nun mit neuestem Leistungstag zuerst angezeigt, der offene Bruttobetrag als zusätzliche Monatskennzahl ausgewiesen und ein leerer Monat verständlich gekennzeichnet. Vorhandene Rechnungen, Umsatztrennung, Berechtigungen und Datenbankschema bleiben unverändert. GitHub-Commit `8041e621`. Quellcode nach dem Commit zurückgelesen und drei Änderungen statisch geprüft; automatisierte Browser- und angemeldete Liveprüfung noch offen. Die bisherige Oberfläche liegt unter Umsatz → Ausgangsrechnungen bzw. `index.html#salesInvoices`; PDF-Erzeugung und Bankabgleich sind mit dieser Änderung nicht umgesetzt.
+
 ## 2026-11-18 – Ausgangsrechnung 19-2026 Schöggl
 Nach Prüfung der vorhandenen Friedrich-Rechnungsnummern 13–18 wurde 19-2026 ausschließlich für Friedrich in `sales_invoices` erfasst: Kunde Univ.-Doz. Dr. Andreas Schöggl, Lieferdatum 12.11.2026, Rechnungsdatum 18.11.2026, 208,00 € brutto / 189,09 € netto / 18,91 € USt, Status `open`, Versand `ready`. Sieben Einzelpositionen in `sales_invoice_items`; Datenbank-Rückprüfung ergab eine Rechnung, sieben Positionen und 208,00 € Artikelsumme. Kein zusätzlicher BONit-Abschluss und keine Buchung bei Judith/Judith AI. E-Mail-Versand und angemeldete Live-UI nicht bestätigt.
 
