@@ -3714,7 +3714,7 @@ const group=(rate,desc,part)=>{const wrap=make('div','gp-tax-group');const headi
 tax.replaceChildren(group(10,'Speisen · Lebensmittel',tiles.slice(0,2)),group(20,'Alkohol · Kaffee · Softdrinks',tiles.slice(2,4)));
 const heading=tax.previousElementSibling;if(heading&&heading.tagName==='H3')heading.textContent='Steuergruppen · geprüfte Tagesabschlüsse';
 }
-function render(d){if(d.isJudith||document.body.classList.contains('gp-judith-design'))return;const sales=document.getElementById('sales');if(!sales)return;
+function render(d){if(d.isJudith||document.body.classList.contains('gp-judith-design'))return;const sales=document.getElementById('sales');if(!sales)return;const heading=document.querySelector('#salesSection>h2');if(heading&&/^\\d{4}-\\d{2}$/.test(d.month||'')){const [year,month]=d.month.split('-').map(Number);const label=new Intl.DateTimeFormat('de-AT',{month:'long',year:'numeric'}).format(new Date(year,month-1,1));heading.textContent='Umsatz · '+label;}
 const tiles=[...sales.children].filter(x=>x.classList.contains('tile')&&!x.classList.contains('article-launch-tile'));if(tiles.length<8)return;
 const byLabel=new Map(tiles.map(x=>[x.querySelector('small')?.textContent||'',x]));
 const pick=prefix=>[...byLabel].find(([k])=>k.startsWith(prefix))?.[1];
