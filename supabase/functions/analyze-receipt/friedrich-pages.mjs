@@ -16,12 +16,19 @@ export function pagePaymentPrompt(){
  return `Lies ausschließlich den Block "Zahlarten" dieser BONit-Seite. Schreibe für BAR Rechnung, Kreditkarte, Gutschein (falls gedruckt), Personal / Einladung mit 0 und Teilbetrag bar jede gedruckte Zeile mit ANZAHL Rechnungen und Bruttobetrag ab. Die Summe der beiden bezahlten Arten und eines Gutscheins ist kein zusätzlicher Verkauf. JSON: {"printed_payment_lines":[{"label":"BAR Rechnung","count":null,"amount":null},{"label":"Kreditkarte","count":null,"amount":null},{"label":"Personal / Einladung mit 0","count":null,"amount":null}]}. Keine Beträge schätzen; unlesbare Werte null.`;
 }
 export function choosePaymentRead(reads,gross){
- return reads.find(read=>{
-  const lines=read?.printed_payment_lines||[];
-  const match=pattern=>lines.find(row=>pattern.test(String(row.label||'')));
-  const cash=match(/^BAR Rechnung$/i),card=match(/^Kreditkarte$/i),free=match(/personal|einladung/i),voucher=match(/^Gutschein$/i);
-  return cash&&card&&free&&[cash,card,free].every(row=>Number.isInteger(row.count)&&Number.isFinite(row.amount))&&Math.abs(cash.amount+card.amount+(voucher?.amount||0)-gross)<.01;
- })||reads[0];
+ const label=row=>String(row?.label||'').trim();
+ const patterns=[/^BAR Rechnung$/i,/^Kreditkarte$/i,/^Gutschein$/i,/personal|einladung/i,/^Teilbetrag bar$/i];
+ const lines=patterns.map(pattern=>{
+  const candidates=reads.flatMap(read=>(read?.printed_payment_lines||[]).filter(row=>pattern.test(label(row))));
+  const valid=candidates.filter(row=>Number.isInteger(row.count)&&row.count>=0&&Number.isFinite(row.amount)&&row.amount>=0);
+  // A repeated row on adjacent photos is safe only if both reads agree.
+  if(candidates.length>1&&valid.some(row=>row.count!==valid[0]?.count||Math.abs(row.amount-valid[0]?.amount)>.01))return null;
+  return valid[0]||null;
+ });
+ const [cash,card,voucher,free]=lines;
+ if(!cash||!card||!free)return {printed_payment_lines:[]};
+ if(Math.abs(cash.amount+card.amount+(voucher?.amount||0)-gross)>.01)return {printed_payment_lines:[]};
+ return {printed_payment_lines:lines.filter(Boolean)};
 }
 export function combineSummaryReads(header,totals,payments){
  const iso=value=>{const text=String(value||'');const ymd=text.match(/\d{4}-\d{2}-\d{2}/);if(ymd)return ymd[0];const dmy=text.match(/(\d{2})\.(\d{2})\.(\d{4})/);return dmy?`${dmy[3]}-${dmy[2]}-${dmy[1]}`:null;};
