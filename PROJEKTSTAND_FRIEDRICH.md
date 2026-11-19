@@ -459,3 +459,11 @@ Die drei im Chat vorliegenden Originalfotos belegen Z 1867 für den Geschäftsta
 
 Der Friedrich-spezifische Artikelprüfzweig verlangte Bar, Karte und Gratisrechnung auf derselben Fotoseite. Die Zahlartenlesungen der beiden Schlussseiten werden nun je gedruckter Zeile einmalig kombiniert; widersprechende doppelte Zeilen und unpassende Bezahlsumme bleiben gesperrt. 23 lokale BONit-Seitentests einschließlich der echten Aufteilung von Z 1867 bestanden. Ein erneuter angemeldeter Drei-Seiten-Upload und die Artikelzeilen-Gesamtsumme sind noch nicht live geprüft; die Funktion darf erst nach Originalabgleich als vollständig verbucht gelten. Judith und Judith AI unverändert.
 
+## 2026-11-19 – BONit Z 1868 vom 18.11.2026
+
+Die drei Chat-Originalfotos zeigen Buchungen am 18.11. von 09:34 bis 22:17, Druck um 22:18. Geschäftstag 18.11., Brutto 2.049,50 €, Netto 1.770,76 €, Bar 1.370,50 € (79), Karte 679,00 € (19), eine kostenlose Einladung, insgesamt 99 Rechnungen. Steuergruppen: 10 % 829,50 € brutto/754,09 € netto/75,41 € Steuer; 20 % 1.220,00 €/1.016,67 €/203,33 €. 26 + 40 Artikelzeilen summieren sich centgenau auf beide Gruppen; die separat gedruckte Rücknahme -6,00 € ist nicht nochmals abzuziehen.
+
+`sql/friedrich-z1868-chat-original.sql` hat nach Existenzprüfung einmalig 1 Abschluss und 66 Artikelzeilen eingefügt. Die drei Chat-Originale sind in den Quelldaten über Library-IDs referenziert; es wurde kein App-Upload oder `documents`-Datensatz erfunden. Supabase-Rückprüfung: 66 Artikel, 2.049,50 € Artikelsumme, 829,50 €/1.220,00 € Steuergruppen; `gp_f_stock_sales` zeigt 66 Quellen. Z 1867 war zwischenzeitlich anderweitig erfasst und blieb unberührt (63 Zeilen, 1.513,60 €).
+
+Die Korrektur für auf Seiten 2/3 getrennte Zahlarten wurde als PR #135 nach CI 44295006242 in `main` übernommen und `analyze-receipt` v62 mit JWT produktiv aktiviert. 23 lokale Tests bestanden. Ein neuer automatischer Drei-Seiten-Upload und die angemeldete Kalenderansicht sind in diesem Durchlauf nicht live nachgewiesen; Judith und Judith AI unverändert.
+
