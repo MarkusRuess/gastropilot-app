@@ -191,3 +191,5 @@ Vorher scheiterten zwei neue Regressionstests (Judith/Friedrich); nachher bestan
 - Technische Veröffentlichung bestätigt; vollständige angemeldete Smartphone-Kameraaufnahme/OCR/Persistenz weiterhin nicht behauptet. Keine Betriebsdaten-/Berechtigungsänderung; Judith AI unverändert.
 **2026-11-18 Friedrich Z 1867:** Drei Chat-Originalseiten vom Geschäftstag 17.11. belegen 1.513,60 € brutto. Am 18.11. noch kein Pilot-Upload oder Abschluss in Supabase. Friedrich-Zahlartenprüfung für auf Seiten 2/3 geteilte Bar-/Karten-/Gratiszeilen korrigiert und lokal getestet; produktive Veröffentlichung und erneuter echter Upload gesondert nachweisen. Siehe `PROJEKTSTAND_FRIEDRICH.md`.
 
+**2026-11-19 Friedrich Z 1868:** Originaltag 18.11.2026, 2.049,50 € und 66 Artikelzeilen einmalig originalgeprüft gebucht; drei Chat-Fotos referenziert. Z 1867 blieb ohne Doppelbuchung. PR #135 nach CI in `main`, Supabase `analyze-receipt` v62 ACTIVE. Automatischer neuer Upload und angemeldete Live-Kalenderansicht noch offen. Siehe `PROJEKTSTAND_FRIEDRICH.md`.
+
