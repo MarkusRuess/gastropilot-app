@@ -193,3 +193,5 @@ Vorher scheiterten zwei neue Regressionstests (Judith/Friedrich); nachher bestan
 
 **2026-11-19 Friedrich Z 1868:** Originaltag 18.11.2026, 2.049,50 € und 66 Artikelzeilen einmalig originalgeprüft gebucht; drei Chat-Fotos referenziert. Z 1867 blieb ohne Doppelbuchung. PR #135 nach CI in `main`, Supabase `analyze-receipt` v62 ACTIVE. Automatischer neuer Upload und angemeldete Live-Kalenderansicht noch offen. Siehe `PROJEKTSTAND_FRIEDRICH.md`.
 
+
+**2026-11-20 Friedrich Z 1869:** Geschäftstag 19.11.2026, 1.708,60 € und 65 Artikelzeilen aus drei Chat-Originalfotos einmalig in Supabase gebucht und gegen 10-/20-%-Steuergruppen sowie Bar/Karte geprüft. App-Upload/angemeldete Kalenderansicht nicht live bestätigt. Siehe `PROJEKTSTAND_FRIEDRICH.md`.
