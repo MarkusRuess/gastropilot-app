@@ -467,3 +467,8 @@ Die drei Chat-Originalfotos zeigen Buchungen am 18.11. von 09:34 bis 22:17, Druc
 
 Die Korrektur für auf Seiten 2/3 getrennte Zahlarten wurde als PR #135 nach CI 44295006242 in `main` übernommen und `analyze-receipt` v62 mit JWT produktiv aktiviert. 23 lokale Tests bestanden. Ein neuer automatischer Drei-Seiten-Upload und die angemeldete Kalenderansicht sind in diesem Durchlauf nicht live nachgewiesen; Judith und Judith AI unverändert.
 
+
+
+## 2026-11-20 – BONit Z 1869 vom 19.11. originalgeprüft
+
+Drei Chat-Originalfotos: Buchung 19.11.2026 10:14–22:20, Druck 22:22; 1.708,60 € brutto, 1.460,13 € netto, 94 Rechnungen. Bar 1.116,70 € (74), Karte 591,90 € (19), eine kostenlose Einladung. 10 %: 479,10 € brutto/435,55 € netto/43,55 € Steuer; 20 %: 1.229,50 €/1.024,58 €/204,92 €. 26 + 39 Artikelzeilen samt Nullpreiszeilen stimmen centgenau mit den gedruckten Gruppen überein. Sperre und Existenzprüfung vor der einmaligen Buchung; Supabase-Rückprüfung: 1 Abschluss, 65 Artikelzeilen, 1.708,60 € Artikelsumme. Originale über drei Library-IDs in den Quelldaten referenziert, kein App-Upload erfunden. Angemeldete Live-Kalenderansicht und automatische Fotoverarbeitung in der App nicht nachgewiesen. Judith und Judith AI unverändert.
