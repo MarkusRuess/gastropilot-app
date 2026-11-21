@@ -1457,7 +1457,9 @@ function resolveArticleEkKey(name){
   [/gosser.*naturgold/, 'Gösser Naturgold alkoholfrei 0,33l'],
   [/gosser.*naturradler/, 'Gösser Naturradler Zitrone 0,33l'],
   [/sarti.*spritz/, 'Sarti Spritzer'],
-  [/aperol.*spritz/, 'Aperol Spritzer']
+  [/aperol.*spritz/, 'Aperol Spritzer'],
+  [/^cappucino$/, 'Cappuccino'],
+  [/^espresso klein$/, 'Kleiner Schwarzer']
  ];
  for(const [pattern,canonical] of aliases){
   const match=canonical.toLocaleLowerCase('de-AT');
@@ -1527,7 +1529,7 @@ function drawTopArticles(){
   const card=document.createElement('div');card.className='top-article';
   const name=document.createElement('strong');name.textContent=(index+1)+'. '+x.name;card.append(name);
   const metrics=document.createElement('div');metrics.className='metrics';
-  for(const [label,value] of [['Menge',number.format(x.qty)],['Ø Preis',x.known&&x.qty>0?EUR(x.gross/x.qty):'–'],['EK netto',articleEkLabel(x)],['Umsatz',x.known?EUR(x.gross):'fehlt'],['Anteil',x.known&&topArticleTotal>0?percent.format(x.gross/topArticleTotal):'–']]){
+  for(const [label,value] of [['Menge',number.format(x.qty)],['Ø Preis',x.known&&x.qty>0?EUR(x.gross/x.qty):'–'],['EK netto',articleEkLabel(x)],['Wareneinsatz netto',articleEkForGroup(x)?(articleEkForGroup(x).provisional?'≈ ':'')+EUR(articleEkForGroup(x).total):'offen'],['WE-Quote (20 % USt*)',articleEkForGroup(x)&&x.known&&x.gross>0?(100*articleEkForGroup(x).total/(x.gross/1.2)).toLocaleString('de-AT',{maximumFractionDigits:1})+' %':'–'],['DB netto (20 % USt*)',articleEkForGroup(x)&&x.known?(articleEkForGroup(x).provisional?'≈ ':'')+EUR(x.gross/1.2-articleEkForGroup(x).total):'offen'],['Umsatz',x.known?EUR(x.gross):'fehlt'],['Anteil',x.known&&topArticleTotal>0?percent.format(x.gross/topArticleTotal):'–']]){
    const span=document.createElement('span');span.append(label+' ');
    if(label==='EK netto'){const cost=articleEkForGroup(x);span.title=cost?cost.sources.join(' / ')+(cost.provisional?' · kalkulierter/geschätzter EK':''):'Kein verlässlicher EK für alle Varianten vorhanden';}
    const valueNode=document.createElement('b');valueNode.textContent=value;span.append(valueNode);metrics.append(span);
@@ -1537,7 +1539,7 @@ function drawTopArticles(){
  if(!topArticleRows.length)host.textContent='Keine Artikeldaten für diesen Monat vorhanden.';
  drawProfitability();
  const covered=topArticleRows.filter(x=>articleEkForGroup(x)!==null).length;
- E('topArticleNote').textContent=E('topArticleNote').textContent.split(' · EK netto aus Lieferantenpreisen/Rezeptkalkulation:')[0]+' · EK netto aus Lieferantenpreisen/Rezeptkalkulation: '+covered+'/'+topArticleRows.length+' Artikel; ≈ bedeutet vorläufiger Rezept-EK. Fehlende EK bleiben offen.';
+ E('topArticleNote').textContent=E('topArticleNote').textContent.split(' · EK netto aus Lieferantenpreisen/Rezeptkalkulation:')[0]+' · EK netto aus Lieferantenpreisen/Rezeptkalkulation: '+covered+'/'+topArticleRows.length+' Artikel; ≈ bedeutet vorläufiger Rezept-EK. Fehlende EK bleiben offen. *Netto/DB vorläufig mit 20 % USt gerechnet; tatsächliche Artikelsteuergruppe noch nicht zugeordnet. Ohne Personal- und Fixkosten.';
  E('articlePage').textContent=topArticleRows.length+' Artikel · eine Liste';
  E('articlePrev').hidden=true;E('articleNext').hidden=true;
 }
