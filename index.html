@@ -3774,6 +3774,13 @@ body:not(.gp-judith-design) #sales .gp-kpi-grid[data-kind="revenue"]>.tile:nth-c
 body:not(.gp-judith-design) #sales .gp-kpi-grid[data-kind="revenue"]>.tile:nth-child(3){background:linear-gradient(125deg,#fffdf9,#fff0dd)!important}
 body:not(.gp-judith-design) #sales .gp-kpi-grid[data-kind="averages"]>.tile:last-child{background:linear-gradient(125deg,#fafffa,#e7f7ec)!important}
 @media(max-width:600px){body:not(.gp-judith-design) #sales .gp-kpi-grid>.tile{padding:11px!important}body:not(.gp-judith-design) #sales .gp-kpi-grid[data-kind="averages"]>.tile{padding:10px!important}body:not(.gp-judith-design) #sales .gp-ui-icon{position:static;display:block;width:24px;height:24px;margin-bottom:5px}body:not(.gp-judith-design) #sales .gp-kpi-grid[data-kind="averages"] .gp-ui-icon{position:static;width:22px;height:22px}body:not(.gp-judith-design) #sales .gp-cost-card{padding:16px!important}body:not(.gp-judith-design) #sales .gp-cost-card>.gp-ui-icon{display:none}body:not(.gp-judith-design) #tax .gp-tax-title{padding-left:56px!important}body:not(.gp-judith-design) #tax .gp-tax-title>.gp-ui-icon{left:14px;top:14px;width:28px;height:28px}}
+
+/* Friedrich: Ø Tagesumsatz auf einer Zeile, ohne andere Kennzahlen zu ändern */
+body:not(.gp-judith-design) #sales .gp-kpi-grid[data-kind="averages"]>.tile:last-child{min-width:0!important;padding-right:10px!important}
+body:not(.gp-judith-design) #sales .gp-kpi-grid[data-kind="averages"]>.tile:last-child>b{display:block!important;white-space:nowrap!important;overflow:visible!important;font-size:clamp(19px,2.15vw,28px)!important;letter-spacing:-.6px!important;line-height:1.2!important}
+body:not(.gp-judith-design) #sales .gp-kpi-grid[data-kind="averages"]>.tile:last-child>small{white-space:nowrap!important;font-size:clamp(12px,1.2vw,15px)!important}
+@media(min-width:601px) and (max-width:1100px){body:not(.gp-judith-design) #sales .gp-kpi-grid[data-kind="averages"]>.tile:last-child{padding-left:46px!important}body:not(.gp-judith-design) #sales .gp-kpi-grid[data-kind="averages"]>.tile:last-child .gp-ui-icon{left:9px!important;width:27px!important;height:27px!important}body:not(.gp-judith-design) #sales .gp-kpi-grid[data-kind="averages"]>.tile:last-child>b{font-size:clamp(18px,2.1vw,24px)!important}}
+@media(max-width:600px){body:not(.gp-judith-design) #sales .gp-kpi-grid[data-kind="averages"]>.tile:last-child>b{font-size:clamp(16px,4vw,22px)!important;letter-spacing:-.5px!important}body:not(.gp-judith-design) #sales .gp-kpi-grid[data-kind="averages"]>.tile:last-child>small{font-size:12px!important}}
 </style>
 <script id="gp-friedrich-daily-kpi-redesign-script">(function(){
 const eur=n=>new Intl.NumberFormat('de-AT',{style:'currency',currency:'EUR'}).format(n);
