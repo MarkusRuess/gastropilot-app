@@ -2485,7 +2485,7 @@ async function retrySavedPhotoGroup(){
   if(!pending.length)throw Error('Keine gesicherten, ungeklärten Fotos der letzten 48 Stunden gefunden.');
   const principal=pending[0],newest=Date.parse(principal.created_at);
   const group=(data||[]).filter(row=>row.storage_path&&Math.abs(newest-Date.parse(row.created_at))<=120000&&(pending.includes(row)||row.extracted_data?.duplicate_of===principal.id)).reverse();
-  if(group.length<2)throw Error('Keine zusammengehörenden Fotos gefunden. Die Originale bleiben im Archiv.');
+  if(!group.length)throw Error('Keine gesicherten Originalfotos gefunden. Die Originale bleiben im Archiv.');
   const files=[],intakes=new Map();
   for(const row of group){
    const {data:blob,error:downloadError}=await db.storage.from('invoice-originals').download(row.storage_path);
@@ -2493,6 +2493,11 @@ async function retrySavedPhotoGroup(){
    const type=blob.type||'image/jpeg';
    const file=new File([blob],row.extracted_data?.original_name||'Gesichertes Foto.jpg',{type});
    files.push(file);intakes.set(file,row);
+  }
+  if(files.length===1){
+   // A single saved invoice/photo must use the normal single-document recognition path.
+   // secureOriginal reuses its SHA-256 archive record; no second original is created.
+   queue=files;busy=false;await process();return;
   }
   const result=await recognizePhotoGroup(files,intakes);
   E('uploadStatus').textContent=result.saved+' Dokument(e) erkannt · '+result.duplicate+' bereits vorhanden · '+result.failed+' zur Prüfung.';
