@@ -1,3 +1,6 @@
+## 2026-11-21 – Aperol und Sarti: 5 cl Soda je Glas bestätigt und gespeichert
+Betreiber bestätigt beide Rezepturen mit 6 cl Aperol bzw. Sarti, 9 cl Frizzante, **5 cl selbst erzeugtem Soda** (statt 3 cl), 4 selbst erzeugten Eiswürfeln und 1 Scheibe Orange oder Limette. In `gp_article_costs.source_note` für die beiden Friedrich-BONit-Artikel dauerhaft hinterlegt. Vorläufige Netto-EK unverändert (Aperol 0,97725 €, Sarti 2,00925 €), da Soda bisher ohne Kostenansatz kalkuliert; Garnitur/Eis/Eigenkosten und Schwund weiterhin offen. Supabase-RETURNING für beide Datensätze erfolgreich, kein Frontend-Deploy, kein Browser-Live-Test; keine Judith-Änderung und keine Lagerbuchung.
+
 ## 2026-11-21 – Aperol/Sarti Garnitur ergänzt
 Betreiber bestätigt je Spritzer 4 selbst erzeugte Eiswürfel und 1 Scheibe Orange oder Limette. Die beiden bestehenden Friedrich-Artikelkosten (`Aperol Spritzer` 0,97725 € und `Sarti Spritzer` 2,00925 € netto) wurden NICHT verändert; in `gp_article_costs.source_note` ist die Garnitur und der offene Frucht-/Eis-/Soda-Kostenansatz dokumentiert. Vorhandene Annahmen 6 cl Likör, 9 cl Frizzante, 3 cl Soda bleiben vorläufig, bis Betreiber bestätigt. Keine Lagerbewegungen oder Judith-Änderungen. Supabase-Update durch RETURNING bestätigt; Live-App nicht geprüft.
 
