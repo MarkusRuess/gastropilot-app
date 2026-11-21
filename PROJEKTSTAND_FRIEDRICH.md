@@ -1,3 +1,6 @@
+## 2026-11-21 – Kalkulatorischer WE: QA-Hinweis zur Steuerunsicherheit
+QA-Branch `qa/automated-checks-20261102`, Commit `12b367d9`: vorhandene Rentabilitätsanzeige kennzeichnet nun die 20-%-Steuerannahme und unvollständige Rezepturkosten ausdrücklich als vorläufig. Es handelt sich **nicht** um eine 10-/20-%-Artikelsteuerzuordnung oder fertige 26-%-Gesamtquote. Eine Änderung an `index.html` im produktiven Branch wurde nicht vorgenommen; kein automatischer Test und kein Live-Test nachgewiesen. GitHub-Konflikt beim ersten Versuch wurde durch gezieltes Lesen/Schreiben des QA-Branch behoben. Keine Betriebsdaten geändert, Judith nicht geändert.
+
 ## 2026-11-21 – Top-30 kalkulatorischer Wareneinsatz: Codeprüfung
 Im aktuellen `index.html` ist `drawProfitability()` bereits vorhanden: Artikelkosten werden über `gp_article_costs` mit BONit-Top-30 gruppiert; fehlende Kosten werden ausgeschlossen. **Kritischer Fehler vor Freigabe:** `const revenue=x.gross/1.2` setzt pauschal 20 % USt an; Speisen können 10 % haben. Die Anzeige meldet zwar Näherung, kann aber für gemischte Steuergruppen keine belastbare 26-%-Quote liefern. Vor Korrektur sind Bonit-Steuergruppen je Artikel und Rezeptur-Vollständigkeit zu prüfen. Keine produktive Codeänderung, keine Datenänderung, kein Live-Test; Judith unverändert.
 
