@@ -190,3 +190,9 @@ Vorher scheiterten zwei neue Regressionstests (Judith/Friedrich); nachher bestan
 - Bestehender Rechenkern mit echtem, ausschließlich lesend abgerufenem Judith-Datenstand geprüft. Preise, Preisvergleiche, Lieferantenvergleiche und dimensionsgleiche Rezeptauswirkungen sind vorhanden. Keine Rohdaten in GitHub gespeichert.
 - Bestehende Live-App im Browser geöffnet. Diese Sitzung zeigt die Anmeldung. **Keine bestätigte angemeldete Bedienung mit produktiven Daten**. Isolierte Browserprüfungen und echte Datenmodellprüfung separat nachgewiesen.
 - Einstieg im bestehenden Link über Judith → Rezepte & Kalkulation → Einkaufsberater. Neue Rechnungs-/Packungspreisübernahme bleibt im zuvor dokumentierten Umfang.
+
+
+## 2026-11-21 – Tagesbericht Z 42 (direkte Datenübernahme)
+- Judith und die Torten, Geschäftstag 21.11.2026: Bruttoumsatz 1.606,62 EUR, 28 Belege, Bankomat 574,42 EUR, Bareinlage 644,30 EUR, Kundenforderungen 387,90 EUR, Retouren 180,00 EUR und Rabatte 34,98 EUR. Warengruppen: Shop 10 % 12,50 EUR; Shop 20 % 54,42 EUR; Torten 10 % 1.539,70 EUR.
+- Originalfoto im Chat visuell geprüft. Ausschließlich in `public.documents` für die Judith-business_id ein `cash_report` mit `status=reviewed` und Herkunftsverweis auf Chat-Datei angelegt. Vorher per Geschäftstag/Z-Nummer auf Duplikate geprüft; anschließend genau einen Datensatz per SQL zurückgelesen (ID `6b838e8a-8a46-44a0-b606-54f11a982c86`).
+- Keine Codeänderung, keine Änderung an Friedrich oder Judith AI. Originalbild nicht als Supabase-Storage-Objekt hochgeladen. Authentifizierte App-Ansicht nicht live geprüft; automatische künftige Fotoübernahme nicht implementiert.
