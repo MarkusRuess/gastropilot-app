@@ -2585,6 +2585,21 @@ async function loadRecentUploads(){
   detail.textContent=time+' · '+(meta.original_name||'Beleg')+(meta.import_warning?' · '+meta.import_warning:'');
   badge.className='uploadBadge';
   badge.textContent=duplicate?'✓ Bereits vorhanden':failed?'⚠ Lesen fehlgeschlagen':review?'⚠ Gelesen · prüfen':done?'✓ Gelesen & archiviert':'✓ Gesichert · Lesen ausstehend';
+  if(business==='6a5484d1-daf6-4263-897d-24cdf536aa29'&&row.document_type==='other'&&row.storage_path&&['pending','error'].includes(row.status)){
+   const retry=document.createElement('button');retry.type='button';retry.textContent='Dieses Foto jetzt auslesen';retry.disabled=busy;
+   retry.onclick=async()=>{
+    if(busy)return;
+    retry.disabled=true;
+    try{
+     const {data:blob,error:downloadError}=await db.storage.from('invoice-originals').download(row.storage_path);
+     if(downloadError||!blob)throw downloadError||Error('Gesichertes Foto nicht verfügbar.');
+     const file=new File([blob],meta.original_name||'Originalfoto.jpg',{type:blob.type||'image/png'});
+     queue=[file];drawQueue();await process();
+    }catch(error){E('uploadStatus').textContent='Foto konnte nicht erneut gelesen werden: '+await uploadFailureMessage(error);}
+    finally{retry.disabled=false;}
+   };
+   left.append(retry);
+  }
   if(business==='87889eaf-f865-4e3a-8f9a-cd01db483e0e'&&row.document_type==='other'&&row.storage_path&&/(girokonto|bankauszug|kontoauszug)/i.test(meta.original_name||'')){
    const retry=document.createElement('button');retry.type='button';retry.textContent='▶ Jetzt auslesen';retry.disabled=busy;
    retry.onclick=async()=>{
