@@ -1435,7 +1435,7 @@ function drawProfitability(){
  });
  const revenueCovered=valid.reduce((s,x)=>s+x.gross,0),totalGross=topArticleRows.reduce((s,x)=>s+(x.known?x.gross:0),0);
  const pct=totalGross>0?Math.round(revenueCovered/totalGross*100):0;
- E('profitNote').textContent='Automatisch aus BONit und hinterlegten EK · '+coverage+'/'+topArticleRows.length+' Artikel vollständig kalkuliert · '+pct+' % der Top-30-Umsätze abgedeckt. Näherung mit 20 % USt; Personal, Fixkosten, Garnitur und weitere Zutaten nicht enthalten. Fehlende EK werden nicht als Gewinn gewertet.';
+ E('profitNote').textContent='Automatisch aus BONit und hinterlegten EK · '+coverage+'/'+topArticleRows.length+' Artikel mit hinterlegtem EK · '+pct+' % der Top-30-Umsätze abgedeckt. Steuergruppen je BONit-Artikel noch nicht eindeutig zugeordnet: 20-%-Szenario, keine geprüfte Gesamtquote. Fehlende Rezepturzutaten/Garnitur/Verluste können die Kosten erhöhen.';
  const sections=[
   ['Größter Deckungsbeitrag', [...valid].sort((a,b)=>b.contribution-a.contribution).slice(0,5),'Beitrag zum Ergebnis'],
   ['Höchster Wareneinsatz', [...valid].sort((a,b)=>b.rate-a.rate).slice(0,5),'Kostentreiber zuerst prüfen']
