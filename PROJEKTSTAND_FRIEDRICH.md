@@ -1,3 +1,6 @@
+## 2026-11-21 – Betreiberfreigabe: gewichteter Baguette-EK
+Betreiber bestätigt für Lachs-Baguette: Annamühle Baguette 300 g und Baguette mittel je nach Verfügbarkeit; **gewichteter Durchschnitt anhand Rechnung 41761** (Oktober 2026). 131×2,38 EUR netto + 17×1,96 EUR netto = 345,10 EUR / 148 Stück = 2,33175676 EUR netto je ganzes Baguette. Bei 8 Portionen = 0,2914696 EUR je Portion. Lachs 25 g zu 31,50 EUR/kg = 0,7875 EUR. **Vorläufiger Rezepturteilbetrag 1,0789696 EUR ≈ 1,08 EUR netto je Lachs-Baguette, zuzüglich 5 g Oberskren** (EK nicht bestätigt). Gewichtung beruht auf Oktober-Einkaufsmengen, nicht auf belegtem tatsächlichem Verbrauch. Kein vollständiger Wareneinsatz, keine Umsatzsteuerquote. Keine Lager-/Buchhaltungsbuchung, kein Live-Test.
+
 ## 2026-11-21 – Ø Tagesumsatz: einzeilige Zahl
 Ausschließlich die Kachel „Ø Tagesumsatz“ unter Friedrich → Tagesabschlüsse angepasst: Betrag bleibt per `white-space:nowrap` auf einer Zeile; Schriftgröße und rechte/seitliche Abstände für Desktop und Mobilansicht gezielt reduziert. Keine Änderung an übrigen Kacheln, Berechnung, Beträgen oder Daten. Commit `008cdff`. Inline-Skript-Syntaxprüfung erfolgreich; angemeldete Liveansicht nicht geprüft.
 
