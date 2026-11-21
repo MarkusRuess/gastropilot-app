@@ -1927,10 +1927,29 @@ async function refresh(){void loadLedgerComparison();if(E('recipeCostTile')&&!E(
  }
 
  window.dispatchEvent(new CustomEvent('gp:monthly-data',{detail:{businessId:BID,isJudith,month:selectedMonth,days:daily.map(d=>({date:d.date,gross:d.gross,cash:d.cash,card:d.card,paid:d.paid})),gross:M?.gross??gross,cash:M?.cash??cash,card:M?.card??card,paid:coveredPaid,paidGross:coveredGross,bonitGross:bonit.reduce((v,d)=>v+(N(d.gross_amount)||0),0),invoiceGross,invoiceNet,netGrossTotal:M?.net!=null?M.net+invoiceNet:net,bonitNet:M?.net!=null?M.net:(net!==null?net-invoiceNet:null),receipts:M?.receipts??recordedReceipts??recordedReceiptsPartial,receiptCoverage:receiptDays.length,openingDays:daily.filter(d=>d.bonitGross!==undefined||d.source==='Archiv').length,articleSales:articles,articleCosts:articleCosts.data||[],previousBonit:previousBonit.data||[],previousInvoices:previousInvoices.data||[]}}));
- const taxRows=[];for(const d of daily){const stored=archive.get(d.date);const x=['auto_imported','reviewed'].includes(stored?.status)?stored.extracted_data||{}:{};const sourceGross=N(d.raw?.pos_gross)??d.gross,sourceNet=N(d.raw?.pos_net)??d.net;const z=vat(x)||vat({...d.raw,gross_total:sourceGross,net_total:sourceNet});if(z&&Math.abs(z.g10+z.g20-sourceGross)<.03)taxRows.push(z);}
+ const taxRows=[],taxUnresolved=[];for(const d of daily){
+  const stored=archive.get(d.date),sourceGross=N(d.raw?.pos_gross)??d.gross,sourceNet=N(d.raw?.pos_net)??d.net;
+  // Legacy BONit records retain the original 10/20% gross groups without tax_breakdown.
+  // Calculate net per group only after checking both group totals against the original daily gross/net.
+  const legacy=d.raw||{},g10=N(legacy.gross_10_percent),g20=N(legacy.gross_20_percent);
+  const legacyTax=g10!==null&&g20!==null?{g10,g20,n10:Math.round(g10/1.1*100)/100,n20:Math.round(g20/1.2*100)/100}:null;
+  const valid=z=>z&&sourceGross!==null&&sourceNet!==null&&Math.abs(z.g10+z.g20-sourceGross)<.03&&Math.abs(z.n10+z.n20-sourceNet)<.04;
+  let z=vat({...legacy,gross_total:sourceGross,net_total:sourceNet});
+  if(!valid(z)&&valid(legacyTax))z=legacyTax;
+  // A matching original in the document archive may supply tax groups even if its review is pending.
+  // Never use a different day's report or override a mismatch in the BONit source.
+  if(!valid(z)&&stored?.document_type==='cash_report'){
+   const x=stored.extracted_data||{};
+   if(N(x.gross_total)!==null&&Math.abs(N(x.gross_total)-sourceGross)<.03){
+    const fromArchive=vat({...x,gross_total:sourceGross,net_total:sourceNet});
+    if(valid(fromArchive))z=fromArchive;
+   }
+  }
+  if(valid(z))taxRows.push(z);else taxUnresolved.push(d.date);
+ }
  const taxTotals=M?{g10:M.tax.find(x=>x.rate===10).gross,n10:M.tax.find(x=>x.rate===10).net,g20:M.tax.find(x=>x.rate===20).gross,n20:M.tax.find(x=>x.rate===20).net}:taxRows.length?taxRows.reduce((a,x)=>({g10:a.g10+x.g10,n10:a.n10+x.n10,g20:a.g20+x.g20,n20:a.n20+x.n20}),{g10:0,n10:0,g20:0,n20:0}):null;/* Ausgangsrechnungen nicht pauschal der 10%-Steuergruppe zuordnen: ihre Steuergruppen werden getrennt ausgewiesen. */
  E('tax').replaceChildren();for(const [label,key] of [['10 % brutto','g10'],['10 % netto','n10'],['20 % brutto','g20'],['20 % netto','n20']])tile(E('tax'),label,taxTotals?EUR(taxTotals[key]):'–');
- E('taxNote').textContent=(M?'BONit Monatsabschluss Z '+M.z_number+' · Steuergruppen aus Original.':taxRows.length+' von '+daily.length+' Tagesabrechnungen mit vollständig abgeglichenen 10/20-%-Werten. Angezeigt ist die Summe der geprüften Tage; fehlende Werte werden nicht ergänzt.')+' Ausgangsrechnungen nach Leistungstag: '+EUR(invoiceGross)+' brutto, '+EUR(invoiceNet)+' netto, '+EUR(invoiceVat)+' MwSt.';
+ E('taxNote').textContent=(M?'BONit Monatsabschluss Z '+M.z_number+' · Steuergruppen aus Original.':taxRows.length+' von '+daily.length+' Tagesabrechnungen mit rechnerisch abgeglichenen 10/20-%-Werten. Angezeigt ist die Summe dieser Tage; ungeklärte Tage werden nicht ergänzt.'+(taxUnresolved.length?' Prüfung offen: '+taxUnresolved.map(date=>new Date(date+'T12:00:00').toLocaleDateString('de-AT',{day:'2-digit',month:'2-digit'})).join(', ')+'.':''))+' Ausgangsrechnungen nach Leistungstag: '+EUR(invoiceGross)+' brutto, '+EUR(invoiceNet)+' netto, '+EUR(invoiceVat)+' MwSt.';
  const personnelRows=personnel.data||[],expenseRows=expenses.data||[],accountRows=accounts.data||[],fixedRows=bankFixed.data||[];
  let personnelCost=personnelRows.length&&personnelRows.every(x=>N(x.total_costs)!==null)?personnelRows.reduce((a,x)=>a+N(x.total_costs),0):null;
  let personnelEstimated=false;
