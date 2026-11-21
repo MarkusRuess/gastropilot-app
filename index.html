@@ -683,6 +683,14 @@ body:not(.gp-judith-design) #gpDailyCalendarGrid .gp-cal-weekday{font-size:10px!
  #businessHome #homeCards .homeBusiness .homeMetric strong,
  #businessHome #homeCards .homeBusiness .homeMetric b{font-size:14px!important}
 }
+</style><style id="judith-purchase-advisor-style">
+body[data-active-business="judith"] #judithPurchaseAdvisor{grid-column:1/-1;padding:14px;margin-bottom:18px;border:1px solid #efd5e3;border-radius:13px;background:#fff9fc;color:#442336}
+#judithPurchaseAdvisor input{width:100%;box-sizing:border-box;margin:8px 0;min-height:44px}
+#judithPurchaseAdvisor .judith-purchase-item{margin:8px 0;border:1px solid #efd5e3;border-radius:10px;background:white}
+#judithPurchaseAdvisor .judith-purchase-item>summary{display:grid;grid-template-columns:minmax(120px,1fr) auto auto;gap:12px;padding:12px;align-items:center;cursor:pointer;color:#813358}
+#judithPurchaseAdvisor .judith-purchase-item>summary strong{overflow-wrap:anywhere}
+#judithPurchaseAdvisor .judith-purchase-item p,#judithPurchaseAdvisor .judith-purchase-item h4,#judithPurchaseAdvisor .judith-purchase-item small{display:block;margin:10px 12px;overflow-wrap:anywhere}
+@media(max-width:650px){#judithPurchaseAdvisor .judith-purchase-item>summary{grid-template-columns:1fr auto;font-size:13px}#judithPurchaseAdvisor .judith-purchase-item>summary strong{grid-column:1/-1}#judithPurchaseAdvisor{padding:10px!important}}
 </style></head><body>
 <header><div class="gpHeaderBar"><button id="gpHeaderHome" type="button" aria-label="GastroPilot – zur Betriebsübersicht" style="appearance:none;background:transparent;border:0;padding:0;color:inherit;text-align:left;cursor:pointer;display:block"><strong>GastroPilot</strong><small>Dein Lokal. Deine Zahlen. Dein Überblick.</small></button><nav id="gpHeaderSwitch" class="hidden" aria-label="Betrieb wechseln"></nav></div></header>
 <main><section id="login" class="card"><div class="gpLoginHero"><div class="gpLoginBrand"><span class="gpChef">♧</span><h1>Gastro<span>Pilot</span></h1><p>FRIEDRICH · JUDITH UND DIE TORTEN</p><small>EINFACH. ÜBERSICHTLICH. ERFOLGREICH.</small></div><div class="gpLoginScenes"><div class="gpLoginScene gpFriedrich"><span>Das Friedrich<small>BROT & WASSER</small></span></div><div class="gpLoginScene gpJudith"><span>Judith<small>UND DIE TORTEN</small></span></div></div></div><div class="gpLoginPanel"><p class="gpWelcome">Willkommen bei</p><h2>Gastro<span>Pilot</span></h2><p class="gpLoginIntro">Die zentrale Übersicht für Das Friedrich und Judith und die Torten.</p><form id="loginForm"><label><span class="gpFieldLabel">E-Mail</span><input id="email" type="email" autocomplete="username" placeholder="✉  E-Mail" required></label><label><span class="gpFieldLabel">Passwort</span><input id="password" type="password" autocomplete="current-password" placeholder="♙  Passwort" required></label><button type="submit">Anmelden <span aria-hidden="true">→</span></button></form><p id="loginMsg" class="status"></p></div><div class="gpLoginBenefits"><div>▥<small>Umsätze<br>im Blick</small></div><div>🛒<small>Einkäufe<br>automatisch</small></div><div>♙<small>Personal<br>einfach planen</small></div><div>▤<small>Alles an<br>einem Ort</small></div></div><p class="gpLoginSignature">Mehr Zeit für das Wesentliche ♡</p></section>
@@ -757,6 +765,7 @@ body:has(.judith-theme) #ledgerComparisonSection .ledger-actions,body:has(.judit
 <script src="./business-switch.js"></script><script type="module">
 import {createClient} from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 import {loadBankFixedCosts} from './bank-costs-integration.js';
+import {loadPurchaseAdvisor} from './judith-purchase-advisor.mjs?v=20261121';
 import {mountStock,renderStockPlanning} from './friedrich-stock.js?v=20261103-counted';
 import {renderBusinessOverview,loadPersonnelAverage,JUDITH_PERSONNEL_REFERENCE,SALES_TARGETS} from './business-overview.js?v=20261107-personalquote-monatsfenster';
 const db=createClient('https://sjnwfwcpgwsavygewwzb.supabase.co','sb_publishable__tucXG-IQGUhibMqMSUzCw_5RnH_sbQ');
@@ -1535,6 +1544,7 @@ function drawTopArticles(){
 E('articlePrev').hidden=true;E('articleNext').hidden=true;
 async function loadJudithRecipes(){
  const host=E('recipeCostRows');if(!host||!BID)return;
+ if(BID==='87889eaf-f865-4e3a-8f9a-cd01db483e0e')void loadPurchaseAdvisor(db,BID,host.parentElement,()=>BID);
  host.textContent='Rezepturen werden geladen …';
  try{
  const {data:recipes,error}=await db.from('gp_recipes').select('id,name,yield_qty,yield_unit,labor_minutes,setup_percent,packaging_net').eq('business_id',BID).order('name');
