@@ -1,3 +1,6 @@
+## 2026-11-21 – Ø Tagesumsatz: einzeilige Zahl
+Ausschließlich die Kachel „Ø Tagesumsatz“ unter Friedrich → Tagesabschlüsse angepasst: Betrag bleibt per `white-space:nowrap` auf einer Zeile; Schriftgröße und rechte/seitliche Abstände für Desktop und Mobilansicht gezielt reduziert. Keine Änderung an übrigen Kacheln, Berechnung, Beträgen oder Daten. Commit `008cdff`. Inline-Skript-Syntaxprüfung erfolgreich; angemeldete Liveansicht nicht geprüft.
+
 ## 2026-11-21 – HOFER Barbon vom 20.11.2026 (12:32)
 Originalfoto vom Betreiber. HOFER KG Baden, 52 Artikel, **149,50 EUR brutto bar bezahlt**. Steueraufteilung laut Bon: A 10 % 60,75 EUR netto + 6,08 EUR USt; B 20 % 68,68 EUR netto + 13,74 EUR USt; C 0 % 0,25 EUR netto (Einwegpfand). Summe 129,68 EUR netto + 19,82 EUR USt. Zuordnung: Lebensmittel/Getränke Wareneinkauf, Kerzen/Hygiene Betriebsmaterial, Pfand separat. Belegdatum 20.11.2026, Fiskalsequenz 5127, Kassenidentifikation 633/048. Lesende Prüfung `documents` für Friedrich/HOFER/2026-11-20 ohne Treffer; keine Buchung durchgeführt und keine Live-Prüfung. Barzahlung bei späterem Bankabgleich nicht erneut als Zahlung buchen.
 
