@@ -30,3 +30,16 @@
 .jd-goal-heading{font-size:13px!important}.jd-goal-heading strong{font-size:22px!important}
 }
 @media(max-width:360px){.jd-stats{grid-template-columns:1fr 1fr!important}}
+
+/* Sekretariat und Produktion: klare Bereiche, unveränderte Ziele */
+.jd-workspace{margin:13px 0 16px}
+.jd-section-head{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin:0 0 9px}
+.jd-section-head h3{font-size:16px;color:#583446;margin:0;font-weight:750}
+.jd-section-head span{font-size:11px;color:#856a78}
+.jd-communication{grid-template-columns:repeat(4,minmax(0,1fr))!important}
+.jd-planned{background:#f8f5f6;border:1px dashed #d9c3cd;border-radius:12px;min-height:104px;padding:13px 15px;color:#735d67;font-size:22px;display:flex;flex-direction:column;justify-content:center}
+.jd-planned strong{font-size:15px;margin:5px 0 2px}
+.jd-planned small{font-size:11px}
+.jd-planned-tag{font-size:10px;margin-top:6px;color:#8c6477}
+@media(max-width:900px){.jd-communication{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
+@media(max-width:700px){.jd-section-head{display:block}.jd-section-head h3{font-size:15px}.jd-section-head span{display:block;margin-top:2px}.jd-planned{min-height:93px;padding:11px;font-size:20px}.jd-planned strong{font-size:14px}.jd-planned small{font-size:10px}}
