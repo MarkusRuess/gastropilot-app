@@ -72,3 +72,39 @@
 .jd-home .jd-stats .jd-stat-pending strong{color:#8d7882}
 .jd-home .jd-stats .jd-stat-pending small{display:block;font-size:10px;color:#997b88;margin-top:4px}
 @media(max-width:700px){.jd-home .jd-stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.jd-home .jd-stats>div{padding:10px}}
+
+/* Professional office dashboard: compact, high contrast, consistent rhythm */
+#dashboard{background:#fff!important;border:1px solid #e9e3e6!important;box-shadow:0 3px 16px rgba(45,34,39,.035)!important}
+#dashboard .jd-goal-card{background:#fcf8fa!important;border:1px solid #ebdce3!important;border-left:3px solid #ae4775!important;box-shadow:none!important}
+#dashboard .jd-goal-card p{color:#7d6872!important}
+.jd-home{background:#fff!important;border:1px solid #e9e3e6!important;box-shadow:0 3px 16px rgba(45,34,39,.035)!important}
+.jd-intro{padding-bottom:9px!important;border-bottom:1px solid #f0e9ed!important;margin-bottom:13px!important}
+.jd-intro h2{color:#302a2e!important;font-size:20px!important}
+.jd-intro p{color:#81767c!important;margin-bottom:0!important}
+.jd-home .jd-stats{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:10px!important;margin:0 0 14px!important}
+.jd-home .jd-stats>div{background:#fff!important;border:1px solid #e8e1e5!important;border-radius:12px!important;min-height:85px!important;box-sizing:border-box!important;box-shadow:0 1px 3px rgba(30,25,28,.025)!important;padding:13px 15px!important}
+.jd-home .jd-stats strong{font-size:25px!important;color:#302a2e!important;line-height:1.2!important}
+.jd-home .jd-stats span{color:#71636a!important;font-weight:650!important}
+.jd-home .jd-stats .jd-stat-pending{background:#faf9f9!important;border-style:dashed!important}
+.jd-home .jd-stats .jd-stat-pending strong{color:#9d8f96!important}
+.jd-phone-overview{display:flex!important;align-items:center!important;gap:10px!important;flex-wrap:wrap!important;padding:9px 13px!important;background:#f8f9fa!important;border:1px solid #e7e8e9!important;border-radius:10px!important;margin:0 0 20px!important}
+.jd-phone-overview-title{flex:0 0 auto!important}
+.jd-phone-overview-title strong{font-size:12px!important;color:#42363c!important}
+.jd-phone-overview-title>span:first-child{font-size:15px!important}
+.jd-phone-overview .jd-phone-status{font-size:10px!important;margin-left:2px!important;background:#f5eaf0!important}
+.jd-phone-overview p{font-size:11px!important;margin:0!important}
+.jd-phone-overview p:last-child{display:none!important}
+.jd-workspace{margin:0 0 21px!important}
+.jd-section-head{padding:0 0 9px!important;margin:0 0 11px!important;border-bottom:1px solid #ece7ea!important}
+.jd-section-head h3{color:#342e32!important;font-size:15px!important;letter-spacing:.01em!important}
+.jd-section-head span{color:#8a7c83!important}
+.jd-home .jd-cards{gap:10px!important}
+.jd-home .jd-cards a,.jd-communication>.jd-planned{background:#fff!important;border:1px solid #e7e0e4!important;border-radius:12px!important;box-shadow:0 1px 4px rgba(37,30,34,.03)!important;min-height:95px!important;padding:13px 15px!important;box-sizing:border-box!important}
+.jd-home .jd-cards a:hover,.jd-home .jd-cards a:focus-visible{border-color:#bd7b99!important;background:#fff9fb!important;box-shadow:0 3px 12px rgba(124,56,86,.09)!important}
+.jd-home .jd-cards strong,.jd-communication>.jd-planned strong{color:#393137!important;font-size:14px!important;font-weight:750!important}
+.jd-home .jd-cards small,.jd-communication>.jd-planned small{color:#81737b!important;font-size:11px!important}
+.jd-communication>.jd-planned{background:#faf9fa!important;border-style:dashed!important}
+.jd-communication>.jd-planned .jd-planned-tag{color:#98647a!important;font-size:10px!important}
+.jd-extra{border:1px solid #e8e1e5!important;background:#fff!important}
+@media(max-width:900px){.jd-home .jd-stats{grid-template-columns:repeat(3,minmax(0,1fr))!important}}
+@media(max-width:700px){.jd-home .jd-stats{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important}.jd-home .jd-stats>div{padding:10px!important;min-height:80px!important}.jd-home .jd-stats strong{font-size:22px!important}.jd-phone-overview{display:block!important}.jd-phone-overview p{margin-top:4px!important}.jd-section-head{display:flex!important;align-items:center!important;flex-wrap:wrap!important}.jd-home .jd-cards a,.jd-communication>.jd-planned{padding:11px!important;min-height:90px!important}}
