@@ -64,3 +64,11 @@
 .jd-phone-overview p{margin:5px 0 0;font-size:12px;line-height:1.5;color:#735d68}
 .jd-phone-separator{margin:0 6px;color:#bd9da9}
 @media(max-width:700px){#dashboard .jd-goal-card{padding:11px 12px}.jd-phone-status{margin-left:0}.jd-phone-overview{padding:11px}.jd-communication>.jd-planned{min-height:96px;padding:11px}}
+
+/* Sechs Kennzahlen: operative Arbeit und Telefon getrennt, ohne Scheindaten */
+.jd-home .jd-stats{grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.jd-home .jd-stats>div{min-width:0}
+.jd-home .jd-stats .jd-stat-pending{background:#fbf8f9;border:1px dashed #e5d7dc;color:#725d67;cursor:default}
+.jd-home .jd-stats .jd-stat-pending strong{color:#8d7882}
+.jd-home .jd-stats .jd-stat-pending small{display:block;font-size:10px;color:#997b88;margin-top:4px}
+@media(max-width:700px){.jd-home .jd-stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.jd-home .jd-stats>div{padding:10px}}
