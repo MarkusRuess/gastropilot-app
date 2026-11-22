@@ -196,3 +196,9 @@ Vorher scheiterten zwei neue Regressionstests (Judith/Friedrich); nachher bestan
 - Judith und die Torten, Geschäftstag 21.11.2026: Bruttoumsatz 1.606,62 EUR, 28 Belege, Bankomat 574,42 EUR, Bareinlage 644,30 EUR, Kundenforderungen 387,90 EUR, Retouren 180,00 EUR und Rabatte 34,98 EUR. Warengruppen: Shop 10 % 12,50 EUR; Shop 20 % 54,42 EUR; Torten 10 % 1.539,70 EUR.
 - Originalfoto im Chat visuell geprüft. Ausschließlich in `public.documents` für die Judith-business_id ein `cash_report` mit `status=reviewed` und Herkunftsverweis auf Chat-Datei angelegt. Vorher per Geschäftstag/Z-Nummer auf Duplikate geprüft; anschließend genau einen Datensatz per SQL zurückgelesen (ID `6b838e8a-8a46-44a0-b606-54f11a982c86`).
 - Keine Codeänderung, keine Änderung an Friedrich oder Judith AI. Originalbild nicht als Supabase-Storage-Objekt hochgeladen. Authentifizierte App-Ansicht nicht live geprüft; automatische künftige Fotoübernahme nicht implementiert.
+
+
+## 2026-11-22 – Tagesbericht Z 44 (direkte Datenübernahme)
+- Judith und die Torten, Geschäftstag 22.11.2026, Z 44: 5.031,85 EUR Bruttoumsatz (vor Retouren 5.113,14 EUR; Retouren 81,29 EUR), 17 Belege, Kundenforderungen 4.009,85 EUR, Bankomat 403,90 EUR, Bareinlage 618,10 EUR. Warengruppen: Torten 10 % 4.980,55 EUR; Shop 10 % 14,30 EUR; Shop 20 % 37,00 EUR.
+- Foto im Chat visuell geprüft. In `public.documents` ausschließlich Judith-`cash_report` (status `reviewed`) mit Chat-Originalreferenz gespeichert; vorher Geschäftstag/Z-Nummer geprüft. Nachkontrolle: genau 1 Datensatz, 5.031,85 EUR, Z 44; Dokument-ID `67e5bf22-9f68-4adc-b69f-e9f93577587c`.
+- Keine Programmänderung; Friedrich und Judith AI unverändert. Foto nicht in Supabase Storage gespeichert, angemeldete Live-Dashboard-Anzeige nicht getestet. Vollautomatischer Import künftiger Chat-Fotos weiterhin nicht nachgewiesen.
