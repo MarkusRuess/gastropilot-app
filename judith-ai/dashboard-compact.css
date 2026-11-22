@@ -1,0 +1,32 @@
+/* Judith AI: kompakteres Dashboard, ausschließlich Darstellung */
+.jd-home{padding:16px!important;margin:10px 0 16px!important;border-radius:16px!important}
+.jd-intro{align-items:center!important}.jd-intro h2{font-size:21px!important}.jd-intro p{margin:2px 0 10px!important;font-size:13px}
+.jd-team{padding:8px 10px!important;min-width:0!important}
+.jd-stats{gap:9px!important;margin-bottom:11px!important}
+.jd-stats>div{padding:11px 13px!important;border-radius:11px!important}
+.jd-stats strong{font-size:23px!important;margin-top:3px!important}
+.jd-goal-card{padding:11px 15px!important;margin-bottom:14px!important;border-radius:12px!important;border-left-width:4px!important}
+.jd-goal-heading{font-size:15px!important}.jd-goal-heading strong{font-size:25px!important}
+.jd-goal-track{height:8px!important;margin:8px 0!important}
+.jd-goal-card p{font-size:12px!important;line-height:1.35!important}
+.jd-cards{gap:9px!important}
+.jd-cards a{min-height:104px!important;padding:13px 15px!important;border-radius:12px!important;font-size:22px!important;justify-content:center!important}
+.jd-cards strong{font-size:16px!important;margin:5px 0 2px!important}
+.jd-cards small{font-size:11px!important;line-height:1.35!important}
+.jd-extra{margin-top:11px!important;padding:11px 14px!important}
+.jd-extra summary{font-size:14px!important}
+@media(max-width:700px){
+.jd-home{padding:12px!important}
+.jd-intro{align-items:flex-start!important;flex-wrap:wrap!important}
+.jd-intro h2{font-size:19px!important}
+.jd-stats{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:6px!important}
+.jd-stats>div{padding:9px 7px!important}
+.jd-stats span{font-size:10px!important}
+.jd-stats strong{font-size:20px!important}
+.jd-cards{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important}
+.jd-cards a{min-height:93px!important;padding:11px!important;font-size:20px!important}
+.jd-cards strong{font-size:14px!important}
+.jd-cards small{font-size:10px!important}
+.jd-goal-heading{font-size:13px!important}.jd-goal-heading strong{font-size:22px!important}
+}
+@media(max-width:360px){.jd-stats{grid-template-columns:1fr 1fr!important}}
