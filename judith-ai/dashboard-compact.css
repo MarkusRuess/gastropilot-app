@@ -43,3 +43,24 @@
 .jd-planned-tag{font-size:10px;margin-top:6px;color:#8c6477}
 @media(max-width:900px){.jd-communication{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
 @media(max-width:700px){.jd-section-head{display:block}.jd-section-head h3{font-size:15px}.jd-section-head span{display:block;margin-top:2px}.jd-planned{min-height:93px;padding:11px;font-size:20px}.jd-planned strong{font-size:14px}.jd-planned small{font-size:10px}}
+
+/* Monatsziel direkt im Judith-AI-Kopfbereich */
+#dashboard>.jd-goal-card,#dashboard>.judith-brand+.jd-goal-card{margin-top:12px}
+#dashboard .jd-goal-card{margin:14px 0 0;padding:12px 16px;border-radius:12px}
+#dashboard .jd-goal-heading{font-size:14px}
+#dashboard .jd-goal-heading strong{font-size:24px}
+#dashboard .jd-goal-track{height:8px;margin:9px 0 6px}
+#dashboard .jd-goal-card p{font-size:12px;margin:0}
+.jd-communication>.jd-planned{box-sizing:border-box;background:linear-gradient(130deg,#fffdfd,#f8e9ef);border:1px solid #eecfdc;border-radius:13px;min-height:100px;padding:13px 15px;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:3px;color:#583446}
+.jd-phone-icon{font-size:22px;line-height:1}
+.jd-communication>.jd-planned strong{font-size:15px;margin:3px 0 0}
+.jd-communication>.jd-planned small{font-size:12px;color:#785a68}
+.jd-communication>.jd-planned .jd-planned-tag{font-size:10px;color:#a34c72;margin-top:3px;font-weight:700}
+.jd-phone-overview{background:#fff;border:1px solid #ead7df;border-radius:13px;padding:12px 15px;margin:12px 0 15px;color:#563b48}
+.jd-phone-overview-title{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.jd-phone-overview-title>strong{font-size:14px}
+.jd-phone-overview-title>span:first-child{font-size:19px;color:#a74c73}
+.jd-phone-status{margin-left:auto;background:#f7eef1;border:1px solid #ead4de;border-radius:999px;padding:3px 9px;color:#9b5672;font-size:11px;font-weight:700}
+.jd-phone-overview p{margin:5px 0 0;font-size:12px;line-height:1.5;color:#735d68}
+.jd-phone-separator{margin:0 6px;color:#bd9da9}
+@media(max-width:700px){#dashboard .jd-goal-card{padding:11px 12px}.jd-phone-status{margin-left:0}.jd-phone-overview{padding:11px}.jd-communication>.jd-planned{min-height:96px;padding:11px}}
