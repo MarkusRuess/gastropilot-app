@@ -483,6 +483,7 @@ document.getElementById('load-inbox').addEventListener('click',async()=>{
    // Display email as readable text, never execute remote HTML or inline images.
    const tidy=s=>stripLinks(s)
     .replace(/!\[[^\]]*\]\([^\n)]*\)/g,'')
+    .replace(/^\s*!\[[^\n]*$/gm,'')
     .replace(/\[[^\]]{0,100}\]\(\s*\)/g,'')
     .replace(/\[(?:\s|\d{1,3})*\]/g,'')
     .replace(/^\s*[-_]{8,}\s*$/gm,'')
