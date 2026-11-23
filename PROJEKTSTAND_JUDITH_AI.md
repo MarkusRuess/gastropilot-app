@@ -421,3 +421,9 @@ Dezimalverarbeitung numerischer DB-Werte korrigiert; Hochzeitstag/Wiederholungs-
 - E-Mail-Karten der Kategorie Verkaufsanfragen erhalten rosa Rand/Hintergrund; vorhandene `acceptance_detected`-Signale ohne `acceptance_reviewed` werden als „Zusage prüfen“ gelb hervorgehoben.
 - Keine neuen Bearbeitungsstatus erfunden, keine automatische Bestätigung oder Auftragserstellung. Bestehende Mailklassifizierung und Kundendaten unverändert.
 - Statische Prüfung im GitHub-Code; tatsächlicher Browser-/Mobiltest noch offen.
+
+
+## 2026-11-23 – Direktversand vorbereitet
+- Neue Edge Function `judith-ai-send-mail` v1 mit Supabase-JWT, aktivem Judith-AI-Zugang, Empfängerprüfung bei Antwort auf Bestandsmail, Größenlimits und Resend-Idempotenz; deployt. Versand nur nach ausdrücklichem Button-Klick und Bestätigungsdialog; keine Anhänge über diese Funktion.
+- UI `judith-ai/postfach.html`: Direktversand-Aktion im bestehenden Anfrage-Antwortbereich neben Mailto-Fallback. Keine Änderung an Easyname/Weiterleitung.
+- Offene Voraussetzung: Resend API-Key und verifizierte Absenderadresse in Secret `JUDITH_MAIL_FROM` nachweisen/konfigurieren. Ohne beides liefert die Funktion 503; keine E-Mail versendet. Authentifizierter Liveversand noch nicht getestet. Nicht als vollständig aktiv bezeichnen.
