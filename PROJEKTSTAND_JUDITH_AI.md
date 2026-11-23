@@ -409,3 +409,9 @@ Dezimalverarbeitung numerischer DB-Werte korrigiert; Hochzeitstag/Wiederholungs-
 - **Ursache:** `judith-ai-inbox` lud global die ersten 500 Anhänge, bevor die neuesten 30 Nachrichten abgefragt wurden. Bei mehr als 500 gespeicherten Dateien fehlten neue Anhänge in der Antwort trotz erfolgreicher Speicherung.
 - **Korrektur:** Zuerst aktuelle 30 Nachrichten ermitteln, anschließend ausschließlich deren aktive Anhänge laden und zeitlich begrenzte URLs signieren. Keine Datenbankmigration und keine Löschung.
 - **Verifiziert:** Der Anhang `PHOTO-2026-11-23-11-48-00.jpg` zur Mail „Das sind die Vorschriften“ ist gespeichert; nach Deployment Funktion/Live-Browser erneut prüfen.
+
+
+## 2026-11-23 – E-Mail-Zentrale: Verkaufsanfragen zuerst
+- Umsetzung: In `judith-ai/postfach.html` steht die Verkaufsanfragen-Kachel als große rosa Hauptkachel an erster Stelle; beim ersten Öffnen ist `cake` die Standardkategorie. Posteingang, Rechnungen, Kundenservice, Newsletter, Spam und Prüfen bleiben vorhanden.
+- Prüfung: GitHub-Code auf Reihenfolge, CSS-Hervorhebung und Standardfilter geprüft. Kein Eingriff in Maildaten, Supabase-Schema, GastroPilot Judith/Friedrich oder Mailweiterleitung.
+- Status: GitHub-Änderung programmiert; Browser-/iPhone-Liveprüfung noch ausständig.
