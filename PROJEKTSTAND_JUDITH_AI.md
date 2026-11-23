@@ -297,3 +297,8 @@ Dezimalverarbeitung numerischer DB-Werte korrigiert; Hochzeitstag/Wiederholungs-
 - Statische Codeprüfungen bestanden. Angemeldeter Live-Funktionstest nicht nachgewiesen.
 
 - **2026-11-23 Nachkorrektur Kundenkartei:** Anlass wird wie der Anzeigename nur visuell von führenden/abschließenden Importmarkierungen (`>`, `»`, `›`) bereinigt. Originaldaten und Such-/Filterlogik unverändert. GitHub-Commit `ebb0eee795469bcc6a9c810cf2ec4e667d8434ab`; statisch geprüft, angemeldeter Live-Test offen.
+
+## 2026-11-23 – Anklickbare Kundenkennzahlen und Statuskacheln
+- Commit `3cd5d23981f420844f89c84516d419039958b181` in `judith-ai/postfach.html`: sechs anklickbare KPI-Kacheln (alle Kunden, bestätigte Aufträge, offene Anfragen, nächste sieben Tage, abgeholt, ohne Aufträge). Auswahl setzt denselben Filter wie das Dropdown und scrollt zur Kundenliste. Aktive Kachel rosa hervorgehoben, `aria-pressed`, mobil zwei Spalten.
+- Filter berücksichtigen sämtliche zugeordneten aktiven Anfragen/Aufträge eines Kunden; bei 'Nächste 7 Tage' nur bestätigte Aufträge im Zeitfenster. Kennzahlen für Aufträge zählen Aufträge, Ergebnisliste zeigt zugehörige Kunden – Zahlen können daher abweichen.
+- Statische Prüfungen bestanden (sechs Kacheln, Klickhandler, Filter, Bearbeitung, Pagination). Angemeldeter Live-Test noch offen; keine Kundendaten geändert.
