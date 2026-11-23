@@ -413,6 +413,10 @@ document.getElementById('load-inbox').addEventListener('click',async()=>{
    const website=/neuer eintrag:\s*torten.anfrage|website.anfrage/.test(text.slice(0,1000));
    const deliveryError=/mailer.daemon|postmaster@/.test(sender)||/mail delivery failed|undelivered mail|delivery status notification|zustellung fehlgeschlagen/.test(subject);
    if(deliveryError)return 'unclear';
+   // Internal WPForms summaries are not individual customer inquiries.
+   if(/wöchentliche wpforms.zusammenfassung|weekly wpforms summary|your weekly recap|here.s the rundown|wpforms.*(zusammenfassung|summary)/i.test(subject+'\n'+body.slice(0,700)))return 'news';
+   // Supplier shipment/order status messages must never become cake sales inquiries.
+   if((/druck\.at|kundencenter@druck\.at/.test(sender)||/druck\.at/.test(subject))&&/verschiebung|liefertermin|auftragsbestätigung|produktionsverzögerung|fertigstellung/.test(text.slice(0,2000)))return 'unclear';
    const salesSubject=/torte|hochzeit|geburtstag|cake.?pop|keks|weihnachtskeks|praline|petit.four|brötchen|baguette|catering|dessert|mehlspeise|zuckerpapier|lieferung|anlieferung|abholung|angebot|bestell|anfrage|wunschtermin|auftrag|preisvorschlag|firmenfeier/.test(subject);
    const salesBody=/torte|cake.?pop|keks|praline|brötchen|catering|zuckerpapier|wunschtermin|anlieferung|abholtermin|hochzeit|geburtstag|gäste|bestellmenge|stückzahl|preisvorschlag/.test(body);
    const salesConversation=website||salesSubject||reply&&salesBody;

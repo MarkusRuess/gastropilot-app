@@ -388,3 +388,8 @@ Dezimalverarbeitung numerischer DB-Werte korrigiert; Hochzeitstag/Wiederholungs-
 ## 2026-11-23 – HTML-only-Rechnungsmails: Empfangs-Fallback
 - **Implementiert im Branch:** Quellcode der bestehenden Supabase-Edge-Funktion `judith-resend-inbound` versioniert. Falls Resend keinen `text`-Inhalt liefert, wird `html` lokal und ohne KI in lesbaren Text konvertiert. Signaturprüfung, Deduplizierung, Anhänge und bisherige Schnittstellen bleiben bestehen.
 - **Statisch geprüft:** Webhook-Signatur, HTML-Fallback, Anhangsverarbeitung und Provider-ID-Deduplizierung. **Noch offen:** produktiver Empfangstest mit HTML-only-E-Mail, Wiederherstellung historischer E-Mails, sichere strukturierte Rechnungsübernahme nach GastroPilot Judith. Keine vorhandenen Rechnungs-/Kundendaten geändert.
+
+
+## 2026-11-23 – Fehlklassifikation druck.at / WPForms
+- **Implementiert:** WPForms-Wochenberichte werden vor der Verkaufslogik als Werbung & Newsletter erkannt. druck.at-Lieferverzögerungen/Auftragsbestätigungen werden als „Prüfen“ statt Torten-Verkaufsanfragen angezeigt. Keine neue Kategorie und keine Änderung der gespeicherten Nachrichten.
+- **Statisch geprüft:** Vorrang der Regeln vor generischen Schlüsselwörtern; keine automatische Auftragserstellung oder KI-Antwort für diese Kategorien. **Live-Test offen.**
