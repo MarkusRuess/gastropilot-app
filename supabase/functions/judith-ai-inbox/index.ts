@@ -167,12 +167,20 @@ Deno.serve(async(req:Request)=>{
   return send({ok:true,can_archive_orders:canArchiveOrders,customers:customers||[],inquiries:inquiries||[],attachments});
  }
  if(req.method==="DELETE"){let payload:unknown;try{payload=await req.json()}catch{return send({error:"Invalid request"},400)}const id=(payload as {message_id?:unknown})?.message_id;if(typeof id!=="string"||!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id))return send({error:"Invalid message ID"},400);const {data:removed,error:removeError}=await db.from("judith_ai_mail_messages").delete().eq("id",id).eq("direction","inbound").select("id").maybeSingle();if(removeError)return send({error:"Endgültiges Löschen fehlgeschlagen"},503);if(!removed)return send({error:"E-Mail nicht gefunden"},404);return send({ok:true,deleted:true});}
- const {data:storedFiles}=await db.from("judith_ai_attachments").select("id,message_id,filename,mime_type,storage_path").is("deleted_at",null).limit(500);
- const signedFiles=storedFiles?.length?(await db.storage.from("judith-ai-attachments").createSignedUrls(storedFiles.map(f=>f.storage_path),600)).data||[]:[];
- const signedByPath=new Map<string,string>();for(const item of signedFiles)if(item.path&&item.signedUrl)signedByPath.set(item.path,item.signedUrl);
- const attachments=(storedFiles||[]).flatMap(f=>{const signedUrl=signedByPath.get(f.storage_path);return signedUrl?[{id:f.id,message_id:f.message_id,filename:f.filename,mime_type:f.mime_type,url:signedUrl}]:[]})
  const {data,error:dbError}=await db.from("judith_ai_mail_messages").select("id,sender_email,recipient_email,subject,body_text,received_at").eq("direction","inbound").is("deleted_at",null).order("received_at",{ascending:false}).limit(30);
  if(dbError)return send({error:"Inbox unavailable"},503);
+ // Only sign attachments belonging to the current 30 inbox messages.
+ // A global first-500 limit previously hid newer documents despite successful storage.
+ const messageIds=(data||[]).map(m=>m.id);
+ const {data:storedFiles,error:attachmentError}=messageIds.length
+  ?await db.from("judith_ai_attachments").select("id,message_id,filename,mime_type,storage_path").in("message_id",messageIds).is("deleted_at",null).limit(1000)
+  :{data:[],error:null};
+ if(attachmentError)return send({error:"Anhänge konnten nicht geladen werden"},503);
+ const signedResult=storedFiles?.length?await db.storage.from("judith-ai-attachments").createSignedUrls(storedFiles.map(f=>f.storage_path),600):{data:[],error:null};
+ if(signedResult.error)return send({error:"Anhänge konnten nicht geöffnet werden"},503);
+ const signedByPath=new Map<string,string>();for(const item of signedResult.data||[])if(item.path&&item.signedUrl)signedByPath.set(item.path,item.signedUrl);
+ const attachments=(storedFiles||[]).flatMap(f=>{const signedUrl=signedByPath.get(f.storage_path);return signedUrl?[{id:f.id,message_id:f.message_id,filename:f.filename,mime_type:f.mime_type,url:signedUrl}]:[]});
+
  const keys=["Name","E-Mail-Adresse","Wunschtermin","Anlass","Gäste","Kommentar oder Nachricht","Gesendet von"];
  let synchronized=0;
  for(const msg of data||[]){
