@@ -302,3 +302,8 @@ Dezimalverarbeitung numerischer DB-Werte korrigiert; Hochzeitstag/Wiederholungs-
 - Commit `3cd5d23981f420844f89c84516d419039958b181` in `judith-ai/postfach.html`: sechs anklickbare KPI-Kacheln (alle Kunden, bestätigte Aufträge, offene Anfragen, nächste sieben Tage, abgeholt, ohne Aufträge). Auswahl setzt denselben Filter wie das Dropdown und scrollt zur Kundenliste. Aktive Kachel rosa hervorgehoben, `aria-pressed`, mobil zwei Spalten.
 - Filter berücksichtigen sämtliche zugeordneten aktiven Anfragen/Aufträge eines Kunden; bei 'Nächste 7 Tage' nur bestätigte Aufträge im Zeitfenster. Kennzahlen für Aufträge zählen Aufträge, Ergebnisliste zeigt zugehörige Kunden – Zahlen können daher abweichen.
 - Statische Prüfungen bestanden (sechs Kacheln, Klickhandler, Filter, Bearbeitung, Pagination). Angemeldeter Live-Test noch offen; keine Kundendaten geändert.
+
+## 2026-11-23 – Vier anklickbare Preiskacheln in Kundenkartei
+- Commit `d3e5c7f2587cc6f079df384039d9bc8da4ce5b6e` auf `main`, ausschließlich `judith-ai/postfach.html`.
+- Ergänzt: Auftragswert aktueller Monat, Auftragswert nächste sieben Tage, abgeholter Auftragswert und Aufträge ohne Preis. Kacheln setzen Kundenfilter, rosa Hervorhebung wie bestehende KPI. Berechnung ausschließlich aus vorhandenen Judith-AI-Auftragsbeschreibungen mittels `orderFacts`/`orderValueSummary` aus `judith-ai/order-value.mjs`, ohne KI oder GastroPilot. Summen umfassen nur bestätigte/abgeholte, nicht archivierte Aufträge mit explizitem positiven Bruttopreis; fehlende Preise nicht geschätzt und Teilwerte markiert. Keine Datenbankänderung.
+- Statische Prüfung auf vier Filter, Import und UI-Verknüpfung durchgeführt. Angemeldeter Live-Funktionstest nicht nachgewiesen.
