@@ -30,9 +30,15 @@ export function calendarOrderCard(order,customer,options){
  actions.append(menu,choices,pickup,feedback);heading.append(actions);
  const date=order.requested_date?.split('-').reverse().join('.')||'Termin offen';
  const rawDetails=String(order.details||'').replace(/\s+/g,' ').trim();
+ const qtyMatch=rawDetails.match(/(?:Stückzahl|Menge)\s*:\s*(\d+(?:[,.]\d+)?)/i);
+ const priceMatch=rawDetails.match(/(?:Vereinbarter\s+Preis(?:\s+brutto)?|Preis\s+brutto)\s*:\s*([\d.,]+)\s*€?/i);
+ const productText=rawDetails.split(/\b(?:Stückzahl|Menge|Vereinbarter\s+Preis|Preis\s+brutto|Erfasst\s+(?:von|am))\s*:/i)[0].replace(/[\s,;·-]+$/,'').trim();
  const generic=/^(tortenauftrag|torte|geburtstag|süßes|hochzeit|anfrage)$/i;
- const description=rawDetails||(order.occasion&&!generic.test(order.occasion)?order.occasion:'Tortendetails fehlen');
+ const description=productText||(order.occasion&&!generic.test(order.occasion)?order.occasion:'Tortendetails fehlen');
  const info=el('p',description);info.className='jo-cake-summary';info.title=description;
+ const facts=el('div');facts.className='jo-order-facts';
+ if(qtyMatch)facts.append(el('span','Menge: '+qtyMatch[1]));
+ if(priceMatch)facts.append(el('strong','Preis: '+priceMatch[1]+' €'));
  const pickupDate=el('p','Abholung: '+date);pickupDate.className='jo-pickup-date';
  const toggle=el('button','📋 Auftrag öffnen');toggle.type='button';toggle.setAttribute('aria-expanded','false');
  const body=el('div');body.className='jo-body';body.hidden=true;body.id='jo-body-'+order.id;toggle.setAttribute('aria-controls',body.id);
@@ -52,5 +58,5 @@ export function calendarOrderCard(order,customer,options){
   // Mount once, without calculate/OCR calls on opening a calendar or an order.
   price.addEventListener('toggle',()=>{if(price.open&&!host.dataset.priceMounted)options.mountPrice(host,order)});body.append(price);
  };
- choices.append(toggle);card.append(heading,info,pickupDate,body);return card;
+ choices.append(toggle);card.append(heading,info,facts,pickupDate,body);return card;
 }
