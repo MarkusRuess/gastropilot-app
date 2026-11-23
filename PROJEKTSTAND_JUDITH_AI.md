@@ -357,3 +357,8 @@ Dezimalverarbeitung numerischer DB-Werte korrigiert; Hochzeitstag/Wiederholungs-
 - **Ursache:** Globaler Kategorie-Klickfilter blendete Nachrichten ein/aus, aktualisierte jedoch nicht den lokalen `selectedGroup` und damit nicht die Sichtbarkeit des Sammellösch-Buttons.
 - **Implementiert:** Gemeinsamer Filter-Renderer für Kategorieauswahl und Suche; die Anzeige des Sammellösch-Buttons wird nach Filteränderungen neu berechnet. Kontobindung und doppelte Löschbestätigung bleiben bestehen.
 - **Statisch geprüft:** Event-Verknüpfung, Kategorie-/Such-Synchronisierung, Konto-/Kategorie-Scope, Bestätigung. **Live-Browsertest offen.** Keine E-Mails gelöscht.
+
+
+## 2026-11-23 – Beschriftung Sammellöschung
+- **Implementiert:** Der Button zeigt die Anzahl und Kategorie (Werbung & Newsletter / Spam / Verdacht) statt der langen Postfachadresse. Postfach bleibt separat ausgewählt; Bestätigung und Kontobindung unverändert.
+- **Statisch geprüft:** Kategorie-Beschriftung, Kontobindung und Sicherheitsbestätigung. Live-Test noch offen. Keine E-Mails gelöscht.
