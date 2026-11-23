@@ -403,3 +403,9 @@ Dezimalverarbeitung numerischer DB-Werte korrigiert; Hochzeitstag/Wiederholungs-
 ## 2026-11-23 – WPForms-Bericht kompakt
 - **Implementiert:** Automatische WPForms-Wochenberichte zeigen in Judith AI eine kompakte Zusammenfassung mit Einträgen/Aufrufen statt langer technischer Werbe-Mail. Vollständiger Rohtext bleibt im aufklappbaren Original. Einzelne technische `[`-Zeilen entfernt. Klassifikation als Newsletter/Systembericht bleibt bestehen.
 - **Statisch geprüft:** Berichtserkennung und sichere Textausgabe. **Live-Test offen.** Keine Kundendaten, Aufträge oder GastroPilot-Anwendungen verändert.
+
+
+## 2026-11-23 – Inbox-Anhänge nicht angezeigt (Root Cause)
+- **Ursache:** `judith-ai-inbox` lud global die ersten 500 Anhänge, bevor die neuesten 30 Nachrichten abgefragt wurden. Bei mehr als 500 gespeicherten Dateien fehlten neue Anhänge in der Antwort trotz erfolgreicher Speicherung.
+- **Korrektur:** Zuerst aktuelle 30 Nachrichten ermitteln, anschließend ausschließlich deren aktive Anhänge laden und zeitlich begrenzte URLs signieren. Keine Datenbankmigration und keine Löschung.
+- **Verifiziert:** Der Anhang `PHOTO-2026-11-23-11-48-00.jpg` zur Mail „Das sind die Vorschriften“ ist gespeichert; nach Deployment Funktion/Live-Browser erneut prüfen.
