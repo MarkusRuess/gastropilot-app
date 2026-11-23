@@ -332,3 +332,10 @@ Dezimalverarbeitung numerischer DB-Werte korrigiert; Hochzeitstag/Wiederholungs-
 - **Implementiert:** Browserbasierte Vorschlagsklassifikation anhand von Betreff, Absender und bis zu 12.000 Zeichen Nachrichtentext. Erkennung von Website-Tortenanfragen, Zuckerpapier-Anfragen, Rechnungen, Bestellungen, Kundenservice, Marketing, Spam-Verdacht und Zustellfehlern. Unklare/inhaltlose Nachrichten bleiben unter Prüfen.
 - Sicherheitsregeln: Geschäftsbezug vor allgemeiner Marketing-Erkennung, verdächtige Nachrichten nur als Verdacht, keine automatischen Löschungen, keine automatischen Antworten, keine Änderungen an Supabase-Schema oder anderen Anwendungen.
 - **Statisch geprüft:** Klassifikationszweige und 12.000-Zeichen-Grenze vorhanden. **Nicht bestätigt:** Test an echten Nachrichten im Browser, iPhone-Test und Live-Klassifikationsgenauigkeit. Keine zusätzlichen KI-API-Aufrufe.
+
+
+## 2026-11-23 – E-Mail-Kategorie Verkaufsanfragen (alle Produkte)
+- **Implementiert (Branch `feat/judith-ai-verkaufsanfragen-20261123`):** „Tortenanfragen“ im Postfach zu „Verkaufsanfragen“ umbenannt; separaten E-Mail-Filter „Bestellungen“ entfernt. Vorhandener interner Kategoriecode `cake` bleibt aus Kompatibilitätsgründen erhalten.
+- Browserbasierte, kostenlose Vorschlagsklassifikation erweitert auf Torten, Weihnachtskekse, Cake Pops, Pralinen, Brötchen, Catering, Zuckerpapier, Produktangebote sowie bestehende Liefer- und Abholkommunikation. MedAustron-Anlieferungsantwort wird als Verkaufsanfrage eingestuft, ohne neuen Auftrag zu erzeugen.
+- Bestätigte Bestellungen bleiben ausschließlich in „Aufträge & Backliste“. Keine Supabase-Schemaänderungen, keine Löschung, keine automatischen Antworten und keine Änderungen an GastroPilot Judith/Friedrich.
+- **Statisch geprüft:** sieben sichtbare Postfachfilter einschließlich Posteingang, keine Bestellungen-Kachel, bestehende Kategorie-ID beibehalten, Klassifikationsregeln vorhanden. **Noch offen:** automatisierte Browser-Tests und Live-/iPhone-Abnahme.
