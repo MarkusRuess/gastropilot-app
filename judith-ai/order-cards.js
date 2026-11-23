@@ -28,7 +28,7 @@ export function calendarOrderCard(order,customer,options){
  const changeStatus=async(status,button)=>{button.disabled=true;feedback.textContent='';try{const saved=await options.saveStatus(order,status);if(saved!==false){hideChoices();feedback.textContent='Gespeichert'}}catch(err){feedback.textContent=err.message||'Speichern fehlgeschlagen'}finally{button.disabled=false}};
  for(const [status,label] of [['confirmed','Bestätigt'],['in_progress','In Arbeit'],['ready','Abholbereit']]){const button=el('button',label);button.type='button';button.onclick=()=>changeStatus(status,button);choices.append(button)}
  const pickup=el('button',orderStage(order)==='picked_up'?'↩ Rückgängig':'✓ Abgeholt');pickup.type='button';pickup.className='jo-quick-pickup';pickup.onclick=()=>changeStatus(orderStage(order)==='picked_up'?'confirmed':'picked_up',pickup);
- actions.append(menu,choices,pickup,feedback);heading.append(actions);
+ actions.append(menu,choices,pickup,feedback);
  const date=order.requested_date?.split('-').reverse().join('.')||'Termin offen';
  const {product,quantity,price}=orderFacts(order);
  const info=el('p',product);info.className='jo-cake-summary';info.title=product;
@@ -54,5 +54,5 @@ export function calendarOrderCard(order,customer,options){
   // Mount once, without calculate/OCR calls on opening a calendar or an order.
   price.addEventListener('toggle',()=>{if(price.open&&!host.dataset.priceMounted)options.mountPrice(host,order)});body.append(price);
  };
- choices.append(toggle);card.append(heading,info,facts,pickupDate,body);return card;
+ choices.append(toggle);card.append(heading,info,facts,pickupDate,actions,body);return card;
 }
