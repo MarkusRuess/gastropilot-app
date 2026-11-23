@@ -526,7 +526,7 @@ document.getElementById('load-inbox').addEventListener('click',async()=>{
     const motif=(message.match(/(?:Motiv|Design|Dekor|Aufstecker|Farbe)[^\n.!?]{0,110}/i)||[])[0]||'';
     const heading=document.createElement('h4');heading.textContent='🎂 '+(occasion||'Verkaufsanfrage');card.append(heading);
     field('Name',nameClean);field('Telefon',phoneText);field('E-Mail',formEmail);field('Wunschdatum',formDate);field('Personen',guests);field('Motiv',motif);field('Geschmack',flavor);field('Allergien / Hinweise',allergy);
-    const status=document.createElement('div');status.className='jd-sales-card-status';status.textContent='🟡 Anfrage – noch nicht bestätigt';card.append(status);
+    
     const note=document.createElement('details');note.className='jd-sales-message-detail';const noteTitle=document.createElement('summary');noteTitle.textContent='Kundennachricht anzeigen';const noteBody=document.createElement('p');noteBody.textContent=message||'Keine zusätzliche Nachricht';note.append(noteTitle,noteBody);card.append(note);
     body.append(card);
    }else body.append(main);
