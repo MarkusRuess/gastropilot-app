@@ -27,13 +27,13 @@ export function calendarOrderCard(order,customer,options){
  const feedback=el('span');feedback.className='jo-quick-feedback';feedback.setAttribute('role','status');
  const changeStatus=async(status,button)=>{button.disabled=true;feedback.textContent='';try{const saved=await options.saveStatus(order,status);if(saved!==false){hideChoices();feedback.textContent='Gespeichert'}}catch(err){feedback.textContent=err.message||'Speichern fehlgeschlagen'}finally{button.disabled=false}};
  for(const [status,label] of [['confirmed','Bestätigt'],['in_progress','In Arbeit'],['ready','Abholbereit']]){const button=el('button',label);button.type='button';button.onclick=()=>changeStatus(status,button);choices.append(button)}
- const pickup=el('button',orderStage(order)==='picked_up'?'↩ Rückgängig':'✓ Abgeholt');pickup.type='button';pickup.className='jo-quick-pickup';pickup.onclick=()=>changeStatus(orderStage(order)==='picked_up'?'confirmed':'picked_up',pickup);
+ const pickup=el('button',orderStage(order)==='picked_up'?'↩ Rückgängig':'✓ Abgeholt');pickup.type='button';pickup.className='jo-quick-pickup';if(orderStage(order)==='picked_up')pickup.classList.add('jo-already-picked-up');pickup.onclick=()=>changeStatus(orderStage(order)==='picked_up'?'confirmed':'picked_up',pickup);
  actions.append(menu,choices,pickup,feedback);
  const date=order.requested_date?.split('-').reverse().join('.')||'Termin offen';
  const {product,quantity,price}=orderFacts(order);
  const info=el('p',product);info.className='jo-cake-summary';info.title=product;
  const facts=el('div');facts.className='jo-order-facts';
- if(quantity)facts.append(el('span','Menge: '+quantity));
+ if(quantity){const qty=el('span','Erfasste Menge: '+quantity);qty.title='Gespeicherte Auftragsmenge; bei mehreren Produkten keine Einzelmengenangabe';facts.append(qty)}
  if(price!==null)facts.append(el('strong','Preis brutto: '+price.toLocaleString('de-AT',{style:'currency',currency:'EUR'})));
  const pickupDate=el('p','Abholung: '+date);pickupDate.className='jo-pickup-date';
  const toggle=el('button','📋 Auftrag öffnen');toggle.type='button';toggle.setAttribute('aria-expanded','false');
