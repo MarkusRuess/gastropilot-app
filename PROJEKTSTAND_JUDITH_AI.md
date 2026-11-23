@@ -427,3 +427,10 @@ Dezimalverarbeitung numerischer DB-Werte korrigiert; Hochzeitstag/Wiederholungs-
 - Neue Edge Function `judith-ai-send-mail` v1 mit Supabase-JWT, aktivem Judith-AI-Zugang, Empfängerprüfung bei Antwort auf Bestandsmail, Größenlimits und Resend-Idempotenz; deployt. Versand nur nach ausdrücklichem Button-Klick und Bestätigungsdialog; keine Anhänge über diese Funktion.
 - UI `judith-ai/postfach.html`: Direktversand-Aktion im bestehenden Anfrage-Antwortbereich neben Mailto-Fallback. Keine Änderung an Easyname/Weiterleitung.
 - Offene Voraussetzung: Resend API-Key und verifizierte Absenderadresse in Secret `JUDITH_MAIL_FROM` nachweisen/konfigurieren. Ohne beides liefert die Funktion 503; keine E-Mail versendet. Authentifizierter Liveversand noch nicht getestet. Nicht als vollständig aktiv bezeichnen.
+
+
+## 2026-11-23 – Verkaufsanfragen: kompakte Kundenkarte
+- `judith-ai/postfach.html`: Bei erkannten Website-Verkaufsanfragen werden Name, Telefon, E-Mail, Wunschdatum, Gästezahl, Motiv, Geschmack und Allergie-/Hinweistext als kompakte zweispaltige Kundenkarte (mobil einspaltig) dargestellt.
+- Doppelte Ausgabe des vollständigen Formulartexts im Hauptbereich entfällt. Kundennachricht separat aufklappbar; vollständige Original-E-Mail samt Verlauf weiterhin im vorhandenen Detailbereich verfügbar. Bestehende Auftragsstatus-Anzeige, KI-Entwürfe, PDF-Anhänge und Versandfunktion unverändert.
+- Fehlende Werte werden als nicht angegeben gekennzeichnet; keine automatische Zusage, Datenänderung oder kostenpflichtige KI-Verarbeitung.
+- Statische Code-/Integrationsprüfung durchgeführt; echte Browser-/iPhone-Liveprüfung noch offen. Freitext-Extraktion bei uneinheitlichen Formularen muss mit realen Beispielen kontrolliert werden.
