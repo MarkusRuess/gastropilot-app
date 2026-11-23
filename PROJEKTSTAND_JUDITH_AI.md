@@ -454,3 +454,8 @@ Dezimalverarbeitung numerischer DB-Werte korrigiert; Hochzeitstag/Wiederholungs-
 ## 2026-11-23 – Eingangsbestätigung v10, Konfigurationsdiagnose
 - `judith-resend-inbound` v10 in Supabase ACTIVE: Kundentext für Telefonnummernprüfung vor typischen E-Mail-Signaturen abgeschnitten; relative Datumsangaben `morgen` und `übermorgen` in Betreff/Text erkannt. Für geeignete Anfragen ohne aktivierte Versandkonfiguration wird ausschließlich der Status der Konfigurationsmerkmale (keine Secrets) im Funktionslog protokolliert.
 - Die beiden echten Testmails wurden empfangen und gespeichert. **0 automatische Antworten** in `judith_ai_mail_acknowledgements`, echter Versand nicht nachgewiesen. Die verwendete Supabase-Verbindung bietet keinen Zugriff zum Lesen/Setzen der Edge-Function-Secrets; `JUDITH_AUTO_ACK_ENABLED` und `JUDITH_MAIL_FROM` müssen vor produktiver Freigabe verifiziert werden. Keine rückwirkenden Sendungen oder Kundendatenänderungen.
+
+## 2026-11-23 – Automatische Eingangsbestätigung: echter Versandtest erfolgreich
+- Testmail `Torte morgen 17 Uhr`, Inhalt `Sacher mit Blume`, Eingang 15:16:11 UTC, in `judith_ai_mail_messages` gespeichert.
+- `judith_ai_mail_acknowledgements`: Status `sent`, `sent_at` 15:16:17 UTC, `error_code=NULL`; automatische Eingangsbestätigung nach rund 6 Sekunden über Resend erfolgreich vom Provider angenommen. Versandkonfiguration ist damit für diesen Test funktionsfähig.
+- **Live bestätigt:** Eingang, Erkennung und Provider-Versand. **Noch nicht bestätigt:** Zustellung/Anzeige im Empfängerpostfach, Spam-Ordner-Abdeckung. Keine verbindliche Torten-/Terminbestätigung.
