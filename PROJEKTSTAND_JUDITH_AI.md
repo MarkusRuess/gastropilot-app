@@ -415,3 +415,9 @@ Dezimalverarbeitung numerischer DB-Werte korrigiert; Hochzeitstag/Wiederholungs-
 - Umsetzung: In `judith-ai/postfach.html` steht die Verkaufsanfragen-Kachel als große rosa Hauptkachel an erster Stelle; beim ersten Öffnen ist `cake` die Standardkategorie. Posteingang, Rechnungen, Kundenservice, Newsletter, Spam und Prüfen bleiben vorhanden.
 - Prüfung: GitHub-Code auf Reihenfolge, CSS-Hervorhebung und Standardfilter geprüft. Kein Eingriff in Maildaten, Supabase-Schema, GastroPilot Judith/Friedrich oder Mailweiterleitung.
 - Status: GitHub-Änderung programmiert; Browser-/iPhone-Liveprüfung noch ausständig.
+
+
+## 2026-11-23 – Verkaufsanfragen optisch priorisiert
+- E-Mail-Karten der Kategorie Verkaufsanfragen erhalten rosa Rand/Hintergrund; vorhandene `acceptance_detected`-Signale ohne `acceptance_reviewed` werden als „Zusage prüfen“ gelb hervorgehoben.
+- Keine neuen Bearbeitungsstatus erfunden, keine automatische Bestätigung oder Auftragserstellung. Bestehende Mailklassifizierung und Kundendaten unverändert.
+- Statische Prüfung im GitHub-Code; tatsächlicher Browser-/Mobiltest noch offen.
