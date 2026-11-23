@@ -339,3 +339,9 @@ Dezimalverarbeitung numerischer DB-Werte korrigiert; Hochzeitstag/Wiederholungs-
 - Browserbasierte, kostenlose Vorschlagsklassifikation erweitert auf Torten, Weihnachtskekse, Cake Pops, Pralinen, Brötchen, Catering, Zuckerpapier, Produktangebote sowie bestehende Liefer- und Abholkommunikation. MedAustron-Anlieferungsantwort wird als Verkaufsanfrage eingestuft, ohne neuen Auftrag zu erzeugen.
 - Bestätigte Bestellungen bleiben ausschließlich in „Aufträge & Backliste“. Keine Supabase-Schemaänderungen, keine Löschung, keine automatischen Antworten und keine Änderungen an GastroPilot Judith/Friedrich.
 - **Statisch geprüft:** sieben sichtbare Postfachfilter einschließlich Posteingang, keine Bestellungen-Kachel, bestehende Kategorie-ID beibehalten, Klassifikationsregeln vorhanden. **Noch offen:** automatisierte Browser-Tests und Live-/iPhone-Abnahme.
+
+
+## 2026-11-23 – Sammellöschung Werbung & Newsletter / Spam-Verdacht
+- **Implementiert im Branch `feat/judith-ai-newsletter-bulk-delete-20261123`:** Button „angezeigte E-Mails löschen“ ausschließlich in den Filtern Werbung & Newsletter sowie Spam / Verdacht. Nur die aktuell angezeigten Nachrichten werden ausgewählt, keine anderen Kategorien. Doppelte explizite Bestätigung (Dialog und Eingabe „LÖSCHEN“). Einzeln autorisierte DELETE-Aufrufe an den bestehenden Judith-AI-Inbox-Endpunkt, Fortschritts- und Fehleranzeige, danach Aktualisierung.
+- **Datenhinweis:** Der bestehende Endpoint löscht E-Mail und zugehörige KI-Entwürfe aus Judith AI endgültig; das Originalpostfach bleibt unverändert. Kunden- und gespeicherte Auftragsdaten werden nicht absichtlich verändert. Es wurde **keine Sammellöschung ausgeführt**.
+- **Statisch geprüft:** Filterbeschränkung, zwei Bestätigungen und Endpunktwiederverwendung. **Offen:** Browser- und Live-Test; Klassifikation bleibt regelbasierter Vorschlag und muss vor Löschung kontrolliert werden.
