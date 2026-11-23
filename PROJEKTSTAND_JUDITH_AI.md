@@ -225,3 +225,8 @@ Dezimalverarbeitung numerischer DB-Werte korrigiert; Hochzeitstag/Wiederholungs-
 - Änderungen in `judith-ai/order-cards.js` und `judith-ai/postfach.html`, Commits `e4cd5b2` und `ba49571`: bis zu zwei Zeilen vorhandener Auftragsdetails direkt unter Kundenname, Abholdatum separat; bei fehlenden Details eindeutiger Platzhalter. Keine KI-Auswertung, keine Datenbankänderung.
 - „Auftrag öffnen“ in das vorhandene Menü `⋯` verschoben; grüner Abholbutton und bisherige Bearbeitungs-/Archivfunktionen bleiben erhalten. Bestehende Status-Speicherfunktion unverändert.
 - Quellcode-Prüfung bestanden. Angemeldeter Live-Bedientest und Pages-Auslieferung noch nicht nachgewiesen.
+
+## 2026-11-23 – Produkt, Menge und Preis auf Kalender-Minikacheln
+- `judith-ai/order-cards.js` (`67acea0`) trennt vorhandene Produktbeschreibung von expliziten Angaben `Stückzahl`/`Menge` und `Vereinbarter Preis brutto`/`Preis brutto` im gespeicherten Auftragstext. Nur vorhandene Werte anzeigen; keine Schätzung oder KI-Abfrage. Vollständiger Originaltext bleibt in den Auftragsdetails erhalten.
+- `judith-ai/postfach.html` (`c62d762`) ergänzt kompakte Darstellung und Modul-Cache-Buster. Keine Änderungen an Supabase-Daten oder anderen Anwendungen.
+- Quellcodekontrolle durchgeführt; authentifizierter Live-Bedientest noch offen.
