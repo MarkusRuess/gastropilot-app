@@ -1,4 +1,4 @@
-import {orderFacts} from './order-value.mjs';
+import {orderFacts,orderQuantityDisplay} from './order-value.mjs?build=20261123-quantities1';
 import {archiveButton} from './order-archive.js?build=20261103-archive1';
 // The existing inquiry status remains compatible with recipe and office workflows.
 export const orderStages={confirmed:'🟡 Beauftragt',in_progress:'🔵 In Arbeit',ready:'🟠 Abholbereit',picked_up:'🟢 Abgeholt'};
@@ -33,7 +33,7 @@ export function calendarOrderCard(order,customer,options){
  const {product,quantity,price}=orderFacts(order);
  const info=el('p',product);info.className='jo-cake-summary';info.title=product;
  const facts=el('div');facts.className='jo-order-facts';
- if(quantity){const qty=el('span','Erfasste Menge: '+quantity);qty.title='Gespeicherte Auftragsmenge; bei mehreren Produkten keine Einzelmengenangabe';facts.append(qty)}
+ const quantityText=orderQuantityDisplay(order);if(quantityText){const qty=el('span',quantityText);qty.className='jo-quantity-summary';qty.title='Eindeutig erkannte Produktmengen aus dem gespeicherten Auftrag; keine zusätzliche KI-Auswertung';facts.append(qty)}
  if(price!==null)facts.append(el('strong','Preis brutto: '+price.toLocaleString('de-AT',{style:'currency',currency:'EUR'})));
  const pickupDate=el('p','Abholung: '+date);pickupDate.className='jo-pickup-date';
  const toggle=el('button','📋 Auftrag öffnen');toggle.type='button';toggle.setAttribute('aria-expanded','false');
