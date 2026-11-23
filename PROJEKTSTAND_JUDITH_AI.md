@@ -362,3 +362,8 @@ Dezimalverarbeitung numerischer DB-Werte korrigiert; Hochzeitstag/Wiederholungs-
 ## 2026-11-23 – Beschriftung Sammellöschung
 - **Implementiert:** Der Button zeigt die Anzahl und Kategorie (Werbung & Newsletter / Spam / Verdacht) statt der langen Postfachadresse. Postfach bleibt separat ausgewählt; Bestätigung und Kontobindung unverändert.
 - **Statisch geprüft:** Kategorie-Beschriftung, Kontobindung und Sicherheitsbestätigung. Live-Test noch offen. Keine E-Mails gelöscht.
+
+
+## 2026-11-23 – Postfachauswahl bei einem Postfach ausblenden
+- **Implementiert:** Die redundante Postfachauswahl wird bei genau einem empfangenden Postfach ausgeblendet. Bei mehreren Postfächern bleibt die Auswahl aus Sicherheitsgründen sichtbar; keine automatische Auswahl mehrerer Postfächer. Die Konto- und Kategorieprüfung vor Sammellöschung bleibt erhalten.
+- **Statisch geprüft:** Sichtbarkeitslogik, CSS, Konto-/Kategoriebegrenzung und Kategorie-Beschriftung. **Live-Test offen.** Keine Nachrichten gelöscht.
