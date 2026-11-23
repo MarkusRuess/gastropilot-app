@@ -314,3 +314,9 @@ Dezimalverarbeitung numerischer DB-Werte korrigiert; Hochzeitstag/Wiederholungs-
 - Bestehende Kategorien, IDs, Ereignislogik und Supabase-Verbindungen unverändert; keine Änderung an Kunden-, Auftrags- oder Zahlungsdaten.
 - **Statisch geprüft:** Stylesheet vorhanden, eindeutiges Menü, drei vorhandene Kategorie-Buttons, Spam-Werkzeug erhalten, Dokumentabschluss vorhanden.
 - **Nicht nachgewiesen:** Browser-Interaktion, iPhone-Darstellung und produktiver Live-Test; Veröffentlichung nur nach Merge und Hosting-Übernahme.
+
+
+## 2026-11-23 – E-Mail-Zentrale kompakt, Suche und automatisches Laden
+- **Implementiert im Branch `fix/judith-ai-mail-compact-inbox-20261123`:** Einzelüberschrift, sechs kompakte Filter (Posteingang, Tortenanfragen, Rechnungen, Kundenservice, Newsletter, Bestellungen), automatische erste Ladung beim Öffnen, manuelles Aktualisieren, lokale Suche und Foto-Nachladen unter Weitere Funktionen.
+- Klassifikation bleibt eine **unverbindliche Vorschlagszuordnung im Browser**. Keine automatische Spam-Entscheidung, kein Versand, keine Buchung und keine Datenänderung.
+- **Statisch geprüft:** Sechs Filter, unveränderte bestehende Funktions-IDs, Suche und Ladeereignis vorhanden. Browser- und iPhone-Livetest noch nicht bestätigt.
