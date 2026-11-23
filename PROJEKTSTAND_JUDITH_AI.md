@@ -326,3 +326,9 @@ Dezimalverarbeitung numerischer DB-Werte korrigiert; Hochzeitstag/Wiederholungs-
 - **Implementiert:** Im bestehenden Postfach acht Filter einschließlich Newsletter, Spam / Verdacht und Prüfen. Der Standard-Posteingang blendet Vorschlagskategorien Newsletter und Spam-Verdacht aus; diese Nachrichten bleiben jederzeit über die eigenen Filter abrufbar. Keine Löschung, Verschiebung, Weiterleitung oder Versand.
 - Konservative Browser-Klassifikation: Rechnungen, Bestellungen und Tortenanfragen haben Vorrang vor Werbe-Erkennung; eindeutige Werbethemen (u.a. Google-Ads-Kampagnenhinweise, allgemeine Ratgeber) werden als Newsletter vorgeschlagen; zweifelhafte Nachrichten unter Prüfen. Spam nur als manueller Verdachtsfilter, keine endgültige Spam-Entscheidung.
 - **Statische Prüfung:** acht Filter, Prüfen-Fallback, getrennte Newsletter-/Spam-Ansichten und kein automatisches Löschen. **Offen:** reale Browser-/iPhone-Prüfung und Zuordnungsgenauigkeit anhand repräsentativer Nachrichten.
+
+
+## 2026-11-23 – Kostenfreie Inhaltsklassifizierung des E-Mail-Posteingangs
+- **Implementiert:** Browserbasierte Vorschlagsklassifikation anhand von Betreff, Absender und bis zu 12.000 Zeichen Nachrichtentext. Erkennung von Website-Tortenanfragen, Zuckerpapier-Anfragen, Rechnungen, Bestellungen, Kundenservice, Marketing, Spam-Verdacht und Zustellfehlern. Unklare/inhaltlose Nachrichten bleiben unter Prüfen.
+- Sicherheitsregeln: Geschäftsbezug vor allgemeiner Marketing-Erkennung, verdächtige Nachrichten nur als Verdacht, keine automatischen Löschungen, keine automatischen Antworten, keine Änderungen an Supabase-Schema oder anderen Anwendungen.
+- **Statisch geprüft:** Klassifikationszweige und 12.000-Zeichen-Grenze vorhanden. **Nicht bestätigt:** Test an echten Nachrichten im Browser, iPhone-Test und Live-Klassifikationsgenauigkeit. Keine zusätzlichen KI-API-Aufrufe.
