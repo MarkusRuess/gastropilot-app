@@ -29,7 +29,7 @@ export function calendarOrderCard(order,customer,options){
  const pickup=el('button',orderStage(order)==='picked_up'?'↩ Rückgängig':'✓ Abgeholt');pickup.type='button';pickup.className='jo-quick-pickup';pickup.onclick=()=>changeStatus(orderStage(order)==='picked_up'?'confirmed':'picked_up',pickup);
  actions.append(menu,choices,pickup,feedback);heading.append(actions);
  const date=order.requested_date?.split('-').reverse().join('.')||'Termin offen';
- const rawDetails=String(order.details||'').replace(/\\s+/g,' ').trim();
+ const rawDetails=String(order.details||'').replace(/\s+/g,' ').trim();
  const generic=/^(tortenauftrag|torte|geburtstag|süßes|hochzeit|anfrage)$/i;
  const description=rawDetails||(order.occasion&&!generic.test(order.occasion)?order.occasion:'Tortendetails fehlen');
  const info=el('p',description);info.className='jo-cake-summary';info.title=description;
