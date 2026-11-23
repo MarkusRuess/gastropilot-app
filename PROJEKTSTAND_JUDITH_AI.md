@@ -378,3 +378,8 @@ Dezimalverarbeitung numerischer DB-Werte korrigiert; Hochzeitstag/Wiederholungs-
 - **Befund:** Drei gespeicherte Nachrichten mit Betreff „Deine Rechnung von Apple“ haben leeren `body_text`. Die Resend-Inbound-Funktion speichert den empfangenen Text; ein HTML-zu-Text-Fallback ist noch zu prüfen. Keine fehlenden Inhalte erfunden oder Daten überschrieben.
 - **Implementiert:** Verständlicher Hinweis bei fehlendem Text; Preisberater nur für Verkaufsanfragen mit Text, keine falsche Kunden-/Auftragsanzeige oder KI-Antwort für Rechnungen. Anhänge bleiben sichtbar, sofern gespeichert.
 - **Statisch geprüft:** Bedingte Anzeige von Preisberater, Kunde, Antwort und Textwarnung. **Offen:** Empfangs-Fallback für HTML-only-Mails, Originalanhänge und Live-Test. Keine Kundendaten verändert.
+
+
+## 2026-11-23 – Rechnungs-PDF öffnen und drucken (erste Ausbaustufe)
+- **Implementiert:** Bei E-Mails der Kategorie Rechnungen werden gespeicherte PDF-Anhänge ausdrücklich als „Rechnung als PDF öffnen“ verlinkt. Drucken erfolgt im Browser nach Öffnen des Originals. Wenn kein PDF vorhanden ist, wird eine Warnung statt einer fingierten Druck-/Übergabefunktion gezeigt. Rosa UI und bestehende Mailfunktionen bleiben erhalten.
+- **Statisch geprüft:** Kategorie- und PDF-Filter, Druckhinweis, fehlender Anhang. **Offen:** Live-Browser-/iPhone-Test; HTML-only-Inhaltserfassung; strukturierte Rechnungsdaten und geprüfte Übergabe an GastroPilot Judith. **Keine Änderungen an GastroPilot Judith oder ETRON.** Keine Kundendaten verändert.
