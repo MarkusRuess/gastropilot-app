@@ -18,6 +18,16 @@ export function statusControls(host,order,save){
 export function calendarOrderCard(order,customer,options){
  const card=el('article');card.className='jo-card';card.dataset.orderId=order.id;
  const heading=el('div');heading.className='jo-heading';heading.append(el('strong',customer.name||'Kunde unbekannt'),el('span',orderLabel(order)));
+ const actions=el('div');actions.className='jo-quick-actions';
+ const menu=el('button','⋯');menu.type='button';menu.className='jo-quick-menu';menu.setAttribute('aria-label','Schnellaktionen für '+(customer.name||'Auftrag'));menu.setAttribute('aria-expanded','false');
+ const choices=el('div');choices.className='jo-quick-choices';choices.hidden=true;
+ const hideChoices=()=>{choices.hidden=true;menu.setAttribute('aria-expanded','false')};
+ menu.onclick=()=>{choices.hidden=!choices.hidden;menu.setAttribute('aria-expanded',String(!choices.hidden))};
+ const feedback=el('span');feedback.className='jo-quick-feedback';feedback.setAttribute('role','status');
+ const changeStatus=async(status,button)=>{button.disabled=true;feedback.textContent='';try{const saved=await options.saveStatus(order,status);if(saved!==false){hideChoices();feedback.textContent='Gespeichert'}}catch(err){feedback.textContent=err.message||'Speichern fehlgeschlagen'}finally{button.disabled=false}};
+ for(const [status,label] of [['confirmed','Bestätigt'],['in_progress','In Arbeit'],['ready','Abholbereit']]){const button=el('button',label);button.type='button';button.onclick=()=>changeStatus(status,button);choices.append(button)}
+ const pickup=el('button',orderStage(order)==='picked_up'?'↩ Rückgängig':'✓ Abgeholt');pickup.type='button';pickup.className='jo-quick-pickup';pickup.onclick=()=>changeStatus(orderStage(order)==='picked_up'?'confirmed':'picked_up',pickup);
+ actions.append(menu,choices,pickup,feedback);heading.append(actions);
  const date=order.requested_date?.split('-').reverse().join('.')||'Termin offen';
  const info=el('p',(order.occasion||'Torte')+' · Abholung: '+date);
  const toggle=el('button','📋 Auftrag öffnen');toggle.type='button';toggle.setAttribute('aria-expanded','false');
