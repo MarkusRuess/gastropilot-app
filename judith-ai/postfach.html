@@ -486,6 +486,7 @@ document.getElementById('load-inbox').addEventListener('click',async()=>{
     .replace(/^\s*!\[[^\n]*$/gm,'')
     .replace(/\[[^\]]{0,100}\]\(\s*\)/g,'')
     .replace(/\[(?:\s|\d{1,3})*\]/g,'')
+    .replace(/^\s*\[\s*$/gm,'')
     .replace(/^\s*[-_]{8,}\s*$/gm,'')
     .replace(/\*\*([^*\n]+)\*\*/g,'$1')
     .replace(/^\s*#{1,6}\s+/gm,'')
@@ -498,7 +499,12 @@ document.getElementById('load-inbox').addEventListener('click',async()=>{
    const sig=signatureStart.exec(currentRaw);
    const legal=legalBoundary.exec(currentRaw);
    const readableCurrent=legal?currentRaw.slice(0,legal.index):currentRaw;
-   const visible=isForm?['📋 Website-Anfrage',formName&&'Name: '+formName,formEmail&&'E-Mail: '+formEmail,formDate&&'Wunschtermin: '+formDate,formOccasion&&'Anlass: '+formOccasion,formGuests&&'Gäste: '+formGuests,formComment&&'Nachricht: '+formComment].filter(Boolean).join('\n'):tidy(sig?readableCurrent.slice(0,Math.min(sig.index,readableCurrent.length)):readableCurrent);
+   const isWpformsReport=/wpforms.{0,45}(zusammenfassung|summary)|weekly wpforms summary/i.test(m.subject||'')||/your weekly recap|here.s the rundown/i.test(raw.slice(0,700));
+   const wpformsEntries=isWpformsReport?raw.match(/(?:Einträge|Entries)\s*(\d{1,5})/i):null;
+   const wpformsViews=isWpformsReport?raw.match(/(?:Aufrufe|Views)\s*(\d{1,7})/i):null;
+   const wpformsSummary=isWpformsReport?['📊 Automatischer WPForms-Wochenbericht',wpformsEntries?'Formulareinträge: '+wpformsEntries[1]:'',wpformsViews?'Formularaufrufe: '+wpformsViews[1]:'','Keine einzelne Kundenanfrage. Vollständigen Bericht unten öffnen.'].filter(Boolean).join('\n'):'';
+   let visible=isForm?['📋 Website-Anfrage',formName&&'Name: '+formName,formEmail&&'E-Mail: '+formEmail,formDate&&'Wunschtermin: '+formDate,formOccasion&&'Anlass: '+formOccasion,formGuests&&'Gäste: '+formGuests,formComment&&'Nachricht: '+formComment].filter(Boolean).join('\n'):tidy(sig?readableCurrent.slice(0,Math.min(sig.index,readableCurrent.length)):readableCurrent);
+   if(isWpformsReport)visible=wpformsSummary;
    const preview=document.createElement('p');preview.className='mail-preview';preview.textContent=visible.replace(/\s+/g,' ').slice(0,240);
    const toggle=document.createElement('button');toggle.type='button';toggle.className='mail-toggle';toggle.textContent='E-Mail öffnen ▼';toggle.setAttribute('aria-expanded','false');
    const contentWrap=document.createElement('div');contentWrap.className='mail-content';contentWrap.hidden=true;
