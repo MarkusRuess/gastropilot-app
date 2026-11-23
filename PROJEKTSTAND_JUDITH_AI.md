@@ -295,3 +295,5 @@ Dezimalverarbeitung numerischer DB-Werte korrigiert; Hochzeitstag/Wiederholungs-
 - Commit `62b7301e0fd786ad694a93988c0644038c018f48` auf `main`, ausschließlich `judith-ai/postfach.html`: führende/abschließende `>`/`»`/`›` und überflüssige Leerzeichen werden **nur für die Anzeige** bereinigt. Originalname bleibt in Supabase und Bearbeitungsformular unverändert.
 - Kundenname und Status untereinander, Kontakte/Termin/Anlass auf Desktop in stabilen Spalten, Mobilansicht zweispaltig mit Umbruch. Bestehende Suche, Filter, Pagination und Bearbeitung nicht verändert.
 - Statische Codeprüfungen bestanden. Angemeldeter Live-Funktionstest nicht nachgewiesen.
+
+- **2026-11-23 Nachkorrektur Kundenkartei:** Anlass wird wie der Anzeigename nur visuell von führenden/abschließenden Importmarkierungen (`>`, `»`, `›`) bereinigt. Originaldaten und Such-/Filterlogik unverändert. GitHub-Commit `ebb0eee795469bcc6a9c810cf2ec4e667d8434ab`; statisch geprüft, angemeldeter Live-Test offen.
