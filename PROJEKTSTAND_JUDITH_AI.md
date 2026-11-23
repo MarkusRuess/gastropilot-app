@@ -262,3 +262,9 @@ Dezimalverarbeitung numerischer DB-Werte korrigiert; Hochzeitstag/Wiederholungs-
 - GitHub `main` `judith-ai/order-cards.js` Commit `0fb1f46b91eae500e36f535a6ca466b04e0101d6`: Abholstatus einmalig bestimmt, als `data-pickup-state` gesetzt; Hintergrund-/Schrift-/Rahmenfarbe mit CSS-Priorität direkt am Button, damit alte globale Styles nicht mehr den grünen `Rückgängig`-Button erzwingen. Abgeholt = dezent graugrün, offen = kräftig grün.
 - `judith-ai/postfach.html` Commit `f4baca840038022585d7881f5aff7f9123f51710`: Kacheln nicht mehr auf Höhe der längsten Kachel strecken, Abstand zwischen Angaben und Aktionen reduzieren, neue Cache-Version für Kartenmodul.
 - Statische Quellcodeprüfung bestanden; keine Änderungen an Kunden-/Auftragsdaten oder Supabase. Authentifizierter Live-Bedientest weiterhin offen.
+
+## 2026-11-23 – Sammelfunktion „Alle abgeholt“ im Tageskalender
+- GitHub `main` Commit `080b1648290b48a96525e8c37019845d9bcba1f3`, `judith-ai/postfach.html`.
+- Tagesüberschrift lautet „Datum · N Aufträge“. Daneben nur bei offenen bestätigten Aufträgen die Aktion `✓ Alle abgeholt (N)`. Nach ausdrücklicher Sicherheitsbestätigung werden ausschließlich die bestätigten, noch nicht abgeholten aktiven Aufträge dieses Tages einzeln über bestehende authentifizierte `judith-ai-inbox`-PATCH-API mit `expected_status` aktualisiert. Bereits abgeholte und archivierte Aufträge sowie Anfragen nicht geändert.
+- Fortschrittsanzeige und Fehlerzählung; bei Teilfehlern kein falsches Gesamterfolgssignal. Bestehende Rechteprüfung der Edge Function bleibt maßgeblich. Keine zusätzlichen KI-Aufrufe, keine Änderungen an GastroPilot oder anderen Mandanten.
+- Statische Quellcodekontrolle durchgeführt; automatische Laufzeittests und angemeldeter Live-Test stehen aus. Funktion daher noch nicht live verifiziert.
