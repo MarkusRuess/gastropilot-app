@@ -251,3 +251,9 @@ Dezimalverarbeitung numerischer DB-Werte korrigiert; Hochzeitstag/Wiederholungs-
 - Commit `7867b19658ca41617cfb6eb949583458bede1373`, `judith-ai/postfach.html`: kompaktes rosa/weißes Kacheldesign mit Kundenname und Status, Produkt (bis drei Zeilen), Menge links, gespeichertem Bruttopreis rechts, Abholdatum und unten `⋯` sowie grünem Abhol-/Rückgängig-Button. Drei Spalten Desktop, zwei mobil. Modul-Cache-Buster erneuert.
 - Bestehende Status-, Bearbeitungs- und Archivfunktionen sowie Supabase-Struktur unverändert. Keine Kunden- oder Zahlungsdaten geändert.
 - Statische Codekontrolle erfolgreich; automatisierter Browser-Test und angemeldeter Live-Test nicht nachgewiesen. Veröffentlichung über GitHub Pages nicht verifiziert.
+
+## 2026-11-23 – Kalenderkacheln kompakter und Abholstatus deutlicher
+- GitHub `main`: `judith-ai/order-cards.js` Commit `57dfe81caa5e2e64b34c46b657cd16a1fa91f4b1`; `judith-ai/postfach.html` Commit `352fb340cc6ea7f15f870a409e017b3ef5f101ce`.
+- Kachel-Innenabstände, Typografie, Menü und Abholbuttons um etwa 15–20 % verkleinert, Tagesauftragswertleiste schmaler. Offene Abholung weiterhin grün, bereits abgeholte Aufträge mit dezent graugrünem „Rückgängig“-Button. iPhone-Touchhöhe mindestens 40 px.
+- Statt irreführender Einzelproduktmenge steht `Erfasste Menge` (Wert aus gespeichertem Auftrag; bei mehreren Produkten keine Mengenaufteilung erfunden). Keine Auftrags-, Kunden- oder Zahlungsdaten verändert.
+- Statische Quellcodekontrolle bestanden; authentifizierter Live-Bedientest und Browserautomatisierung nicht nachgewiesen.
