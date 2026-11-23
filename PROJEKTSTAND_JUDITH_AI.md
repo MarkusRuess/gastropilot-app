@@ -459,3 +459,8 @@ Dezimalverarbeitung numerischer DB-Werte korrigiert; Hochzeitstag/Wiederholungs-
 - Testmail `Torte morgen 17 Uhr`, Inhalt `Sacher mit Blume`, Eingang 15:16:11 UTC, in `judith_ai_mail_messages` gespeichert.
 - `judith_ai_mail_acknowledgements`: Status `sent`, `sent_at` 15:16:17 UTC, `error_code=NULL`; automatische Eingangsbestätigung nach rund 6 Sekunden über Resend erfolgreich vom Provider angenommen. Versandkonfiguration ist damit für diesen Test funktionsfähig.
 - **Live bestätigt:** Eingang, Erkennung und Provider-Versand. **Noch nicht bestätigt:** Zustellung/Anzeige im Empfängerpostfach, Spam-Ordner-Abdeckung. Keine verbindliche Torten-/Terminbestätigung.
+
+## 2026-11-23 – Empfangsbestätigung und kompakte E-Mail-Vorlage
+- Nutzer hat die eingegangene automatische Antwort anhand eines Screenshots im Postfach `office@dasfriedrich.at` bestätigt; damit ist der reale Empfang **für den Test mit Betreff `Torte morgen 17 Uhr`** nachgewiesen. Die frühere Notiz „Zustellung nicht bestätigt“ ist durch diesen späteren Nachweis überholt.
+- Supabase Edge Function `judith-resend-inbound` **v12 ACTIVE**: Text der automatischen Eingangsbestätigung gestrafft, kompakte Geschäftssignatur (Judith und die Torten, Grabengasse 30, 2500 Baden, Telefonnummer, E-Mail, Website) ergänzt. Vorhandene Erkennung, Reply-To, Reservierung/Idempotenz und Schutz vor Doppelversand beibehalten.
+- **Technisch geprüft:** v12 aktiv, neuer Text und Signatur im ausgelesenen Funktionscode vorhanden. **Noch offen:** Realer Versand-/Empfangstest mit v12; Original-Logo erst nach Bereitstellung einer geeigneten Bilddatei integrieren. Keine zusätzlichen E-Mails versendet.
