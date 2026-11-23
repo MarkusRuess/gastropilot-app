@@ -400,18 +400,32 @@ document.getElementById('load-inbox').addEventListener('click',async()=>{
   let inquiriesByMessage=new Map();try{const ir=await fetch('https://sjnwfwcpgwsavygewwzb.supabase.co/functions/v1/judith-ai-inbox?view=customers',{headers:{Authorization:'Bearer '+active.access_token,apikey:'sb_publishable__tucXG-IQGUhibMqMSUzCw_5RnH_sbQ'},cache:'no-store'});const idata=await ir.json();if(ir.ok&&idata.ok)for(const inquiry of idata.inquiries||[])if(inquiry.message_id)inquiriesByMessage.set(inquiry.message_id,inquiry)}catch(e){console.warn('Auftragsstatus nicht geladen',e)}
   // Client-side suggestion filters only: no mail moves or financial postings.
   const mailGroups=[['all','Posteingang'],['cake','Tortenanfragen'],['invoices','Rechnungen'],['service','Kundenservice'],['news','Newsletter'],['orders','Bestellungen'],['spam','Spam / Verdacht'],['unclear','Prüfen']];
-  // Conservative suggestion rules: only obvious marketing is filtered, never deleted.
-  // Unknown messages remain visible under "Prüfen", rather than being treated as customer service.
+  // Local, zero-AI-cost content classification. Conservative: customer context wins over marketing.
+  // A suggestion only; never deletes, forwards, sends, or changes orders.
   const classifyMail=m=>{
-   const subject=(m.subject||'').toLocaleLowerCase('de'),body=(m.body_text||'').slice(0,5000).toLocaleLowerCase('de'),sender=(m.sender_email||'').toLocaleLowerCase('de');
-   const business=/torte|hochzeit|geburtstag|konditorei|keks|bestell|abhol|liefer|angebot|anfrage|reklamation|rechnung|gutschrift|zahlung|termin|kunde|catering|medaustron|firmenfeier/.test(subject);
-   if(/rechnung|invoice|gutschrift|mahnung|zahlungserinnerung|zahlungsavis|faktura/.test(subject))return 'invoices';
+   const subject=(m.subject||'').toLocaleLowerCase('de');
+   const body=(m.body_text||'').slice(0,12000).toLocaleLowerCase('de');
+   const sender=(m.sender_email||'').toLocaleLowerCase('de');
+   const text=subject+'\n'+body;
+   const isWebsiteForm=/neuer eintrag:\s*torten.anfrage|website.anfrage/.test(subject+'\n'+body.slice(0,700));
+   const isReply=/^(aw:|re:|wg:|fw:|fwd:)/.test(subject);
+   const isDeliveryError=/mailer.daemon|postmaster@/.test(sender)||/mail delivery failed|undelivered mail|delivery status notification|zustellung fehlgeschlagen/.test(subject);
+   if(isDeliveryError)return 'unclear';
+   if(/rechnung|invoice|gutschrift|mahnung|zahlungserinnerung|zahlungsavis|faktura/.test(subject)||/^(no_reply@email\.apple\.com|billing@)/.test(sender)&&/rechnung|receipt|invoice/.test(subject))return 'invoices';
    if(/bestellbestätigung|bestellung|order #|bestellnummer|abholbestätigung/.test(subject))return 'orders';
-   if(/hochzeitstorte|geburtstagstorte|tortenanfrage|tortenangebot|torte|hochzeit|wunschtermin/.test(subject)||/wunschtermin[\\s\\S]{0,400}(anlass|gäste)/.test(body))return 'cake';
-   // Do not auto-spam based on sender alone. A suspicious message needs manual review.
-   if(/passwort.{0,35}(sofort|bestätigen|ablauf)|konto.{0,30}(gesperrt|verifizieren)|gewinn.{0,30}(abholen|auszahlung)/.test(subject)&&!business)return 'spam';
-   if(!business&&(/newsletter|abmelden|unsubscribe|sonderangebot|werbeaktion|optimieren sie jetzt ihre kampagne|ratgeber|marketing-tipps|werbung|exklusiv.{0,20}angebot/.test(subject)||/newsletter|unsubscribe|abmelden/.test(body)&&/no-reply|noreply|newsletter|marketing/.test(sender)))return 'news';
-   if(/^(aw:|re:|wg:|fw:)/.test(subject)||business||/^(verkauf|office|kontakt|info)@/.test(sender)&&/anfrage|antwort|frage|bitte|danke|lieferung/.test(body))return 'service';
+   if(isWebsiteForm||/hochzeitstorte|geburtstagstorte|tortenanfrage|tortenangebot|wunschtorte|hochzeit|wunschtermin/.test(subject)||/wunschtermin[\s\S]{0,400}(anlass|gäste)/.test(body)||/zuckerpapier|tortenpreis|princesstorte|prinzesstorte/.test(text))return 'cake';
+   const customerContext=/torte|konditorei|keks|abhol|anlieferung|liefertermin|bestell|reklamation|catering|kundenanfrage|hochzeit|geburtstag|süßspeise|mehlspeise|medaustron/.test(text);
+   const promoSubject=/newsletter|sonderangebot|werbeaktion|optimieren sie jetzt ihre kampagne|ratgeber|marketing.tipps|werbung|exklusiv.{0,20}angebot|weekly activity|klicks mit ihren anzeigen|status: nicht dabei|verpackungen für bleibende eindrücke|was kostet euer terminal|projektanfrage.*sichtbarkeit|40\s*%.*sparen|kr[aä]tzer im lack/i.test(subject);
+   const promoBody=/unsubscribe|newsletter abmelden|hier abmelden|sie erhalten diesen newsletter|influencer.szene|creator.{0,90}zielgruppe|seo.sichtbarkeit|kostenlose info.session|mit hs.pay|nano.tuch verspricht/.test(body);
+   const promotional=promoSubject||promoBody&&/noreply|no.reply|marketing|newsletter|werbung|sales|partnership|verkaufsleitung/.test(sender);
+   // Strong phishing signals are routed to review, not automatically deleted.
+   if(/verifizierungsplakette|konto.{0,30}(gesperrt|verifizieren)|passwort.{0,35}(sofort|bestätigen|ablauf)|gewinn.{0,30}(abholen|auszahlung)/.test(subject)&&!isReply)return 'spam';
+   // Promotions mentioning Judith are not automatically treated as real customer enquiries.
+   if(promotional&&!isReply&&!isWebsiteForm)return 'news';
+   if(/^(verkauf|office|kontakt|info)@judithwalli\.at/.test(sender)&&!customerContext)return 'unclear';
+   if(customerContext||isReply&&/anfrage|angebot|lieferung|torte|termin|foto|vorschriften/.test(subject))return 'service';
+   if(!body.trim())return 'unclear';
+   if(/^(aw:|re:)/.test(subject)||/anfrage|frage|bitte|danke|lieferung|anfahrtsplan/.test(text)&&!promotional)return 'service';
    return 'unclear';
   };
   const filterBar=document.getElementById('jd-mail-menu');
