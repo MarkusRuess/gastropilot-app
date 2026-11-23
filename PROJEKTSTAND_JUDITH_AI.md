@@ -246,3 +246,8 @@ Dezimalverarbeitung numerischer DB-Werte korrigiert; Hochzeitstag/Wiederholungs-
 - GitHub `main`: `judith-ai/order-cards.js` Commit `b14cc6d`, `judith-ai/postfach.html` Commit `685c1cd`.
 - Reihenfolge pro Kachel: Kundenname/Status → Produktbeschreibung → Menge und Bruttopreis (sofern vorhanden) → Abholdatum → `⋯`/Abgeholt beziehungsweise Rückgängig. Einheitliche kompakte Abstände, fingerfreundliche Buttons, drei Spalten Desktop und zwei mobil bleiben.
 - Keine Änderung an Status-Speicherung, Berechtigungen oder Kundendaten. Statische Quellcodeprüfung bestanden; authentifizierter Live-Bedientest nicht nachgewiesen.
+
+## 2026-11-23 – Kalenderkacheln nach freigegebenem Entwurf
+- Commit `7867b19658ca41617cfb6eb949583458bede1373`, `judith-ai/postfach.html`: kompaktes rosa/weißes Kacheldesign mit Kundenname und Status, Produkt (bis drei Zeilen), Menge links, gespeichertem Bruttopreis rechts, Abholdatum und unten `⋯` sowie grünem Abhol-/Rückgängig-Button. Drei Spalten Desktop, zwei mobil. Modul-Cache-Buster erneuert.
+- Bestehende Status-, Bearbeitungs- und Archivfunktionen sowie Supabase-Struktur unverändert. Keine Kunden- oder Zahlungsdaten geändert.
+- Statische Codekontrolle erfolgreich; automatisierter Browser-Test und angemeldeter Live-Test nicht nachgewiesen. Veröffentlichung über GitHub Pages nicht verifiziert.
