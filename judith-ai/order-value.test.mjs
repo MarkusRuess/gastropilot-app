@@ -1,0 +1,11 @@
+import assert from 'node:assert/strict';
+import {orderFacts,orderValueSummary} from './order-value.mjs';
+const first={id:'1',status:'confirmed',details:'20 cm Buttercreme Stückzahl: 1 Vereinbarter Preis brutto: 80 € Erfasst von: Büro'};
+const second={id:'2',status:'picked_up',details:'Vanillekipferl und Sortiment 850g Stückzahl: 1 Vereinbarter Preis brutto: 124.50 € Erfasst von: Büro'};
+assert.deepEqual(orderFacts(first),{product:'20 cm Buttercreme',quantity:'1',price:80});
+assert.deepEqual(orderFacts(second),{product:'Vanillekipferl und Sortiment 850g',quantity:'1',price:124.5});
+assert.equal(orderFacts({details:'Torte ohne Preis'}).price,null);
+assert.equal(orderFacts({details:'5 x Vegane Schokotörtchen Kontaktangaben fehlen – bitte nachtragen Stückzahl: 5'}).product,'5 x Vegane Schokotörtchen');
+assert.deepEqual(orderValueSummary([first,second,{id:'3',status:'confirmed',details:'Torte ohne Preis'},first,{...first,id:'4',archived_at:'2026-11-23'}]),{total:204.5,count:2,missing:1});
+assert.deepEqual(orderValueSummary([{...first,status:'inquiry'}]),{total:0,count:0,missing:0});
+console.log('Judith AI order-value tests passed');
