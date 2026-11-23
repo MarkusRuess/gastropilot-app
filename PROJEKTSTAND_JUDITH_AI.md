@@ -220,3 +220,8 @@ Dezimalverarbeitung numerischer DB-Werte korrigiert; Hochzeitstag/Wiederholungs-
 - GitHub main: `934deec8` und `26360e31`. Monatskalender-Tagesliste nutzt drei rosa Minikacheln nebeneinander auf Desktop, zwei mobil. Kundennamen, Kurzbeschreibung, Direktaktion „Abgeholt“, Menü `⋯` für Status und bisherige Auftragsdetails bleiben erhalten.
 - Statusänderungen verwenden unverändert `jdSaveStatus` mit serverseitiger Prüfung, Bestätigung für Abholung und Aktualisierung der Ansichten; keine Datenbankmigration, keine Fremdprojektänderungen.
 - Statische Quellcodekontrolle bestanden (Grid, mobile Breakpoints, Cache-Buster, bestehende Archiv-/Auftragsfunktion). Authentifizierter Browser-End-to-End-Test und tatsächlicher Pages-Deploy noch nicht bestätigt.
+
+## 2026-11-23 – Torten-Kurzinformation in Kalenderkacheln
+- Änderungen in `judith-ai/order-cards.js` und `judith-ai/postfach.html`, Commits `e4cd5b2` und `ba49571`: bis zu zwei Zeilen vorhandener Auftragsdetails direkt unter Kundenname, Abholdatum separat; bei fehlenden Details eindeutiger Platzhalter. Keine KI-Auswertung, keine Datenbankänderung.
+- „Auftrag öffnen“ in das vorhandene Menü `⋯` verschoben; grüner Abholbutton und bisherige Bearbeitungs-/Archivfunktionen bleiben erhalten. Bestehende Status-Speicherfunktion unverändert.
+- Quellcode-Prüfung bestanden. Angemeldeter Live-Bedientest und Pages-Auslieferung noch nicht nachgewiesen.
