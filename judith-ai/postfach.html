@@ -516,8 +516,8 @@ document.getElementById('load-inbox').addEventListener('click',async()=>{
    if(!selected.length)return;
    const categoryName=targetCategory==='news'?'Werbung & Newsletter':'Spam / Verdacht';
    if(!confirm('Postfach: '+selectedAccount+'\\nKategorie: '+categoryName+'\\nAnzahl: '+selected.length+'\\n\\nDiese E-Mails ENDGÜLTIG aus Judith AI löschen?\\n\\nDie Zuordnung ist nur ein automatischer Vorschlag. Bitte vorher alle Nachrichten kontrollieren. Das ursprüngliche E-Mail-Postfach bleibt unverändert.'))return;
-   const approval=prompt('Zur Bestätigung „LÖSCHEN“ eingeben. '+selected.length+' Nachrichten werden endgültig aus Judith AI entfernt.');
-   if(approval!=='LÖSCHEN'||accountSelect.value!==selectedAccount||selectedGroup!==targetCategory)return;
+   // Confirmation above is sufficient; never require staff to type a second confirmation.
+   if(accountSelect.value!==selectedAccount||selectedGroup!==targetCategory)return;
    bulkDeleting=true;bulkDeleteButton.disabled=true;accountSelect.disabled=true;
    let removed=0;let failed=0;
    try{
