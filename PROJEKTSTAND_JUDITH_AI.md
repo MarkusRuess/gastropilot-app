@@ -307,3 +307,10 @@ Dezimalverarbeitung numerischer DB-Werte korrigiert; Hochzeitstag/Wiederholungs-
 - Commit `d3e5c7f2587cc6f079df384039d9bc8da4ce5b6e` auf `main`, ausschließlich `judith-ai/postfach.html`.
 - Ergänzt: Auftragswert aktueller Monat, Auftragswert nächste sieben Tage, abgeholter Auftragswert und Aufträge ohne Preis. Kacheln setzen Kundenfilter, rosa Hervorhebung wie bestehende KPI. Berechnung ausschließlich aus vorhandenen Judith-AI-Auftragsbeschreibungen mittels `orderFacts`/`orderValueSummary` aus `judith-ai/order-value.mjs`, ohne KI oder GastroPilot. Summen umfassen nur bestätigte/abgeholte, nicht archivierte Aufträge mit explizitem positiven Bruttopreis; fehlende Preise nicht geschätzt und Teilwerte markiert. Keine Datenbankänderung.
 - Statische Prüfung auf vier Filter, Import und UI-Verknüpfung durchgeführt. Angemeldeter Live-Funktionstest nicht nachgewiesen.
+
+
+## 2026-11-23 – E-Mail-Zentrale: visuelle Überarbeitung
+- **Implementiert (Branch `fix/judith-ai-mail-design-20261123`):** Professionelle rosa-weiße Gestaltung des bestehenden Office-Posteingangs in `judith-ai/postfach.html`; kompakte Kategorie-Schaltflächen, klare Überschrift, Statushinweis, responsive Mobilansicht, Fokusmarkierung und auf den E-Mail-Bereich begrenzte CSS-Regeln.
+- Bestehende Kategorien, IDs, Ereignislogik und Supabase-Verbindungen unverändert; keine Änderung an Kunden-, Auftrags- oder Zahlungsdaten.
+- **Statisch geprüft:** Stylesheet vorhanden, eindeutiges Menü, drei vorhandene Kategorie-Buttons, Spam-Werkzeug erhalten, Dokumentabschluss vorhanden.
+- **Nicht nachgewiesen:** Browser-Interaktion, iPhone-Darstellung und produktiver Live-Test; Veröffentlichung nur nach Merge und Hosting-Übernahme.
