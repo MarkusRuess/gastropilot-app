@@ -268,3 +268,8 @@ Dezimalverarbeitung numerischer DB-Werte korrigiert; Hochzeitstag/Wiederholungs-
 - Tagesüberschrift lautet „Datum · N Aufträge“. Daneben nur bei offenen bestätigten Aufträgen die Aktion `✓ Alle abgeholt (N)`. Nach ausdrücklicher Sicherheitsbestätigung werden ausschließlich die bestätigten, noch nicht abgeholten aktiven Aufträge dieses Tages einzeln über bestehende authentifizierte `judith-ai-inbox`-PATCH-API mit `expected_status` aktualisiert. Bereits abgeholte und archivierte Aufträge sowie Anfragen nicht geändert.
 - Fortschrittsanzeige und Fehlerzählung; bei Teilfehlern kein falsches Gesamterfolgssignal. Bestehende Rechteprüfung der Edge Function bleibt maßgeblich. Keine zusätzlichen KI-Aufrufe, keine Änderungen an GastroPilot oder anderen Mandanten.
 - Statische Quellcodekontrolle durchgeführt; automatische Laufzeittests und angemeldeter Live-Test stehen aus. Funktion daher noch nicht live verifiziert.
+
+## 2026-11-23 – Telefon neben Kundenname und eingebettetes Schnellmenü
+- `judith-ai/order-cards.js` Commit `d8dce12e11a0a449b91214dcfdc4391d13239ece`: vorhandene `judith_ai_customers.phone` nur bei gültiger Telefonnummer als `tel:`-Link direkt neben Kundenname; kein zusätzlicher Datenabruf. `⋯`-Menü wird unter den Abholaktionen innerhalb derselben Kachel angezeigt, schließt bei Auswahl oder Klick außerhalb, Statuspunkte farblich gekennzeichnet.
+- `judith-ai/postfach.html` Commit `9c630314e67cc262ee5a3895799c52de4d124470`: kompakte zweispaltige Menüoptionen, mobil einspaltig; kein Überdecken benachbarter Kacheln; Cache-Version erhöht.
+- Supabase-Kundentabelle lesend auf `phone` geprüft; keine Datenbankänderung, keine zusätzlichen KI-Aufrufe. Statische Codekontrolle bestanden. Angemeldeter Live-Bedientest noch nicht nachgewiesen.
