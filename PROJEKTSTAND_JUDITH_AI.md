@@ -214,3 +214,9 @@ Dezimalverarbeitung numerischer DB-Werte korrigiert; Hochzeitstag/Wiederholungs-
 - `judith-ai-inbox` Version 21 ACTIVE, verify_jwt=true. Tatsächlich deployter Quelltext exakt mit geprüftem Repository-Stand verglichen. Echte anonyme Live-GETs für Archiv und PATCHs für Archivieren/Wiederherstellen jeweils HTTP 401.
 - [Pages-Deployment 41636572655](https://github.com/MarkusRuess/gastropilot-app/actions/runs/41636572655) und zusätzlicher Pages-Lauf 41636571785 erfolgreich. Bestehende Adresse unverändert: `https://markusruess.github.io/gastropilot-app/judith-ai/postfach.html`.
 - Live-Browser neu geladen: tatsächlich ausgelieferte Archivmodulkennung `20261103-archive1` und Archivoberfläche im Seitenquelltext nachgewiesen. **Angemeldete Live-Bedienung bleibt unbestätigt**, weil die verfügbare Sitzung „Keine Anmeldung vorhanden“ meldet. Keine echten Aufträge zu Testzwecken entfernt; keine zusätzlichen Testkonten angelegt.
+
+
+## 2026-11-23 – Kompakte Kalender-Minikacheln
+- GitHub main: `934deec8` und `26360e31`. Monatskalender-Tagesliste nutzt drei rosa Minikacheln nebeneinander auf Desktop, zwei mobil. Kundennamen, Kurzbeschreibung, Direktaktion „Abgeholt“, Menü `⋯` für Status und bisherige Auftragsdetails bleiben erhalten.
+- Statusänderungen verwenden unverändert `jdSaveStatus` mit serverseitiger Prüfung, Bestätigung für Abholung und Aktualisierung der Ansichten; keine Datenbankmigration, keine Fremdprojektänderungen.
+- Statische Quellcodekontrolle bestanden (Grid, mobile Breakpoints, Cache-Buster, bestehende Archiv-/Auftragsfunktion). Authentifizierter Browser-End-to-End-Test und tatsächlicher Pages-Deploy noch nicht bestätigt.
