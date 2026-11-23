@@ -398,3 +398,8 @@ Dezimalverarbeitung numerischer DB-Werte korrigiert; Hochzeitstag/Wiederholungs-
 ## 2026-11-23 – Lesbare E-Mail-Darstellung
 - **Implementiert:** Mail-Vorschau und geöffnete Nachricht entfernen technische Markdown-Bildplatzhalter, leere Linkmarker und Formatierungsreste; langer rechtlicher Anhang wird aus dem Haupttext ausgeblendet und bleibt unter „Original-E-Mail und bisherigen Verlauf anzeigen“ lesbar. Sicheres `textContent` bleibt erhalten, keine Ausführung fremden HTML-Codes. Bestehende rosa Oberfläche bleibt.
 - **Statisch geprüft:** Textbereinigung, Trennung Haupttext/Original. **Offen:** Browser-/iPhone-Live-Test mit realen Kundenservice-Mails. Keine Kunden-/Auftrags-/Rechnungsdaten verändert.
+
+
+## 2026-11-23 – WPForms-Bericht kompakt
+- **Implementiert:** Automatische WPForms-Wochenberichte zeigen in Judith AI eine kompakte Zusammenfassung mit Einträgen/Aufrufen statt langer technischer Werbe-Mail. Vollständiger Rohtext bleibt im aufklappbaren Original. Einzelne technische `[`-Zeilen entfernt. Klassifikation als Newsletter/Systembericht bleibt bestehen.
+- **Statisch geprüft:** Berichtserkennung und sichere Textausgabe. **Live-Test offen.** Keine Kundendaten, Aufträge oder GastroPilot-Anwendungen verändert.
