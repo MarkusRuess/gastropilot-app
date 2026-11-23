@@ -383,3 +383,8 @@ Dezimalverarbeitung numerischer DB-Werte korrigiert; Hochzeitstag/Wiederholungs-
 ## 2026-11-23 – Rechnungs-PDF öffnen und drucken (erste Ausbaustufe)
 - **Implementiert:** Bei E-Mails der Kategorie Rechnungen werden gespeicherte PDF-Anhänge ausdrücklich als „Rechnung als PDF öffnen“ verlinkt. Drucken erfolgt im Browser nach Öffnen des Originals. Wenn kein PDF vorhanden ist, wird eine Warnung statt einer fingierten Druck-/Übergabefunktion gezeigt. Rosa UI und bestehende Mailfunktionen bleiben erhalten.
 - **Statisch geprüft:** Kategorie- und PDF-Filter, Druckhinweis, fehlender Anhang. **Offen:** Live-Browser-/iPhone-Test; HTML-only-Inhaltserfassung; strukturierte Rechnungsdaten und geprüfte Übergabe an GastroPilot Judith. **Keine Änderungen an GastroPilot Judith oder ETRON.** Keine Kundendaten verändert.
+
+
+## 2026-11-23 – HTML-only-Rechnungsmails: Empfangs-Fallback
+- **Implementiert im Branch:** Quellcode der bestehenden Supabase-Edge-Funktion `judith-resend-inbound` versioniert. Falls Resend keinen `text`-Inhalt liefert, wird `html` lokal und ohne KI in lesbaren Text konvertiert. Signaturprüfung, Deduplizierung, Anhänge und bisherige Schnittstellen bleiben bestehen.
+- **Statisch geprüft:** Webhook-Signatur, HTML-Fallback, Anhangsverarbeitung und Provider-ID-Deduplizierung. **Noch offen:** produktiver Empfangstest mit HTML-only-E-Mail, Wiederherstellung historischer E-Mails, sichere strukturierte Rechnungsübernahme nach GastroPilot Judith. Keine vorhandenen Rechnungs-/Kundendaten geändert.
