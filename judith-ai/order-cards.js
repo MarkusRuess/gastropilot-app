@@ -29,7 +29,11 @@ export function calendarOrderCard(order,customer,options){
  const pickup=el('button',orderStage(order)==='picked_up'?'↩ Rückgängig':'✓ Abgeholt');pickup.type='button';pickup.className='jo-quick-pickup';pickup.onclick=()=>changeStatus(orderStage(order)==='picked_up'?'confirmed':'picked_up',pickup);
  actions.append(menu,choices,pickup,feedback);heading.append(actions);
  const date=order.requested_date?.split('-').reverse().join('.')||'Termin offen';
- const info=el('p',(order.occasion||'Torte')+' · Abholung: '+date);
+ const rawDetails=String(order.details||'').replace(/\\s+/g,' ').trim();
+ const generic=/^(tortenauftrag|torte|geburtstag|süßes|hochzeit|anfrage)$/i;
+ const description=rawDetails||(order.occasion&&!generic.test(order.occasion)?order.occasion:'Tortendetails fehlen');
+ const info=el('p',description);info.className='jo-cake-summary';info.title=description;
+ const pickupDate=el('p','Abholung: '+date);pickupDate.className='jo-pickup-date';
  const toggle=el('button','📋 Auftrag öffnen');toggle.type='button';toggle.setAttribute('aria-expanded','false');
  const body=el('div');body.className='jo-body';body.hidden=true;body.id='jo-body-'+order.id;toggle.setAttribute('aria-controls',body.id);
  let mounted=false;
@@ -37,7 +41,7 @@ export function calendarOrderCard(order,customer,options){
  toggle.onclick=()=>{
   if(!body.hidden){close();return}
   for(const other of card.parentElement?.querySelectorAll('.jo-card')||[])if(other!==card)other.closeOrder?.();
-  body.hidden=false;toggle.textContent='Auftrag schließen';toggle.setAttribute('aria-expanded','true');
+  hideChoices();body.hidden=false;toggle.textContent='Auftrag schließen';toggle.setAttribute('aria-expanded','true');
   if(mounted)return;mounted=true;
   body.append(el('p',order.details||'Keine weiteren Angaben'),el('p',[customer.email,customer.phone,order.guests?'Personen: '+order.guests:''].filter(Boolean).join(' · ')));
   statusControls(body,order,options.saveStatus);archiveButton(body,order,customer,options.archiveOrder);
@@ -48,5 +52,5 @@ export function calendarOrderCard(order,customer,options){
   // Mount once, without calculate/OCR calls on opening a calendar or an order.
   price.addEventListener('toggle',()=>{if(price.open&&!host.dataset.priceMounted)options.mountPrice(host,order)});body.append(price);
  };
- card.append(heading,info,toggle,body);return card;
+ choices.append(toggle);card.append(heading,info,pickupDate,body);return card;
 }
