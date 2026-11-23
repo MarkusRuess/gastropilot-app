@@ -290,3 +290,8 @@ Dezimalverarbeitung numerischer DB-Werte korrigiert; Hochzeitstag/Wiederholungs-
 ## 2026-11-23 – Kundenkartei kompakt, Kontaktlinks, Filter und Seiten
 - `judith-ai/postfach.html`, Commit `cdbc49fa25f559d88fc7288b2273d34923beeb7e`: Kundenliste mit maximal 20 Einträgen je Seite, Suchfeld, Statusfilter (Alle/Offene Anfragen/Bestätigte Aufträge/Abgeholt/Ohne Aufträge), Sortierung nach Name, nächstem Termin oder letztem Auftrag. Vorhandene Telefonnummern und E-Mail-Adressen direkt in der Zeile als `tel:`- und `mailto:`-Links; fehlende Kontakte werden nicht erfunden. Bestehende Detailansicht, Bearbeitung und Auftragsverknüpfung bleiben erhalten. Mobile Darstellung angepasst. Supabase `judith_ai_customers` lesend geprüft: `name`, `email`, `phone`, `created_at`, `updated_at`; **kein Adressfeld** – Anschrift daher nicht angezeigt. Keine Datenmigration, keine Kundendaten geändert.
 - Statische Prüfungen für Filter, Pagination, Kontakte und Erhalt der Bearbeitungsfunktionen bestanden. Angemeldeter Live-Bedientest noch offen.
+
+## 2026-11-23 – Kundenkartei: kompakte Zeilen und Anzeigenamen
+- Commit `62b7301e0fd786ad694a93988c0644038c018f48` auf `main`, ausschließlich `judith-ai/postfach.html`: führende/abschließende `>`/`»`/`›` und überflüssige Leerzeichen werden **nur für die Anzeige** bereinigt. Originalname bleibt in Supabase und Bearbeitungsformular unverändert.
+- Kundenname und Status untereinander, Kontakte/Termin/Anlass auf Desktop in stabilen Spalten, Mobilansicht zweispaltig mit Umbruch. Bestehende Suche, Filter, Pagination und Bearbeitung nicht verändert.
+- Statische Codeprüfungen bestanden. Angemeldeter Live-Funktionstest nicht nachgewiesen.
