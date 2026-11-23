@@ -372,3 +372,9 @@ Dezimalverarbeitung numerischer DB-Werte korrigiert; Hochzeitstag/Wiederholungs-
 ## 2026-11-23 – Sammellöschung ohne Texteingabe
 - **Implementiert:** Die zweite Bestätigung per `prompt('LÖSCHEN')` wurde entfernt. Ein vorhandener expliziter Bestätigungsdialog mit Postfach, Kategorie, Anzahl und Warnung bleibt bestehen; danach erfolgt der bestehende Einzel-DELETE je Nachricht.
 - **Statisch geprüft:** Keine zweite Texteingabe, Bestätigungsdialog und Konto-/Kategoriebegrenzung erhalten. **Live-Test offen.** Keine Nachrichten gelöscht.
+
+
+## 2026-11-23 – E-Mail-Rechnung ohne Nachrichtentext
+- **Befund:** Drei gespeicherte Nachrichten mit Betreff „Deine Rechnung von Apple“ haben leeren `body_text`. Die Resend-Inbound-Funktion speichert den empfangenen Text; ein HTML-zu-Text-Fallback ist noch zu prüfen. Keine fehlenden Inhalte erfunden oder Daten überschrieben.
+- **Implementiert:** Verständlicher Hinweis bei fehlendem Text; Preisberater nur für Verkaufsanfragen mit Text, keine falsche Kunden-/Auftragsanzeige oder KI-Antwort für Rechnungen. Anhänge bleiben sichtbar, sofern gespeichert.
+- **Statisch geprüft:** Bedingte Anzeige von Preisberater, Kunde, Antwort und Textwarnung. **Offen:** Empfangs-Fallback für HTML-only-Mails, Originalanhänge und Live-Test. Keine Kundendaten verändert.
