@@ -351,3 +351,9 @@ Dezimalverarbeitung numerischer DB-Werte korrigiert; Hochzeitstag/Wiederholungs-
 - **Implementiert:** Postfachauswahl im E-Mail-Bereich anhand `recipient_email`. Nachrichtenliste und Sammellöschung auf ausgewählte Empfängeradresse begrenzt; bei mehreren Adressen keine Vorauswahl. Vor Löschung Anzeige von Konto, Kategorie und Anzahl, danach zweifache Bestätigung. Während des Löschens wird die Kontoauswahl gesperrt. Bestehender autorisierter Einzel-DELETE-Endpunkt wird wiederverwendet.
 - **Datenlage:** In der geprüften Datenbank wurde aktuell nur `office@mail.judithwalli.at` als empfangende Adresse aktiver eingehender Nachrichten gefunden. Die UI-Kontobegrenzung ist clientseitig; eine zusätzliche serverseitige Mandanten-/Empfängerkontrolle wurde in diesem Schritt **nicht** eingeführt. Kein Löschen ausgeführt.
 - **Statisch geprüft:** Konto- und Kategoriebegrenzung, Bestätigungsdialog, Auswahlsperre. **Offen:** Browser-/iPhone-Livetest und End-to-End-Prüfung mehrerer Konten.
+
+
+## 2026-11-23 – Fehlerbehebung Sammellösch-Button
+- **Ursache:** Globaler Kategorie-Klickfilter blendete Nachrichten ein/aus, aktualisierte jedoch nicht den lokalen `selectedGroup` und damit nicht die Sichtbarkeit des Sammellösch-Buttons.
+- **Implementiert:** Gemeinsamer Filter-Renderer für Kategorieauswahl und Suche; die Anzeige des Sammellösch-Buttons wird nach Filteränderungen neu berechnet. Kontobindung und doppelte Löschbestätigung bleiben bestehen.
+- **Statisch geprüft:** Event-Verknüpfung, Kategorie-/Such-Synchronisierung, Konto-/Kategorie-Scope, Bestätigung. **Live-Browsertest offen.** Keine E-Mails gelöscht.
