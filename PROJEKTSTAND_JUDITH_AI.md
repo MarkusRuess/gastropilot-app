@@ -230,3 +230,9 @@ Dezimalverarbeitung numerischer DB-Werte korrigiert; Hochzeitstag/Wiederholungs-
 - `judith-ai/order-cards.js` (`67acea0`) trennt vorhandene Produktbeschreibung von expliziten Angaben `Stückzahl`/`Menge` und `Vereinbarter Preis brutto`/`Preis brutto` im gespeicherten Auftragstext. Nur vorhandene Werte anzeigen; keine Schätzung oder KI-Abfrage. Vollständiger Originaltext bleibt in den Auftragsdetails erhalten.
 - `judith-ai/postfach.html` (`c62d762`) ergänzt kompakte Darstellung und Modul-Cache-Buster. Keine Änderungen an Supabase-Daten oder anderen Anwendungen.
 - Quellcodekontrolle durchgeführt; authentifizierter Live-Bedientest noch offen.
+
+## 2026-11-23 – Kalender-Auftragswert brutto und Produkt-/Preis-Kurzansicht
+- GitHub main: `judith-ai/order-value.mjs` (Commits `bf5768b`, `7bae98b`), `judith-ai/order-cards.js` (`58a61a6`), `judith-ai/postfach.html` (`8783752`, `5da8a31`).
+- Vorhandene strukturierte Textfelder `Stückzahl`/`Menge` und `Vereinbarter Preis brutto` werden ohne KI-Aufruf aus `judith_ai_inquiries.details` gelesen; Produkttext trennt Preis-, Stückzahl-, Erfassungs- und fehlende Kontaktangaben ab. Originaltext bleibt unverändert.
+- Kalender-Tageszelle, ausgewählter Tag und Jahresübersicht zeigen den **Auftragswert brutto** aus vorhandenen positiven Preisen. Bestätigte und abgeholte Aufträge berücksichtigt, Archiv und Anfragen ausgeschlossen. Doppelte IDs nur einmal, fehlende Preise nicht geschätzt, vereinbarter Gesamtpreis nicht mit Stückzahl multipliziert. Teilwerte ausdrücklich gekennzeichnet; keine Aussage über bezahlten Umsatz.
+- Reproduzierbare Node-Regressionstests in `judith-ai/order-value.test.mjs` committed (`2419ad1`); Quellcodeintegration geprüft. **Testdatei nicht ausgeführt**, weil die Laufzeit keinen Zugriff auf GitHub-Rohdateien hatte; authentifizierter Live-End-to-End-Test und GitHub-Pages-Auslieferung noch nicht bestätigt. Keine produktiven Datensätze geändert.
