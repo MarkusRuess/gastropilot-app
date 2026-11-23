@@ -367,3 +367,8 @@ Dezimalverarbeitung numerischer DB-Werte korrigiert; Hochzeitstag/Wiederholungs-
 ## 2026-11-23 – Postfachauswahl bei einem Postfach ausblenden
 - **Implementiert:** Die redundante Postfachauswahl wird bei genau einem empfangenden Postfach ausgeblendet. Bei mehreren Postfächern bleibt die Auswahl aus Sicherheitsgründen sichtbar; keine automatische Auswahl mehrerer Postfächer. Die Konto- und Kategorieprüfung vor Sammellöschung bleibt erhalten.
 - **Statisch geprüft:** Sichtbarkeitslogik, CSS, Konto-/Kategoriebegrenzung und Kategorie-Beschriftung. **Live-Test offen.** Keine Nachrichten gelöscht.
+
+
+## 2026-11-23 – Sammellöschung ohne Texteingabe
+- **Implementiert:** Die zweite Bestätigung per `prompt('LÖSCHEN')` wurde entfernt. Ein vorhandener expliziter Bestätigungsdialog mit Postfach, Kategorie, Anzahl und Warnung bleibt bestehen; danach erfolgt der bestehende Einzel-DELETE je Nachricht.
+- **Statisch geprüft:** Keine zweite Texteingabe, Bestätigungsdialog und Konto-/Kategoriebegrenzung erhalten. **Live-Test offen.** Keine Nachrichten gelöscht.
