@@ -320,3 +320,9 @@ Dezimalverarbeitung numerischer DB-Werte korrigiert; Hochzeitstag/Wiederholungs-
 - **Implementiert im Branch `fix/judith-ai-mail-compact-inbox-20261123`:** Einzelüberschrift, sechs kompakte Filter (Posteingang, Tortenanfragen, Rechnungen, Kundenservice, Newsletter, Bestellungen), automatische erste Ladung beim Öffnen, manuelles Aktualisieren, lokale Suche und Foto-Nachladen unter Weitere Funktionen.
 - Klassifikation bleibt eine **unverbindliche Vorschlagszuordnung im Browser**. Keine automatische Spam-Entscheidung, kein Versand, keine Buchung und keine Datenänderung.
 - **Statisch geprüft:** Sechs Filter, unveränderte bestehende Funktions-IDs, Suche und Ladeereignis vorhanden. Browser- und iPhone-Livetest noch nicht bestätigt.
+
+
+## 2026-11-23 – E-Mail-Filter für Newsletter und Spam-Verdacht
+- **Implementiert:** Im bestehenden Postfach acht Filter einschließlich Newsletter, Spam / Verdacht und Prüfen. Der Standard-Posteingang blendet Vorschlagskategorien Newsletter und Spam-Verdacht aus; diese Nachrichten bleiben jederzeit über die eigenen Filter abrufbar. Keine Löschung, Verschiebung, Weiterleitung oder Versand.
+- Konservative Browser-Klassifikation: Rechnungen, Bestellungen und Tortenanfragen haben Vorrang vor Werbe-Erkennung; eindeutige Werbethemen (u.a. Google-Ads-Kampagnenhinweise, allgemeine Ratgeber) werden als Newsletter vorgeschlagen; zweifelhafte Nachrichten unter Prüfen. Spam nur als manueller Verdachtsfilter, keine endgültige Spam-Entscheidung.
+- **Statische Prüfung:** acht Filter, Prüfen-Fallback, getrennte Newsletter-/Spam-Ansichten und kein automatisches Löschen. **Offen:** reale Browser-/iPhone-Prüfung und Zuordnungsgenauigkeit anhand repräsentativer Nachrichten.
