@@ -387,7 +387,7 @@ document.getElementById('jd-mail-menu').addEventListener('click',event=>{
 const jdInboxPanel=document.getElementById('office-inbox');
 let jdInboxLoadedOnce=false;
 jdInboxPanel.addEventListener('toggle',()=>{if(jdInboxPanel.open&&!jdInboxLoadedOnce){jdInboxLoadedOnce=true;document.getElementById('load-inbox').click();}});
-document.getElementById('jd-mail-search').addEventListener('input',()=>{const menu=document.getElementById('jd-mail-menu');const selected=menu.dataset.selectedCategory||'all';const query=document.getElementById('jd-mail-search').value.trim().toLocaleLowerCase('de');for(const card of document.querySelectorAll('#inbox-list [data-mail-group]'))card.hidden=(selected==='all'?['news','spam'].includes(card.dataset.mailGroup):card.dataset.mailGroup!==selected)||(query&&!card.dataset.mailSearch?.includes(query))||(document.getElementById('jd-mail-account')?.value!==card.dataset.mailAccount);});
+document.getElementById('jd-mail-search').addEventListener('input',()=>{const menu=document.getElementById('jd-mail-menu');if(typeof menu._showGroup==='function')menu._showGroup(menu.dataset.selectedCategory||'all');});
 document.getElementById('load-inbox').addEventListener('click',async()=>{
  const button=document.getElementById('load-inbox'),out=document.getElementById('inbox-status'),list=document.getElementById('inbox-list');
  button.disabled=true;out.textContent='E-Mails werden sicher geladen …';list.replaceChildren();
