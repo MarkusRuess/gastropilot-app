@@ -241,3 +241,8 @@ Dezimalverarbeitung numerischer DB-Werte korrigiert; Hochzeitstag/Wiederholungs-
 - `judith-ai/postfach.html`, Commit `c4b71284`: Monatssumme „Auftragswert brutto“ über dem Monatsraster; Anzahl bestätigter und abgeholter, nicht archivierter Aufträge; Tageskacheln mit kompaktem EUR-Wert und `+` bei fehlenden Preisen. Bereits vorhandene reine Preisberechnung aus `order-value.mjs` unverändert.
 - Kein Supabase-Schreibzugriff, keine Datenmigration, keine zusätzlichen KI-Aufrufe, keine Änderungen an anderen Anwendungen.
 - Statische Quellcode-Prüfung erfolgreich (Monatssumme, Statusfilter, Teilwertmarkierung, Jahresansicht). Automatisierte Browser-/Node-Tests und authentifizierter Live-Test **nicht ausgeführt**; Netzwerkzugriff auf GitHub Pages und GitHub Raw schlug mit DNS-Fehler fehl. Veröffentlichung daher nicht bestätigt.
+
+## 2026-11-23 – Kalenderkacheln: Abholaktionen unter Produktdaten
+- GitHub `main`: `judith-ai/order-cards.js` Commit `b14cc6d`, `judith-ai/postfach.html` Commit `685c1cd`.
+- Reihenfolge pro Kachel: Kundenname/Status → Produktbeschreibung → Menge und Bruttopreis (sofern vorhanden) → Abholdatum → `⋯`/Abgeholt beziehungsweise Rückgängig. Einheitliche kompakte Abstände, fingerfreundliche Buttons, drei Spalten Desktop und zwei mobil bleiben.
+- Keine Änderung an Status-Speicherung, Berechtigungen oder Kundendaten. Statische Quellcodeprüfung bestanden; authentifizierter Live-Bedientest nicht nachgewiesen.
