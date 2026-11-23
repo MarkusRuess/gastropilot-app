@@ -1,3 +1,4 @@
+import {orderFacts} from './order-value.mjs';
 import {archiveButton} from './order-archive.js?build=20261103-archive1';
 // The existing inquiry status remains compatible with recipe and office workflows.
 export const orderStages={confirmed:'🟡 Beauftragt',in_progress:'🔵 In Arbeit',ready:'🟠 Abholbereit',picked_up:'🟢 Abgeholt'};
@@ -29,16 +30,11 @@ export function calendarOrderCard(order,customer,options){
  const pickup=el('button',orderStage(order)==='picked_up'?'↩ Rückgängig':'✓ Abgeholt');pickup.type='button';pickup.className='jo-quick-pickup';pickup.onclick=()=>changeStatus(orderStage(order)==='picked_up'?'confirmed':'picked_up',pickup);
  actions.append(menu,choices,pickup,feedback);heading.append(actions);
  const date=order.requested_date?.split('-').reverse().join('.')||'Termin offen';
- const rawDetails=String(order.details||'').replace(/\s+/g,' ').trim();
- const qtyMatch=rawDetails.match(/(?:Stückzahl|Menge)\s*:\s*(\d+(?:[,.]\d+)?)/i);
- const priceMatch=rawDetails.match(/(?:Vereinbarter\s+Preis(?:\s+brutto)?|Preis\s+brutto)\s*:\s*([\d.,]+)\s*€?/i);
- const productText=rawDetails.split(/\b(?:Stückzahl|Menge|Vereinbarter\s+Preis|Preis\s+brutto|Erfasst\s+(?:von|am))\s*:/i)[0].replace(/[\s,;·-]+$/,'').trim();
- const generic=/^(tortenauftrag|torte|geburtstag|süßes|hochzeit|anfrage)$/i;
- const description=productText||(order.occasion&&!generic.test(order.occasion)?order.occasion:'Tortendetails fehlen');
- const info=el('p',description);info.className='jo-cake-summary';info.title=description;
+ const {product,quantity,price}=orderFacts(order);
+ const info=el('p',product);info.className='jo-cake-summary';info.title=product;
  const facts=el('div');facts.className='jo-order-facts';
- if(qtyMatch)facts.append(el('span','Menge: '+qtyMatch[1]));
- if(priceMatch)facts.append(el('strong','Preis: '+priceMatch[1]+' €'));
+ if(quantity)facts.append(el('span','Menge: '+quantity));
+ if(price!==null)facts.append(el('strong','Preis brutto: '+price.toLocaleString('de-AT',{style:'currency',currency:'EUR'})));
  const pickupDate=el('p','Abholung: '+date);pickupDate.className='jo-pickup-date';
  const toggle=el('button','📋 Auftrag öffnen');toggle.type='button';toggle.setAttribute('aria-expanded','false');
  const body=el('div');body.className='jo-body';body.hidden=true;body.id='jo-body-'+order.id;toggle.setAttribute('aria-controls',body.id);
