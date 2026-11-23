@@ -9,7 +9,7 @@ export function orderFacts(order){
  const raw=details.match(pricePattern)?.[1]||null;
  const parsed=raw===null?null:Number(raw.replace(',','.'));
  const price=parsed!==null&&Number.isFinite(parsed)&&parsed>0?parsed:null;
- const product=details.split(metadataPattern)[0].replace(/[\s,;·-]+$/,'').trim();
+ const product=details.split(metadataPattern)[0].split(/\s+Kontaktangaben\s+fehlen\b/i)[0].replace(/[\s,;·-]+$/,'').trim();
  return {product:product||String(order?.occasion||'Tortendetails fehlen'),quantity,price};
 }
 export function orderValueSummary(orders){
