@@ -393,3 +393,8 @@ Dezimalverarbeitung numerischer DB-Werte korrigiert; Hochzeitstag/Wiederholungs-
 ## 2026-11-23 – Fehlklassifikation druck.at / WPForms
 - **Implementiert:** WPForms-Wochenberichte werden vor der Verkaufslogik als Werbung & Newsletter erkannt. druck.at-Lieferverzögerungen/Auftragsbestätigungen werden als „Prüfen“ statt Torten-Verkaufsanfragen angezeigt. Keine neue Kategorie und keine Änderung der gespeicherten Nachrichten.
 - **Statisch geprüft:** Vorrang der Regeln vor generischen Schlüsselwörtern; keine automatische Auftragserstellung oder KI-Antwort für diese Kategorien. **Live-Test offen.**
+
+
+## 2026-11-23 – Lesbare E-Mail-Darstellung
+- **Implementiert:** Mail-Vorschau und geöffnete Nachricht entfernen technische Markdown-Bildplatzhalter, leere Linkmarker und Formatierungsreste; langer rechtlicher Anhang wird aus dem Haupttext ausgeblendet und bleibt unter „Original-E-Mail und bisherigen Verlauf anzeigen“ lesbar. Sicheres `textContent` bleibt erhalten, keine Ausführung fremden HTML-Codes. Bestehende rosa Oberfläche bleibt.
+- **Statisch geprüft:** Textbereinigung, Trennung Haupttext/Original. **Offen:** Browser-/iPhone-Live-Test mit realen Kundenservice-Mails. Keine Kunden-/Auftrags-/Rechnungsdaten verändert.
