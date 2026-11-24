@@ -464,3 +464,9 @@ Dezimalverarbeitung numerischer DB-Werte korrigiert; Hochzeitstag/Wiederholungs-
 - Nutzer hat die eingegangene automatische Antwort anhand eines Screenshots im Postfach `office@dasfriedrich.at` bestätigt; damit ist der reale Empfang **für den Test mit Betreff `Torte morgen 17 Uhr`** nachgewiesen. Die frühere Notiz „Zustellung nicht bestätigt“ ist durch diesen späteren Nachweis überholt.
 - Supabase Edge Function `judith-resend-inbound` **v12 ACTIVE**: Text der automatischen Eingangsbestätigung gestrafft, kompakte Geschäftssignatur (Judith und die Torten, Grabengasse 30, 2500 Baden, Telefonnummer, E-Mail, Website) ergänzt. Vorhandene Erkennung, Reply-To, Reservierung/Idempotenz und Schutz vor Doppelversand beibehalten.
 - **Technisch geprüft:** v12 aktiv, neuer Text und Signatur im ausgelesenen Funktionscode vorhanden. **Noch offen:** Realer Versand-/Empfangstest mit v12; Original-Logo erst nach Bereitstellung einer geeigneten Bilddatei integrieren. Keine zusätzlichen E-Mails versendet.
+
+## 2026-11-24 – Automatische Mail-Eingangsbestätigung (Entwicklungsbranch)
+- Branch `fix/judith-ai-mail-ack-20261124`: Eingangs-Webhook um eine automatische Bestätigung für erkannte Kundenanfragen erweitert; Rechnungen, Newsletter und automatische Absender ausgeschlossen.
+- Versand nur bei konfiguriertem `JUDITH_MAIL_FROM`; Resend-Schlüssel bleibt serverseitig. Eindeutiger `message_id`-Eintrag vor Versand und Resend-Idempotency-Key verhindern parallelen Doppelversand. Ungewisser Versand wird nicht blind wiederholt.
+- Bestehende Rechnungsanhänge und `judith-mail-invoice`-Verarbeitung nicht verändert. Keine rückwirkende automatische Antwort an ältere Nachrichten.
+- Status: Quellcode im Entwicklungsbranch; produktiver Versand, CI und Live-Bestätigung noch offen. Vor Merge und Deployment automatisierte Tests und Absenderkonfiguration prüfen.
