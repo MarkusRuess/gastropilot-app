@@ -1,0 +1,32 @@
+[
+  {
+    "id": "gastropilot",
+    "name": "GastroPilot",
+    "source": "PROJEKTSTAND_ZENTRALE.md"
+  },
+  {
+    "id": "judith",
+    "name": "Judith",
+    "source": "PROJEKTSTAND_JUDITH.md"
+  },
+  {
+    "id": "friedrich",
+    "name": "Friedrich",
+    "source": "PROJEKTSTAND_FRIEDRICH.md"
+  },
+  {
+    "id": "judith-ai",
+    "name": "Judith AI",
+    "source": "PROJEKTSTAND_JUDITH_AI.md"
+  },
+  {
+    "id": "friedrichpark",
+    "name": "Friedrich Park",
+    "source": null
+  },
+  {
+    "id": "genusswelt",
+    "name": "Genusswelt Baden",
+    "source": null
+  }
+]
