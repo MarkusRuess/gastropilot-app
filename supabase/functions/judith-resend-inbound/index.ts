@@ -84,5 +84,29 @@ Deno.serve(async(req)=>{
   const work=fetch(url+"/functions/v1/judith-mail-invoice",{method:"POST",headers:{Authorization:"Bearer "+service,apikey:service,"Content-Type":"application/json"},body:JSON.stringify({action:"analyze",attachment_id})}).then(async r=>{if(!r.ok)console.error("Invoice intake",r.status)}).catch(e=>console.error("Invoice intake unavailable",String(e)));
   try{EdgeRuntime.waitUntil(work)}catch{await work}
  }
+
+ // Receipt acknowledgement: only customer inquiries, never invoices, newsletters or automated senders.
+ // The unique message_id ledger is claimed BEFORE contacting Resend: parallel webhook retries cannot duplicate sends.
+ const senderAddress=(sender.match(/<([^<>]+@[^<>]+)>/)?.[1]||sender).trim().toLowerCase();
+ const automated=/no-?reply|do-?not-?reply|mailer-daemon|postmaster|newsletter|notification/i.test(senderAddress);
+ const invoiceLike=invoiceAttachments.length>0||/rechnung|invoice|faktura|mahnung|beleg|gutschrift/i.test(subject);
+ const inquiryLike=/anfrage|torte|hochzeit|bestellung|kuchen|angebot|geburtstag|feier/i.test(subject);
+ if(inquiryLike&&!invoiceLike&&!automated&&/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(senderAddress)&&!senderAddress.endsWith("@judithwalli.at")){
+  const from=Deno.env.get("JUDITH_MAIL_FROM");
+  if(from){
+   const {error:claimError}=await db.from("judith_ai_mail_acknowledgements").insert({message_id:stored.id,recipient_email:senderAddress,status:"reserved"});
+   if(!claimError){
+    const acknowledgement="Vielen lieben Dank für die Nachricht und das Interesse an unseren Torten!\n\nDie Anfrage ist gut bei uns angekommen. Wir schauen uns alle Wünsche in Ruhe an und melden uns so bald wie möglich persönlich zurück.\n\nGanz liebe Grüße aus der Backstube\nJudith Walli & Team";
+    try{
+     const sent=await fetch("https://api.resend.com/emails",{method:"POST",headers:{Authorization:"Bearer "+apiKey,"Content-Type":"application/json","Idempotency-Key":"judith-ack-"+stored.id},body:JSON.stringify({from,to:[senderAddress],subject:"Wir haben die Anfrage erhalten",text:acknowledgement,reply_to:"office@judithwalli.at"})});
+     const result=sent.ok?await sent.json().catch(()=>({})):{};
+     await db.from("judith_ai_mail_acknowledgements").update(sent.ok?{status:"sent",sent_at:new Date().toISOString(),provider_message_id:result.id||null,error_code:null}:{status:"failed",error_code:"provider_"+sent.status}).eq("message_id",stored.id);
+    }catch{
+     // Uncertain delivery: do NOT retry automatically, to prevent duplicate acknowledgements.
+     await db.from("judith_ai_mail_acknowledgements").update({status:"reserved",error_code:"network_uncertain"}).eq("message_id",stored.id);
+    }
+   }else if(claimError.code!=="23505"){console.error("Acknowledgement ledger unavailable",claimError.code)}
+  }else console.error("Acknowledgement sender not configured");
+ }
  return reply({ok:true,stored:true,attachments_saved:attachmentCount});
 });
