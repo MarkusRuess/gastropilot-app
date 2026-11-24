@@ -89,6 +89,31 @@ Deno.serve(async(req)=>{
  // The unique message_id ledger is claimed BEFORE contacting Resend: parallel webhook retries cannot duplicate sends.
  const senderAddress=(sender.match(/<([^<>]+@[^<>]+)>/)?.[1]||sender).trim().toLowerCase();
  if(/^KI-KONTROLLE\s*·/i.test(subject)&&senderAddress.endsWith("@mail.judithwalli.at"))return reply({ok:true,stored:true,internal_control:true});
+ // Replies to the acknowledgement are forwarded as updates to the secretary, without another auto-reply.
+ const isCakeReply=/^\s*(?:re|aw|wg)\s*:\s*wir haben die anfrage erhalten\s*$/i.test(subject);
+ if(isCakeReply&&!senderAddress.endsWith("@judithwalli.at")&&!senderAddress.endsWith("@mail.judithwalli.at")){
+  const {error:replyClaimError}=await db.from("judith_ai_mail_acknowledgements").insert({message_id:stored.id,recipient_email:"office@judithwalli.at",status:"reserved"});
+  if(!replyClaimError){
+   const esc=(x:string)=>String(x||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+   const latest=body.split(/(?:\n|\r\n)(?:Am .{5,120} schrieb|On .{5,120} wrote|Von:|From:|-----Original Message-----)/i)[0].trim().slice(0,12000)||body.slice(0,12000);
+   const {data:priorMessages}=await db.from("judith_ai_mail_messages").select("subject,body_text,received_at").eq("direction","inbound").ilike("sender_email","%"+senderAddress+"%").neq("id",stored.id).order("received_at",{ascending:false}).limit(12);
+   const priorOriginal=(priorMessages||[]).find(m=>/torte|hochzeit|geburtstag|kuchen/i.test(String(m.subject||"")+" "+String(m.body_text||"")));
+   const sourceContext=latest+"\n"+String(priorOriginal?.body_text||"");
+   const signatureName=(latest.match(/(?:Liebe Grüße|Viele Grüße|Mit freundlichen Grüßen|Liebe Grüsse|Ganz liebe Grüße)[,\s\S]{0,100}?\n\s*([A-ZÄÖÜ][^\n]{1,50})\s*$/i)||[])[1]||(String(priorOriginal?.body_text||"").match(/(?:Liebe Grüße|Viele Grüße|Mit freundlichen Grüßen|Liebe Grüsse|Ganz liebe Grüße)[,\s\S]{0,100}?\n\s*([A-ZÄÖÜ][^\n]{1,50})\s*$/i)||[])[1]||"Bitte prüfen";
+   const phoneMatch=sourceContext.match(/(?:telefon(?:nummer)?|tel\.?|mobil|handy|phone|erreich(?:e|en)? mich unter|unter)\s*[:.]?\s*([+\d][\d ()\/-]{6,}[\d])/i);
+   const phone=phoneMatch?.[1]?.trim()||"In dieser Antwort nicht enthalten";
+   const textBody="Neue Ergänzung zu einer Tortenanfrage.\n\nKundenname: "+signatureName+"\nKunden-E-Mail: "+senderAddress+"\nTelefonnummer: "+phone+"\nBetreff: "+subject+"\n\nNeue Kundenantwort:\n"+latest+"\n\nBitte dem bestehenden Vorgang zuordnen und Angaben ergänzen. Keine Bestellung oder Preiszusage bestätigen.";
+   const html='<!doctype html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body style="margin:0;background:#fff;font-family:Arial,sans-serif;color:#444"><table role="presentation" width="100%" cellspacing="0" cellpadding="0"><tr><td align="center" style="padding:16px"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:650px;border:8px solid #f7dce2;border-radius:20px;background:#fff"><tr><td style="padding:28px 20px"><div align="center"><img src="https://judithwalli.at/wp-content/uploads/2019/09/judithunddietorten300px-300x300.png" width="110" height="110" alt="Judith und die Torten"><p style="font-size:11px;letter-spacing:2px;color:#ae6879">MEISTERKONDITOREI · BADEN BEI WIEN</p><h1 style="font-size:22px;color:#a84f66">Ergänzung zu einer Tortenanfrage</h1><p style="background:#fcf1f5;border:1px solid #efd5dd;padding:9px;color:#a84f66;font-weight:bold;display:inline-block">KI-KONTROLLE · NEUE KUNDENANTWORT</p></div><table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:collapse;background:#fcf1f5;border:1px solid #efd5dd"><tr><td style="padding:10px;color:#75545d;width:38%">Kundenname</td><td style="padding:10px">'+esc(signatureName)+'</td></tr><tr><td style="padding:10px;color:#75545d">Kunden-E-Mail</td><td style="padding:10px">'+esc(senderAddress)+'</td></tr><tr><td style="padding:10px;color:#75545d">Telefonnummer</td><td style="padding:10px">'+esc(phone)+'</td></tr><tr><td style="padding:10px;color:#75545d">Betreff</td><td style="padding:10px">'+esc(subject)+'</td></tr></table><h2 style="font-size:17px;color:#a84f66;margin-top:24px">Neue Kundenantwort</h2><div style="white-space:pre-wrap;background:#fafafa;border:1px solid #eee;border-radius:8px;padding:14px;line-height:1.55">'+esc(latest)+'</div><p style="font-size:14px;line-height:1.6">Bitte dem bestehenden Vorgang zuordnen und Angaben ergänzen. Es wurde keine Bestellung oder Preiszusage bestätigt.</p><hr style="border:0;border-top:1px solid #e9b9c4"><p align="center" style="font-size:13px;color:#a84f66">Judith Walli & Team · 02252 266066 · office@judithwalli.at</p></td></tr></table></td></tr></table></body></html>';
+   const apiKey=Deno.env.get("RESEND_API_KEY");const from=Deno.env.get("JUDITH_MAIL_FROM");
+   if(apiKey&&from){
+    const sent=await fetch("https://api.resend.com/emails",{method:"POST",headers:{Authorization:"Bearer "+apiKey,"Content-Type":"application/json","Idempotency-Key":"judith-reply-control-"+stored.id},body:JSON.stringify({from,to:["office@judithwalli.at"],subject:"KI-KONTROLLE · Ergänzung zur Tortenanfrage",text:textBody,html,reply_to:senderAddress})});
+    await db.from("judith_ai_mail_acknowledgements").update(sent.ok?{status:"sent",sent_at:new Date().toISOString()}:{status:"failed",error_code:"provider_"+sent.status}).eq("message_id",stored.id);
+    if(!sent.ok)console.error("Cake reply control delivery failed",sent.status);
+   }else await db.from("judith_ai_mail_acknowledgements").update({status:"failed",error_code:"mail_sender_not_configured"}).eq("message_id",stored.id);
+  }else if(replyClaimError?.code!=="23505")console.error("Cake reply control ledger unavailable",replyClaimError?.code);
+  return reply({ok:true,stored:true,customer_reply:true,secretary_notification:true,attachments_saved:attachmentCount});
+ }
+
  const automated=/no-?reply|do-?not-?reply|mailer-daemon|postmaster|newsletter|notification/i.test(senderAddress);
  const invoiceLike=invoiceAttachments.length>0||/rechnung|invoice|faktura|mahnung|beleg|gutschrift/i.test(subject);
  const inquiryLike=/anfrage|torte|hochzeit|bestellung|kuchen|angebot|geburtstag|feier/i.test(subject);
@@ -128,7 +153,7 @@ Deno.serve(async(req)=>{
      const genericMailbox=/^(office|info|kontakt|contact|mail|post|service|support|admin|buchhaltung|bestellung|sekretariat)$/i.test(senderLocalPart);
      const trustedSenderName=genericMailbox||/^judith walli$/i.test(senderName)?"":senderName;
      const customerName=signatureName||trustedSenderName;
-     const phoneMatch=cleanBody.match(/(?:telefon|tel\.?|mobil|handy|phone)\s*[:.]?\s*([+\d][\d ()\/-]{5,})/i);
+     const phoneMatch=cleanBody.match(/(?:telefon(?:nummer)?|tel\.?|mobil|handy|phone|erreich(?:e|en)? mich unter|unter)\s*[:.]?\s*([+\d][\d ()\/-]{6,}[\d])/i);
      const dateValue=parseRequestedDate(subject+" "+body);
      const peopleMatch=(subject+" "+body).match(/\b(\d{1,3})\s*(personen|person|pax|gäste|stücke|portionen|kinder|erwachsene)\b/i);
      const colorMatch=(subject+" "+body).match(/\b(rosa|pink|weiß|weiss|rot|blau|grün|gruen|gelb|lila|violett|gold|silber|schwarz)\b/i);
