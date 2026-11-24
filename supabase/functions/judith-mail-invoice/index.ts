@@ -48,16 +48,27 @@ Deno.serve(async req=>{
  if(fe||!file||file.deleted_at)return response({error:'Original not found'},404);
  const {data:mail,error:me}=await db.from('judith_ai_mail_messages').select('id,direction,subject,body_text,sender_email,recipient_email').eq('id',file.message_id).maybeSingle();
  if(me||mail?.direction!=='inbound')return response({error:'Message not found'},404);
+ const {data:mailFiles,error:groupError}=await db.from('judith_ai_attachments').select('id,storage_path,mime_type,filename,created_at').eq('message_id',mail.id).is('deleted_at',null).order('created_at',{ascending:true}).order('id',{ascending:true}).limit(30);
+ if(groupError)return response({error:'Invoice attachments unavailable'},503);
+ // Several image attachments in one invoice mail are consecutive invoice pages.
+ // A PDF is already multi-page and remains a separate document.
+ const images=(mailFiles||[]).filter(f=>['image/jpeg','image/png','image/webp'].includes(f.mime_type));
+ const group=file.mime_type==='application/pdf'?[file]:images;
+ if(!group.length||group.length>12)return response({error:'Too many invoice pages'},422);
+ const primary=group[0];
+ if(file.id!==primary.id)return response({ok:true,grouped_with:primary.id});
  if(body?.action==='commit'){
   if(!actor)return response({error:'Staff session required'},403);
   const {data:stage}=await db.from('judith_mail_invoice_intake').select('*').eq('attachment_id',file.id).maybeSingle();
   if(!stage||stage.status!=='verified')return response({error:'Rechnung nicht vollständig geprüft'},409);
   const ext=({'application/pdf':'pdf','image/jpeg':'jpg','image/png':'png','image/webp':'webp'} as Record<string,string>)[file.mime_type];if(!ext)return response({error:'Format nicht unterstützt'},422);
-  const original=await db.storage.from('judith-ai-attachments').download(file.storage_path);
-  if(original.error||!original.data)return response({error:'Original fehlt'},422);
-  const path=JUDITH+'/'+file.id+'.'+ext;
-  const upload=await db.storage.from('invoice-originals').upload(path,original.data,{contentType:file.mime_type,upsert:false});
-  if(upload.error&&!String(upload.error.message).includes('already exists'))return response({error:'Original konnte nicht gesichert werden'},503);
+  const paths:string[]=[];
+  for(const page of group){const copy=await db.storage.from('judith-ai-attachments').download(page.storage_path);if(copy.error||!copy.data)return response({error:'Originalseite fehlt'},422);
+   const pageExt=({'application/pdf':'pdf','image/jpeg':'jpg','image/png':'png','image/webp':'webp'} as Record<string,string>)[page.mime_type];
+   const location=JUDITH+'/'+page.id+'.'+pageExt;const upload=await db.storage.from('invoice-originals').upload(location,copy.data,{contentType:page.mime_type,upsert:false});
+   if(upload.error&&!String(upload.error.message).includes('already exists'))return response({error:'Original konnte nicht gesichert werden'},503);paths.push(location)}
+  const path=paths[0];
+  await db.from('judith_mail_invoice_intake').update({extracted_data:{...stage.extracted_data,original_files:paths}}).eq('id',stage.id);
   const {data:id,error}=await db.rpc('judith_mail_invoice_commit',{p_intake:stage.id,p_storage_path:path,p_user:actor});
   if(error)return response({error:'Einkaufsübernahme fehlgeschlagen'},503);
   return response({ok:true,status:id?'imported':'duplicate',document_id:id});
@@ -67,30 +78,35 @@ Deno.serve(async req=>{
  if(!category)return response({ok:true,ignored:true});
  const mime=file.mime_type;
  if(!['application/pdf','image/jpeg','image/png','image/webp'].includes(mime))return response({error:'Unsupported file format'},422);
- const existing=await db.from('judith_mail_invoice_intake').select('id,status,issue,document_id,updated_at').eq('attachment_id',file.id).maybeSingle();
+ const existing=await db.from('judith_mail_invoice_intake').select('id,status,issue,document_id,updated_at').eq('attachment_id',primary.id).maybeSingle();
  if(existing.data&&!['failed','processing'].includes(existing.data.status))return response({ok:true,existing:true,...existing.data});
  if(existing.data?.status==='processing'&&Date.now()-Date.parse(existing.data.updated_at)<300000)return response({ok:true,existing:true,...existing.data});
- const created=existing.data?await db.from('judith_mail_invoice_intake').update({status:'processing',issue:null,updated_at:new Date().toISOString()}).eq('id',existing.data.id).eq('updated_at',existing.data.updated_at).select('id').maybeSingle():await db.from('judith_mail_invoice_intake').insert({attachment_id:file.id,message_id:mail.id}).select('id').maybeSingle();
+ const created=existing.data?await db.from('judith_mail_invoice_intake').update({status:'processing',issue:null,updated_at:new Date().toISOString()}).eq('id',existing.data.id).eq('updated_at',existing.data.updated_at).select('id').maybeSingle():await db.from('judith_mail_invoice_intake').insert({attachment_id:primary.id,message_id:mail.id}).select('id').maybeSingle();
  if(created.error||!created.data)return response({error:'Processing already started'},409);
  const stage=created.data.id;
  const fail=async(issue:string)=>{await db.from('judith_mail_invoice_intake').update({status:'failed',issue,updated_at:new Date().toISOString()}).eq('id',stage);return response({ok:false,error:issue},422)};
- const original=await db.storage.from('judith-ai-attachments').download(file.storage_path);
- if(original.error||!original.data)return fail('Originalanhang fehlt');
- const bytes=new Uint8Array(await original.data.arrayBuffer());
- if(!bytes.length||bytes.length>10*1024*1024)return fail('Originaldatei leer oder größer als 10 MB');
- if(mime==='application/pdf'&&String.fromCharCode(...bytes.slice(0,5))!=='%PDF-')return fail('Datei ist kein gültiger PDF-Anhang');
- const sha=[...new Uint8Array(await crypto.subtle.digest('SHA-256',bytes))].map(n=>n.toString(16).padStart(2,'0')).join('');
+ const pageBytes:Uint8Array[]=[];let totalBytes=0;
+ for(const page of group){const original=await db.storage.from('judith-ai-attachments').download(page.storage_path);
+  if(original.error||!original.data)return fail('Originalanhang fehlt');
+  const bytes=new Uint8Array(await original.data.arrayBuffer());totalBytes+=bytes.length;
+  if(!bytes.length||bytes.length>10*1024*1024||totalBytes>25*1024*1024)return fail('Originaldatei leer oder Seitengruppe zu groß');
+  if(page.mime_type==='application/pdf'&&String.fromCharCode(...bytes.slice(0,5))!=='%PDF-')return fail('Datei ist kein gültiger PDF-Anhang');
+  pageBytes.push(bytes);
+ }
+ const pageHashes=await Promise.all(pageBytes.map(bytes=>crypto.subtle.digest('SHA-256',bytes).then(d=>[...new Uint8Array(d)].map(n=>n.toString(16).padStart(2,'0')).join(''))));
+ const groupHash=new TextEncoder().encode(pageHashes.join(':'));
+ const sha=group.length===1?pageHashes[0]:[...new Uint8Array(await crypto.subtle.digest('SHA-256',groupHash))].map(n=>n.toString(16).padStart(2,'0')).join('');
  const duplicate=await db.from('judith_mail_invoice_intake').select('id').eq('business_id',JUDITH).eq('original_sha256',sha).eq('status','imported').limit(1);
  if(duplicate.data?.length){await db.from('judith_mail_invoice_intake').update({status:'duplicate',original_sha256:sha,issue:'Original bereits übernommen'}).eq('id',stage);return response({ok:true,status:'duplicate'})}
  const key=Deno.env.get('OPENAI_API_KEY');if(!key)return fail('OCR-Schlüssel nicht eingerichtet');
- const b64=base64(bytes);
  const content:any[]=[{type:'input_text',text:'Lies NUR die angehängte Einkaufsrechnung vollständig. Gib JSON mit supplier, invoice_number, date (YYYY-MM-DD), currency, net_total, vat_total, gross_total, purchase_items:[{name,article_number,quantity,unit,unit_price_net,line_net}] aus. Alle gedruckten Artikel einschließlich Versand und Pfand als eigene Zeile; keine Summenzeilen als Artikel. KT=Karton, PK=Packung; Mengen und Netto-Einzelpreise exakt wie gedruckt, keine Gebindegrößen oder Preise erfinden. Unlesbare Werte null. Rechnungsnummer niemals aus E-Mail-Betreff erfinden. Keine Zahlung oder Buchhaltung.'}];
- content.push(mime==='application/pdf'?{type:'input_file',filename:'invoice.pdf',file_data:'data:application/pdf;base64,'+b64}:{type:'input_image',image_url:'data:'+mime+';base64,'+b64,detail:'high'});
+ for(let i=0;i<group.length;i++){const page=group[i],b64=base64(pageBytes[i]);content.push({type:'input_text',text:`Originalseite ${i+1} von ${group.length}`});content.push(page.mime_type==='application/pdf'?{type:'input_file',filename:'invoice.pdf',file_data:'data:application/pdf;base64,'+b64}:{type:'input_image',image_url:'data:'+page.mime_type+';base64,'+b64,detail:'high'})}
  try{
   const ai=await fetch('https://api.openai.com/v1/responses',{method:'POST',headers:{Authorization:'Bearer '+key,'Content-Type':'application/json'},body:JSON.stringify({model:'gpt-4.1-mini',store:false,max_output_tokens:12000,text:{format:{type:'json_object'}},input:[{role:'user',content}]})});
   if(!ai.ok)return fail('OCR-Anfrage fehlgeschlagen ('+ai.status+')');
   const result=await ai.json();if(result.status==='incomplete')return fail('Rechnungsauswertung unvollständig');
   const {data,errors}=verify(JSON.parse(output(result).replace(/^```(?:json)?\s*|\s*```$/g,'')));
+  data.source_attachment_ids=group.map(page=>page.id);
   const invoiceKey=norm(data.supplier)+':'+norm(data.invoice_number);
   const duplicates=await db.from('judith_mail_invoice_intake').select('id').eq('business_id',JUDITH).eq('invoice_key',invoiceKey).eq('status','imported').limit(1);
   const legacy=await db.from('documents').select('id,supplier,invoice_number').eq('business_id',JUDITH).eq('document_type','invoice').limit(500);
@@ -102,11 +118,13 @@ Deno.serve(async req=>{
   if(status==='verified'){
    const owner=await db.from('judith_ai_access').select('user_id').eq('role','owner').eq('active',true).limit(1).maybeSingle();
    if(owner.data?.user_id){
-    const ext=({'application/pdf':'pdf','image/jpeg':'jpg','image/png':'png','image/webp':'webp'} as Record<string,string>)[mime];
-    const path=JUDITH+'/'+file.id+'.'+ext;
-    const copy=await db.storage.from('invoice-originals').upload(path,bytes,{contentType:mime,upsert:false});
-    if(!copy.error||String(copy.error.message).includes('already exists')){
-     const imported=await db.rpc('judith_mail_invoice_commit',{p_intake:stage,p_storage_path:path,p_user:owner.data.user_id});
+    const paths:string[]=[];
+    for(let i=0;i<group.length;i++){const page=group[i];const ext=({'application/pdf':'pdf','image/jpeg':'jpg','image/png':'png','image/webp':'webp'} as Record<string,string>)[page.mime_type];const path=JUDITH+'/'+page.id+'.'+ext;
+     const copy=await db.storage.from('invoice-originals').upload(path,pageBytes[i],{contentType:page.mime_type,upsert:false});
+     if(copy.error&&!String(copy.error.message).includes('already exists'))break;paths.push(path)}
+    if(paths.length===group.length){
+     await db.from('judith_mail_invoice_intake').update({extracted_data:{...data,original_files:paths}}).eq('id',stage);
+     const imported=await db.rpc('judith_mail_invoice_commit',{p_intake:stage,p_storage_path:paths[0],p_user:owner.data.user_id});
      if(!imported.error)return response({ok:true,status:imported.data?'imported':'duplicate',document_id:imported.data});
     }
    }
