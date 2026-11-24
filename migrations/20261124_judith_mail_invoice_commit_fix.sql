@@ -6,6 +6,7 @@ begin
  if not found or v.status<>'verified' or v.invoice_key is null or v.original_sha256 is null then return null; end if;
  if not exists(select 1 from public.judith_ai_access where user_id=p_user and active) then raise exception 'Judith access required';end if;
  if p_storage_path !~ ('^'||v.business_id::text||'/[0-9a-f-]{36}[.]((pdf)|(png)|(jpg)|(webp))$') then raise exception 'Invalid original path';end if;
+ perform pg_advisory_xact_lock(hashtextextended(v.original_sha256,0));
  perform pg_advisory_xact_lock(hashtextextended(v.invoice_key,0));
  if exists(select 1 from public.judith_mail_invoice_intake where id<>v.id and business_id=v.business_id and status='imported' and (invoice_key=v.invoice_key or original_sha256=v.original_sha256)) then
   update public.judith_mail_invoice_intake set status='duplicate',issue='Rechnung bereits aus E-Mail übernommen',updated_at=now() where id=v.id;return null;
