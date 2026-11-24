@@ -74,7 +74,7 @@ Deno.serve(async req=>{
   return response({ok:true,status:id?'imported':'duplicate',document_id:id});
  }
  if(body?.action!=='analyze')return response({error:'Invalid action'},400);
- const category=/(rechnung|invoice|faktura|lieferschein|gutschrift|beleg)/i.test(mail.subject+' '+file.filename+' '+mail.body_text.slice(0,300));
+ const category=/(rechnung|invoice|faktura|lieferschein|gutschrift|beleg)/i.test(String(mail.subject||'')+' '+String(file.filename||'')+' '+String(mail.body_text||'').slice(0,300));
  if(!category)return response({ok:true,ignored:true});
  const mime=file.mime_type;
  if(!['application/pdf','image/jpeg','image/png','image/webp'].includes(mime))return response({error:'Unsupported file format'},422);
