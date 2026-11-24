@@ -2612,7 +2612,7 @@ async function loadRecentUploads(){
    };
    left.append(retry);
   }
-  if(business==='87889eaf-f865-4e3a-8f9a-cd01db483e0e'&&row.document_type==='other'&&row.storage_path&&/(girokonto|bankauszug|kontoauszug)/i.test(meta.original_name||'')){
+  if(business==='87889eaf-f865-4e3a-8f9a-cd01db483e0e'&&row.document_type==='other'&&row.storage_path&&/(girokonto|bankauszug|kontoauszug|raika|raiffeisen)/i.test(meta.original_name||'')){
    const retry=document.createElement('button');retry.type='button';retry.textContent='▶ Jetzt auslesen';retry.disabled=busy;
    retry.onclick=async()=>{
     if(busy)return;
@@ -2799,7 +2799,7 @@ async function process(){
      setProgress('✓ Lohnunterlage geprüft · '+result.employees+' Mitarbeiter · '+result.kind);
      continue;
     }
-    if(BID==='87889eaf-f865-4e3a-8f9a-cd01db483e0e'&&(file.type==='application/pdf'||/\.pdf$/i.test(file.name))&&/(ums(?:a|ä)tze[-_ ]girokonto|kontoauszug|bankauszug|bankbeleg|umsatzliste|girokonto)/i.test(file.name)){
+    if(BID==='87889eaf-f865-4e3a-8f9a-cd01db483e0e'&&(file.type==='application/pdf'||/\.pdf$/i.test(file.name))&&/(ums(?:a|ä)tze[-_ ]girokonto|kontoauszug|bankauszug|bankbeleg|umsatzliste|girokonto|raika|raiffeisen)/i.test(file.name)){
      setProgress('Bankauszug wird eingelesen …');
      const result=await importJudithBankPdf(file,intake);
      saved++;queue=queue.filter(f=>f!==file);

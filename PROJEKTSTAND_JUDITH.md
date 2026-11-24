@@ -202,3 +202,9 @@ Vorher scheiterten zwei neue Regressionstests (Judith/Friedrich); nachher bestan
 - Judith und die Torten, Geschäftstag 22.11.2026, Z 44: 5.031,85 EUR Bruttoumsatz (vor Retouren 5.113,14 EUR; Retouren 81,29 EUR), 17 Belege, Kundenforderungen 4.009,85 EUR, Bankomat 403,90 EUR, Bareinlage 618,10 EUR. Warengruppen: Torten 10 % 4.980,55 EUR; Shop 10 % 14,30 EUR; Shop 20 % 37,00 EUR.
 - Foto im Chat visuell geprüft. In `public.documents` ausschließlich Judith-`cash_report` (status `reviewed`) mit Chat-Originalreferenz gespeichert; vorher Geschäftstag/Z-Nummer geprüft. Nachkontrolle: genau 1 Datensatz, 5.031,85 EUR, Z 44; Dokument-ID `67e5bf22-9f68-4adc-b69f-e9f93577587c`.
 - Keine Programmänderung; Friedrich und Judith AI unverändert. Foto nicht in Supabase Storage gespeichert, angemeldete Live-Dashboard-Anzeige nicht getestet. Vollautomatischer Import künftiger Chat-Fotos weiterhin nicht nachgewiesen.
+
+
+## 2026-11-24 – Raika-Bankimport
+- Raika-Zahlungseingänge einmalig nach Dublettenprüfung gespeichert; Anzeige in Judith AI durch Betreiber bestätigt. Keine Änderung der Schnittstelle.
+- Ursache des 12-Seiten-Fehlers: Dateiname wurde nicht als Bank-PDF erkannt. Judith-spezifische Dateinamenerkennung für Raika/Raiffeisen bei Upload und Archiv-Wiederanlauf ergänzt. Bestehender PDF-Textparser, Volksbank und Friedrich unverändert.
+- Originalformat-Parsing und authentifizierter Wiederholungsimport noch nicht nachgewiesen; keine vollständige Live-Fertigmeldung.
