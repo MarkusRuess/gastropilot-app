@@ -18,3 +18,5 @@ jobs:
           node-version: '24'
       - run: node --test unternehmenszentrale/*.test.mjs
       - run: node ./unternehmenszentrale/report.mjs >> "$GITHUB_STEP_SUMMARY"
+
+      - run: node ./unternehmenszentrale/learning.mjs >> "$GITHUB_STEP_SUMMARY"
