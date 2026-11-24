@@ -122,7 +122,14 @@ Deno.serve(async(req)=>{
   if(from){
    const {error:claimError}=await db.from("judith_ai_mail_acknowledgements").insert({message_id:stored.id,recipient_email:senderAddress,status:"reserved"});
    if(!claimError){
-    const hasPhone=(s)=>{const clean=s.replace(/https?:\/\/[^\s]+|[\w.+-]+@[\w.-]+\.[a-z]{2,}/gi," ");return (clean.match(/(?:\+|00)?\d(?:[\d \t().\/-]*\d)?/g)||[]).some(n=>{const d=n.replace(/\D/g,"");return d.length>=7&&d.length<=15&&(/^(?:\+|00|0)/.test(n)||/(?:tel(?:efon)?|mobil|handy|phone|rufnummer)\s*[:.]?\s*$/i.test(clean.slice(Math.max(0,clean.indexOf(n)-30),clean.indexOf(n))))&&!/^\d{1,2}[./-]\d{1,2}[./-]\d{2,4}$/.test(n)&&!/^0\d{7}$/.test(n.replace(/[ .\/-]/g,""))});};
+    const extractPhone=(input:string)=>{
+     const clean=String(input||"").replace(/tel:/gi,"Telefon: ").replace(/https?:\/\/[^\s]+|[\w.+-]+@[\w.-]+\.[a-z]{2,}/gi," ");
+     const valid=(raw:string)=>{const value=raw.trim().replace(/[!?,;:]+$/,"").trim();const digits=value.replace(/\D/g,"");if(digits.length<7||digits.length>15||/^\d{1,2}[./-]\d{1,2}[./-]\d{2,4}$/.test(value))return null;return value;};
+     const labelled=clean.match(/(?:telefon(?:nummer)?|tel\.?|mobil|handy|phone|rufnummer|erreich(?:e|en)? mich)(?:\s+unter)?(?:\s+der\s+T)?\s*[:.]?\s*([+]?\d[\d ()\/-]{5,}\d)/i);
+     if(labelled){const value=valid(labelled[1]);if(value)return value;}
+     for(const line of clean.split(/\r?\n/)){const trimmed=line.trim();if(!trimmed||/^\d{1,2}[./-]\d{1,2}[./-]\d{2,4}$/.test(trimmed))continue;const standalone=trimmed.match(/^(\+?\d[\d ()\/-]{5,}\d)\s*[!.,;:]?$/);if(standalone){const value=valid(standalone[1]);if(value)return value;}}
+     return null;
+    };const hasPhone=(s)=>!!extractPhone(s);
     let phoneKnown=hasPhone(body)||hasPhone((String(message.html||"").match(/href\s*=\s*["']tel:[^"']+["']/gi)||[]).map(s=>s.replace(/^.*tel:/i,"").slice(0,-1)).join("\n"));
     let lookupOk=true;
     if(!phoneKnown){try{const {data,error}=await db.from("judith_ai_customers").select("phone").ilike("email",senderAddress.replace(/[%_\\]/g,c=>"\\"+c)).limit(20);lookupOk=!error;phoneKnown=(data||[]).some(c=>typeof c.phone==="string"&&c.phone.replace(/\D/g,"").length>=7)}catch{lookupOk=false}}
@@ -153,7 +160,7 @@ Deno.serve(async(req)=>{
      const genericMailbox=/^(office|info|kontakt|contact|mail|post|service|support|admin|buchhaltung|bestellung|sekretariat)$/i.test(senderLocalPart);
      const trustedSenderName=genericMailbox||/^judith walli$/i.test(senderName)?"":senderName;
      const customerName=signatureName||trustedSenderName;
-     const phoneMatch=cleanBody.match(/(?:telefon(?:nummer)?|tel\.?|mobil|handy|phone|erreich(?:e|en)? mich unter|unter)\s*[:.]?\s*([+\d][\d ()\/-]{6,}[\d])/i);
+     const phoneMatch=extractPhone(cleanBody);
      const dateValue=parseRequestedDate(subject+" "+body);
      const peopleMatch=(subject+" "+body).match(/\b(\d{1,3})\s*(personen|person|pax|gäste|stücke|portionen|kinder|erwachsene)\b/i);
      const colorMatch=(subject+" "+body).match(/\b(rosa|pink|weiß|weiss|rot|blau|grün|gruen|gelb|lila|violett|gold|silber|schwarz)\b/i);
@@ -202,9 +209,19 @@ Deno.serve(async(req)=>{
        const cell=(label,value)=>'<tr><td style="padding:9px 10px;border-bottom:1px solid #f1dce2;color:#75545d;width:38%;vertical-align:top">'+controlEsc(label)+'</td><td style="padding:9px 10px;border-bottom:1px solid #f1dce2;color:#44383b">'+controlEsc(value)+'</td></tr>';
        const controlRows=cell("Kundenname",controlName)+cell("Kunden-E-Mail",senderAddress)+cell("Telefonnummer",controlPhone)+cell("Abholdatum",controlDate)+cell("Tortenwunsch",controlCake)+cell("Farbe",controlColor)+cell("Geschmack",controlFlavor)+cell("Personenanzahl",controlPeople);
        const controlHtml='<!doctype html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body style="margin:0;background:#fff;font-family:Arial,sans-serif;color:#444"><table role="presentation" width="100%" cellspacing="0" cellpadding="0"><tr><td align="center" style="padding:16px"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:650px;border:8px solid #f7dce2;border-radius:20px;background:#fff"><tr><td align="center" style="padding:28px 20px"><img src="https://judithwalli.at/wp-content/uploads/2019/09/judithunddietorten300px-300x300.png" width="120" height="120" alt="Judith und die Torten" style="display:block;border:0;margin:0 auto"><p style="font-size:11px;letter-spacing:2px;color:#ae6879;margin:20px 0">MEISTERKONDITOREI · BADEN BEI WIEN</p><div style="border-top:1px solid #e9b9c4"></div><h1 style="font-size:22px;color:#a84f66;margin:25px 0 10px">Neue Tortenanfrage</h1><p style="display:inline-block;background:#fcf1f5;border:1px solid #efd5dd;border-radius:6px;padding:9px 14px;color:#a84f66;font-weight:bold">KI-KONTROLLE · BITTE BEARBEITEN</p><p style="font-size:15px;line-height:1.6">Die automatische Kundenantwort wurde versendet. Bitte Anfrage prüfen und persönlich weiterbearbeiten.</p><table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:collapse;background:#fcf1f5;border:1px solid #efd5dd"><tr><td colspan="2" style="padding:13px 10px;color:#a84f66;font-weight:bold;font-size:17px">Kundendaten & Tortenwunsch</td></tr>'+controlRows+'</table><h2 style="font-size:17px;color:#a84f66;text-align:left;margin:24px 0 8px">Versendete Kundenantwort</h2><div style="white-space:pre-wrap;text-align:left;background:#fcf1f5;border:1px solid #efd5dd;border-radius:8px;padding:14px;font-size:14px;line-height:1.55">controlEsc(acknowledgement)</div><h2 style="font-size:17px;color:#a84f66;text-align:left;margin:24px 0 8px">Originalnachricht</h2><div style="white-space:pre-wrap;text-align:left;background:#fafafa;border:1px solid #eee;border-radius:8px;padding:14px;font-size:14px;line-height:1.55">'+controlEsc(body.slice(0,12000))+'</div><p style="font-size:14px;line-height:1.6;text-align:left;margin-top:20px"><strong>Aufgabe:</strong> Abholdatum, Verfügbarkeit und Tortenwunsch prüfen. Fehlende Angaben beim Kunden erfragen. Keine Bestellung oder Preiszusage bestätigt.</p><div style="border-top:1px solid #e9b9c4;margin-top:22px"></div><p style="font-size:13px;line-height:1.8;color:#a84f66">Judith Walli & Team<br>02252 266066 · office@judithwalli.at<br>www.judithwalli.at</p></td></tr></table></td></tr></table></body></html>';
-       const control=await fetch("https://api.resend.com/emails",{method:"POST",headers:{Authorization:"Bearer "+apiKey,"Content-Type":"application/json","Idempotency-Key":"judith-control-"+stored.id},body:JSON.stringify({from,to:["office@judithwalli.at"],subject:"KI-KONTROLLE · Neue Tortenanfrage",text:controlText,html:controlHtml,reply_to:senderAddress})});
-       if(!control.ok)console.error("Internal control delivery failed",control.status);
-      }catch{console.error("Internal control delivery uncertain")}
+       let control:Response|null=null;let controlFailure="";
+       for(let attempt=0;attempt<3;attempt++){
+        try{
+         control=await fetch("https://api.resend.com/emails",{method:"POST",headers:{Authorization:"Bearer "+apiKey,"Content-Type":"application/json","Idempotency-Key":"judith-control-"+stored.id},body:JSON.stringify({from,to:["office@judithwalli.at"],subject:"KI-KONTROLLE · Neue Tortenanfrage",text:controlText,html:controlHtml,reply_to:senderAddress})});
+         if(control.ok)break;
+         controlFailure="provider_"+control.status;
+         if(control.status<500&&control.status!==429)break;
+        }catch(e){controlFailure=String(e).slice(0,240);}
+        if(attempt<2)await new Promise(resolve=>setTimeout(resolve,350*(attempt+1)));
+       }
+       if(!control?.ok)console.error("Internal control delivery failed",controlFailure||"unknown");
+       else console.log("Internal control delivered",stored.id);
+      }catch(e){console.error("Internal control delivery uncertain",String(e).slice(0,240))}
      }
     }catch{
      // Uncertain delivery: do NOT retry automatically, to prevent duplicate acknowledgements.
