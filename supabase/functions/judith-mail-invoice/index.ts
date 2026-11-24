@@ -48,11 +48,11 @@ Deno.serve(async req=>{
  if(fe||!file||file.deleted_at)return response({error:'Original not found'},404);
  const {data:mail,error:me}=await db.from('judith_ai_mail_messages').select('id,direction,subject,body_text,sender_email,recipient_email').eq('id',file.message_id).maybeSingle();
  if(me||mail?.direction!=='inbound')return response({error:'Message not found'},404);
- const {data:mailFiles,error:groupError}=await db.from('judith_ai_attachments').select('id,storage_path,mime_type,filename,created_at').eq('message_id',mail.id).is('deleted_at',null).order('created_at',{ascending:true}).order('id',{ascending:true}).limit(30);
+ const {data:mailFiles,error:groupError}=await db.from('judith_ai_attachments').select('id,storage_path,mime_type,filename,byte_size,created_at').eq('message_id',mail.id).is('deleted_at',null).order('created_at',{ascending:true}).order('id',{ascending:true}).limit(30);
  if(groupError)return response({error:'Invoice attachments unavailable'},503);
  // Several image attachments in one invoice mail are consecutive invoice pages.
  // A PDF is already multi-page and remains a separate document.
- const images=(mailFiles||[]).filter(f=>['image/jpeg','image/png','image/webp'].includes(f.mime_type));
+ const images=(mailFiles||[]).filter(f=>['image/jpeg','image/png','image/webp'].includes(f.mime_type)&&!/(?:logo|signatur|signature|footer|icon|pixel|banner)/i.test(String(f.filename||'')));
  const group=file.mime_type==='application/pdf'?[file]:images;
  if(!group.length||group.length>12)return response({error:'Too many invoice pages'},422);
  const primary=group[0];
