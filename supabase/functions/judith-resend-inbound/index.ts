@@ -45,6 +45,7 @@ Deno.serve(async(req)=>{
  if(error||!stored)return reply({error:"Storage failed"},503);
  // Fetch each attachment via the authenticated Resend receiving API; never expose Resend URLs to browsers.
  let attachmentCount=0;
+ const invoiceAttachments:string[]=[];
  const attachmentResponse=await fetch("https://api.resend.com/emails/receiving/"+encodeURIComponent(emailId)+"/attachments",{headers:{Authorization:"Bearer "+apiKey}});
  if(attachmentResponse.ok){
   const listing=await attachmentResponse.json();
@@ -70,10 +71,16 @@ Deno.serve(async(req)=>{
    if(bytes.byteLength>10485760||bytes.byteLength===0)continue;
    const uploaded=await db.storage.from("judith-ai-attachments").upload(path,bytes,{contentType:mime,upsert:false});
    if(uploaded.error)continue;
-   const inserted=await db.from("judith_ai_attachments").insert({message_id:stored.id,provider_attachment_id:attachmentId,filename:name,mime_type:mime,byte_size:bytes.byteLength,storage_path:path});
+   const inserted=await db.from("judith_ai_attachments").insert({message_id:stored.id,provider_attachment_id:attachmentId,filename:name,mime_type:mime,byte_size:bytes.byteLength,storage_path:path}).select("id").single();
    if(inserted.error){await db.storage.from("judith-ai-attachments").remove([path]);continue}
    attachmentCount++;
+   if(/rechnung|invoice|faktura|beleg/i.test(subject+" "+name))invoiceAttachments.push(inserted.data?.id||"");
   }
+ }
+ // Hand over stored originals only. A failed OCR never rejects or alters the inbound mail.
+ for(const attachment_id of invoiceAttachments.filter(Boolean)){
+  const work=fetch(url+"/functions/v1/judith-mail-invoice",{method:"POST",headers:{Authorization:"Bearer "+service,apikey:service,"Content-Type":"application/json"},body:JSON.stringify({action:"analyze",attachment_id})}).then(async r=>{if(!r.ok)console.error("Invoice intake",r.status)}).catch(e=>console.error("Invoice intake unavailable",String(e)));
+  try{EdgeRuntime.waitUntil(work)}catch{await work}
  }
  return reply({ok:true,stored:true,attachments_saved:attachmentCount});
 });
