@@ -20,3 +20,27 @@ jobs:
       - run: node ./unternehmenszentrale/report.mjs >> "$GITHUB_STEP_SUMMARY"
 
       - run: node ./unternehmenszentrale/learning.mjs >> "$GITHUB_STEP_SUMMARY"
+  recovery:
+    needs: registry
+    if: ${{ always() && needs.registry.result == 'failure' && github.run_attempt == 1 && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main' }}
+    permissions:
+      contents: read
+      actions: read
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Retry only a timed-out registry job
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          current=$(gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/main" --jq '.object.sha')
+          conclusion=$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/attempts/$GITHUB_RUN_ATTEMPT/jobs" --jq '[.jobs[] | select(.name == "registry")][0].conclusion')
+          decision=$(node --input-type=module -e 'import {recoveryDecision} from "./unternehmenszentrale/recovery.mjs"; console.log(recoveryDecision({conclusion:process.argv[1],attempt:Number(process.env.GITHUB_RUN_ATTEMPT),event:process.env.GITHUB_EVENT_NAME,headMatches:process.argv[2]===process.env.GITHUB_SHA}));' "$conclusion" "$current")
+          if [[ "$decision" == retry-once ]]; then
+            echo "Eligible for retry after run completion; no retry while workflow is running." >> "$GITHUB_STEP_SUMMARY"
+          fi
