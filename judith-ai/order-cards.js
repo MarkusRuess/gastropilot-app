@@ -54,5 +54,5 @@ export function calendarOrderCard(order,customer,options){
   // Mount once, without calculate/OCR calls on opening a calendar or an order.
   price.addEventListener('toggle',()=>{if(price.open&&!host.dataset.priceMounted)options.mountPrice(host,order)});body.append(price);
  };
- toggle.className='jo-menu-option jo-menu-open';choices.append(toggle);card.append(heading,info,facts,pickupDate,actions,choices,body);return card;
+ toggle.className='jo-menu-option jo-menu-open';card.append(heading,info,facts,pickupDate,actions,toggle,choices,body);return card;
 }
