@@ -91,12 +91,12 @@ Deno.serve(async(req)=>{
  const automated=/no-?reply|do-?not-?reply|mailer-daemon|postmaster|newsletter|notification/i.test(senderAddress);
  const invoiceLike=/rechnung|invoice|faktura|mahnung|beleg|gutschrift/i.test(subject);
  const inquiryLike=/anfrage|torte|hochzeit|bestellung|kuchen|angebot|geburtstag|feier/i.test(subject);
- if(inquiryLike&&!invoiceLike&&!automated&&/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(senderAddress)&&!senderAddress.endsWith("@judithwalli.at")){
+ if(inquiryLike&&!invoiceLike&&!automated&&/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(senderAddress)&&!senderAddress.endsWith("@judithwalli.at")){
   const from=Deno.env.get("JUDITH_MAIL_FROM");
   if(from){
    const {error:claimError}=await db.from("judith_ai_mail_acknowledgements").insert({message_id:stored.id,recipient_email:senderAddress,status:"pending"});
    if(!claimError){
-    const acknowledgement="Vielen lieben Dank für die Nachricht und das Interesse an unseren Torten!\\n\\nDie Anfrage ist gut bei uns angekommen. Wir schauen uns alle Wünsche in Ruhe an und melden uns so bald wie möglich persönlich zurück.\\n\\nGanz liebe Grüße aus der Backstube\\nJudith Walli & Team";
+    const acknowledgement="Vielen lieben Dank für die Nachricht und das Interesse an unseren Torten!\n\nDie Anfrage ist gut bei uns angekommen. Wir schauen uns alle Wünsche in Ruhe an und melden uns so bald wie möglich persönlich zurück.\n\nGanz liebe Grüße aus der Backstube\nJudith Walli & Team";
     try{
      const sent=await fetch("https://api.resend.com/emails",{method:"POST",headers:{Authorization:"Bearer "+apiKey,"Content-Type":"application/json","Idempotency-Key":"judith-ack-"+stored.id},body:JSON.stringify({from,to:[senderAddress],subject:"Wir haben die Anfrage erhalten",text:acknowledgement,reply_to:"office@judithwalli.at"})});
      const result=sent.ok?await sent.json().catch(()=>({})):{};
