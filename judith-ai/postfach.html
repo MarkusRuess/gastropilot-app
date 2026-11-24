@@ -542,6 +542,24 @@ document.getElementById('load-inbox').addEventListener('click',async()=>{
     if(pdfs.length){const hint=document.createElement('small');hint.textContent='🖨 Zum Drucken PDF öffnen und im Browser „Drucken“ wählen.';hint.style.cssText='display:block;width:100%;color:#52625b';actions.append(hint)}
     else{const hint=document.createElement('p');hint.textContent='⚠️ Kein druckbarer PDF-Anhang in Judith AI vorhanden. Originalrechnung im E-Mail-Postfach prüfen; keine Rechnung automatisch übertragen.';hint.style.cssText='background:#fff4e8;border:1px solid #f1d5b5;padding:10px;border-radius:9px';actions.append(hint)}
     body.prepend(actions);
+    const invoicePanel=document.createElement('div');invoicePanel.className='jd-invoice-panel';invoicePanel.style.cssText='border:1px solid #e2d8dc;border-radius:10px;padding:12px;margin:10px 0;background:#fff';body.append(invoicePanel);
+    const invoiceApi='https://sjnwfwcpgwsavygewwzb.supabase.co/functions/v1/judith-mail-invoice';
+    async function invoiceCall(action,attachment_id){const {data:{session}}=await sb.auth.getSession();if(!session)throw Error('Bitte neu anmelden');const res=await fetch(invoiceApi,{method:'POST',headers:{Authorization:'Bearer '+session.access_token,apikey:'sb_publishable__tucXG-IQGUhibMqMSUzCw_5RnH_sbQ','Content-Type':'application/json'},body:JSON.stringify({action,attachment_id})});const value=await res.json();if(!res.ok)throw Error(value.error||'Verarbeitung fehlgeschlagen');return value}
+    async function showInvoices(){
+     invoicePanel.textContent='Einkaufsdaten werden geladen …';
+     try{const {data:{session}}=await sb.auth.getSession();if(!session)throw Error('Bitte neu anmelden');const res=await fetch(invoiceApi+'?message_ids='+encodeURIComponent(m.id),{headers:{Authorization:'Bearer '+session.access_token,apikey:'sb_publishable__tucXG-IQGUhibMqMSUzCw_5RnH_sbQ'}});const data=await res.json();if(!res.ok)throw Error(data.error||'Status nicht verfügbar');invoicePanel.replaceChildren();
+      const heading=document.createElement('strong');heading.textContent='Einkaufsdaten · GastroPilot Judith';invoicePanel.append(heading);
+      const files=mailFiles.filter(f=>['application/pdf','image/jpeg','image/png','image/webp'].includes(f.mime_type));
+      if(!files.length){const note=document.createElement('p');note.textContent='Kein Originalanhang vorhanden – keine Übernahme.';invoicePanel.append(note)}
+      for(const file of files){const row=(data.invoices||[]).find(i=>i.attachment_id===file.id);const section=document.createElement('section');section.style.cssText='margin-top:10px;padding-top:10px;border-top:1px solid #ddd';const title=document.createElement('b');title.textContent=file.filename||'Originalanhang';section.append(title);
+       const state=document.createElement('p');state.textContent=row?({processing:'Auswertung läuft',review:'Prüfung nötig',verified:'Summen geprüft · Übernahme bereit',duplicate:'Duplikat · gesperrt',imported:'In GastroPilot Judith übernommen',failed:'Auswertung fehlgeschlagen'})[row.status]+' · '+(row.issue||''):'Noch nicht ausgelesen';section.append(state);
+       if(row?.extracted_data){const d=row.extracted_data;const summary=document.createElement('p');summary.textContent=[d.supplier,d.invoice_number,d.date,'Netto '+d.net_total+' €'].filter(Boolean).join(' · ');section.append(summary);const table=document.createElement('table');table.style.cssText='width:100%;font-size:12px;border-collapse:collapse';for(const r of d.purchase_items||[]){const tr=document.createElement('tr');for(const value of [r.name,r.quantity+' '+r.unit,r.unit_price_net+' € netto',r.line_net+' €']){const cell=document.createElement('td');cell.style.cssText='padding:5px;border-bottom:1px solid #eee';cell.textContent=value;tr.append(cell)}table.append(tr)}section.append(table)}
+       if(!row){const run=document.createElement('button');run.textContent='Rechnung auslesen';run.onclick=async()=>{run.disabled=true;try{await invoiceCall('analyze',file.id);await showInvoices()}catch(e){state.textContent='❌ '+e.message;run.disabled=false}};section.append(run)}
+       if(row?.status==='verified'){const commit=document.createElement('button');commit.textContent='Geprüfte Einkaufsdaten übernehmen';commit.onclick=async()=>{commit.disabled=true;try{await invoiceCall('commit',file.id);await showInvoices()}catch(e){state.textContent='❌ '+e.message;commit.disabled=false}};section.append(commit)}
+       invoicePanel.append(section)}
+     }catch(e){invoicePanel.textContent='❌ '+e.message}
+    }
+    toggle.addEventListener('click',()=>{if(!contentWrap.hidden)showInvoices()});
    }
    const history=document.createElement('details');history.className='mail-history';
    const summary=document.createElement('summary');summary.textContent='Original-E-Mail und bisherigen Verlauf anzeigen';history.append(summary);
