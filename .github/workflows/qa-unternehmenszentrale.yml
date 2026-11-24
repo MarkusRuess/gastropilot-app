@@ -3,17 +3,12 @@ on:
   schedule:
     - cron: '15 6 * * *'
   workflow_dispatch:
-  workflow_run:
-    workflows: ['Unternehmenszentrale registry checks']
-    types: [completed]
-    branches: [main]
   pull_request:
-    paths: ['unternehmenszentrale/**', 'supabase/functions/_shared/enterprise-ai-guard.mjs', '.github/workflows/qa-unternehmenszentrale.yml']
+    paths: ['unternehmenszentrale/**', 'supabase/functions/**', '.github/workflows/qa-unternehmenszentrale.yml']
 permissions:
   contents: read
 jobs:
   registry:
-    if: github.event_name != 'workflow_run'
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -25,32 +20,3 @@ jobs:
       - run: node ./unternehmenszentrale/report.mjs >> "$GITHUB_STEP_SUMMARY"
 
       - run: node ./unternehmenszentrale/learning.mjs >> "$GITHUB_STEP_SUMMARY"
-  recovery:
-    if: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.run_attempt == 1 && (github.event.workflow_run.event == 'schedule' || github.event.workflow_run.event == 'workflow_dispatch') && github.event.workflow_run.head_repository.full_name == github.repository && github.event.workflow_run.conclusion == 'failure' }}
-    permissions:
-      contents: read
-      actions: write
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: main
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '24'
-      - name: Retry timed-out read-only QA once
-        env:
-          GH_TOKEN: ${{ github.token }}
-          RUN_ID: ${{ github.event.workflow_run.id }}
-          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
-          SOURCE_EVENT: ${{ github.event.workflow_run.event }}
-        run: |
-          set -euo pipefail
-          [[ "$RUN_ID" =~ ^[0-9]+$ ]] || exit 1
-          current=$(gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/main" --jq '.object.sha')
-          conclusion=$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$RUN_ID/attempts/1/jobs" --jq '[.jobs[] | select(.name == "registry")][0].conclusion')
-          decision=$(node --input-type=module -e 'import {recoveryDecision} from "./unternehmenszentrale/recovery.mjs"; console.log(recoveryDecision({conclusion:process.argv[1],attempt:1,event:process.env.SOURCE_EVENT,headMatches:process.argv[2]===process.env.HEAD_SHA}));' "$conclusion" "$current")
-          if [[ "$decision" == retry-once ]]; then
-            gh api --method POST "repos/$GITHUB_REPOSITORY/actions/runs/$RUN_ID/rerun-failed-jobs"
-          fi
