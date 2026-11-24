@@ -1,7 +1,7 @@
 name: Unternehmenszentrale registry checks
 on:
   pull_request:
-    paths: ['unternehmenszentrale/**', '.github/workflows/qa-unternehmenszentrale.yml']
+    paths: ['unternehmenszentrale/**', 'supabase/functions/_shared/enterprise-ai-guard.mjs', '.github/workflows/qa-unternehmenszentrale.yml']
 permissions:
   contents: read
 jobs:
@@ -13,4 +13,4 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
-      - run: node --test unternehmenszentrale/registry.test.mjs
+      - run: node --test unternehmenszentrale/*.test.mjs
