@@ -17,6 +17,13 @@ Bestehende Dokumentationen zuerst lesen: PROJEKTUEBERSICHT_GESAMT.md, PROJEKTSTA
 - Keine externen kostenpflichtigen APIs, bevor technische Verbrauchssperre <= 15 EUR/Monat nachgewiesen ist. Ohne Sperre: keine kostenpflichtigen Aufrufe.
 - Keine automatischen E-Mails, Zahlungen, verbindlichen Zusagen oder produktiven Datenmigrationen aus diesem Modul.
 
-## Status
+## Zentrale Wissensdatenbank
 
-Grundstruktur im Feature-Branch; keine produktive Aktivierung. Supabase-Datenmodell und Zugriffsprüfung getrennt vornehmen.
+Die geschützte Oberfläche liegt unter `unternehmenszentrale/index.html`. In Supabase hält `public.central_knowledge` Entscheidungen, Fehler, Lösungen, Prozesse und wiederverwendbare Funktionen mit Quelle und Status. `central_knowledge_history` bewahrt ältere Fassungen bei Änderungen.
+
+- `shared`: nur geprüfte, bereinigte Einträge. Schreiben nur über eine vertrauenswürdige Serverrolle; Lesen nur mit angemeldeter Betriebsmitgliedschaft.
+- `business`: Lesen nur durch Mitglieder des zugehörigen Betriebs; Entwürfe dürfen Betriebsinhaber anlegen und bearbeiten.
+- `personal`: Lesen und Schreiben ausschließlich durch den angemeldeten Eigentümer. Damit können Friedrich Park und Genusswelt Baden als eigene Projekte dokumentiert werden, ohne sie einem Gastro-Betrieb zuzuordnen.
+- Neue Einträge beginnen als Entwurf. Es findet keine automatische Übernahme aus Mails, Kundenakten oder Projektchats statt. Eine automatische Synchronisierung braucht getrennte Freigabe-, Datenschutz- und Kostentests.
+
+Das Datenmodell und zwei allgemeine Regeln wurden am 24.11.2026 produktiv angelegt. Die Anzeige und das Speichern in der Oberfläche benötigen noch eine erfolgreiche Anmeldung und einen Live-Test; ein automatischer Import aus anderen Projekten ist offen.
