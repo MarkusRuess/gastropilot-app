@@ -1,7 +1,7 @@
 name: Deploy GastroPilot to GitHub Pages
 on:
-  push:
-    branches: [main]
+# The native GitHub Pages branch build already deploys main.
+# Keep this workflow manual-only to avoid concurrent duplicate deployments.
   workflow_dispatch:
 permissions:
   contents: read
