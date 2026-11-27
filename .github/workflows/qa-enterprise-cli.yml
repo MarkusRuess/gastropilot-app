@@ -1,0 +1,31 @@
+name: Enterprise CLI project checks
+on:
+  pull_request:
+    paths:
+      - 'unternehmenszentrale/cli-anything/**'
+      - '.github/workflows/qa-enterprise-cli.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  cli:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    strategy:
+      matrix:
+        project: [zentrale, judith, friedrich]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Install offline CLI
+        run: bash unternehmenszentrale/cli-anything/install.sh "$RUNNER_TEMP/enterprise"
+      - name: Verify selected project
+        run: |
+          "$RUNNER_TEMP/enterprise/bin/uz-cli" --json check --project "${{ matrix.project }}"
+      - name: Test allowlist and installer
+        if: matrix.project == 'zentrale'
+        run: python3 -m unittest discover -s unternehmenszentrale/cli-anything -p 'test_*.py'
