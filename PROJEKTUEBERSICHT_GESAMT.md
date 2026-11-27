@@ -1,3 +1,6 @@
+## 2026-11-27 – Judith historische Personalquoten
+Geprüfte Saldenlistenwerte für gewichtete historische Personalquoten (Personal / Nettoerträge) verwendet, letzte drei zusammenhängende geprüfte Monate und Jahreszeitraum beschriftet. Nur Judith; Friedrich und Judith AI unverändert. Commits d06c8d8 und e01b2c35. Code zurückgelesen, Kontrollrechnung durchgeführt; CI und Liveanzeige offen. Keine DB-Änderung.
+
 ## 2026-11-27 – Kompakte Kennzahlentabellen
 Betreiber-Screenshot 13:11:21 bestätigt neue Tabellen, lesbare Buttons und Friedrich-Monatsziel 55.000 EUR / 73,2 %, Judith 60.000 EUR / 78,2 %. Supabase-Ziele lesend bestätigt. Commits 0de4c30 und 870658d; exakter Bruttoumsatz für Berechnungen separat erhalten. Keine DB-Änderung. Unabhängige Browser-/CI-Prüfung offen.
 
