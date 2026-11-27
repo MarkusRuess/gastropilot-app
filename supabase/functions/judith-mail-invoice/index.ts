@@ -1,4 +1,5 @@
 import { createClient } from 'npm:@supabase/supabase-js@2.57.0';
+import {guardedPaidFetch} from '../_shared/enterprise-ai-guard.mjs';
 const JUDITH='87889eaf-f865-4e3a-8f9a-cd01db483e0e';
 const cors={'Access-Control-Allow-Origin':'https://markusruess.github.io','Access-Control-Allow-Headers':'authorization,apikey,content-type','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Cache-Control':'no-store'};
 const response=(data:unknown,status=200)=>new Response(JSON.stringify(data),{status,headers:{...cors,'Content-Type':'application/json'}});
@@ -102,7 +103,7 @@ Deno.serve(async req=>{
  const content:any[]=[{type:'input_text',text:'Lies NUR die angehängte Einkaufsrechnung vollständig. Gib JSON mit supplier, invoice_number, date (YYYY-MM-DD), currency, net_total, vat_total, gross_total, purchase_items:[{name,article_number,quantity,unit,unit_price_net,line_net}] aus. Alle gedruckten Artikel einschließlich Versand und Pfand als eigene Zeile; keine Summenzeilen als Artikel. KT=Karton, PK=Packung; Mengen und Netto-Einzelpreise exakt wie gedruckt, keine Gebindegrößen oder Preise erfinden. Unlesbare Werte null. Rechnungsnummer niemals aus E-Mail-Betreff erfinden. Keine Zahlung oder Buchhaltung.'}];
  for(let i=0;i<group.length;i++){const page=group[i],b64=base64(pageBytes[i]);content.push({type:'input_text',text:`Originalseite ${i+1} von ${group.length}`});content.push(page.mime_type==='application/pdf'?{type:'input_file',filename:'invoice.pdf',file_data:'data:application/pdf;base64,'+b64}:{type:'input_image',image_url:'data:'+page.mime_type+';base64,'+b64,detail:'high'})}
  try{
-  const ai=await fetch('https://api.openai.com/v1/responses',{method:'POST',headers:{Authorization:'Bearer '+key,'Content-Type':'application/json'},body:JSON.stringify({model:'gpt-4.1-mini',store:false,max_output_tokens:12000,text:{format:{type:'json_object'}},input:[{role:'user',content}]})});
+  const ai=await guardedPaidFetch('https://api.openai.com/v1/responses',{method:'POST',headers:{Authorization:'Bearer '+key,'Content-Type':'application/json'},body:JSON.stringify({model:'gpt-4.1-mini',store:false,max_output_tokens:12000,text:{format:{type:'json_object'}},input:[{role:'user',content}]})});
   if(!ai.ok)return fail('OCR-Anfrage fehlgeschlagen ('+ai.status+')');
   const result=await ai.json();if(result.status==='incomplete')return fail('Rechnungsauswertung unvollständig');
   const {data,errors}=verify(JSON.parse(output(result).replace(/^```(?:json)?\s*|\s*```$/g,'')));

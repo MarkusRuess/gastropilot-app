@@ -1,5 +1,6 @@
 import {FRIEDRICH,validatePages,pageRowsPrompt,pageHeaderPrompt,pageTotalsPrompt,pagePaymentPrompt,choosePaymentRead,combineSummaryReads,combinePageReads,reconcileFriedrichSummary} from './friedrich-pages.mjs';
 import {preflightPrompt,validatePreflight} from './friedrich-preflight.mjs';
+import {guardedPaidFetch} from '../_shared/enterprise-ai-guard.mjs';
 
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
@@ -256,7 +257,7 @@ Für jede gedruckte Steuergruppe (zum Beispiel 10,00 und 20,00) übernimm aus de
  if(!friedrich)prompt=`Du liest genau EINE Originalseite eines Tagesberichts von Judith und die Torten für ${doc.date}. Lies ausschließlich gedruckte Werte. "Umsatz berichtigt (inkl.MWSt.)" ist der Umsatz nach Retouren und Rabatten, "Umsatz gesamt" vor Rabatten ist keine zweite Tagesbuchung. Lies JEDE Zeile unter WARENGRUPPENUMSÄTZE mit Betrag und MWST-Satz im Namen, z.B. "SHOP 10%" und "TORTEN 10%". Rabatte vor dem berichtigten Umsatz niemals ein zweites Mal abziehen. Lies getrennt "Kredit", "Kredit Bezahlt", "Kund.Forderungen", "Aus/Einzahlungen", "Bank Einlage Bar" und "Kreditk./Bankomatkarten" als printed_payment_lines mit gedrucktem Vorzeichen. Eine positive Kund.Forderungen-Zeile zusammen mit "Kredit Bezahlt" ist Zahlung einer früheren Forderung, kein heutiger Umsatz; die Bareinlage enthält diese Zahlung und muss für den heutigen Barumsatz um diesen Betrag vermindert werden. Negative Kund.Forderungen sind neue offene Forderungen. Kredit niemals zu Karte zählen. Wenn Netto/Steuer nicht gedruckt ist, gib null zurück. Lies Beleganzahl. Bei unlesbaren Zeilen needs_review=true, keine Zahlen erfinden. Gib JSON zurück: {"date":"YYYY-MM-DD","gross_total":null,"net_total":null,"vat_total":null,"cash_total":null,"card_total":null,"other_payments_total":null,"receipt_count":null,"printed_payment_lines":[{"label":"Kredit Bezahlt","amount":null},{"label":"Kund.Forderungen","amount":null},{"label":"Aus/Einzahlungen","amount":null},{"label":"Bank Einlage Bar","amount":null},{"label":"Kreditk./Bankomatkarten","amount":null}],"tax_breakdown":[],"printed_tax_lines":[],"category_sales":[{"name":"gedruckte Warengruppe mit MWST-Satz","gross":null}],"needs_review":false,"notes":null}.`;
  const results=await Promise.allSettled(images.map(async (image,index)=>{
   const content=[{type:"input_text",text:prompt+"\nDies ist Originalseite "+(index+1)+"."},{type:"input_image",image_url:"data:"+image.mime_type+";base64,"+image.image_base64,detail:"high"}];
-  const res=await fetch("https://api.openai.com/v1/responses",{method:"POST",headers:{Authorization:"Bearer "+apiKey,"Content-Type":"application/json"},body:JSON.stringify({model:"gpt-4.1-mini",max_output_tokens:5000,store:false,text:{format:{type:"json_object"}},input:[{role:"user",content}]})});
+  const res=await guardedPaidFetch("https://api.openai.com/v1/responses",{method:"POST",headers:{Authorization:"Bearer "+apiKey,"Content-Type":"application/json"},body:JSON.stringify({model:"gpt-4.1-mini",max_output_tokens:5000,store:false,text:{format:{type:"json_object"}},input:[{role:"user",content}]})});
   if(!res.ok)throw new Error("Originalseite "+(index+1)+": Erkennung "+res.status);
   const result=await res.json();if(result.status==="incomplete")throw new Error("Originalseite "+(index+1)+": unvollständig");
   return {...JSON.parse(cleanJson(getOutputText(result))),source_page:index+1};
@@ -516,7 +517,7 @@ Deno.serve(async (req) => {
     if(body.mode==='friedrich_preflight'){
       if(businessId!==FRIEDRICH||savedDocument||images.length<2||images.length>4)return json({error:'Nur Friedrich-Originalseiten gemeinsam prüfen.'},400);
       const key=Deno.env.get('OPENAI_API_KEY');if(!key)return json({error:'KI-Schlüssel fehlt'},500);
-      const response=await fetch('https://api.openai.com/v1/responses',{method:'POST',headers:{Authorization:'Bearer '+key,'Content-Type':'application/json'},body:JSON.stringify({model:'gpt-4.1-mini',max_output_tokens:2500,store:false,text:{format:{type:'json_object'}},input:[{role:'user',content:[{type:'input_text',text:preflightPrompt(images.length)},...images.map(im=>({type:'input_image',image_url:'data:'+im.mime_type+';base64,'+im.image_base64,detail:'high'}))]}]})});
+      const response=await guardedPaidFetch('https://api.openai.com/v1/responses',{method:'POST',headers:{Authorization:'Bearer '+key,'Content-Type':'application/json'},body:JSON.stringify({model:'gpt-4.1-mini',max_output_tokens:2500,store:false,text:{format:{type:'json_object'}},input:[{role:'user',content:[{type:'input_text',text:preflightPrompt(images.length)},...images.map(im=>({type:'input_image',image_url:'data:'+im.mime_type+';base64,'+im.image_base64,detail:'high'}))]}]})});
       if(!response.ok)return json({error:'BONit-Seitenprüfung fehlgeschlagen ('+response.status+').'},502);
       const model=await response.json();if(model.status==='incomplete')return json({error:'BONit-Seitenprüfung unvollständig; Originale bleiben gesichert.'},422);
       let read;try{read=JSON.parse(cleanJson(getOutputText(model)));}catch{return json({error:'BONit-Seitenprüfung nicht lesbar.'},422);}
@@ -537,7 +538,7 @@ Deno.serve(async (req) => {
         cash_total:old.tax_verification?.verified?old.cash_total:null,
         card_total:old.tax_verification?.verified?old.card_total:null};
       const extract=async(prompt:string,selected:any[],limit:number)=>{
-        const result=await fetch('https://api.openai.com/v1/responses',{method:'POST',headers:{Authorization:'Bearer '+apiKey,'Content-Type':'application/json'},body:JSON.stringify({model:'gpt-4.1',max_output_tokens:limit,store:false,text:{format:{type:'json_object'}},input:[{role:'user',content:[{type:'input_text',text:prompt},...selected.map(im=>({type:'input_image',image_url:'data:'+im.mime_type+';base64,'+im.image_base64,detail:'high'}))]}]})});
+        const result=await guardedPaidFetch('https://api.openai.com/v1/responses',{method:'POST',headers:{Authorization:'Bearer '+apiKey,'Content-Type':'application/json'},body:JSON.stringify({model:'gpt-4.1',max_output_tokens:limit,store:false,text:{format:{type:'json_object'}},input:[{role:'user',content:[{type:'input_text',text:prompt},...selected.map(im=>({type:'input_image',image_url:'data:'+im.mime_type+';base64,'+im.image_base64,detail:'high'}))]}]})});
         if(!result.ok)throw Error('Originalauswertung fehlgeschlagen ('+result.status+').');
         const model=await result.json();
         if(model.status==='incomplete')throw Error('Eine Originalseite wurde nicht vollständig gelesen.');
@@ -597,7 +598,7 @@ Deno.serve(async (req) => {
 
     if(savedDocument && ["paid_receipts","article_sales"].includes(body.mode)){
       const prompt='Lies die vier Spalten Artikelnummer, Menge, Einzelpreis, Gesamt zeilenweise exakt vom Bild. Gesamt ist Menge mal Einzelpreis; nimm den Gesamtbetrag aus der rechten Betragsspalte und verwechsle ihn nie mit dem Einzelpreis. Keine Preise aus Erinnerung. Der Gesamtbruttoumsatz ist '+savedDocument.extracted_data.gross_total+'. '+(body.mode==='article_sales'?'Lies die Z-Nummer und gib z_number als Zeichenfolge zurück. Lies zusätzlich ALLE Artikelzeilen aller Seiten vollständig. Ergänze sales_items:[{article_number,name,quantity,unit_price,gross_amount}]. Menge, Einzelpreis und Gesamtbetrag stehen in getrennten Spalten. Auch kostenlose Artikel mit 0 Euro aufnehmen. Rücknahmenliste NICHT nochmals addieren. Die Artikelgesamtsumme muss dem Tagesbruttoumsatz entsprechen. Nicht schätzen. ':'')+'Lies die Zahlarten und Anzahl Rechnungen aus dem BONit-Original. Bar und Kreditkarte sind BEZAHLTE Rechnungen. Personal/Einladung mit 0 ist kostenlos. Teilbetrag bar NICHT als zusätzlichen Bon zählen. Kein Schätzen. Liefere JSON mit date,gross_total,receipt_count,cash_count,card_count,free_count,printed_payment_lines:[{label,count,amount}]. Die Summe cash_count+card_count+free_count muss der Anzahl Rechnungen entsprechen. Erwartetes Datum '+savedDocument.document_date+'.';
-      const result=await fetch("https://api.openai.com/v1/responses",{method:"POST",headers:{"Authorization":"Bearer "+apiKey,"Content-Type":"application/json"},body:JSON.stringify({model:"gpt-4.1-mini",max_output_tokens:16000,store:false,text:{format:{type:"json_object"}},input:[{role:"user",content:[{type:"input_text",text:prompt},...images.map(image=>({type:"input_image",image_url:"data:"+image.mime_type+";base64,"+image.image_base64}))]}]})});
+      const result=await guardedPaidFetch("https://api.openai.com/v1/responses",{method:"POST",headers:{"Authorization":"Bearer "+apiKey,"Content-Type":"application/json"},body:JSON.stringify({model:"gpt-4.1-mini",max_output_tokens:16000,store:false,text:{format:{type:"json_object"}},input:[{role:"user",content:[{type:"input_text",text:prompt},...images.map(image=>({type:"input_image",image_url:"data:"+image.mime_type+";base64,"+image.image_base64}))]}]})});
       if(!result.ok)return json({error:"Bonzahlen konnten nicht gelesen werden"},502);
       const model=await result.json();if(model.status==="incomplete")return json({error:"Originalauswertung unvollständig. Bitte erneut versuchen."},422);const read=JSON.parse(cleanJson(getOutputText(model)));
       const counts=[read.receipt_count,read.cash_count,read.card_count,read.free_count];
@@ -1075,7 +1076,7 @@ FRIEDRICH LAGER: category je Position ausschließlich food, beverage, coffee, me
       });
     }
 
-    const openaiResponse = await fetch(
+    const openaiResponse = await guardedPaidFetch(
       "https://api.openai.com/v1/responses",
       {
         method: "POST",

@@ -1,5 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import {createClient} from "npm:@supabase/supabase-js@2.57.0";
+import {guardedPaidFetch} from "../_shared/enterprise-ai-guard.mjs";
 const cors={"Access-Control-Allow-Origin":"https://markusruess.github.io","Access-Control-Allow-Headers":"authorization, apikey, content-type","Access-Control-Allow-Methods":"POST, OPTIONS"};
 Deno.serve(async(req:Request)=>{
  const send=(v:unknown,status=200)=>new Response(JSON.stringify(v),{status,headers:{...cors,"Content-Type":"application/json","Cache-Control":"no-store"}});
@@ -21,7 +22,7 @@ Deno.serve(async(req:Request)=>{
   const requestBody=JSON.stringify({model:"gpt-4o-mini",temperature:0,response_format:{type:"json_object"},messages:[{role:"system",content:"Lies einen handschriftlichen deutschen Torten-Auftragszettel. Antworte ausschließlich mit JSON und den String-Feldern name,phone,email,date (YYYY-MM-DD oder leer),occasion,details,price,quantity,portions. quantity ist die Anzahl ganzer Torten, portions die gesamte Personen-/Portionenanzahl; niemals gleichsetzen. Preise nicht erraten. Nichts erfinden; unlesbare Werte leer lassen. Preis als Zahl ohne Währung, quantity als Zahl."},{role:"user",content:[{type:"text",text:"Bitte Daten des Auftragszettels extrahieren."},{type:"image_url",image_url:{url:"data:"+mime+";base64,"+data,detail:"high"}}]}]});
   let response:Response;
   for(let attempt=0;attempt<2;attempt++){
-   response=await fetch("https://api.openai.com/v1/chat/completions",{method:"POST",headers:{"Authorization":"Bearer "+key,"Content-Type":"application/json"},body:requestBody});
+   response=await guardedPaidFetch("https://api.openai.com/v1/chat/completions",{method:"POST",headers:{"Authorization":"Bearer "+key,"Content-Type":"application/json"},body:requestBody});
    if(response.status<500&&response.status!==429)break;
    if(attempt===0)await new Promise(resolve=>setTimeout(resolve,500));
   }
@@ -31,7 +32,7 @@ Deno.serve(async(req:Request)=>{
    console.error("judith-ai-photo-order: OpenAI request failed",{status:response.status,code:providerCode,message:providerMessage});
    if(response.status===401||response.status===403)return send({error:"Foto-KI-Zugang ungültig. OPENAI_API_KEY in Supabase prüfen."},503);
    if(response.status===429)return send({error:"Foto-KI-Limit erreicht. OpenAI-Limits und Abrechnung prüfen."},503);
-   if(response.status>=500)return send({error:"Foto-KI vorübergehend nicht erreichbar. Bitte erneut versuchen."},503);
+   if(response.status>=500)return send({error:"Foto-KI pausiert. Auftrag bitte manuell erfassen."},503);
    if(response.status===400)return send({error:"Foto wurde von der Foto-KI abgelehnt. Bitte ein scharfes JPEG-, PNG- oder WebP-Foto aufnehmen."},422);
    return send({error:"Foto-KI-Fehler (HTTP "+response.status+"). Bitte später erneut versuchen."},503);
   }
