@@ -110,6 +110,17 @@ export async function loadPersonnelAverage(db,businessId,month){
  const completedEnd=month<todayMonth?month:new Date(Date.UTC(Number(todayMonth.slice(0,4)),Number(todayMonth.slice(5,7))-2,1)).toISOString().slice(0,7);
  const start=currentYear+'-01-01',end=monthEnd(completedEnd);
  if(completedEnd<currentYear+'-01')return {average:null,threeMonth:null,count:0,threeCount:0,exact:null};
+ if(businessId==='87889eaf-f865-4e3a-8f9a-cd01db483e0e'){
+  const ledger=result(await db.from('gp_ledger_monthly').select('month_start,metric_key,amount').eq('business_id',businessId).eq('verification_status','verified').in('metric_key',['personnel','net_revenue']).gte('month_start',start).lt('month_start',end),'Geprüfte Personalkosten Judith');
+  const grouped=new Map();
+  for(const row of ledger){const key=String(row.month_start).slice(0,7);const item=grouped.get(key)||{month:key};item[row.metric_key]=number(row.amount);grouped.set(key,item);}
+  const rows=[...grouped.values()].filter(r=>r.personnel!=null&&r.net_revenue>0).sort((a,b)=>a.month.localeCompare(b.month));
+  const weighted=rs=>rs.length?100*rs.reduce((a,r)=>a+r.personnel,0)/rs.reduce((a,r)=>a+r.net_revenue,0):null;
+  const last=rows.at(-1)?.month;
+  const recentStart=last?new Date(Date.UTC(Number(last.slice(0,4)),Number(last.slice(5,7))-3,1)).toISOString().slice(0,7):'';
+  const recent=rows.filter(r=>r.month>=recentStart);
+  return {average:weighted(rows),threeMonth:recent.length===3?weighted(recent):null,count:rows.length,threeCount:recent.length,exact:weighted(rows.filter(r=>r.month===month)),verifiedThrough:last,verifiedFrom:rows[0]?.month,recentStart};
+ }
  const [staffResult,ratioResult,summaryResult]=await Promise.all([
   db.from('personnel_costs').select('accounting_month,total_costs').eq('business_id',businessId).gte('accounting_month',start).lt('accounting_month',end),
   db.from('monthly_cost_ratio_inputs').select('month,net_revenue').eq('business_id',businessId).gte('month',start).lt('month',end),
@@ -210,6 +221,7 @@ export async function renderBusinessOverview(db,members,month,host,onSelect){
    values[1].previousElementSibling.textContent='Ø Bon';
    values[1].title=data.average===null?(isJudith?'Beleganzahl oder Umsatz fehlen.':'Bezahlte Bons und zugehöriger Umsatz fehlen.'):(isJudith?'Umsatz / Belege aus ':'Umsatz / bezahlte Bons aus ')+data.paidDays+' Tag(en).';
    values[4].title='Gewichteter Durchschnitt: Summe Personalaufwand / Summe Nettoumsatz der letzten '+history.threeCount+' vollständigen Monate mit beiden Werten. Ziel 35 %.';
+   if(history.verifiedThrough){values[4].previousElementSibling.textContent='Ø Personalquote · 3 Monate ('+history.recentStart+'–'+history.verifiedThrough+')';values[5].previousElementSibling.textContent='Ø Personalquote · Jahr (bis '+history.verifiedThrough+')';}
    values[5].title='Gewichteter Durchschnitt: Summe Personalaufwand / Summe Nettoumsatz aus '+history.count+' vollständigen Monaten dieses Jahres mit beiden Werten. Ziel 35 %.';
    return {name:member.businesses.name,gross:data.gross};
   }catch(error){hint.textContent='Kennzahlen konnten nicht geladen werden';values[0].title=error.message;return null;}
