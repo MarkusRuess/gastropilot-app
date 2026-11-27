@@ -1,3 +1,6 @@
+## 2026-11-27 – Dashboard-Abstände
+Screenshot 13:33 bestätigt Motivation und Resttage live. Betreiberauftrag: Mittelabstand und Zeilenabstände beider Karten vereinheitlicht, Resttage rechtsbündig, übergroße Umsatzzeile kompakter. CSS-only Commit c1fb1dee, zurückgelesen; keine Datenänderung. Neue Liveansicht und CI offen.
+
 ## 2026-11-27 – Zielerreichung hervorgehoben
 Betreiberfreigabe für beide Hauptdashboard-Karten: Resttage neben Betriebsnamen, größere Zielquote und Balken, fehlender Bruttoumsatz und Bedarf je verbleibendem Kalendertag. Commits 22ccc9c und ebd3362, Code zurückgelesen. Keine Datenänderung, Judith AI unverändert. CI/Pages und angemeldete Liveprüfung offen.
 
