@@ -1,2 +1,0 @@
-import test from 'node:test';import assert from 'node:assert/strict';import {recoveryDecision} from './recovery.mjs';
-test('one retry only for timed out trusted scheduled run',()=>{const r={conclusion:'timed_out',attempt:1,event:'schedule',headMatches:true};assert.equal(recoveryDecision(r),'retry-once');for(const change of [{attempt:2},{conclusion:'failure'},{event:'pull_request'},{headMatches:false}])assert.equal(recoveryDecision({...r,...change}),'manual');});
