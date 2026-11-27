@@ -3,6 +3,7 @@ const number=value=>value===null||value===undefined||value===''?null:Number.isFi
 const total=(rows,key)=>rows.length&&rows.every(row=>number(row[key])!==null)?rows.reduce((sum,row)=>sum+number(row[key]),0):null;
 const euro=value=>value===null?'–':new Intl.NumberFormat('de-AT',{style:'currency',currency:'EUR'}).format(value);
 const percent=value=>value===null?'–':new Intl.NumberFormat('de-AT',{maximumFractionDigits:1,minimumFractionDigits:1}).format(value)+' %';
+export const motivationForProgress=p=>p===null?'':p>=100?'Monatsziel erreicht – starkes Team!':p>=90?'Endspurt – wir schaffen das!':p>=75?'Das Ziel rückt näher!':p>=50?'Jeder Bon zählt!':'Gemeinsam Gas geben!';
 const TICKET_TARGETS={friedrich:22,judith:100};
 function setProgress(track,progress){
  if(!track)return;
@@ -171,10 +172,11 @@ export async function renderBusinessOverview(db,members,month,host,onSelect){
    metrics.append(box);
   }
   const action=document.createElement('span');action.className='homeOpen';action.textContent='Betrieb öffnen';
-  card.append(heading,hint,metrics,action);card.addEventListener('click',()=>onSelect(member));host.append(card);
-  return {member,hint,values:[...metrics.querySelectorAll('strong')]};
+  const motivation=document.createElement('span');motivation.className='homeMotivation';motivation.hidden=true;
+  card.append(heading,motivation,hint,metrics,action);card.addEventListener('click',()=>onSelect(member));host.append(card);
+  return {member,hint,motivation,values:[...metrics.querySelectorAll('strong')]};
  });
- const combinedRows=await Promise.all(cards.map(async({member,hint,values})=>{
+ const combinedRows=await Promise.all(cards.map(async({member,hint,motivation,values})=>{
   try{
    const isJudith=member.businesses.name.includes('Judith');
    const [data,history,purchaseRows,goalRow]=await Promise.all([loadBusinessMetrics(db,member.business_id,month,isJudith),loadPersonnelAverage(db,member.business_id,month),db.from('expenses').select('category,net_amount,expense_date,accounting_month').eq('business_id',member.business_id).in('category',['food','drinks','beverages']),db.from('gp_revenue_targets').select('target_monthly_gross,estimated_food_cost_pct').eq('business_id',member.business_id).maybeSingle()]);
@@ -208,6 +210,7 @@ export async function renderBusinessOverview(db,members,month,host,onSelect){
    const remainingDays=month===today.slice(0,7)?Math.max(0,daysInMonth-Number(today.slice(8))):month<today.slice(0,7)?0:daysInMonth;
    const actual=number(data.gross),missing=actual===null?null:Math.max(0,monthlyTarget-actual);
    const progress=actual===null||monthlyTarget<=0?null:100*actual/monthlyTarget;
+   motivation.textContent=isRunning?motivationForProgress(progress):'';motivation.hidden=!motivation.textContent;
    values[values.length-2].textContent=whole(monthlyTarget);
    values[values.length-2].previousElementSibling.textContent='Monatsziel · brutto';
    values[values.length-1].textContent=progress===null?'–':percent(progress)+' erreicht'+(progress>=100?' ✓':'');
