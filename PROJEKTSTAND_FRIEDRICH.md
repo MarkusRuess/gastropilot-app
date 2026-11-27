@@ -1,3 +1,6 @@
+## 2026-11-27 – Live-Abnahme Steuerberater-Kachel
+Betreiber-Screenshot 12:57:47 bestätigt die sichtbare Friedrich-Kachel im gemeinsamen Hauptdashboard: offizieller Gesamtwert, Erträge, zwölf Monatswerte, grüne Gestaltung, Ziel 55.000 EUR; Judith-Kachel weiterhin sichtbar. Automatischer Neuimport und vollständiger Kostenabgleich weiterhin offen; keine unabhängige Browser-/CI-Abnahme.
+
 ## 2026-11-27 – Steuerberater-Kachel Friedrich
 Original LMG Periodensaldenliste 30.09.2026 geprüft; 11 vorhandene Monate abgeglichen, sechs September-Kennzahlen ausschließlich Friedrich konfliktfrei ergänzt. Offizieller Gesamtwert in Notiz des neuen Ergebnisdatensatzes gespeichert, da bestehender Metric-Check keinen separaten Schlüssel erlaubt; Rundungsdifferenz zu Monatswerten 1 EUR. Dashboard-Kachel getrennt von Judith, Geschäftsjahr Oktober–September, Commit e2f3031 und ce2a6d8. Code zurückgelesen; CI, Pages und angemeldete Liveprüfung nicht bestätigt. Automatischer Neuimport, vollständige Einzelkonten und kalkulatorischer Abgleich noch offen. Keine bestehenden Beträge überschrieben.
 
