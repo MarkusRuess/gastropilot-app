@@ -1,3 +1,6 @@
+## 2026-11-27 – Judith historische Personalquoten
+Geprüfte Saldenlistenwerte für gewichtete historische Personalquoten (Personal / Nettoerträge) verwendet, letzte drei zusammenhängende geprüfte Monate und Jahreszeitraum beschriftet. Nur Judith; Friedrich und Judith AI unverändert. Commits d06c8d8 und e01b2c35. Code zurückgelesen, Kontrollrechnung durchgeführt; CI und Liveanzeige offen. Keine DB-Änderung.
+
 ## 2026-11-27 – November-Nettoumsatz ergänzt
 Nur fehlende net_total-Werte in zwei bestehenden Judith-Tagesabschlüssen ergänzt: 01.11. 3951,95 EUR aus gespeicherten abgestimmten Steuergruppen; 22.11. 4571,61 EUR anhand Originalbericht 44 (Retouren 81,29 EUR zu 10%). Kontrollabfrage: 26/26 Abschlüsse, brutto 46933,48 EUR, netto 42535,51 EUR. Keine neuen Buchungen, Friedrich unverändert. Dashboard-Liveanzeige noch nicht bestätigt.
 
