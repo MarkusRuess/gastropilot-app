@@ -1,3 +1,6 @@
+## 2026-11-27 – Einheitliches Kacheldesign
+Betreiberfreigabe: obere Wirtschaftsanalyse und untere Betriebskarten mit gleichen dezenten grünen/rosa Flächen, Rahmen, Radius, Überschriftengröße und 8px Abstand. CSS-only Commit 6dbc8bf2, zurückgelesen. Keine Daten- oder Funktionsänderung; neue Liveansicht und CI offen.
+
 ## 2026-11-27 – Einheitliche Dashboard-Mittelachse
 Betreiberfreigabe: 8px Mittelabstand für Wirtschaftsanalyse und Betriebskarten, gleiche Spaltenbreiten, 13px Außenversatz der unteren Karten entsprechend oberem Rahmen, 10px Innenabstand und 14px Radius. CSS-only Commit 15102192, zurückgelesen; keine Datenänderung. Exakte optische Bündigkeit und CI/Pages noch nicht live geprüft.
 
