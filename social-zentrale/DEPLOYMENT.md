@@ -5,5 +5,5 @@
 - GitHub Actions Run 46048431973, Job tests, Commit e93fe74ff8798bc26280e38c6727b797a00dfd09: erfolgreich. Unabhängiger lokaler Node-Test: 18/18 bestehende Tests bestanden; app.mjs Syntaxprüfung bestanden.
 - Nicht deployed: Edge-Function und Web-App. Es gibt keinen Live-Link.
 - Nicht getestet: echte Nutzeranmeldung und Trennung mit zwei unabhängigen Nutzerkonten, iPhone-Installation, Upload/Medienherkunft, Provider-OAuth, Statistiken, Bewertungen und Veröffentlichung.
-- Keine Social-Provider-Autorisierung für Publishing nachgewiesen. Windsor.ai-Verbindungen sind laut bisheriger Prüfung read-only.
+- Windsor.ai MCP meldet Social-Schreibaktionen auf einzelnen verbundenen Konten. Diese Werkzeugrechte sind nicht in Credentials oder einen direkten Web-App-Endpunkt übertragbar; es wurde nichts veröffentlicht.
 - Keine Produktivveröffentlichung und kein Merge; keine bestehenden GastroPilot-Anwendungen wurden geändert.
