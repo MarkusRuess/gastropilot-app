@@ -1,0 +1,2 @@
+# GastroPilot Social
+Eigenständige Web-App mit eigener Oberfläche und bestehendem Supabase-Projekt. Keine neue Domain oder kostenpflichtige Infrastruktur ohne Freigabe. Bestehende GastroPilot-URLs unverändert. Manifest vorbereitet; Einbindung, Icons, HTTPS-Hosting, Authentifizierung und iPhone-Installation noch zu testen. Keine Offline-Speicherung vertraulicher Daten.
