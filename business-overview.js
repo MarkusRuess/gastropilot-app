@@ -173,10 +173,11 @@ export async function renderBusinessOverview(db,members,month,host,onSelect){
   }
   const action=document.createElement('span');action.className='homeOpen';action.textContent='Betrieb öffnen';
   const motivation=document.createElement('span');motivation.className='homeMotivation';motivation.hidden=true;
-  card.append(heading,motivation,hint,metrics,action);card.addEventListener('click',()=>onSelect(member));host.append(card);
-  return {member,hint,motivation,values:[...metrics.querySelectorAll('strong')]};
+  const header=document.createElement('div');header.className='homeGoalHeader';const countdown=document.createElement('span');countdown.className='homeCountdown';countdown.hidden=true;header.append(heading,countdown);
+  card.append(header,motivation,hint,metrics,action);card.addEventListener('click',()=>onSelect(member));host.append(card);
+  return {member,hint,motivation,countdown,values:[...metrics.querySelectorAll('strong')]};
  });
- const combinedRows=await Promise.all(cards.map(async({member,hint,motivation,values})=>{
+ const combinedRows=await Promise.all(cards.map(async({member,hint,motivation,countdown,values})=>{
   try{
    const isJudith=member.businesses.name.includes('Judith');
    const [data,history,purchaseRows,goalRow]=await Promise.all([loadBusinessMetrics(db,member.business_id,month,isJudith),loadPersonnelAverage(db,member.business_id,month),db.from('expenses').select('category,net_amount,expense_date,accounting_month').eq('business_id',member.business_id).in('category',['food','drinks','beverages']),db.from('gp_revenue_targets').select('target_monthly_gross,estimated_food_cost_pct').eq('business_id',member.business_id).maybeSingle()]);
@@ -214,7 +215,9 @@ export async function renderBusinessOverview(db,members,month,host,onSelect){
    values[values.length-2].textContent=whole(monthlyTarget);
    values[values.length-2].previousElementSibling.textContent='Monatsziel · brutto';
    values[values.length-1].textContent=progress===null?'–':percent(progress)+' erreicht'+(progress>=100?' ✓':'');
-   values[values.length-1].previousElementSibling.textContent='Zielerreichung · '+remainingDays+' Kalendertage übrig';
+   countdown.textContent=remainingDays+' '+(remainingDays===1?'Tag':'Tage')+' bis Monatsende';countdown.hidden=!isRunning;
+   const goalValue=values[values.length-1];goalValue.parentElement.classList.add('homeGoalHighlight');goalValue.previousElementSibling.textContent='Zielerreichung';
+   const goalDetail=document.createElement('span');goalDetail.className='homeGoalDetail';goalDetail.textContent=missing===null?'':missing===0?'Monatsziel erreicht!':whole(missing)+' fehlen'+(isRunning&&remainingDays>0?' · '+whole(missing/remainingDays)+' je verbleibendem Kalendertag':'');goalValue.parentElement.append(goalDetail);
    setProgress(values[values.length-1].parentElement.querySelector('.homeProgress'),progress);
    values[values.length-1].title=missing===null?'Umsatzdaten fehlen.':actual>=monthlyTarget?'Monatsziel erreicht.':euro(missing)+' fehlen zum Monatsziel; '+(remainingDays?euro(missing/remainingDays)+' pro verbleibendem Kalendertag.':'Monat abgelaufen.');
    values[values.length-2].title=missing===null?'Noch keine Umsätze erfasst.':euro(missing)+' fehlen zum Monatsziel.';
