@@ -1,3 +1,6 @@
+## 2026-11-27 – Motivation im Hauptdashboard
+Betreiberfreigabe: dynamischer kurzer Motivationstext unter beiden Betriebsnamen, Schwellen 50/75/90/100 Prozent des vorhandenen Brutto-Monatsziels. Nur laufender Monat mit Umsatzdaten; keine KI-Aufrufe oder Datenänderungen. Commits b42ad120 und 25870685 auf main. Code zurückgelesen, Schwellenlogik separat geprüft; CI/Pages und angemeldete Liveansicht offen. Judith AI unverändert.
+
 ## 2026-11-27 – Betrieb öffnen mittig
 Betreiberauftrag: beide Buttons im gemeinsamen Hauptdashboard horizontal zentriert, Farben und Navigation unverändert. Commit eb82e075 auf main, CSS zurückgelesen. Keine Datenänderung; CI/Pages und angemeldete Liveansicht offen.
 
