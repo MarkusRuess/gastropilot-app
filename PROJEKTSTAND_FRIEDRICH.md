@@ -1,3 +1,6 @@
+## 2026-11-27 – Kompakte Umsatzgrenzen im Dashboard
+Betreiberfreigabe nach Layoutvorschlag: fünf Planstufen 35/40/45/50/55 Tsd. EUR mit Ergebnissen −1446/+1736/+4918/+8100/+11282 EUR und Ampel neben Zielquote; höchste erreichte Stufe markiert, mobil umbruchfähig. Nur Friedrich, keine DB-Änderung; Planwerte ausdrücklich kein Ist-Gewinn. Commit b4c0546 auf main; Code zurückgelesen, Stufenlogik für 40.263,20 EUR geprüft. Browser/CI/Pages nicht bestätigt. Monatsziel 55.000 EUR zuvor vom Betreiber per Screenshot live bestätigt.
+
 ## 2026-11-27 – Monatsumsatzziel 55.000 EUR
 Betreiberauftrag: Friedrich-Bruttoziel in gp_revenue_targets von 50.000 auf 55.000 EUR geändert und zurückgelesen. Dashboard index.html Commit 3466d3d: Friedrich 55.000, gemeinsames Ziel 115.000, Judith unverändert 60.000. Code zurückgelesen; keine Umsatzbuchungen verändert. CI/Pages und angemeldete Liveansicht noch nicht bestätigt.
 
