@@ -1,9 +1,10 @@
 # Deployment-Nachweis – 27.11.2026
 - PR #237 bleibt offen und als Entwurf markiert; Branch feature/social-media-zentrale.
-- Supabase-Projekt gastropilot enthält die drei Social-Tabellen mit RLS. Die Spalte publish_authorized ist im Live-Schema vorhanden.
-- Im Branch: geschützte Edge-Function-Implementierung, Betriebswechsel, Dashboard, Entwürfe, Freigabe-/Kalenderaktionen und PWA-Shell.
-- GitHub Actions Run 46048431973, Job tests, Commit e93fe74ff8798bc26280e38c6727b797a00dfd09: erfolgreich. Unabhängiger lokaler Node-Test: 18/18 bestehende Tests bestanden; app.mjs Syntaxprüfung bestanden.
-- Nicht deployed: Edge-Function und Web-App. Es gibt keinen Live-Link.
-- Nicht getestet: echte Nutzeranmeldung und Trennung mit zwei unabhängigen Nutzerkonten, iPhone-Installation, Upload/Medienherkunft, Provider-OAuth, Statistiken, Bewertungen und Veröffentlichung.
-- Windsor.ai MCP meldet Social-Schreibaktionen auf einzelnen verbundenen Konten. Diese Werkzeugrechte sind nicht in Credentials oder einen direkten Web-App-Endpunkt übertragbar; es wurde nichts veröffentlicht.
-- Keine Produktivveröffentlichung und kein Merge; keine bestehenden GastroPilot-Anwendungen wurden geändert.
+- Supabase-Projekt gastropilot enthält drei Social-Tabellen mit RLS; publish_authorized ist im Live-Schema vorhanden.
+- Im Feature-Branch: Oberfläche, Betriebswechsel, Entwürfe, Freigabe-/Kalenderaktionen und PWA-Shell.
+- Supabase Edge Function social-zentrale, Version 1, Status ACTIVE, verify_jwt=true.
+- Anonymer HTTP-GET-Smoke-Test gegen die Function: 401. Das belegt die Ablehnung anonymer Requests; ein authentifizierter Lese-/Schreibtest mit getrennten Konten fehlt.
+- GitHub Actions Run 46049070929 auf Commit 137acc116f95da89541f892b0139941952751982: erfolgreich. Lokaler Node-Test: 18/18 bestehende Tests; app.mjs Syntaxprüfung erfolgreich.
+- Hostinger: isolierter Zielordner /social auf genussweltbaden.at war nicht vorhanden; Root-Deployment wurde vermieden. Hosting-Deploy aus dem gefilterten Branch deploy/social-zentrale scheiterte mit „No active Git installation“. Hostinger meldet, dass GitHub einmal in hPanel unter Websites → Manage → Advanced → Git verbunden werden muss.
+- Keine Web-App-Dateien deployed; es gibt keinen App-Link. Bestehende WordPress-Inhalte unverändert.
+- Offen: separater Konto-/Mandantentest, Originalmedienprüfung, OAuth/Provider-Schreibzugriff in der Web-App, Idempotency und Statusabgleich, Statistiken/Bewertungen, iPhone-Installation.
