@@ -1,3 +1,6 @@
+## 2026-11-27 – Dashboard-Ausrichtung
+Screenshot 13:02:52 bestätigt vorheriges Tabellenlayout live für beide Betriebe. Neue CSS-Ausrichtung (8b1f7ec): gemeinsame Desktop-Zeilen, gleiche Kartenhöhe, einheitliche Ledger-Schrift und Summenzeile am unteren Rand; mobil weiterhin gestapelt. Keine Datenänderung. Code zurückgelesen; Browser/CI und neue Liveansicht offen.
+
 ## 2026-11-27 – Einheitliches Steuerberater-Tabellenlayout
 Betreiberfreigabe für beide Hauptdashboard-Kacheln: Monatsname links, Ergebnis rechts, alternierende Zeilen, ganze EUR, Vorzeichen und Summenzeile; betriebliche Farben und getrennte Abfragen unverändert. Commit 8551455; Code zurückgelesen, Zahlenformat geprüft. Keine DB-Änderung, Judith AI unverändert. CI/Pages und Liveansicht nicht bestätigt.
 
