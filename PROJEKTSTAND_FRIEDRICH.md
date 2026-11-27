@@ -1,3 +1,6 @@
+## 2026-11-27 – Betrieb öffnen mittig
+Betreiberauftrag: beide Buttons im gemeinsamen Hauptdashboard horizontal zentriert, Farben und Navigation unverändert. Commit eb82e075 auf main, CSS zurückgelesen. Keine Datenänderung; CI/Pages und angemeldete Liveansicht offen.
+
 ## 2026-11-27 – Kompakte Kennzahlentabellen
 Betreiber-Screenshot 13:11:21 bestätigt neue Tabellen, lesbare Buttons und Friedrich-Monatsziel 55.000 EUR / 73,2 %, Judith 60.000 EUR / 78,2 %. Supabase-Ziele lesend bestätigt. Commits 0de4c30 und 870658d; exakter Bruttoumsatz für Berechnungen separat erhalten. Keine DB-Änderung. Unabhängige Browser-/CI-Prüfung offen.
 
