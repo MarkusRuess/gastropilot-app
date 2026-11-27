@@ -29,6 +29,7 @@ function showSignedOut() {
   sessionVersion++; activeUserId=null;
   state.business=null; state.businesses=[]; state.posts=[]; state.channels=[]; state.deliveries=[];
   $("business").replaceChildren(); $("tiles").replaceChildren(); $("calendar").replaceChildren(); $("channels").replaceChildren();
+  $("postBody").value=""; $("email").value=""; $("password").value=""; $("scheduleDialog").open && $("scheduleDialog").close();
   $("noBusiness").hidden=true; $("signin").hidden=false; $("workspace").hidden=true; $("signedUser").textContent="";
 }
 async function showSignedIn(user) {
