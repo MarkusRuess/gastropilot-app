@@ -4279,6 +4279,13 @@ body:not(.gp-judith-design) #gpMockupDetailBody #weeklyPurchase #gpPurchaseTabPa
 #businessHome #homeCards>.homeBusiness .homeMetrics .homeMetric:first-child{min-height:0!important;height:auto!important;padding:7px!important;flex:0 0 auto!important}
 #businessHome #homeCards>.homeBusiness .homeMetrics .homeMetric.homeGoalHighlight strong{font-size:20px!important}
 #businessHome #homeCards>.homeBusiness .homeMetrics .homeMetric.homeGoalHighlight .homeProgress{height:6px!important}
+
+/* Shared dashboard alignment: identical outer edges and center gutter. */
+#businessHome #homeEconomicBrief .gp-home-analysis-grid,#businessHome #homeCards.homeGrid{gap:8px!important;align-items:stretch!important;box-sizing:border-box!important}
+#businessHome #homeEconomicBrief .gp-home-analysis-card,#businessHome #homeCards>.homeBusiness{box-sizing:border-box!important;min-width:0!important;border-radius:14px!important;padding:10px!important;margin:0!important}
+#businessHome #homeCards.homeGrid{margin-left:13px!important;margin-right:13px!important;width:auto!important}
+@media(min-width:681px){#businessHome #homeEconomicBrief .gp-home-analysis-grid,#businessHome #homeCards.homeGrid{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
+@media(max-width:680px){#businessHome #homeEconomicBrief .gp-home-analysis-grid,#businessHome #homeCards.homeGrid{grid-template-columns:minmax(0,1fr)!important}}
 </style></body></html>
 
 
