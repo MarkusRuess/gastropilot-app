@@ -1,3 +1,6 @@
+## 2026-11-27 – Betrieb öffnen mittig
+Betreiberauftrag: beide Buttons im gemeinsamen Hauptdashboard horizontal zentriert, Farben und Navigation unverändert. Commit eb82e075 auf main, CSS zurückgelesen. Keine Datenänderung; CI/Pages und angemeldete Liveansicht offen.
+
 ## 2026-11-27 – Judith historische Personalquoten
 Geprüfte Saldenlistenwerte für gewichtete historische Personalquoten (Personal / Nettoerträge) verwendet, letzte drei zusammenhängende geprüfte Monate und Jahreszeitraum beschriftet. Nur Judith; Friedrich und Judith AI unverändert. Commits d06c8d8 und e01b2c35. Code zurückgelesen, Kontrollrechnung durchgeführt; CI und Liveanzeige offen. Keine DB-Änderung.
 
