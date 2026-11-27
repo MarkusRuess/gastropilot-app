@@ -34,3 +34,7 @@ Das Datenmodell und zwei allgemeine Regeln wurden am 24.11.2026 produktiv angele
 - Neue Einträge brauchen Projekt, Quelle, Datum, Nachweisstatus und Datenklassifikation. Freigaben für `shared` bleiben serverseitig beschränkt; RLS schützt Betriebs- und persönliche Einträge.
 - Alle sieben OpenAI-Aufrufstellen in drei Edge Functions benutzen den gemeinsamen Guard. Dieser blockiert derzeit **jeden** kostenpflichtigen Aufruf vor dem Anbieter. Fotoanalyse und Rechnungs-OCR sind damit pausiert; das Fotoauftragsformular kann weiterhin manuell ausgefüllt und gespeichert werden. Im Mail-Postfach bleiben Originalrechnungen zum manuellen Prüfen erreichbar. `paid_enabled=false` ist weiterhin gesetzt. Die bloße Grenze von 15 EUR in der Datenbank ist noch keine transaktionssichere Reservierung oder Preisberechnung.
 - Die 18 lokalen Tests einschließlich Parallelaufrufen und Monatswechsel sind erfolgreich. Die drei Edge Functions wurden bereitgestellt und ihr aktiver Quelltext überprüft. Authentifizierte Live-Abläufe, Frontend-Anzeige und eine künftige kostenpflichtige Freischaltung sind nicht bestätigt.
+
+## Ergänzende CLI-Methodik
+
+Die geprüfte, kostenfreie [CLI-Anything-Einbindung](CLI_ANYTHING.md) dient ausschließlich für lokale Funktionen, die bestehende MCP-Schnittstellen nicht abdecken. Installation, Tests und tatsächliche Aktivierung sind dort getrennt dokumentiert.
