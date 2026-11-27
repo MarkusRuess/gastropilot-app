@@ -43,8 +43,9 @@ Deno.serve(async (req: Request) => {
   }
 
   if (typeof businessId !== "string" || !/^[0-9a-f-]{36}$/i.test(businessId)) return reply(400, { error: "invalid_business" });
-  const { data: member } = await admin.from("business_members").select("business_id").eq("business_id", businessId).eq("user_id", auth.user.id).maybeSingle();
+  const { data: member } = await admin.from("business_members").select("business_id,role").eq("business_id", businessId).eq("user_id", auth.user.id).maybeSingle();
   if (!member) return reply(403, { error: "forbidden" });
+  if (["approve", "schedule"].includes(String(action)) && !["owner", "admin"].includes(member.role)) return reply(403, { error: "approval_role_required" });
 
   if (action === "dashboard") {
     const month = input.month;
