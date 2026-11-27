@@ -791,7 +791,7 @@ import {createClient} from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2
 import {loadBankFixedCosts} from './bank-costs-integration.js';
 import {loadPurchaseAdvisor} from './judith-purchase-advisor.mjs?v=20261121';
 import {mountStock,renderStockPlanning} from './friedrich-stock.js?v=20261103-counted';
-import {renderBusinessOverview,loadPersonnelAverage,JUDITH_PERSONNEL_REFERENCE,SALES_TARGETS} from './business-overview.js?v=20261107-personalquote-monatsfenster';
+import {renderBusinessOverview,loadPersonnelAverage,JUDITH_PERSONNEL_REFERENCE,SALES_TARGETS} from './business-overview.js?v=20261127-compact-kpi';
 const db=createClient('https://sjnwfwcpgwsavygewwzb.supabase.co','sb_publishable__tucXG-IQGUhibMqMSUzCw_5RnH_sbQ');
 let BID=null,authorizedBusinesses=[],switchingBusiness=false;const E=id=>document.getElementById(id),N=v=>v==null||v===''?null:Number(v),EUR=v=>v==null||!Number.isFinite(v)?'–':new Intl.NumberFormat('de-AT',{style:'currency',currency:'EUR'}).format(v),D=v=>v?.split('-').reverse().join('.')||'–';
 let user=null,busy=false,selected=null,queue=[];
@@ -1745,7 +1745,7 @@ async function updateCombinedManagementHome(){
  try{
  const cards=[...E('homeCards').querySelectorAll('.homeBusiness')];
  const parseMoney=text=>{const m=String(text||'').match(/-?[\d.]+,\d{2}/);return m?Number(m[0].replace(/\./g,'').replace(',','.')):null};
- const cardGross=id=>{const name=id===ids[0]?'Friedrich':'Judith';const card=cards.find(x=>x.querySelector('h2')?.textContent.includes(name));return parseMoney(card?.querySelector('.homeMetric strong')?.textContent)};
+ const cardGross=id=>{const name=id===ids[0]?'Friedrich':'Judith';const card=cards.find(x=>x.querySelector('h2')?.textContent.includes(name));const node=card?.querySelector('.homeMetric strong');const raw=node?.dataset.exactGross;return raw!==undefined?(raw!==''&&Number.isFinite(Number(raw))?Number(raw):null):parseMoney(node?.textContent)};
  const hasSales=new Set(ids.filter(id=>cardGross(id)!==null));
  const grossFor=id=>cardGross(id)||0;
  const describe=(id,label,target,goal,action)=>{
@@ -4239,6 +4239,26 @@ body:not(.gp-judith-design) #gpMockupDetailBody #weeklyPurchase #gpPurchaseTabPa
 @media(min-width:681px){#businessHome #homeEconomicBrief .gp-analysis-status{min-height:190px!important}#businessHome #homeFriedrichLedger,#businessHome #homeJudithLedger{margin-top:8px!important;padding:9px!important;font-size:12px!important;line-height:1.35!important}#businessHome .gp-ledger-months>div{flex-shrink:0}}
 #businessHome .homeFoot,#businessHome .gp-annual-note{font-size:10px!important;padding:3px!important;margin:3px 0!important}
 @media(max-width:680px){#businessHome #homeCards>.homeBusiness .homeMetrics{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
+</style><style id="gp-home-kpi-table-20261127">
+#businessHome #homeCards>.homeBusiness .homeMetrics{display:flex!important;flex-direction:column!important;gap:0!important;margin:7px 0!important}
+#businessHome #homeCards>.homeBusiness .homeMetrics .homeMetric{display:grid!important;grid-template-columns:minmax(0,1fr) auto;align-items:center!important;gap:2px 8px!important;min-height:0!important;height:auto!important;padding:5px 7px!important;border:0!important;border-radius:3px!important;background:transparent!important;box-shadow:none!important}
+#businessHome #homeCards>.homeBusiness:first-child .homeMetrics .homeMetric:nth-child(odd){background:#eaf5f1!important}
+#businessHome #homeCards>.homeBusiness:nth-child(2) .homeMetrics .homeMetric:nth-child(odd){background:#fcf0f6!important}
+#businessHome #homeCards>.homeBusiness .homeMetrics .homeMetric small{min-height:0!important;font-size:12px!important;line-height:1.2!important}
+#businessHome #homeCards>.homeBusiness .homeMetrics .homeMetric strong{font-size:14px!important;margin:0!important;text-align:right;font-variant-numeric:tabular-nums;line-height:1.2!important}
+#businessHome #homeCards>.homeBusiness .homeMetrics .homeMetric .homeTicketTarget{grid-column:1/-1;text-align:right;margin:0!important;font-size:10px!important}
+#businessHome #homeCards>.homeBusiness .homeMetrics .homeMetric .homeProgress{grid-column:1/-1;height:4px!important;margin:1px 0!important}
+#businessHome #homeCards>.homeBusiness .homeOpen{display:block!important;text-align:center!important;color:#fff!important;-webkit-text-fill-color:#fff!important;padding:7px 12px!important}
+#businessHome #homeCards>.homeBusiness .homeMetrics .homeMetric:nth-child(7){order:1}
+#businessHome #homeCards>.homeBusiness .homeMetrics .homeMetric:nth-child(2){order:2}
+#businessHome #homeCards>.homeBusiness .homeMetrics .homeMetric:nth-child(8){order:3}
+#businessHome #homeCards>.homeBusiness .homeMetrics .homeMetric:nth-child(3){order:4}
+#businessHome #homeCards>.homeBusiness .homeMetrics .homeMetric:nth-child(5){order:5}
+#businessHome #homeCards>.homeBusiness .homeMetrics .homeMetric:nth-child(6){order:6}
+#businessHome #homeCards>.homeBusiness .homeMetrics .homeMetric:nth-child(4){order:7}
+#businessHome #homeCards>.homeBusiness .homeMetrics .homeMetric:nth-child(9){order:8}
+#businessHome #homeCards>.homeBusiness .homeMetrics .homeMetric:nth-child(10){order:9}
+#businessHome #homeCards>.homeBusiness .homeMetrics .homeMetric:nth-child(11){order:10}
 </style></body></html>
 
 
