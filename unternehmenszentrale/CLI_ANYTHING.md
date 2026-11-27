@@ -22,7 +22,7 @@ Der CLI-Harness führt ausschließlich drei im Code festgelegte, synthetische No
 
 - [CI für Enterprise CLI](../.github/workflows/qa-enterprise-cli.yml): bei Änderungen am Programm als Pull-Request mit drei getrennten Projekt-Jobs; auch manuell im GitHub-Actions-Menü startbar. `contents: read`, keine Secrets, keine Deployments.
 - [Bestehende tägliche Zentrale-QA](../.github/workflows/qa-unternehmenszentrale.yml): führt zusätzlich Judith- und Friedrich-Prüfungen über dasselbe Programm aus. GitHub Actions läuft ohne Work-Chat. Bestehende ChatGPT-Automatisierungen können die GitHub-Ergebnisse über die GitHub-Schnittstelle lesen; ihr eigener ChatGPT-Lauf verbraucht weiterhin Work. Sie können nicht selbst über die GitHub-MCP-Verbindung den CLI-Prozess starten.
-- Der echte Funktionstest umfasst Installer-Erstlauf und Wiederholung, die drei Projektprüfungen und vier Sicherheits-/Befehlstests. Die GitHub-Actions-Prüfung wird erst nach erfolgreichem CI-Lauf als extern ausgeführt bestätigt.
+- Funktionstest vom 27.11.2026: [GitHub Actions: drei getrennte Projekt-Jobs](https://github.com/MarkusRuess/gastropilot-app/actions/runs/46005790094) für Zentrale, Judith und Friedrich erfolgreich; darin auch fünf Python-Tests erfolgreich. Die [bestehende Zentrale-QA](https://github.com/MarkusRuess/gastropilot-app/actions/runs/46005790085) hat die beiden Projektprüfungen ebenfalls erfolgreich ausgeführt. Lokal wurden Installer-Erstlauf und Wiederholung sowie alle drei Projektprüfungen bestätigt. Dies ist ein belegter Offline-Test, kein produktiver Live-Test der Betriebe.
 
 ## Einsatz
 
@@ -40,7 +40,7 @@ Der CLI-Harness führt ausschließlich drei im Code festgelegte, synthetische No
 | Quellcode | Codex-Installationsskript, Methodik, Sicherheitsrichtlinien und Paketmetadaten am genannten Commit geprüft. Ausführbare Harnesses benötigen jeweils eine eigene Prüfung. |
 | Abhängigkeiten | Codex-Methodik ist dokumentenbasiert; für erzeugte Python-Harnesses nennt Upstream Python >=3.10, Click und pytest. Im geprüften Laufzeit-Container: Python 3.12.14, Click 8.4.2, pytest nicht installiert. |
 | Installation | Persönliche, wiederverwendbare Codex-Methodik als Dokumentation gespeichert. Der GastroPilot-spezifische Offline-Prüfharness und sein Installer liegen zusätzlich im Repository; `cli-hub` und ein globales Upstream-Programm sind nicht installiert. |
-| Test | Upstream-Installer in isoliertem Verzeichnis: bestanden; Python-Syntaxprüfung der mitgelieferten Hilfsskripte: bestanden; Skill-Formatprüfung: bestanden. Keine produktiven Daten oder APIs verwendet. |
+| Test | Upstream-Installer isoliert, Syntaxprüfung und Skill-Format: bestanden. Enterprise-Harness lokal und in GitHub Actions für drei Projekte bestanden (Läufe oben). Keine produktiven Daten oder APIs verwendet. |
 | Aktivierung | Nur die synthetischen Offline-Prüfungen sind für GitHub Actions vorgesehen. Keine Änderungen an Supabase, WordPress, Frontend, Edge Functions oder deren produktiven Berechtigungen. |
 
 ## Sicherheitsgrenzen
