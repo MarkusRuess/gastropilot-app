@@ -1,3 +1,6 @@
+## 2026-11-27 – Kompakte Kennzahlentabellen
+Betreiber-Screenshot 13:11:21 bestätigt neue Tabellen, lesbare Buttons und Friedrich-Monatsziel 55.000 EUR / 73,2 %, Judith 60.000 EUR / 78,2 %. Supabase-Ziele lesend bestätigt. Commits 0de4c30 und 870658d; exakter Bruttoumsatz für Berechnungen separat erhalten. Keine DB-Änderung. Unabhängige Browser-/CI-Prüfung offen.
+
 ## 2026-11-27 – Live-Sichtprüfung Geschäftsjahreslayout
 Betreiber-Screenshot 13:07:07 bestätigt beide Karten mit zwölf Monatszeilen, Friedrich Oktober–September, Judith Jänner–Dezember, fehlende Monate als Strich sowie bündige Umsatzfelder und Summenzeilen. Sichtprüfung anhand Screenshot; keine unabhängige Browser-/CI-Prüfung. Keine Datenänderung.
 
