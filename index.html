@@ -791,7 +791,7 @@ import {createClient} from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2
 import {loadBankFixedCosts} from './bank-costs-integration.js';
 import {loadPurchaseAdvisor} from './judith-purchase-advisor.mjs?v=20261121';
 import {mountStock,renderStockPlanning} from './friedrich-stock.js?v=20261103-counted';
-import {renderBusinessOverview,loadPersonnelAverage,JUDITH_PERSONNEL_REFERENCE,SALES_TARGETS} from './business-overview.js?v=20261127-verified-personnel';
+import {renderBusinessOverview,loadPersonnelAverage,JUDITH_PERSONNEL_REFERENCE,SALES_TARGETS} from './business-overview.js?v=20261127-motivation';
 const db=createClient('https://sjnwfwcpgwsavygewwzb.supabase.co','sb_publishable__tucXG-IQGUhibMqMSUzCw_5RnH_sbQ');
 let BID=null,authorizedBusinesses=[],switchingBusiness=false;const E=id=>document.getElementById(id),N=v=>v==null||v===''?null:Number(v),EUR=v=>v==null||!Number.isFinite(v)?'–':new Intl.NumberFormat('de-AT',{style:'currency',currency:'EUR'}).format(v),D=v=>v?.split('-').reverse().join('.')||'–';
 let user=null,busy=false,selected=null,queue=[];
@@ -4240,6 +4240,8 @@ body:not(.gp-judith-design) #gpMockupDetailBody #weeklyPurchase #gpPurchaseTabPa
 #businessHome .homeFoot,#businessHome .gp-annual-note{font-size:10px!important;padding:3px!important;margin:3px 0!important}
 @media(max-width:680px){#businessHome #homeCards>.homeBusiness .homeMetrics{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
 </style><style id="gp-home-kpi-table-20261127">
+#businessHome #homeCards>.homeBusiness .homeMotivation{display:block;font-size:12px;font-weight:650;line-height:1.35;color:#007c69;margin:2px 0 3px}#businessHome #homeCards>.homeBusiness:nth-child(2) .homeMotivation{color:#b92f70}#businessHome #homeCards>.homeBusiness .homeMotivation[hidden]{display:none!important}
+
 #businessHome #homeCards>.homeBusiness .homeMetrics{display:flex!important;flex-direction:column!important;gap:0!important;margin:7px 0!important}
 #businessHome #homeCards>.homeBusiness .homeMetrics .homeMetric{display:grid!important;grid-template-columns:minmax(0,1fr) auto;align-items:center!important;gap:2px 8px!important;min-height:0!important;height:auto!important;padding:5px 7px!important;border:0!important;border-radius:3px!important;background:transparent!important;box-shadow:none!important}
 #businessHome #homeCards>.homeBusiness:first-child .homeMetrics .homeMetric:nth-child(odd){background:#eaf5f1!important}
