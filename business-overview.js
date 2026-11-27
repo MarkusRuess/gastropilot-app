@@ -130,6 +130,7 @@ export async function loadPersonnelAverage(db,businessId,month){
 
 export async function renderBusinessOverview(db,members,month,host,onSelect){
  host.replaceChildren();
+ const whole=value=>value===null?'–':new Intl.NumberFormat('de-AT',{style:'currency',currency:'EUR',maximumFractionDigits:0,minimumFractionDigits:0}).format(value);
  const allowed=(members||[]).filter(member=>member.business_id&&member.businesses?.name);
  let combined=document.getElementById('combinedGrossHome');
  if(!combined){
@@ -158,7 +159,7 @@ export async function renderBusinessOverview(db,members,month,host,onSelect){
    if(label.startsWith('Zielerreichung')||label==='Ø Bon'){const track=document.createElement('span');track.className='homeProgress';track.setAttribute('role','progressbar');track.setAttribute('aria-label',label==='Ø Bon'?'Ø Bon Soll erreicht':'Monatsziel erreicht');track.setAttribute('aria-valuemin','0');track.setAttribute('aria-valuemax','100');const fill=document.createElement('span');fill.className='homeProgressFill';track.append(fill);box.append(track);}
    metrics.append(box);
   }
-  const goal=SALES_TARGETS[isJudith?'judith':'friedrich'];for(const [index,value] of [[metrics.children.length-2,goal.breakEven],[metrics.children.length-1,goal.profit5000]]){const box=metrics.children[index];box.querySelector('strong').textContent=euro(value);box.title=goal.note;}const action=document.createElement('span');action.className='homeOpen';action.textContent='Betrieb öffnen →';
+  const action=document.createElement('span');action.className='homeOpen';action.textContent='Betrieb öffnen';
   card.append(heading,hint,metrics,action);card.addEventListener('click',()=>onSelect(member));host.append(card);
   return {member,hint,values:[...metrics.querySelectorAll('strong')]};
  });
@@ -167,7 +168,7 @@ export async function renderBusinessOverview(db,members,month,host,onSelect){
    const isJudith=member.businesses.name.includes('Judith');
    const [data,history,purchaseRows,goalRow]=await Promise.all([loadBusinessMetrics(db,member.business_id,month,isJudith),loadPersonnelAverage(db,member.business_id,month),db.from('expenses').select('category,net_amount,expense_date,accounting_month').eq('business_id',member.business_id).in('category',['food','drinks','beverages']),db.from('gp_revenue_targets').select('target_monthly_gross,estimated_food_cost_pct').eq('business_id',member.business_id).maybeSingle()]);
    if(!host.isConnected||document.getElementById('homeMonth')?.value!==month)return;
-   values[0].textContent=euro(data.gross);values[1].textContent=euro(data.average);
+   values[0].dataset.exactGross=data.gross===null?'':String(data.gross);values[0].textContent=whole(data.gross);values[1].textContent=euro(data.average);
    const ticketTarget=TICKET_TARGETS[isJudith?'judith':'friedrich'];
    const ticketProgress=data.average===null?null:100*data.average/ticketTarget;
    const ticketBox=values[1].parentElement;
@@ -189,14 +190,14 @@ export async function renderBusinessOverview(db,members,month,host,onSelect){
    values[3].textContent=purchaseRatio===null?'Ist – / Ziel '+percent(target):'Ist '+percent(purchaseRatio)+' / Ziel '+percent(target);
    values[3].previousElementSibling.textContent='Wareneinkäufe · laufender Monat';
    values[3].title='Vorläufige Einkaufsquote: erfasste Netto-Wareneinkäufe / Nettoumsatz. Noch kein tatsächlicher Verbrauch; fehlende Rechnungen und Lagerbewegungen können die Quote verfälschen.';
-   const monthlyTarget=number(goalRow.data?.target_monthly_gross)??(isJudith?60000:50000);
+   const monthlyTarget=number(goalRow.data?.target_monthly_gross)??(isJudith?60000:55000);
    const monthStart=new Date(Number(month.slice(0,4)),Number(month.slice(5,7))-1,1);
    const daysInMonth=new Date(Number(month.slice(0,4)),Number(month.slice(5,7)),0).getDate();
    const today=new Intl.DateTimeFormat('sv-SE',{timeZone:'Europe/Vienna',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
    const remainingDays=month===today.slice(0,7)?Math.max(0,daysInMonth-Number(today.slice(8))):month<today.slice(0,7)?0:daysInMonth;
    const actual=number(data.gross),missing=actual===null?null:Math.max(0,monthlyTarget-actual);
    const progress=actual===null||monthlyTarget<=0?null:100*actual/monthlyTarget;
-   values[values.length-2].textContent=euro(monthlyTarget);
+   values[values.length-2].textContent=whole(monthlyTarget);
    values[values.length-2].previousElementSibling.textContent='Monatsziel · brutto';
    values[values.length-1].textContent=progress===null?'–':percent(progress)+' erreicht'+(progress>=100?' ✓':'');
    values[values.length-1].previousElementSibling.textContent='Zielerreichung · '+remainingDays+' Kalendertage übrig';
@@ -204,7 +205,7 @@ export async function renderBusinessOverview(db,members,month,host,onSelect){
    values[values.length-1].title=missing===null?'Umsatzdaten fehlen.':actual>=monthlyTarget?'Monatsziel erreicht.':euro(missing)+' fehlen zum Monatsziel; '+(remainingDays?euro(missing/remainingDays)+' pro verbleibendem Kalendertag.':'Monat abgelaufen.');
    values[values.length-2].title=missing===null?'Noch keine Umsätze erfasst.':euro(missing)+' fehlen zum Monatsziel.';
    values[4].textContent=percent(history.threeMonth);values[5].textContent=percent(history.average);
-   values[6].textContent=euro(data.net);values[7].textContent=data.receipts===null?'–':new Intl.NumberFormat('de-AT').format(data.receipts);values[8].textContent=euro(data.personnelPlan);values[8].title='Personalkosten des Vormonats als Planwert; Ist-Kosten des ausgewählten Monats folgen mit der Abrechnung.';
+   values[6].textContent=whole(data.net);values[7].textContent=data.receipts===null?'–':new Intl.NumberFormat('de-AT').format(data.receipts);values[8].textContent=whole(data.personnelPlan);values[8].title='Personalkosten des Vormonats als Planwert; Ist-Kosten des ausgewählten Monats folgen mit der Abrechnung.';
    hint.textContent=data.gross===null?'Noch keine Umsätze erfasst':data.hasSummary?'Geprüfter Monatsabschluss':data.days+' Tag(e) erfasst · bisheriger Stand';
    values[1].previousElementSibling.textContent='Ø Bon';
    values[1].title=data.average===null?(isJudith?'Beleganzahl oder Umsatz fehlen.':'Bezahlte Bons und zugehöriger Umsatz fehlen.'):(isJudith?'Umsatz / Belege aus ':'Umsatz / bezahlte Bons aus ')+data.paidDays+' Tag(en).';
