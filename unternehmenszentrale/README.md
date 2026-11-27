@@ -27,3 +27,10 @@ Die geschützte Oberfläche liegt unter `unternehmenszentrale/index.html`. In Su
 - Neue Einträge beginnen als Entwurf. Es findet keine automatische Übernahme aus Mails, Kundenakten oder Projektchats statt. Eine automatische Synchronisierung braucht getrennte Freigabe-, Datenschutz- und Kostentests.
 
 Das Datenmodell und zwei allgemeine Regeln wurden am 24.11.2026 produktiv angelegt. Die Anzeige und das Speichern in der Oberfläche benötigen noch eine erfolgreiche Anmeldung und einen Live-Test; ein automatischer Import aus anderen Projekten ist offen.
+
+## Abgleich und Ausgabensperre, 27.11.2026
+
+- `public.central_knowledge` ist das kanonische Register. Drei synthetisch geprüfte Regeln aus `enterprise_knowledge.lessons` verweisen als historische Belege auf je einen Eintrag dort. Die übrigen zehn Lernregeln sind weiterhin offen und werden nicht automatisch als gemeinsames Wissen freigegeben.
+- Neue Einträge brauchen Projekt, Quelle, Datum, Nachweisstatus und Datenklassifikation. Freigaben für `shared` bleiben serverseitig beschränkt; RLS schützt Betriebs- und persönliche Einträge.
+- Alle sieben OpenAI-Aufrufstellen in drei Edge Functions benutzen den gemeinsamen Guard. Dieser blockiert derzeit **jeden** kostenpflichtigen Aufruf vor dem Anbieter. Fotoanalyse und Rechnungs-OCR sind damit pausiert; das Fotoauftragsformular kann weiterhin manuell ausgefüllt und gespeichert werden. Im Mail-Postfach bleiben Originalrechnungen zum manuellen Prüfen erreichbar. `paid_enabled=false` ist weiterhin gesetzt. Die bloße Grenze von 15 EUR in der Datenbank ist noch keine transaktionssichere Reservierung oder Preisberechnung.
+- Die 18 lokalen Tests einschließlich Parallelaufrufen und Monatswechsel sind erfolgreich. Die drei Edge Functions wurden bereitgestellt und ihr aktiver Quelltext überprüft. Authentifizierte Live-Abläufe, Frontend-Anzeige und eine künftige kostenpflichtige Freischaltung sind nicht bestätigt.
