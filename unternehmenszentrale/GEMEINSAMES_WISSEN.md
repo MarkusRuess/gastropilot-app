@@ -16,12 +16,12 @@ Stand: 27.11.2026. Dies ist ein **lesbarer Auszug** aus der geschützten Zentral
 
 | Erkenntnis | Projekt | Quelle und Datum | Nachweisstatus / Grenze |
 |---|---|---|---|
-| Betriebsbezogene Daten folgen der Mitgliedschaft in `business_members` über `private.is_business_member(business_id)`. | GastroPilot | Datenbankschema und RLS, 24.11.2026 | Quelle geprüft; Trennung mit zwei echten Betriebskonten noch offen |
-| Allgemeines Wissen erst nach Bereinigung und Prüfung freigeben; personenbezogene Daten, Betriebszahlen und Geheimnisse bleiben im jeweiligen Bereich. | Unternehmenszentrale | Datenbankschema und Richtlinie, 24.11.2026 | Quelle geprüft |
-| Die Funktion `number` liest `1.250,50 €` als `1250.5`. | GastroPilot | `unternehmenszentrale/learning.mjs`, `learning.test.mjs`, PR #211, 24.11.2026 | Synthetischer Funktionstest; keine allgemeine Live-Freigabe für alle Belege |
-| `unitPrice` rechnet kg zu g und weist kg zu l zurück. | GastroPilot | `unternehmenszentrale/learning.mjs`, `learning.test.mjs`, PR #211, 24.11.2026 | Synthetischer Funktionstest; keine Live-Abnahme aller Gebinde |
-| `currentMail` trennt im geprüften Beispiel aktuellen Text vom zitierten Mailteil. | GastroPilot | `unternehmenszentrale/learning.mjs`, `learning.test.mjs`, PR #211, 24.11.2026 | Synthetischer Funktionstest; kein Live-Versandnachweis |
-| Kostenpflichtige KI nur nach verlässlichem Maximalpreis und atomarer monatlicher Reservierung vor dem Anbieteraufruf. Bis dahin blockieren. | Unternehmenszentrale | PR #233 und Supabase-Budgetpolicy, 27.11.2026 | Quelle und aktiver Code geprüft; sieben Stellen gesperrt, bezahlte Freigabe offen |
+| **Betriebszugriff über Mitgliedschaft:** Betriebsbezogene Daten folgen der Mitgliedschaft in `business_members` über `private.is_business_member(business_id)`. | GastroPilot | Datenbankschema und RLS, 24.11.2026 | Quelle geprüft; Trennung mit zwei echten Betriebskonten noch offen |
+| **Wissen erst nach Prüfung freigeben:** Allgemeines Wissen erst nach Bereinigung und Prüfung freigeben; personenbezogene Daten, Betriebszahlen und Geheimnisse bleiben im jeweiligen Bereich. | Unternehmenszentrale | Datenbankschema und Richtlinie, 24.11.2026 | Quelle geprüft |
+| **Geldbeträge mit Dezimalkomma einlesen:** Die Funktion `number` liest `1.250,50 €` als `1250.5`. | GastroPilot | `unternehmenszentrale/learning.mjs`, `learning.test.mjs`, PR #211, 24.11.2026 | Synthetischer Funktionstest; keine allgemeine Live-Freigabe für alle Belege |
+| **Einheiten nur innerhalb derselben Dimension umrechnen:** `unitPrice` rechnet kg zu g und weist kg zu l zurück. | GastroPilot | `unternehmenszentrale/learning.mjs`, `learning.test.mjs`, PR #211, 24.11.2026 | Synthetischer Funktionstest; keine Live-Abnahme aller Gebinde |
+| **Zitierte E-Mail-Teile vom aktuellen Text trennen:** `currentMail` trennt im geprüften Beispiel aktuellen Text vom zitierten Mailteil. | GastroPilot | `unternehmenszentrale/learning.mjs`, `learning.test.mjs`, PR #211, 24.11.2026 | Synthetischer Funktionstest; kein Live-Versandnachweis |
+| **Kostenpflichtige KI nur mit harter Vorabprüfung:** Kostenpflichtige KI nur nach verlässlichem Maximalpreis und atomarer monatlicher Reservierung vor dem Anbieteraufruf. Bis dahin blockieren. | Unternehmenszentrale | PR #233 und Supabase-Budgetpolicy, 27.11.2026 | Quelle und aktiver Code geprüft; sieben Stellen gesperrt, bezahlte Freigabe offen |
 
 ## Relevante offene Fehler
 
