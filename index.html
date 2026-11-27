@@ -1697,9 +1697,10 @@ async function ledgerSaveVerified(){
 }
 function homeLedgerWhole(n){return new Intl.NumberFormat('de-AT',{style:'currency',currency:'EUR',minimumFractionDigits:0,maximumFractionDigits:0}).format(n);}
 function homeLedgerResult(n){return (n>0?'+':n<0?'−':'')+homeLedgerWhole(Math.abs(n));}
-function homeLedgerTable(rows,total){
- const color=n=>n<0?'#b42342':'#237a48';
- return '<div class="gp-ledger-months"><div class="gp-ledger-label"><span>Monat</span><span>Monatsergebnis</span></div>'+rows.map(([d,m])=>'<div class="gp-ledger-entry"><span>'+new Date(d+'T12:00:00').toLocaleDateString('de-AT',{month:'long',year:'numeric'})+'</span><strong style="color:'+color(m.operating_result)+'">'+homeLedgerResult(m.operating_result)+'</strong></div>').join('')+'<div class="gp-ledger-total"><strong>Gesamtergebnis</strong><strong style="color:'+color(total)+'">'+homeLedgerResult(total)+'</strong></div></div>';
+function homeLedgerTable(rows,total,year,startMonth){
+ const color=n=>n<0?'#b42342':'#237a48',by=new Map(rows);
+ const months=Array.from({length:12},(_,i)=>{const d=new Date(Date.UTC(Number(year),startMonth-1+i,1));return d.toISOString().slice(0,10);});
+ return '<div class="gp-ledger-months"><div class="gp-ledger-label"><span>Monat</span><span>Monatsergebnis</span></div>'+months.map(d=>{const m=by.get(d);return '<div class="gp-ledger-entry"><span>'+new Date(d+'T12:00:00').toLocaleDateString('de-AT',{month:'long',year:'numeric'})+'</span>'+(m?'<strong style="color:'+color(m.operating_result)+'">'+homeLedgerResult(m.operating_result)+'</strong>':'<strong class="gp-ledger-pending" title="Keine geprüften Buchhaltungswerte">–</strong>')+'</div>';}).join('')+'<div class="gp-ledger-total"><strong>Gesamtergebnis</strong><strong style="color:'+color(total)+'">'+homeLedgerResult(total)+'</strong></div></div>';
 }
 async function loadHomeFriedrichLedger(id){
  const el=E('homeFriedrichLedgerBody');if(!el)return;
@@ -1713,7 +1714,7 @@ async function loadHomeFriedrichLedger(id){
  const last=all.at(-1)[0],year=Number(last.slice(0,4))-(Number(last.slice(5,7))<10?1:0),rows=all.filter(([d])=>d>=year+'-10-01'&&d<=(year+1)+'-09-01');
  const sum=rows.reduce((a,[d,m])=>a+m.operating_result,0),official=rows.at(-1)[1].statement_total_result,total=Number.isFinite(official)?official:sum,revenue=rows.reduce((a,[d,m])=>a+m.net_revenue,0);
  const color=n=>n<0?'#b42342':'#237a48',end=new Date(Number(last.slice(0,4)),Number(last.slice(5,7)),0).toLocaleDateString('de-AT');
- el.innerHTML='<small>Stand '+end+'</small><div style="font-size:24px;font-weight:750;color:'+color(total)+'">'+homeLedgerResult(total)+'</div><div style="display:flex;justify-content:space-between;gap:8px"><span>Gesamterträge</span><strong>'+homeLedgerWhole(revenue)+'</strong></div>'+homeLedgerTable(rows,total)+'<small>Quelle: Steuerberater · Periodensaldenliste'+(total!==sum?' · Rundungsdifferenz '+EUR(sum-total):'')+'</small>';
+ el.innerHTML='<small>Geschäftsjahr '+year+'/'+String(year+1).slice(-2)+' · Stand '+end+'</small><div style="font-size:24px;font-weight:750;color:'+color(total)+'">'+homeLedgerResult(total)+'</div><div style="display:flex;justify-content:space-between;gap:8px"><span>Gesamterträge</span><strong>'+homeLedgerWhole(revenue)+'</strong></div>'+homeLedgerTable(rows,total,year,10)+'<small>Quelle: Steuerberater · Periodensaldenliste'+(total!==sum?' · Rundungsdifferenz '+EUR(sum-total):'')+'</small>';
  }catch(e){if(el.dataset.request===token)el.textContent='Buchhaltungswerte derzeit nicht verfügbar.';}
 }
 async function loadHomeJudithLedger(id){
@@ -1731,7 +1732,7 @@ async function loadHomeJudithLedger(id){
  const fmt=n=>EUR(n), color=n=>n<0?'#b42342':'#237a48', monthName=d=>new Date(d+'T12:00:00').toLocaleDateString('de-AT',{month:'long'}), end=new Date(Number(last.slice(0,4)),Number(last.slice(5,7)),0).toLocaleDateString('de-AT');
  const complete=rows.every(([d],i)=>Number(d.slice(5,7))===i+1);
  const line=([d,m])=>'<div style="display:flex;justify-content:space-between;gap:8px"><span>'+monthName(d)+'</span><strong style="color:'+color(m.operating_result)+'">'+fmt(m.operating_result)+'</strong></div>';
- el.innerHTML='<small>Stand '+end+(complete?'':' · nur vorhandene Monate')+'</small><div style="font-size:24px;font-weight:750;color:'+color(total)+'">'+homeLedgerResult(total)+'</div><div style="display:flex;justify-content:space-between;gap:8px"><span>Erträge '+(complete?'Jänner–'+monthName(last):'erfasste Monate')+'</span><strong>'+homeLedgerWhole(revenue)+'</strong></div>' +homeLedgerTable(rows,total)+'<small>Quelle: Steuerberater · Periodensaldenliste</small>';
+ el.innerHTML='<small>Geschäftsjahr '+year+' · Stand '+end+(complete?'':' · nur vorhandene Monate')+'</small><div style="font-size:24px;font-weight:750;color:'+color(total)+'">'+homeLedgerResult(total)+'</div><div style="display:flex;justify-content:space-between;gap:8px"><span>Erträge '+(complete?'Jänner–'+monthName(last):'erfasste Monate')+'</span><strong>'+homeLedgerWhole(revenue)+'</strong></div>' +homeLedgerTable(rows,total,year,1)+'<small>Quelle: Steuerberater · Periodensaldenliste</small>';
  }catch(e){if(el.dataset.request===token)el.textContent='Buchhaltungswerte derzeit nicht verfügbar.';}
 }
 async function updateCombinedManagementHome(){
@@ -4234,6 +4235,8 @@ body:not(.gp-judith-design) #gpMockupDetailBody #weeklyPurchase #gpPurchaseTabPa
 #businessHome .gp-ledger-months>div.gp-ledger-label{font-size:10px;opacity:.8;border-top:1px solid currentColor}
 #businessHome .gp-ledger-months>div.gp-ledger-total{border-top:1px solid currentColor;margin-top:3px;padding-top:5px}
 #businessHome .gp-ledger-months strong{white-space:nowrap}
+#businessHome .gp-ledger-pending{color:#84919b;font-weight:400}
+@media(min-width:681px){#businessHome #homeEconomicBrief .gp-analysis-status{min-height:190px!important}#businessHome #homeFriedrichLedger,#businessHome #homeJudithLedger{margin-top:8px!important;padding:9px!important;font-size:12px!important;line-height:1.35!important}#businessHome .gp-ledger-months>div{flex-shrink:0}}
 #businessHome .homeFoot,#businessHome .gp-annual-note{font-size:10px!important;padding:3px!important;margin:3px 0!important}
 @media(max-width:680px){#businessHome #homeCards>.homeBusiness .homeMetrics{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
 </style></body></html>
