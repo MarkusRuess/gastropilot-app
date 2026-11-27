@@ -17,6 +17,8 @@ Bestehende Dokumentationen zuerst lesen: PROJEKTUEBERSICHT_GESAMT.md, PROJEKTSTA
 - Keine externen kostenpflichtigen APIs, bevor technische Verbrauchssperre <= 15 EUR/Monat nachgewiesen ist. Ohne Sperre: keine kostenpflichtigen Aufrufe.
 - Keine automatischen E-Mails, Zahlungen, verbindlichen Zusagen oder produktiven Datenmigrationen aus diesem Modul.
 
+Für Kundenprojekte ohne Zugriff auf den Space gibt es einen [bereinigten Leseauszug](GEMEINSAMES_WISSEN.md). Er ist ein datierter Fallback und ersetzt das geschützte Register nicht.
+
 ## Zentrale Wissensdatenbank
 
 Die geschützte Oberfläche liegt unter `unternehmenszentrale/index.html`. In Supabase hält `public.central_knowledge` Entscheidungen, Fehler, Lösungen, Prozesse und wiederverwendbare Funktionen mit Quelle und Status. `central_knowledge_history` bewahrt ältere Fassungen bei Änderungen.
