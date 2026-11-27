@@ -1,3 +1,6 @@
+## 2026-11-27 – Live-Sichtprüfung Geschäftsjahreslayout
+Betreiber-Screenshot 13:07:07 bestätigt beide Karten mit zwölf Monatszeilen, Friedrich Oktober–September, Judith Jänner–Dezember, fehlende Monate als Strich sowie bündige Umsatzfelder und Summenzeilen. Sichtprüfung anhand Screenshot; keine unabhängige Browser-/CI-Prüfung. Keine Datenänderung.
+
 ## 2026-11-27 – Zwölf Geschäftsjahresmonate
 Betreiberfreigabe: Friedrich Oktober–September, Judith Jänner–Dezember, fehlende geprüfte Monate als grauer Strich statt Null; Summen unverändert, einheitliche Desktop-Höhen. Commit 54d31cd; Code zurückgelesen und beide Monatsfolgen geprüft. Keine DB-Änderung, Judith AI unverändert. CI und neue Liveansicht offen.
 
