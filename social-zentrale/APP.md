@@ -1,2 +1,6 @@
-# GastroPilot Social
-Eigenständige Web-App mit eigener Oberfläche und bestehendem Supabase-Projekt. Keine neue Domain oder kostenpflichtige Infrastruktur ohne Freigabe. Bestehende GastroPilot-URLs unverändert. Manifest vorbereitet; Einbindung, Icons, HTTPS-Hosting, Authentifizierung und iPhone-Installation noch zu testen. Keine Offline-Speicherung vertraulicher Daten.
+# GastroPilot Social – App-Status
+Die Oberfläche im Feature-Branch ist auf mobile Nutzung ausgelegt. Web-App-Manifest, Symbol, Apple-Touch-Icon-Verweis und Service Worker sind vorhanden. Der Service Worker speichert nur den App-Shell-Code, keine Beiträge, Kundendaten oder Zugangsdaten.
+
+Anmeldung verwendet bestehende Supabase-Konten; Betriebswechsel folgt business_members. Entwürfe und Freigabeaktionen sind im Branch integriert. Der interne Kalender ist keine Veröffentlichung.
+
+Noch offen: HTTPS-Hosting mit dauerhaftem Link, Deployment der isolierten Edge-Function, Echtkonto- und Fremdmandantentest, Test auf einem iPhone und OAuth-/Provider-Freigaben. Bis dahin ist die App nicht produktiv nutzbar und darf nicht als live bezeichnet werden.
