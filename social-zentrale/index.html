@@ -1,1 +1,59 @@
-<!doctype html><html lang="de"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="manifest" href="./manifest.webmanifest"><meta name="theme-color" content="#222222"><title>Social Media Zentrale – Vorschau</title><style>body{font:16px system-ui;margin:24px auto;padding:0 16px;max-width:1000px;background:#f5f5f5;color:#222}section{background:white;border:1px solid #ddd;border-radius:12px;padding:16px;margin:12px 0}.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px}.tile{background:#eee;padding:12px;border-radius:8px}.tile strong{display:block;font-size:24px}li{padding:8px}small{color:#555}</style><h1>Social Media Zentrale</h1><p>Lokale Vorschau · keine Konten verbunden · keine Veröffentlichung</p><section><label>Monat <input type="month" id="month" value="2026-11"></label><div class="tiles" id="tiles"></div></section><section><h2>Redaktionskalender</h2><ul id="calendar"></ul></section><section><h2>Kanäle</h2><ul id="channels"></ul></section><script type="module">import {dashboard} from './dashboard.mjs';const month=document.getElementById('month');const input={businessId:'demo',posts:[],channels:[],deliveries:[]};function render(){const data=dashboard({...input,month:month.value});const tiles=document.getElementById('tiles');tiles.replaceChildren();for(const [key,label] of Object.entries({drafts:'Entwürfe',pending:'Freigaben',scheduled:'Geplant',published:'Veröffentlicht',errors:'Fehler'})){const el=document.createElement('div');el.className='tile';const n=document.createElement('strong');n.textContent=data.counts[key];el.append(n,document.createTextNode(label));tiles.append(el)}for(const [id,rows,empty] of [['calendar',data.calendar,'Keine geplanten Beiträge'],['channels',data.channels,'Keine verbundenen Kanäle']]){const list=document.getElementById(id);list.replaceChildren();for(const row of rows.length?rows:[null]){const li=document.createElement('li');li.textContent=row?(row.body??row.display_name??row.platform):empty;list.append(li)}}}month.addEventListener('change',()=>{if(month.value)render()});render();</script></html>
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#101820">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="GastroPilot Social">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="apple-touch-icon" href="./icon.svg">
+<title>GastroPilot Social</title>
+<style>
+:root{color-scheme:light;--ink:#18212b;--muted:#687482;--line:#dde3e8;--paper:#f4f6f8;--card:#fff;--brand:#17364a;--accent:#e8a83d;--bad:#9f3028}
+*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;padding-bottom:env(safe-area-inset-bottom)}
+header{background:var(--brand);color:#fff;padding:18px max(20px,env(safe-area-inset-left));display:flex;justify-content:space-between;align-items:center;gap:16px}
+header strong{font-size:1.05rem}header small{display:block;color:#d7e1e8}
+main{width:min(1040px,100%);margin:0 auto;padding:20px 16px 48px}
+h1{font-size:clamp(1.5rem,4vw,2rem);margin:0 0 4px}h2{font-size:1.15rem;margin:0 0 14px}
+.subtle,.empty{color:var(--muted)}section,.signin{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px;margin:16px 0;box-shadow:0 3px 12px #18212b08}
+.row{display:flex;gap:12px;align-items:end;flex-wrap:wrap}.row>label{flex:1;min-width:190px}
+label{font-weight:600;font-size:.9rem;display:grid;gap:6px}
+input,select,textarea{width:100%;font:inherit;border:1px solid #c9d2d9;border-radius:9px;padding:11px 12px;background:white;color:var(--ink)}
+textarea{min-height:110px;resize:vertical}
+button{border:0;border-radius:10px;padding:11px 16px;background:var(--brand);color:white;font:600 1rem inherit;min-height:44px;cursor:pointer}
+button:disabled{opacity:.55}button.secondary{background:#e8edf1;color:var(--ink)}
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:16px 0}.metric{background:white;border:1px solid var(--line);border-radius:13px;padding:14px}.metric strong{display:block;font-size:1.5rem}.metric span{color:var(--muted);font-size:.9rem}
+.post{border-top:1px solid var(--line);padding:14px 0}.post:first-child{border-top:0}.post p{white-space:pre-wrap;overflow-wrap:anywhere;margin:10px 0}.post-top,.channel{display:flex;justify-content:space-between;align-items:center;gap:12px}.post time{color:var(--muted);font-size:.88rem}.badge{display:inline-block;border:1px solid #d3dce2;border-radius:999px;padding:4px 9px;font-size:.82rem;background:#f8fafb}.actions{display:flex;gap:8px;flex-wrap:wrap}
+.channel{padding:11px 0;border-top:1px solid var(--line)}.channel:first-child{border-top:0}
+#notice{position:sticky;top:8px;padding:12px 14px;border-radius:10px;background:#e8f2f7;z-index:5}#notice[data-kind=error]{background:#fae8e6;color:var(--bad)}
+.warning{border-left:4px solid var(--accent);padding:10px 12px;background:#fff8e9;border-radius:4px;color:#593c12;font-size:.92rem}
+footer{color:var(--muted);font-size:.85rem;padding:12px 2px}
+[hidden]{display:none!important}
+@media(max-width:640px){header{padding-top:calc(14px + env(safe-area-inset-top))}main{padding:16px 12px 32px}section,.signin{padding:15px;margin:12px 0}.metrics{grid-template-columns:repeat(2,1fr)}.row button{width:100%}.post-top{align-items:flex-start;flex-direction:column;gap:6px}}
+</style>
+</head>
+<body>
+<header><div><strong>GastroPilot Social</strong><small>Redaktionszentrale</small></div><div id="signedUser"></div></header>
+<main>
+<div id="notice" role="status" aria-live="polite" hidden></div>
+<section id="signin" class="signin">
+<h1>Anmelden</h1><p class="subtle">Mit deinem bestehenden GastroPilot-Zugang anmelden.</p>
+<form id="signinForm" class="row"><label>E-Mail<input id="email" type="email" autocomplete="username" required></label><label>Passwort<input id="password" type="password" autocomplete="current-password" required></label><button id="signinButton">Anmelden</button></form>
+<p class="subtle">Zugänge werden von der Unternehmenszentrale angelegt.</p>
+</section>
+<section id="noBusiness" hidden><h1>Kein Betrieb zugeordnet</h1><p>Für diesen Zugang ist noch keine Betriebsmitgliedschaft eingerichtet.</p></section>
+<div id="workspace" hidden>
+<div class="row"><div><h1>Social Media</h1><div class="subtle">Entwürfe, Freigaben und Redaktionskalender</div></div><label>Betrieb<select id="business" aria-label="Betrieb wählen"></select></label><label>Monat<input id="month" type="month"></label><button id="signout" class="secondary">Abmelden</button></div>
+<div id="tiles" class="metrics" aria-label="Übersicht"></div>
+<section><h2>Neuer Beitrag</h2><form id="draftForm"><label>Beitragstext<textarea id="postBody" maxlength="5000" required placeholder="Beitragstext eingeben"></textarea></label><div class="row" style="margin-top:10px"><span class="subtle">Originalfoto- und Video-Upload wird erst nach Herkunftsprüfung freigeschaltet.</span><button>Entwurf speichern</button></div></form></section>
+<section><h2>Redaktionskalender</h2><div id="calendar"></div></section>
+<section><h2>Verbundene Kanäle</h2><div id="channels"></div></section>
+<p class="warning">Die Kalendertermine sind derzeit interne Planung. Veröffentlichungen, OAuth-Verbindungen, Google-Bewertungen und Plattformstatistiken sind noch nicht aktiviert.</p>
+</div>
+<footer>Geschützte Betriebsdaten werden nur nach Anmeldung geladen. Keine Offline-Speicherung von Beiträgen oder Zugangsdaten.</footer>
+</main>
+<script type="module" src="./app.mjs"></script>
+</body>
+</html>
