@@ -1,3 +1,6 @@
+## 2026-11-27 – Einheitliches Steuerberater-Tabellenlayout
+Betreiberfreigabe für beide Hauptdashboard-Kacheln: Monatsname links, Ergebnis rechts, alternierende Zeilen, ganze EUR, Vorzeichen und Summenzeile; betriebliche Farben und getrennte Abfragen unverändert. Commit 8551455; Code zurückgelesen, Zahlenformat geprüft. Keine DB-Änderung, Judith AI unverändert. CI/Pages und Liveansicht nicht bestätigt.
+
 **2026-11-14 Friedrich:** Drei neue Originalfotos `pending`; der automatische Archiv-Wiederanlauf war nach einem Fehlversuch für die gesamte Sitzung blockiert. Branch `fix/friedrich-resume-pending-20261114` erlaubt erneuten Versuch nach fünf Minuten. Originalerkennung, Buchung und iPhone-Liveprüfung noch offen; Judith unverändert. Siehe `PROJEKTSTAND_FRIEDRICH.md`.
 
 # GastroPilot – gemeinsame Projektübersicht
