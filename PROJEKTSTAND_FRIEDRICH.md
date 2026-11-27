@@ -1,3 +1,6 @@
+## 2026-11-27 – Monatsumsatzziel 55.000 EUR
+Betreiberauftrag: Friedrich-Bruttoziel in gp_revenue_targets von 50.000 auf 55.000 EUR geändert und zurückgelesen. Dashboard index.html Commit 3466d3d: Friedrich 55.000, gemeinsames Ziel 115.000, Judith unverändert 60.000. Code zurückgelesen; keine Umsatzbuchungen verändert. CI/Pages und angemeldete Liveansicht noch nicht bestätigt.
+
 ## 2026-11-21 – Lachs-Baguette Rezept-EK in Friedrich Supabase hinterlegt
 Nach Betreiberauftrag in `public.gp_article_costs` für Friedrich (`6a5484d1-daf6-4263-897d-24cdf536aa29`) Artikel `Lachs Baguette` **nur falls nicht vorhanden** angelegt: `cost_net=1.144470`, `cost_basis=recipe_estimate`, detaillierte Quellnotiz. Berechnung 25 g Lachs zu 31,50 EUR/kg + 1/8 gewichtetes Annamühle-Baguette (131×2,38 + 17×1,96)/148 + 5 g Steirer Kren zu 13,10 EUR/kg laut Screenshot (Netto-Annahme). Ob Steirer Kren dem verwendeten Oberskren entspricht, ist nicht bestätigt; fehlende Garnitur/Verluste nicht eingerechnet. Keine Lager- oder Buchhaltungsbuchung, keine Änderung an Judith. Datenbank-Insert bestätigt, aber keine Live-UI-Prüfung/Deployment bestätigt.
 
