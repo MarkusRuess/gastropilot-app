@@ -1,3 +1,6 @@
+## 2026-11-27 – November-Nettoumsatz ergänzt
+Nur fehlende net_total-Werte in zwei bestehenden Judith-Tagesabschlüssen ergänzt: 01.11. 3951,95 EUR aus gespeicherten abgestimmten Steuergruppen; 22.11. 4571,61 EUR anhand Originalbericht 44 (Retouren 81,29 EUR zu 10%). Kontrollabfrage: 26/26 Abschlüsse, brutto 46933,48 EUR, netto 42535,51 EUR. Keine neuen Buchungen, Friedrich unverändert. Dashboard-Liveanzeige noch nicht bestätigt.
+
 ## 2026-11-27 – Kompakte Kennzahlentabellen
 Betreiber-Screenshot 13:11:21 bestätigt neue Tabellen, lesbare Buttons und Friedrich-Monatsziel 55.000 EUR / 73,2 %, Judith 60.000 EUR / 78,2 %. Supabase-Ziele lesend bestätigt. Commits 0de4c30 und 870658d; exakter Bruttoumsatz für Berechnungen separat erhalten. Keine DB-Änderung. Unabhängige Browser-/CI-Prüfung offen.
 
