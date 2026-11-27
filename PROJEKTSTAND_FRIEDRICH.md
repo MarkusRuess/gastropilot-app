@@ -1,3 +1,6 @@
+## 2026-11-27 – Zielerreichung hervorgehoben
+Betreiberfreigabe für beide Hauptdashboard-Karten: Resttage neben Betriebsnamen, größere Zielquote und Balken, fehlender Bruttoumsatz und Bedarf je verbleibendem Kalendertag. Commits 22ccc9c und ebd3362, Code zurückgelesen. Keine Datenänderung, Judith AI unverändert. CI/Pages und angemeldete Liveprüfung offen.
+
 ## 2026-11-27 – Motivation im Hauptdashboard
 Betreiberfreigabe: dynamischer kurzer Motivationstext unter beiden Betriebsnamen, Schwellen 50/75/90/100 Prozent des vorhandenen Brutto-Monatsziels. Nur laufender Monat mit Umsatzdaten; keine KI-Aufrufe oder Datenänderungen. Commits b42ad120 und 25870685 auf main. Code zurückgelesen, Schwellenlogik separat geprüft; CI/Pages und angemeldete Liveansicht offen. Judith AI unverändert.
 
