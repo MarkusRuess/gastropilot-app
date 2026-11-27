@@ -1,4 +1,7 @@
 
+## 2026-11-27 · Neunmonatsmodell ersetzt August-Szenario
+- Commit `6db6a6a8c266e8590aa54cde9bb69118e9a793e8`: Judith-Planstufen anhand der Periodensaldenliste per 30.09.2026 aktualisiert. Modell ohne Zuschüsse, vor Körperschaftsteuer, mit gewichtetem USt-Mix und Einkaufsquote; gerundet auf 100 EUR. Kostendeckung ca. 48.000 EUR brutto. Keine Ist-Gewinn-Aussage; Lagerveränderungen, ungeklärte Buchungen, Oktober/November und periodengerechte Abgrenzungen bleiben offen. Monatsziel 60.000 EUR, Friedrich und Judith AI unverändert. Rechentest aller sieben Stufen bestanden. Keine Datenbankänderung. Live-Abnahme offen.
+
 ## 2026-11-27 · Wirtschaftsanalyse Umsatzstufen (vorläufig)
 - Code-Commit `b5ecdf25e1b15157bb7db065c727587cddc6c7f8`: ausschließlich Judith-Karte im gemeinsamen Monatsüberblick um sieben Bruttoumsatzstufen (40–70 Tsd. EUR), Ergebnis, Ampel und dezente aktive Stufe ergänzt. Friedrich-Szenariowerte und Judith AI unverändert; Judith-Ziel 60.000 EUR.
 - Supabase lesend: `gp_ledger_monthly` enthält für Judith August 2026 verifizierte Werte: Nettoumsatz 45.520, Personal 26.100, Einkäufe 6.783, Fixkosten 12.950, Betriebsergebnis -689 EUR. Einfache Differenzrechnung ergibt -313 EUR, ungeklärte Abweichung -376 EUR. Für September bis November liegen in dieser Tabelle keine verifizierten Judith-Monatssätze vor. `expenses` enthält Teilbelege, keine gesicherte Vollkostenrechnung.
