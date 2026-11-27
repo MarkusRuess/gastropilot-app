@@ -1686,9 +1686,9 @@ async function loadHomeFriedrichLedger(id){
  const el=E('homeFriedrichLedgerBody');if(!el)return;
  const token=String((Number(el.dataset.request)||0)+1);el.dataset.request=token;
  try{
- const {data,error}=await db.from('gp_ledger_monthly').select('month_start,metric_key,amount').eq('business_id',id).eq('verification_status','verified').in('metric_key',['net_revenue','operating_result','statement_total_result']).order('month_start');
+ const {data,error}=await db.from('gp_ledger_monthly').select('month_start,metric_key,amount,notes').eq('business_id',id).eq('verification_status','verified').in('metric_key',['net_revenue','operating_result']).order('month_start');
  if(el.dataset.request!==token)return;if(error)throw error;
- const by=new Map();for(const r of data||[]){if(r.amount===null||!Number.isFinite(Number(r.amount))||!/^\d{4}-\d{2}-01$/.test(r.month_start))continue;const m=by.get(r.month_start)||{};m[r.metric_key]=Number(r.amount);by.set(r.month_start,m);}
+ const by=new Map();for(const r of data||[]){if(r.amount===null||!Number.isFinite(Number(r.amount))||!/^\d{4}-\d{2}-01$/.test(r.month_start))continue;const m=by.get(r.month_start)||{};m[r.metric_key]=Number(r.amount);if(r.metric_key==='operating_result'){const match=String(r.notes||'').match(/(?:^|; )statement_total_result=(-?\d+(?:\.\d+)?)$/);if(match)m.statement_total_result=Number(match[1]);}by.set(r.month_start,m);}
  const all=[...by].filter(([d,m])=>Number.isFinite(m.net_revenue)&&Number.isFinite(m.operating_result));
  if(!all.length){el.textContent='Keine geprüften Buchhaltungswerte vorhanden.';return;}
  const last=all.at(-1)[0],year=Number(last.slice(0,4))-(Number(last.slice(5,7))<10?1:0),rows=all.filter(([d])=>d>=year+'-10-01'&&d<=(year+1)+'-09-01');
