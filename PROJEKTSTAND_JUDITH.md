@@ -1,3 +1,6 @@
+## 2026-11-27 – Live-Sichtprüfung Personalquoten
+Betreiber-Screenshot 13:18:09 bestätigt Judith 56,5 % Juli–September und 50,8 % bis September sowie November-Plan 28,7 %. Unabhängiger Browser-/CI-Test offen. Keine Datenänderung.
+
 ## 2026-11-27 – Judith historische Personalquoten
 Geprüfte Saldenlistenwerte für gewichtete historische Personalquoten (Personal / Nettoerträge) verwendet, letzte drei zusammenhängende geprüfte Monate und Jahreszeitraum beschriftet. Nur Judith; Friedrich und Judith AI unverändert. Commits d06c8d8 und e01b2c35. Code zurückgelesen, Kontrollrechnung durchgeführt; CI und Liveanzeige offen. Keine DB-Änderung.
 
