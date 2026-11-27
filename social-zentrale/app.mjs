@@ -84,13 +84,25 @@ function render() {
 }
 function button(label,callback,style="") {const b=document.createElement("button");b.type="button";b.className=style;b.textContent=label;b.addEventListener("click",callback);return b;}
 async function act(action,postId) {try{await request(action,{businessId:state.business,postId});await refresh();notice("Gespeichert.");}catch(error){notice(error.message,"error");}}
-async function schedule(postId) {
-  const value=prompt("Termin im internen Redaktionskalender (lokale Zeit, z. B. 2026-12-04T10:30). Externe Veröffentlichung ist derzeit nicht aktiviert.");
-  if(!value) return;
-  const parsed=new Date(value);
-  if(Number.isNaN(parsed.getTime())) return notice("Bitte ein gültiges Datum eingeben.","error");
-  try{await request("schedule",{businessId:state.business,postId,scheduledAt:parsed.toISOString()});await refresh();notice("Termin im Kalender gespeichert. Kein Social-Kanal wurde veröffentlicht.");}catch(error){notice(error.message,"error");}
+let schedulePostId=null;
+function schedule(postId) {
+  schedulePostId=postId;
+  const form=$("scheduleForm");
+  const min=new Date(Date.now()-new Date().getTimezoneOffset()*60000).toISOString().slice(0,16);
+  $("scheduledAt").min=min;
+  form.reset();
+  $("scheduleDialog").showModal();
 }
+$("scheduleForm").addEventListener("submit",async(event)=>{
+  event.preventDefault();
+  const parsed=new Date($("scheduledAt").value);
+  if(!schedulePostId||Number.isNaN(parsed.getTime()))return notice("Bitte einen gültigen Termin wählen.","error");
+  $("scheduleDialog").close();
+  try{await request("schedule",{businessId:state.business,postId:schedulePostId,scheduledAt:parsed.toISOString()});await refresh();notice("Termin im internen Kalender gespeichert. Kein Social-Kanal wurde veröffentlicht.");}
+  catch(error){notice(error.message,"error");}
+  finally{schedulePostId=null;}
+});
+$("scheduleCancel").addEventListener("click",()=>{$("scheduleDialog").close();schedulePostId=null;});
 
 $("signinForm").addEventListener("submit",async(event)=>{event.preventDefault();$("signinButton").disabled=true;try{const {error}=await supabase.auth.signInWithPassword({email:$("email").value.trim(),password:$("password").value});if(error)throw error;const {data}=await supabase.auth.getUser();await showSignedIn(data.user);}catch{notice("Anmeldung nicht möglich. Zugangsdaten prüfen.","error");}finally{$("signinButton").disabled=false;}});
 $("signout").addEventListener("click",async()=>{await supabase.auth.signOut();showSignedOut();});
