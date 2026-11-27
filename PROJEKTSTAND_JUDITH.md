@@ -1,3 +1,6 @@
+## 2026-11-27 – Einheitliche Dashboard-Mittelachse
+Betreiberfreigabe: 8px Mittelabstand für Wirtschaftsanalyse und Betriebskarten, gleiche Spaltenbreiten, 13px Außenversatz der unteren Karten entsprechend oberem Rahmen, 10px Innenabstand und 14px Radius. CSS-only Commit 15102192, zurückgelesen; keine Datenänderung. Exakte optische Bündigkeit und CI/Pages noch nicht live geprüft.
+
 ## 2026-11-27 – Dashboard-Abstände
 Screenshot 13:33 bestätigt Motivation und Resttage live. Betreiberauftrag: Mittelabstand und Zeilenabstände beider Karten vereinheitlicht, Resttage rechtsbündig, übergroße Umsatzzeile kompakter. CSS-only Commit c1fb1dee, zurückgelesen; keine Datenänderung. Neue Liveansicht und CI offen.
 
