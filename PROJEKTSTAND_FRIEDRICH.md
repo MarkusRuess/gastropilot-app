@@ -1,3 +1,6 @@
+## 2026-11-27 – Einheitliches Steuerberater-Tabellenlayout
+Betreiberfreigabe für beide Hauptdashboard-Kacheln: Monatsname links, Ergebnis rechts, alternierende Zeilen, ganze EUR, Vorzeichen und Summenzeile; betriebliche Farben und getrennte Abfragen unverändert. Commit 8551455; Code zurückgelesen, Zahlenformat geprüft. Keine DB-Änderung, Judith AI unverändert. CI/Pages und Liveansicht nicht bestätigt.
+
 ## 2026-11-27 – Live-Abnahme Steuerberater-Kachel
 Betreiber-Screenshot 12:57:47 bestätigt die sichtbare Friedrich-Kachel im gemeinsamen Hauptdashboard: offizieller Gesamtwert, Erträge, zwölf Monatswerte, grüne Gestaltung, Ziel 55.000 EUR; Judith-Kachel weiterhin sichtbar. Automatischer Neuimport und vollständiger Kostenabgleich weiterhin offen; keine unabhängige Browser-/CI-Abnahme.
 
