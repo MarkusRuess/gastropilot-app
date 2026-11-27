@@ -1,3 +1,6 @@
+## 2026-11-27 – Steuerberater-Kachel Friedrich
+Original LMG Periodensaldenliste 30.09.2026 geprüft; 11 vorhandene Monate abgeglichen, sechs September-Kennzahlen ausschließlich Friedrich konfliktfrei ergänzt. Offizieller Gesamtwert in Notiz des neuen Ergebnisdatensatzes gespeichert, da bestehender Metric-Check keinen separaten Schlüssel erlaubt; Rundungsdifferenz zu Monatswerten 1 EUR. Dashboard-Kachel getrennt von Judith, Geschäftsjahr Oktober–September, Commit e2f3031 und ce2a6d8. Code zurückgelesen; CI, Pages und angemeldete Liveprüfung nicht bestätigt. Automatischer Neuimport, vollständige Einzelkonten und kalkulatorischer Abgleich noch offen. Keine bestehenden Beträge überschrieben.
+
 ## 2026-11-27 – Kompakte Umsatzgrenzen im Dashboard
 Betreiberfreigabe nach Layoutvorschlag: fünf Planstufen 35/40/45/50/55 Tsd. EUR mit Ergebnissen −1446/+1736/+4918/+8100/+11282 EUR und Ampel neben Zielquote; höchste erreichte Stufe markiert, mobil umbruchfähig. Nur Friedrich, keine DB-Änderung; Planwerte ausdrücklich kein Ist-Gewinn. Commit b4c0546 auf main; Code zurückgelesen, Stufenlogik für 40.263,20 EUR geprüft. Browser/CI/Pages nicht bestätigt. Monatsziel 55.000 EUR zuvor vom Betreiber per Screenshot live bestätigt.
 
