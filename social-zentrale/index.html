@@ -22,14 +22,14 @@ h1{font-size:clamp(1.5rem,4vw,2rem);margin:0 0 4px}h2{font-size:1.15rem;margin:0
 label{font-weight:600;font-size:.9rem;display:grid;gap:6px}
 input,select,textarea{width:100%;font:inherit;border:1px solid #c9d2d9;border-radius:9px;padding:11px 12px;background:white;color:var(--ink)}
 textarea{min-height:110px;resize:vertical}
-button{border:0;border-radius:10px;padding:11px 16px;background:var(--brand);color:white;font:600 1rem inherit;min-height:44px;cursor:pointer}
+button{border:0;border-radius:10px;padding:11px 16px;background:var(--brand);color:white;font:inherit;font-weight:600;min-height:44px;cursor:pointer}
 button:disabled{opacity:.55}button.secondary{background:#e8edf1;color:var(--ink)}
 .metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:16px 0}.metric{background:white;border:1px solid var(--line);border-radius:13px;padding:14px}.metric strong{display:block;font-size:1.5rem}.metric span{color:var(--muted);font-size:.9rem}
 .post{border-top:1px solid var(--line);padding:14px 0}.post:first-child{border-top:0}.post p{white-space:pre-wrap;overflow-wrap:anywhere;margin:10px 0}.post-top,.channel{display:flex;justify-content:space-between;align-items:center;gap:12px}.post time{color:var(--muted);font-size:.88rem}.badge{display:inline-block;border:1px solid #d3dce2;border-radius:999px;padding:4px 9px;font-size:.82rem;background:#f8fafb}.actions{display:flex;gap:8px;flex-wrap:wrap}
 .channel{padding:11px 0;border-top:1px solid var(--line)}.channel:first-child{border-top:0}
 #notice{position:sticky;top:8px;padding:12px 14px;border-radius:10px;background:#e8f2f7;z-index:5}#notice[data-kind=error]{background:#fae8e6;color:var(--bad)}
 .warning{border-left:4px solid var(--accent);padding:10px 12px;background:#fff8e9;border-radius:4px;color:#593c12;font-size:.92rem}
-footer{color:var(--muted);font-size:.85rem;padding:12px 2px}
+dialog{border:1px solid var(--line);border-radius:16px;padding:20px;width:min(440px,calc(100% - 24px));box-shadow:0 18px 60px #18212b33}dialog::backdrop{background:#10182088}dialog form{display:grid;gap:14px}footer{color:var(--muted);font-size:.85rem;padding:12px 2px}
 [hidden]{display:none!important}
 @media(max-width:640px){header{padding-top:calc(14px + env(safe-area-inset-top))}main{padding:16px 12px 32px}section,.signin{padding:15px;margin:12px 0}.metrics{grid-template-columns:repeat(2,1fr)}.row button{width:100%}.post-top{align-items:flex-start;flex-direction:column;gap:6px}}
 </style>
@@ -52,6 +52,7 @@ footer{color:var(--muted);font-size:.85rem;padding:12px 2px}
 <section><h2>Verbundene Kanäle</h2><div id="channels"></div></section>
 <p class="warning">Die Kalendertermine sind derzeit interne Planung. Veröffentlichungen, OAuth-Verbindungen, Google-Bewertungen und Plattformstatistiken sind noch nicht aktiviert.</p>
 </div>
+<dialog id="scheduleDialog" aria-labelledby="scheduleTitle"><form id="scheduleForm"><h2 id="scheduleTitle">Termin eintragen</h2><label>Datum und Uhrzeit<input id="scheduledAt" type="datetime-local" required></label><p class="subtle">Der Termin wird intern gespeichert. Eine Veröffentlichung findet nicht statt.</p><div class="actions"><button id="scheduleCancel" type="button" class="secondary">Abbrechen</button><button>Speichern</button></div></form></dialog>
 <footer>Geschützte Betriebsdaten werden nur nach Anmeldung geladen. Keine Offline-Speicherung von Beiträgen oder Zugangsdaten.</footer>
 </main>
 <script type="module" src="./app.mjs"></script>
