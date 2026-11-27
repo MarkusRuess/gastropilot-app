@@ -1,3 +1,6 @@
+## 2026-11-27 – Zwölf Geschäftsjahresmonate
+Betreiberfreigabe: Friedrich Oktober–September, Judith Jänner–Dezember, fehlende geprüfte Monate als grauer Strich statt Null; Summen unverändert, einheitliche Desktop-Höhen. Commit 54d31cd; Code zurückgelesen und beide Monatsfolgen geprüft. Keine DB-Änderung, Judith AI unverändert. CI und neue Liveansicht offen.
+
 ## 2026-11-27 – Dashboard-Ausrichtung
 Screenshot 13:02:52 bestätigt vorheriges Tabellenlayout live für beide Betriebe. Neue CSS-Ausrichtung (8b1f7ec): gemeinsame Desktop-Zeilen, gleiche Kartenhöhe, einheitliche Ledger-Schrift und Summenzeile am unteren Rand; mobil weiterhin gestapelt. Keine Datenänderung. Code zurückgelesen; Browser/CI und neue Liveansicht offen.
 
