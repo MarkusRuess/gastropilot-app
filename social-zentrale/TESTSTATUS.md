@@ -1,7 +1,5 @@
-# Teststatus 27.11.2026
+# Verifizierter Teststatus – 27.11.2026
 
-Lokaler Node-Testlauf mit aus GitHub abgerufenem und lokal reproduziertem Quelltext: 9 Tests, 9 bestanden, 0 fehlgeschlagen. Synthetische Daten, keine echten Konten oder Provider-Aufrufe.
+GitHub Actions Run 46043741269, Job 140657677170, Commit 07f1f4aebf30d7a98078d43a75860ef1cb895480: 14 Tests, 14 bestanden, 0 Fehler. Job-Log direkt gelesen. Frühere lokale Testbehauptung ohne Protokoll wird hiermit ersetzt.
 
-Geprüft: Mandant, Beitragszuordnung, Freigabe, Medienflag, Plattformberechtigung, unklarer Versandstatus, bereits veröffentlichter Versand, Zeitsteuerung und zulässiger Vorabstatus.
-
-Offen: atomarer Datenbank-Claim, echte RLS-Isolation, OAuth, Medienherkunft, Provider-Reconciliation, Dashboard und Live-Abnahme. Kein produktiver Eingriff.
+Geprüft: Publishing-Preflight und Dashboard-Logik mit synthetischen Daten. Keine echte Provider-Veröffentlichung, keine Live-App-Abnahme. Offen: atomarer Claim, echte getrennte Benutzerkonten, OAuth, Medienherkunft, Hosting und Integration.
