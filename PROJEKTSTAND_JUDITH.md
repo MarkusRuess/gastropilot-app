@@ -1,3 +1,6 @@
+## 2026-11-27 – Gemeinsamer Außenrahmen
+Nach Betreiber-Screenshot 13:41:35 unteren Kartenbereich mit weißem Außenrahmen, 12px Innenabstand und 20px Radius wie Wirtschaftsanalyse versehen. CSS-only Commit a5d0d9be zurückgelesen; keine Datenänderung. Liveprüfung offen.
+
 ## 2026-11-27 – Einheitliches Kacheldesign
 Betreiberfreigabe: obere Wirtschaftsanalyse und untere Betriebskarten mit gleichen dezenten grünen/rosa Flächen, Rahmen, Radius, Überschriftengröße und 8px Abstand. CSS-only Commit 6dbc8bf2, zurückgelesen. Keine Daten- oder Funktionsänderung; neue Liveansicht und CI offen.
 
