@@ -1,4 +1,8 @@
 
+## 2026-11-27 · Steuerberater-Kachel
+- Commit `8422c943b3cd1f989594782b3d8ba3a6270ab7e3`: rosa Judith-Kachel liest ausschließlich verifizierte Monatswerte aus `gp_ledger_monthly`, zeigt kumuliertes vorläufiges Ergebnis, Erträge, letzte zwei Monate und aufklappbare Monatshistorie. Keine ungeklärten Buchungen angezeigt. Keine Schätzung fehlender Monate. Friedrich/Judith AI unverändert.
+- September: sechs fehlende Kennzahlen zuvor konfliktgeschützt ergänzt und lesend bestätigt. Jänner–August unverändert. Betreiber bestätigte vorherige Planstufen live; neue Steuerberater-Kachel noch nicht live bestätigt.
+
 ## 2026-11-27 · Neunmonatsmodell ersetzt August-Szenario
 - Commit `6db6a6a8c266e8590aa54cde9bb69118e9a793e8`: Judith-Planstufen anhand der Periodensaldenliste per 30.09.2026 aktualisiert. Modell ohne Zuschüsse, vor Körperschaftsteuer, mit gewichtetem USt-Mix und Einkaufsquote; gerundet auf 100 EUR. Kostendeckung ca. 48.000 EUR brutto. Keine Ist-Gewinn-Aussage; Lagerveränderungen, ungeklärte Buchungen, Oktober/November und periodengerechte Abgrenzungen bleiben offen. Monatsziel 60.000 EUR, Friedrich und Judith AI unverändert. Rechentest aller sieben Stufen bestanden. Keine Datenbankänderung. Live-Abnahme offen.
 
