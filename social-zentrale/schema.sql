@@ -6,6 +6,7 @@ create table if not exists public.social_channels (
   platform text not null check (platform in ('facebook','instagram','tiktok','pinterest','linkedin','google_business','youtube','whatsapp')),
   external_account_id text not null,
   display_name text,
+  publish_authorized boolean not null default false,
   status text not null default 'pending' check (status in ('pending','connected','revoked','error')),
   created_at timestamptz not null default now(),
   unique (business_id,platform,external_account_id),
@@ -43,5 +44,5 @@ create table if not exists public.social_deliveries (
 alter table public.social_channels enable row level security;
 alter table public.social_posts enable row level security;
 alter table public.social_deliveries enable row level security;
-revoke all on public.social_channels,public.social_posts,public.social_deliveries from anon,authenticated;
+revoke all on public.social_channels,public.social_posts,public.social_deliveries from public,anon,authenticated;
 -- Server must validate business membership and cross-table business_id consistency.
