@@ -7,6 +7,8 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const $ = (id) => document.getElementById(id);
 const state = { business: null, businesses: [], posts: [], channels: [], deliveries: [] };
+let sessionVersion = 0;
+let activeUserId = null;
 const platformNames = { facebook:"Facebook", instagram:"Instagram", tiktok:"TikTok", pinterest:"Pinterest", linkedin:"LinkedIn", youtube:"YouTube", google_business:"Google Unternehmensprofil", whatsapp:"WhatsApp" };
 const statusNames = { draft:"Entwurf", pending_approval:"Freigabe offen", approved:"Freigegeben", scheduled:"Im internen Kalender", publishing:"Wird veröffentlicht", published:"Veröffentlicht", failed:"Fehler" };
 
@@ -24,24 +26,32 @@ async function request(action, extra={}) {
 }
 
 function showSignedOut() {
-  $("signin").hidden=false; $("workspace").hidden=true; $("signedUser").textContent="";
+  sessionVersion++; activeUserId=null;
+  state.business=null; state.businesses=[]; state.posts=[]; state.channels=[]; state.deliveries=[];
+  $("business").replaceChildren(); $("tiles").replaceChildren(); $("calendar").replaceChildren(); $("channels").replaceChildren();
+  $("noBusiness").hidden=true; $("signin").hidden=false; $("workspace").hidden=true; $("signedUser").textContent="";
 }
 async function showSignedIn(user) {
-  $("signin").hidden=true; $("workspace").hidden=false; $("signedUser").textContent=user.email ?? "Angemeldet";
+  if(activeUserId!==user.id){sessionVersion++;activeUserId=user.id;}
+  const version=sessionVersion;
+  $("signin").hidden=true; $("workspace").hidden=false; $("noBusiness").hidden=true; $("signedUser").textContent=user.email ?? "Angemeldet";
   try {
     const result=await request("businesses");
+    if(version!==sessionVersion)return;
     state.businesses=result.businesses ?? [];
     const select=$("business"); select.replaceChildren();
     for(const business of state.businesses){const option=document.createElement("option");option.value=business.id;option.textContent=business.name;select.append(option);}
     if(!state.businesses.length){$("workspace").hidden=true;$("noBusiness").hidden=false;return;}
     $("noBusiness").hidden=true;
-    state.business=select.value; await refresh();
+    state.business=select.value; await refresh(version);
   } catch(error) { notice(error.message,"error"); showSignedOut(); }
 }
 
-async function refresh() {
+async function refresh(version=sessionVersion) {
   if(!state.business) return;
-  const result=await request("dashboard",{businessId:state.business,month:$("month").value});
+  const businessId=state.business;
+  const result=await request("dashboard",{businessId,month:$("month").value});
+  if(version!==sessionVersion||businessId!==state.business)return;
   state.posts=result.posts ?? []; state.channels=result.channels ?? []; state.deliveries=result.deliveries ?? [];
   render();
 }
@@ -83,11 +93,11 @@ async function schedule(postId) {
 }
 
 $("signinForm").addEventListener("submit",async(event)=>{event.preventDefault();$("signinButton").disabled=true;try{const {error}=await supabase.auth.signInWithPassword({email:$("email").value.trim(),password:$("password").value});if(error)throw error;const {data}=await supabase.auth.getUser();await showSignedIn(data.user);}catch{notice("Anmeldung nicht möglich. Zugangsdaten prüfen.","error");}finally{$("signinButton").disabled=false;}});
-$("signout").addEventListener("click",async()=>{await supabase.auth.signOut();state.business=null;showSignedOut();});
+$("signout").addEventListener("click",async()=>{await supabase.auth.signOut();showSignedOut();});
 $("business").addEventListener("change",async()=>{state.business=$("business").value;try{await refresh();}catch(error){notice(error.message,"error");}});
 $("month").addEventListener("change",()=>refresh().catch(error=>notice(error.message,"error")));
 $("draftForm").addEventListener("submit",async(event)=>{event.preventDefault();try{await request("create_draft",{businessId:state.business,body:$("postBody").value});$("postBody").value="";await refresh();notice("Entwurf gespeichert.");}catch(error){notice(error.message,"error");}});
 $("month").value=new Date().toISOString().slice(0,7);
-supabase.auth.onAuthStateChange((_event,session)=>{if(session?.user) void showSignedIn(session.user);else showSignedOut();});
+supabase.auth.onAuthStateChange((_event,session)=>{if(!session?.user) showSignedOut();});
 const {data:{session}}=await supabase.auth.getSession();if(session?.user) await showSignedIn(session.user);
 if("serviceWorker" in navigator) navigator.serviceWorker.register("./sw.js").catch(()=>{});
