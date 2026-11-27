@@ -1,3 +1,6 @@
+## 2026-11-27 – Einheitliches Steuerberater-Tabellenlayout
+Betreiberfreigabe für beide Hauptdashboard-Kacheln: Monatsname links, Ergebnis rechts, alternierende Zeilen, ganze EUR, Vorzeichen und Summenzeile; betriebliche Farben und getrennte Abfragen unverändert. Commit 8551455; Code zurückgelesen, Zahlenformat geprüft. Keine DB-Änderung, Judith AI unverändert. CI/Pages und Liveansicht nicht bestätigt.
+
 
 ## 2026-11-27 · Steuerberater-Kachel
 - Commit `8422c943b3cd1f989594782b3d8ba3a6270ab7e3`: rosa Judith-Kachel liest ausschließlich verifizierte Monatswerte aus `gp_ledger_monthly`, zeigt kumuliertes vorläufiges Ergebnis, Erträge, letzte zwei Monate und aufklappbare Monatshistorie. Keine ungeklärten Buchungen angezeigt. Keine Schätzung fehlender Monate. Friedrich/Judith AI unverändert.
