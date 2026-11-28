@@ -1,9 +1,9 @@
-import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+import { createAuthClient } from "./auth.mjs";
 
 const SUPABASE_URL = "https://sjnwfwcpgwsavygewwzb.supabase.co";
 const SUPABASE_KEY = "sb_publishable__tucXG-IQGUhibMqMSUzCw_5RnH_sbQ";
 const API_URL = `${SUPABASE_URL}/functions/v1/social-zentrale`;
-const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+const supabase = createAuthClient(SUPABASE_URL, SUPABASE_KEY);
 
 const $ = (id) => document.getElementById(id);
 const state = { business: null, businesses: [], posts: [], channels: [], deliveries: [] };
