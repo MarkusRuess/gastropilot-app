@@ -5,8 +5,10 @@ Stand: 28.11.2026 · Umsetzung im offenen PR #237 / Branch feature/social-media-
 - Eigenständige, installierbare PWA unter https://genussweltbaden.at/social/ im isolierten Hostinger-Unterordner.
 - Bestehende GastroPilot-Supabase-Identität und Betriebsmitgliedschaften; Betriebswechsel nur über zugewiesene business_members.
 - Dashboard, Entwürfe, Freigabeübergänge und interner Monatskalender. Rollenprüfung und Tenant-Validierung erfolgen serverseitig über die Edge-Function.
-- Social-PWA-Cache v3 aktualisiert Login-Dateien netzwerkpriorisiert; Login-Zugangsdaten werden bei ausgefallenem Modul nicht an den Hosting-Server übermittelt.
-- CI Run #30 erfolgreich, inklusive Regressionen für Login-Formularsicherheit. Hostinger-Dateien live geprüft.
+- Anmeldung nutzt einen lokalen, schlanken Supabase-Auth-Client; Access-/Refresh-Tokens verbleiben nur im Arbeitsspeicher und werden nicht offline gespeichert.
+- Live-Ursache behoben: Hostinger lieferte .mjs als text/plain aus. App-Einstieg und Auth-Modul verwenden jetzt .js; Service-Worker-Cache v4 lädt die neue Shell.
+- Live geprüft: Anmeldemaske lädt wieder unter https://genussweltbaden.at/social/. Kein Passwort eingegeben; echter Auth-Login und iPhone-Abnahme sind noch offen.
+- Social-CI Run #36 erfolgreich, einschließlich Auth-, Login-Sicherheits-, Mandantenwechsel-, Dashboard- und Veröffentlichungstests.
 - Keine generierten Bilder. Medien-Upload bleibt gesperrt, bis Originalherkunft und Rechteprüfung verfügbar sind.
 
 ## Noch nicht produktiv
