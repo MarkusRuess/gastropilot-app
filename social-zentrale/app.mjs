@@ -105,7 +105,11 @@ $("scheduleForm").addEventListener("submit",async(event)=>{
 });
 $("scheduleCancel").addEventListener("click",()=>{$("scheduleDialog").close();schedulePostId=null;});
 
-$("signinForm").addEventListener("submit",async(event)=>{event.preventDefault();$("signinButton").disabled=true;try{const {error}=await supabase.auth.signInWithPassword({email:$("email").value.trim(),password:$("password").value});if(error)throw error;const {data}=await supabase.auth.getUser();await showSignedIn(data.user);}catch{notice("Anmeldung nicht möglich. Zugangsdaten prüfen.","error");}finally{$("signinButton").disabled=false;}});
+$("signinForm").addEventListener("submit",async(event)=>{event.preventDefault();$("signinButton").disabled=true;try{const {error}=await supabase.auth.signInWithPassword({email:$("email").value.trim(),password:$("password").value});if(error)throw error;const {data}=await supabase.auth.getUser();await showSignedIn(data.user);}catch(error){
+const status=Number(error?.status),detail=String(error?.message??"").toLowerCase();
+const message=status===429?"Zu viele Anmeldeversuche. Bitte kurz warten.":status===400||detail.includes("invalid login credentials")?"E-Mail oder Passwort stimmen nicht. Nutze denselben GastroPilot-Zugang.":error instanceof TypeError?"Anmeldedienst nicht erreichbar. Bitte App in Safari öffnen und Verbindung prüfen.":"Anmeldung fehlgeschlagen. Bitte erneut versuchen.";
+notice(message,"error");
+}finally{$("signinButton").disabled=false;}});
 $("signout").addEventListener("click",async()=>{await supabase.auth.signOut();showSignedOut();});
 $("business").addEventListener("change",async()=>{state.business=$("business").value;try{await refresh();}catch(error){notice(error.message,"error");}});
 $("month").addEventListener("change",()=>refresh().catch(error=>notice(error.message,"error")));
