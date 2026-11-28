@@ -1,28 +1,20 @@
 # GastroPilot Social
-Stand: 27.11.2026 · Umsetzung im offenen PR #237 / Branch feature/social-media-zentrale.
+Stand: 28.11.2026 · Umsetzung im offenen PR #237 / Branch feature/social-media-zentrale.
 
-## Im Branch umgesetzt
-- Anmeldemaske für bestehende Supabase-Konten und Wechsel zwischen zugeordneten Betrieben.
-- Übersicht, Social-Kanalstatus, Beitragsentwürfe, Freigabe-Übergang und interner Monatskalender.
-- Schreibaktionen laufen über eine Edge-Function, die den angemeldeten Nutzer und seine Betriebsmitgliedschaft vor jeder Aktion prüft. Freigeben und Terminieren ist auf Betriebsinhaber und Administratoren beschränkt.
-- PWA-Grunddateien und mobil angepasste Oberfläche; kein vertraulicher Offline-Cache.
+## Live umgesetzt
+- Eigenständige, installierbare PWA unter https://genussweltbaden.at/social/ im isolierten Hostinger-Unterordner.
+- Bestehende GastroPilot-Supabase-Identität und Betriebsmitgliedschaften; Betriebswechsel nur über zugewiesene business_members.
+- Dashboard, Entwürfe, Freigabeübergänge und interner Monatskalender. Rollenprüfung und Tenant-Validierung erfolgen serverseitig über die Edge-Function.
+- Social-PWA-Cache v3 aktualisiert Login-Dateien netzwerkpriorisiert; Login-Zugangsdaten werden bei ausgefallenem Modul nicht an den Hosting-Server übermittelt.
+- CI Run #30 erfolgreich, inklusive Regressionen für Login-Formularsicherheit. Hostinger-Dateien live geprüft.
 - Keine generierten Bilder. Medien-Upload bleibt gesperrt, bis Originalherkunft und Rechteprüfung verfügbar sind.
 
-## Windsor.ai / Plattformen
-Die verbundene Windsor.ai-Integration meldet Schreibaktionen für einzelne Social-Konnektoren, zusätzlich zu Analytics-Lesezugriffen. Diese MCP-Werkzeuge können aus ChatGPT ausgeführt werden; sie stellen der eigenständigen Web-App jedoch keine API-Credentials oder aufrufbare Publishing-Schnittstelle bereit.
-Provider-Accounts und App-Freigaben für die Web-App sind daher weiterhin offen. Keine Inhalte wurden veröffentlicht.
-
 ## Noch nicht produktiv
-Der Branch ist nicht live. Die Edge-Function ist nicht deployed und es gibt noch keinen eigenständigen App-Link.
-Kalendereinträge sind interne Planung; sie lösen keine Veröffentlichung aus. Es existiert kein atomarer Veröffentlichungs-Claim und kein Provider-Adapter in Produktion.
-CLI Anything liefert keine Provider-Autorisierung und wird hier nicht zusätzlich installiert.
+Die Kalendertermine sind interne Planung und lösen keine Veröffentlichung aus. OAuth/Provider-Schreibrechte, atomare Doppelveröffentlichungsschutz-Claims, Statusabgleich, Originalmedien-Upload, Statistiken und Google-Bewertungen sind nicht aktiviert. Es wurden keine Inhalte veröffentlicht.
+Ein echter Login auf dem iPhone und Tests mit getrennten realen Mandanten sind nicht erfolgt.
 
-## Vor Produktivsetzung erforderlich
-- Deployment/Hosting für einen dauerhaften HTTPS-Link und Test der iPhone-Installation.
-- Getrennter Echtkonto-Test mit einem erlaubten und einem fremden Betriebskonto.
-- Sichere Provider-API-Anbindung und Kontozustimmung für jeden Kanal; nicht verbundene Konten brauchen OAuth.
-- Originalmedien-Upload, Herkunfts- und Rechteprüfung.
-- Transaktionaler Doppelveröffentlichungsschutz, Statusabgleich und echte Provider-Sandbox-Tests.
-- Statistiken, Google-Bewertungen und verlässliche Kunden-Onboarding-Rollen.
+## Windsor.ai / Plattformen
+Windsor.ai-MCP-Konnektoren können abhängig von der bereits verbundenen Berechtigung Daten lesen und einzelne Actions bereitstellen. Die MCP-Verbindung stellt der eigenständigen Web-App jedoch keine API-Zugangsdaten oder automatisch nutzbare Publishing-API bereit. Keine neuen Kosten oder zusätzliche Credentials wurden eingerichtet.
+CLI Anything liefert keine Provider-Autorisierung und wurde nicht zusätzlich installiert.
 
-Keine neue kostenpflichtige Infrastruktur wurde angelegt. Keine bestehenden GastroPilot-Anwendungen wurden geändert.
+Keine bestehende GastroPilot-Anwendung wurde verändert.
