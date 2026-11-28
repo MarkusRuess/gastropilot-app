@@ -1,7 +1,9 @@
-# Verifizierter Teststatus – 27.11.2026
-- GitHub Actions Run 46048431973 auf Branch feature/social-media-zentrale, Commit e93fe74ff8798bc26280e38c6727b797a00dfd09: erfolgreich. Der Workflow-Schritt node --test social-zentrale/publishing.test.mjs social-zentrale/dashboard.test.mjs social-zentrale/business-switch.test.mjs war erfolgreich.
-- Unabhängiger lokaler Lauf derselben Tests: 18 bestanden, 0 fehlgeschlagen.
-- node --check app.mjs: erfolgreich.
-- Geprüft sind reine Geschäftslogik und Modulsyntax. Die Edge Function wurde nicht deployed oder separat typgeprüft.
-- Offen: echte Supabase-Anmeldung mit getrennten Nutzern, Berechtigungstest über die Funktion, PWA-Installation auf iPhone, Medienprovenienz, atomarer Veröffentlichungs-Claim, Provider-OAuth und echte Veröffentlichung.
-- CI-Erfolg beweist keine Live-Abnahme. PR #237 bleibt Entwurf.
+# Verifizierter Teststatus – 28.11.2026
+- GitHub Actions Social-Zentrale Run #30 auf aktuellem PR-Commit: erfolgreich. Enthält Node-Tests für Publishing-Preflight, Dashboard-Mandantentrennung, Betriebswechsel und Login-Sicherheitsregressionen.
+- GitHub Actions Unternehmenszentrale Registry Run #44 auf aktuellem PR-Commit: erfolgreich.
+- Vorherige lokale Node-Tests: 18 bestanden, 0 fehlgeschlagen. Die neuen Login-Sicherheitschecks sind im PR-CI-Lauf enthalten.
+- Live geprüft: Hostinger-Dateien im /social-Unterordner; Formular ohne GET/POST-Fallback; sichtbarer Modulfehler; Cache-Version v3; Live-HTML nach Neuladen.
+- Supabase: Edge Function social-zentrale ACTIVE, verify_jwt=true; Social-Tabellen mit RLS vorhanden.
+- Nicht durchgeführt: Passwort-Eingabe, echte Anmeldung am iPhone und Test mit getrennten realen Nutzerkonten.
+- Offen: Provider-OAuth und Veröffentlichung, transaktionaler Doppelveröffentlichungsschutz, Originalmedienprüfung, Statistik-/Bewertungsanbindung.
+- CI beweist die geprüfte Geschäftslogik und Form-Sicherheit; es ersetzt keine iPhone-/Provider-Live-Abnahme. PR #237 bleibt Entwurf.
