@@ -4,7 +4,7 @@ import { readFile } from 'node:fs/promises';
 
 const [html, app] = await Promise.all([
   readFile(new URL('./index.html', import.meta.url), 'utf8'),
-  readFile(new URL('./app.mjs', import.meta.url), 'utf8'),
+  readFile(new URL('./app.js', import.meta.url), 'utf8'),
 ]);
 
 test('login credentials cannot fall back to a hosting POST or URL submission', () => {
