@@ -40,7 +40,7 @@ dialog{border:1px solid var(--line);border-radius:16px;padding:20px;width:min(44
 <div id="notice" role="status" aria-live="polite" hidden></div>
 <section id="signin" class="signin">
 <h1>Anmelden</h1><p class="subtle">Mit deinem bestehenden GastroPilot-Zugang anmelden.</p>
-<form id="signinForm" class="row" method="post" autocomplete="on"><label>E-Mail<input id="email" name="email" type="email" inputmode="email" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" enterkeyhint="next" required></label><label>Passwort<input id="password" name="password" type="password" autocomplete="current-password" enterkeyhint="go" required></label><button id="signinButton">Anmelden</button></form>
+<form id="signinForm" class="row" autocomplete="on" onsubmit="return false"><label>E-Mail<input id="email" name="email" type="email" inputmode="email" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" enterkeyhint="next" required></label><label>Passwort<input id="password" name="password" type="password" autocomplete="current-password" enterkeyhint="go" required></label><button id="signinButton">Anmelden</button></form>
 <p class="subtle">Zugänge werden von der Unternehmenszentrale angelegt.</p>
 </section>
 <section id="noBusiness" hidden><h1>Kein Betrieb zugeordnet</h1><p>Für diesen Zugang ist noch keine Betriebsmitgliedschaft eingerichtet.</p></section>
@@ -56,6 +56,15 @@ dialog{border:1px solid var(--line);border-radius:16px;padding:20px;width:min(44
 <footer>Geschützte Betriebsdaten werden nur nach Anmeldung geladen. Keine Offline-Speicherung von Beiträgen oder Zugangsdaten.</footer>
 </main>
 <script>
+window.addEventListener("error",(event)=>{
+  const target=event.target;
+  if(target?.tagName==="SCRIPT"&&target.type==="module"){
+    const notice=document.getElementById("notice");
+    notice.textContent="Das Anmeldemodul konnte nicht geladen werden. Bitte App in Safari öffnen und erneut laden.";
+    notice.dataset.kind="error";
+    notice.hidden=false;
+  }
+},true);
 if("serviceWorker" in navigator){
   try{
     navigator.serviceWorker.addEventListener("controllerchange",()=>{
