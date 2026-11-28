@@ -1,13 +1,13 @@
-const CACHE="gastropilot-social-shell-v3";
+const CACHE="gastropilot-social-shell-v4";
 const CACHE_PREFIX="gastropilot-social-shell-";
-const SHELL=["./","./index.html","./app.mjs","./manifest.webmanifest","./icon.svg"];
+const SHELL=["./","./index.html","./app.js","./manifest.webmanifest","./icon.svg"];
 self.addEventListener("install",event=>event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(SHELL)).then(()=>self.skipWaiting())));
 self.addEventListener("activate",event=>event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key.startsWith(CACHE_PREFIX)&&key!==CACHE).map(key=>caches.delete(key)))).then(()=>self.clients.claim())));
 self.addEventListener("fetch",event=>{
   const url=new URL(event.request.url);
   if(url.origin!==self.location.origin||event.request.method!=="GET")return;
   const base=new URL("./",self.location.href).pathname;
-  const shell=url.pathname===base||url.pathname===base+"index.html"||url.pathname===base+"app.mjs";
+  const shell=url.pathname===base||url.pathname===base+"index.html"||url.pathname===base+"app.js";
   if(shell){
     event.respondWith((async()=>{
       const cache=await caches.open(CACHE);
