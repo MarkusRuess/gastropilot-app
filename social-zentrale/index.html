@@ -40,7 +40,7 @@ dialog{border:1px solid var(--line);border-radius:16px;padding:20px;width:min(44
 <div id="notice" role="status" aria-live="polite" hidden></div>
 <section id="signin" class="signin">
 <h1>Anmelden</h1><p class="subtle">Mit deinem bestehenden GastroPilot-Zugang anmelden.</p>
-<form id="signinForm" class="row"><label>E-Mail<input id="email" type="email" autocomplete="username" required></label><label>Passwort<input id="password" type="password" autocomplete="current-password" required></label><button id="signinButton">Anmelden</button></form>
+<form id="signinForm" class="row" method="post" autocomplete="on"><label>E-Mail<input id="email" name="email" type="email" inputmode="email" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" enterkeyhint="next" required></label><label>Passwort<input id="password" name="password" type="password" autocomplete="current-password" enterkeyhint="go" required></label><button id="signinButton">Anmelden</button></form>
 <p class="subtle">Zugänge werden von der Unternehmenszentrale angelegt.</p>
 </section>
 <section id="noBusiness" hidden><h1>Kein Betrieb zugeordnet</h1><p>Für diesen Zugang ist noch keine Betriebsmitgliedschaft eingerichtet.</p></section>
