@@ -12,4 +12,4 @@ jobs:
     timeout-minutes: 3
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
-      - run: node --test social-zentrale/publishing.test.mjs social-zentrale/dashboard.test.mjs social-zentrale/business-switch.test.mjs social-zentrale/login-security.test.mjs
+      - run: node --test social-zentrale/publishing.test.mjs social-zentrale/dashboard.test.mjs social-zentrale/business-switch.test.mjs social-zentrale/login-security.test.mjs social-zentrale/auth.test.mjs
