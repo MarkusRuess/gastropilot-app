@@ -2,7 +2,7 @@
 export function createAuthClient(url, apiKey, { fetchImpl = fetch, now = () => Date.now() } = {}) {
   let session = null;
   const listeners = new Set();
-  const authUrl = url.replace(/\\/$/, "") + "/auth/v1";
+  const authUrl = url.replace(/\/$/, "") + "/auth/v1";
   const emit = (event) => { for (const listener of listeners) { try { listener(event, session); } catch {} } };
   const request = async (path, options = {}) => {
     const headers = { apikey: apiKey, "Content-Type": "application/json", ...(options.headers || {}) };
