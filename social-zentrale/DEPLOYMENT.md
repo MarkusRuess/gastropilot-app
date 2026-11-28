@@ -1,0 +1,12 @@
+# Deployment-Nachweis – 28.11.2026
+- PR #237 bleibt offen und als Entwurf markiert; Feature-Branch feature/social-media-zentrale.
+- Supabase-Projekt gastropilot: social_channels, social_posts und social_deliveries sind mit RLS vorhanden. Live-Migrationen: 20261127164023 (locked foundation) und 20261127164043 (member read).
+- Supabase Edge Function social-zentrale: Version 1, ACTIVE, verify_jwt=true.
+- Hostinger-Git-Eintrag deploy/social-zentrale ist mit Zielordner /social auf genussweltbaden.at verbunden. Der Social-Unterordner wurde aktualisiert; das WordPress-Stammverzeichnis blieb unangetastet.
+- Service Worker v3: Login-Seite und app.mjs werden mit Netzwerkpriorität aktualisiert; bei Offline-Ausfall gibt es nur Cache-Fallback für den App-Shell-Code. Eigener Cache-Präfix verhindert Eingriff in andere Apps.
+- Login-Sicherheitsfix: Formular übermittelt Zugangsdaten nicht per GET/POST an den Hosting-Server, wenn das JavaScript-Modul ausfällt. Sichtbare Modul-Fehlermeldung und getrennte Auth-Fehlermeldungen ergänzt.
+- GitHub Actions Social-Zentrale Run #30 und Unternehmenszentrale Registry Run #44 auf aktuellem PR-Commit: erfolgreich. Social-Workflow führt Geschäftslogik-Tests plus Login-Sicherheitsregressionen aus.
+- Hostinger-Dateiinhalte nach Deployment read-only geprüft. Das Social-Formular und der neue Update-Code sind live.
+- Nicht geprüft: echter Login und Tastatureingabe am persönlichen iPhone, getrennte reale Nutzer-/Mandantentests.
+- Offen: offizielle Provider-OAuth/API-Rechte, atomare Publishing-Claims/Statusabgleich, Originalmedien-Herkunftsprüfung, Statistiken und Google-Bewertungen. Keine Inhalte wurden veröffentlicht.
+- Keine neue kostenpflichtige Infrastruktur eingerichtet; keine bestehende GastroPilot-Anwendung geändert.
