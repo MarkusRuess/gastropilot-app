@@ -1,4 +1,4 @@
-import { createAuthClient } from "./auth.mjs";
+import { createAuthClient } from "./auth.js";
 
 const SUPABASE_URL = "https://sjnwfwcpgwsavygewwzb.supabase.co";
 const SUPABASE_KEY = "sb_publishable__tucXG-IQGUhibMqMSUzCw_5RnH_sbQ";
