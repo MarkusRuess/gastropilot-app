@@ -55,6 +55,20 @@ dialog{border:1px solid var(--line);border-radius:16px;padding:20px;width:min(44
 <dialog id="scheduleDialog" aria-labelledby="scheduleTitle"><form id="scheduleForm"><h2 id="scheduleTitle">Termin eintragen</h2><label>Datum und Uhrzeit<input id="scheduledAt" type="datetime-local" required></label><p class="subtle">Der Termin wird intern gespeichert. Eine Veröffentlichung findet nicht statt.</p><div class="actions"><button id="scheduleCancel" type="button" class="secondary">Abbrechen</button><button>Speichern</button></div></form></dialog>
 <footer>Geschützte Betriebsdaten werden nur nach Anmeldung geladen. Keine Offline-Speicherung von Beiträgen oder Zugangsdaten.</footer>
 </main>
+<script>
+if("serviceWorker" in navigator){
+  try{
+    navigator.serviceWorker.addEventListener("controllerchange",()=>{
+      try{
+        if(sessionStorage.getItem("gp-social-sw-refresh"))return;
+        sessionStorage.setItem("gp-social-sw-refresh","1");
+      }catch{}
+      location.reload();
+    });
+    navigator.serviceWorker.register("./sw.js",{updateViaCache:"none"}).then(reg=>reg.update()).catch(()=>{});
+  }catch{}
+}
+</script>
 <script type="module" src="./app.mjs"></script>
 </body>
 </html>
