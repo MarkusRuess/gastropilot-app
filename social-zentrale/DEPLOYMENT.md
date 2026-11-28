@@ -1,10 +1,12 @@
-# Deployment-Nachweis – 27.11.2026
-- PR #237 bleibt offen und als Entwurf markiert; Branch feature/social-media-zentrale.
-- Supabase-Projekt gastropilot enthält drei Social-Tabellen mit RLS; publish_authorized ist im Live-Schema vorhanden.
-- Im Feature-Branch: Oberfläche, Betriebswechsel, Entwürfe, Freigabe-/Kalenderaktionen und PWA-Shell.
-- Supabase Edge Function social-zentrale, Version 1, Status ACTIVE, verify_jwt=true.
-- Anonymer HTTP-GET-Smoke-Test gegen die Function: 401. Das belegt die Ablehnung anonymer Requests; ein authentifizierter Lese-/Schreibtest mit getrennten Konten fehlt.
-- GitHub Actions Run 46049070929 auf Commit 137acc116f95da89541f892b0139941952751982: erfolgreich. Lokaler Node-Test: 18/18 bestehende Tests; app.mjs Syntaxprüfung erfolgreich.
-- Hostinger: isolierter Zielordner /social auf genussweltbaden.at war nicht vorhanden; Root-Deployment wurde vermieden. Hosting-Deploy aus dem gefilterten Branch deploy/social-zentrale scheiterte mit „No active Git installation“. Hostinger meldet, dass GitHub einmal in hPanel unter Websites → Manage → Advanced → Git verbunden werden muss.
-- Keine Web-App-Dateien deployed; es gibt keinen App-Link. Bestehende WordPress-Inhalte unverändert.
-- Offen: separater Konto-/Mandantentest, Originalmedienprüfung, OAuth/Provider-Schreibzugriff in der Web-App, Idempotency und Statusabgleich, Statistiken/Bewertungen, iPhone-Installation.
+# Deployment-Nachweis – 28.11.2026
+- PR #237 bleibt offen und als Entwurf markiert; Feature-Branch feature/social-media-zentrale.
+- Supabase-Projekt gastropilot: social_channels, social_posts und social_deliveries sind mit RLS vorhanden. Live-Migrationen: 20261127164023 (locked foundation) und 20261127164043 (member read).
+- Supabase Edge Function social-zentrale: Version 1, ACTIVE, verify_jwt=true.
+- Hostinger-Git-Eintrag deploy/social-zentrale ist mit Zielordner /social auf genussweltbaden.at verbunden. Der Social-Unterordner wurde aktualisiert; das WordPress-Stammverzeichnis blieb unangetastet.
+- Service Worker v3: Login-Seite und app.mjs werden mit Netzwerkpriorität aktualisiert; bei Offline-Ausfall gibt es nur Cache-Fallback für den App-Shell-Code. Eigener Cache-Präfix verhindert Eingriff in andere Apps.
+- Login-Sicherheitsfix: Formular übermittelt Zugangsdaten nicht per GET/POST an den Hosting-Server, wenn das JavaScript-Modul ausfällt. Sichtbare Modul-Fehlermeldung und getrennte Auth-Fehlermeldungen ergänzt.
+- GitHub Actions Social-Zentrale Run #30 und Unternehmenszentrale Registry Run #44 auf aktuellem PR-Commit: erfolgreich. Social-Workflow führt Geschäftslogik-Tests plus Login-Sicherheitsregressionen aus.
+- Hostinger-Dateiinhalte nach Deployment read-only geprüft. Das Social-Formular und der neue Update-Code sind live.
+- Nicht geprüft: echter Login und Tastatureingabe am persönlichen iPhone, getrennte reale Nutzer-/Mandantentests.
+- Offen: offizielle Provider-OAuth/API-Rechte, atomare Publishing-Claims/Statusabgleich, Originalmedien-Herkunftsprüfung, Statistiken und Google-Bewertungen. Keine Inhalte wurden veröffentlicht.
+- Keine neue kostenpflichtige Infrastruktur eingerichtet; keine bestehende GastroPilot-Anwendung geändert.
