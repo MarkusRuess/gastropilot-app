@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createAuthClient } from './auth.mjs';
+import { createAuthClient } from './auth.js';
 
 const base='https://project.supabase.co/auth/v1';
 function response(data,status=200){return {ok:status>=200&&status<300,status,json:async()=>data};}
