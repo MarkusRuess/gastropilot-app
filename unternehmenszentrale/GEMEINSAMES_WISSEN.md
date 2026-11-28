@@ -35,3 +35,11 @@ Stand: 27.11.2026. Dies ist ein **lesbarer Auszug** aus der geschützten Zentral
 2. Nur allgemein freigegebene Regeln auf andere Kunden übertragen; synthetische Tests als solche benennen.
 3. Projektbezogene Daten und Zugriffe ausschließlich im jeweiligen Kundenprojekt bearbeiten.
 4. Neue Erkenntnisse mit Projekt, Quelle, Datum, Nachweisstatus und Datenklassifikation in der geschützten Wissensdatenbank dokumentieren. Dieser GitHub-Auszug ist nur eine Lesehilfe und ersetzt keine Freigabe.
+
+
+## Bestätigte Social-Erkenntnisse (28.11.2026)
+
+| Erkenntnis | Projekt | Quelle und Datum | Nachweisstatus / Grenze |
+|---|---|---|---|
+| Browser laden Social-Module nur mit passendem JavaScript-MIME-Typ. Hostinger lieferte .mjs als text/plain; die Anmeldung scheiterte vor jedem Supabase-Aufruf. App-Einstieg und lokales Auth-Modul auf .js umgestellt; SW-Cache v4. | GastroPilot Social | Live-Dateiantworten und Hostinger-Deploy, 28.11.2026 | Login-Seite live ohne Modulfehler; kein Passwort eingegeben, echter Auth-Login und iPhone-Abnahme offen |
+| Ein lokaler Supabase-Auth-Client kann Passwort-Login, User-Abfrage, Refresh und Logout über die vorhandenen Auth-Endpunkte ausführen, ohne CDN-Abhängigkeit oder persistente Token-Speicherung. | GastroPilot Social | auth.test.mjs, Social CI Run #36, 28.11.2026 | Vier synthetische Auth-Tests plus Projekt-CI erfolgreich; reale Anmeldung nicht getestet |
